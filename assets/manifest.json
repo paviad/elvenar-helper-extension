@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Elvenar Helper Extension",
+  "version": "1.1.0",
+  "description": "Hooks to help with Elvenar",
+  "permissions": [
+    "storage",
+    "clipboardRead",
+    "clipboardWrite",
+    "webRequest",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*.elvenar.com/*"
+  ],
+  "background": {
+    "service_worker": "svc.bundle.js"
+  },
+  "action": {
+    "default_title": "(Click to show menu)",
+    "default_popup": "popup.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icon32.png"
+      ],
+      "matches": [
+        "https://en3.elvenar.com/*"
+      ]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://en3.elvenar.com/*"
+      ],
+      "js": [
+        "main.bundle.js",
+        "vendors.bundle.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "32": "icon32.png"
+  }
+}
