@@ -25,9 +25,14 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
   }
 
   function getType(entity: CityEntity): string {
+    if (entity.connectionStrategy === 'standalone') {
+      return entity.type + '_y';
+    }
+
     if (/^[a-zA-Z]_Ch\d+_/.test(entity.cityentity_id)) {
       return entity.type + '_x';
     }
+
     return entity.type;
   }
 

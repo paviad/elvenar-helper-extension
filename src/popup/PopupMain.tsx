@@ -121,8 +121,10 @@ async function generateCity(
     const width = goodsBuilding?.tile_width || stdBuilding?.width || 1;
     const description = stdBuilding?.description || '';
     const name = stdBuilding?.name || '';
+    const connectionStrategy =
+      stdBuilding?.requirements.connectionStrategyId || 'unknown';
 
-    return { ...entity, length, width, description, name };
+    return { ...entity, length, width, description, name, connectionStrategy } satisfies CityEntity;
   });
 
   setCityEntities([q, unlockedAreas]);

@@ -475,11 +475,11 @@ export function CityView(props: {
 
       {/* Legend */}
       <div style={{ width: 300, marginLeft: 16 }}>
-        <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Type Legend</div>
+        <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Color Legend</div>
         <ul style={{ listStyle: 'none', padding: 0, fontSize: 13 }}>
-          {allTypes.map((type) => (
+          {Object.entries(colorDescriptions).map(([color, desc]) => (
             <li
-              key={type}
+              key={color}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -491,16 +491,51 @@ export function CityView(props: {
                   display: 'inline-block',
                   width: 18,
                   height: 18,
-                  background: getTypeColor(type, allTypes, false),
+                  background: color,
                   border: '1px solid #888',
                   borderRadius: 4,
                   marginRight: 8,
                 }}
               />
-              <span>{type}</span>
+              <span>{desc}</span>
             </li>
           ))}
         </ul>
+
+        {(() => {
+          const unknownTypes = allTypes.filter(type => !Object.keys(colorDescriptions).includes(getTypeColor(type, allTypes, false)));
+          if (unknownTypes.length === 0) return null;
+          return (
+            <>
+              <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Unknown Type Legend</div>
+              <ul style={{ listStyle: 'none', padding: 0, fontSize: 13 }}>
+                {unknownTypes.map((type) => (
+                  <li
+                    key={type}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: 6,
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: 18,
+                        height: 18,
+                        background: getTypeColor(type, allTypes, false),
+                        border: '1px solid #888',
+                        borderRadius: 4,
+                        marginRight: 8,
+                      }}
+                    />
+                    <span>{type}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          );
+        })()}
       </div>
     </div>
   );
@@ -521,29 +556,54 @@ const TYPE_COLORS: string[] = [
 ];
 
 const knownTypes: Record<string, string> = {
-  culture_residential: '#9452FE',
-  culture_residential_x: '#AAF5FE',
-  culture_x: '#AAF5FE',
-  culture: '#9452FE',
-  expiring: '#9452FE',
-  main_building: '#F9C602',
-  trader: '#F9C602',
-  residential: '#F9C602',
-  premium_residential: '#F9C602',
-  worker_hut: '#F9C602',
-  academy: '#F9C602',
-  goods: '#FE2AD5',
-  production: '#13B7F4',
-  premium_production: '#13B7F4',
-  ancient_wonder: '#FEF7C6',
-  ancient_wonder_x: '#FEF7C6',
-  portal: '#02E880',
-  portal_x: '#02E880',
-  goods_x: '#02E880',
-  guardian: '#02E880',
-  military: '#FE0230',
-  armory: '#FE0230',
-  street: '#d7d7d7ff',
+  culture_residential: '#9452fe',
+  culture: '#9452fe',
+  expiring: '#9452fe',
+
+  culture_residential_x: '#aaf5fe',
+  culture_x: '#aaf5fe',
+
+  culture_y: '#110cff',
+  culture_residential_y: '#110cff',
+  expiring_y: '#110cff',
+
+  main_building_y: '#f9c602',
+  trader: '#f9c602',
+  residential: '#f9c602',
+  premium_residential: '#f9c602',
+  worker_hut: '#f9c602',
+  academy: '#f9c602',
+
+  goods: '#fe2ad5',
+
+  production: '#13b7f4',
+  premium_production: '#13b7f4',
+
+  ancient_wonder: '#fef7c6',
+  ancient_wonder_x: '#fef7c6',
+
+  portal: '#02e880',
+  portal_x: '#02e880',
+  goods_x: '#02e880',
+  guardian: '#02e880',
+
+  military: '#fe0230',
+  armory: '#fe0230',
+  
+  street: '#d7d7d7',
+};
+
+const colorDescriptions: Record<string, string> = {
+  '#9452fe': 'Culture(/Residential)',
+  '#110cff': 'Culture(/Residential) Standalone',
+  '#f9c602': 'Residential/Main/Trader/Academy/Worker Hut',
+  '#fe2ad5': 'Goods Buildings',
+  '#13b7f4': 'Production Buildings',
+  '#fef7c6': 'Ancient Wonders',
+  '#02e880': 'Portal/Settlement',
+  '#fe0230': 'Military/Armory',
+  '#d7d7d7': 'Street',
+  '#aaf5fe': 'Buildable Culture'
 };
 
 function getTypeColor(

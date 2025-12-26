@@ -10,6 +10,7 @@ export interface CityEntity {
   y: number;
   connected: boolean;
   setConnections: SetConnections;
+  connectionStrategy: string;
 
   length?: number;
   width?: number;
