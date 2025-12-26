@@ -18,7 +18,7 @@ import { Building } from '../model/building';
 import { GoodsBuilding } from '../model/goodsBuilding';
 import { CityEntity } from '../model/cityEntity';
 import { CityBlock } from './CityBlock';
-import { CityView } from './CityView';
+import { CityView } from './CityView/CityView';
 import { UnlockedArea } from '../model/unlockedArea';
 import { generateCityBlocks } from './generateCityBlocks';
 import { sendMoveBuildingCommand } from '../elvenar/sendMoveBuildingCommand';

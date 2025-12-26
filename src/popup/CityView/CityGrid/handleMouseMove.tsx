@@ -1,0 +1,39 @@
+import React from 'react';
+import { CityViewState } from '../CityViewState';
+
+export const handleMouseMove = (s: CityViewState, e: React.MouseEvent) => {
+  const [blocks, setBlocks] = s.rBlocks;
+  const [dragIndex, _1] = s.rDragIndex;
+  const [dragOffset, _2] = s.rDragOffset;
+  const [_3, setMouseGrid] = s.rMouseGrid;
+  const { GridSize, svgRef, GridMax } = s;
+
+  const svg = svgRef.current;
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  if (dragIndex !== null) {
+    const newX = Math.max(
+      0,
+      Math.min(
+        GridMax - blocks[dragIndex].width,
+        Math.round((mouseX - dragOffset.x) / GridSize)
+      )
+    );
+    const newY = Math.max(
+      0,
+      Math.min(
+        GridMax - blocks[dragIndex].length,
+        Math.round((mouseY - dragOffset.y) / GridSize)
+      )
+    );
+    setBlocks((prev) => prev.map((b, i) => (i === dragIndex ? { ...b, x: newX, y: newY } : b))
+    );
+    setMouseGrid({ x: newX, y: newY });
+  } else {
+    const gridX = Math.floor(mouseX / GridSize);
+    const gridY = Math.floor(mouseY / GridSize);
+    setMouseGrid({ x: gridX, y: gridY });
+  }
+};
