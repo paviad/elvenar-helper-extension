@@ -31,6 +31,22 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
     return entity.type;
   }
 
+  function getLabel(entity: CityEntity): string | undefined {
+    if (entity.type === 'culture' || entity.type === 'culture_residential') {
+      const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(entity.cityentity_id)
+      if (m1) {
+        return `${m1[1]}`;
+      }
+
+      const m2 = /_(\d+)$/.exec(entity.cityentity_id)
+      if (m2) {
+        return `${m2[1]}`;
+      }
+    }
+    return undefined;
+  }
+
+
   const blocks: CityBlock[] = cityEntities.map((entity, index) => ({
     id: index,
     originalX: entity.x || 0,
@@ -43,6 +59,7 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
     moved: false,
     name: entity.name || findInElvenarchitect(entity.cityentity_id) || entity.cityentity_id,
     entity,
+    label: getLabel(entity),
   } satisfies CityBlock));
 
   return blocks;

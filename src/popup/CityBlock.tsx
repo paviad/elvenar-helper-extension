@@ -12,4 +12,5 @@ export interface CityBlock {
   name: string;
   moved: boolean;
   entity: CityEntity;
+  label?: string;
 }
