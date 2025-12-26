@@ -1,3 +1,5 @@
+import { CityEntity } from '../model/cityEntity';
+
 export interface CityBlock {
   id: number;
   originalX: number;
@@ -9,4 +11,5 @@ export interface CityBlock {
   length: number;
   name: string;
   moved: boolean;
+  entity: CityEntity;
 }

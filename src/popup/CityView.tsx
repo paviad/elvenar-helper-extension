@@ -1,7 +1,7 @@
-import React, { useRef, useState } from "react";
-import { CityBlock } from "./CityBlock";
-import { UnlockedArea } from "../model/unlockedArea";
-import { Button, Stack } from "@mui/material";
+import React, { useRef, useState } from 'react';
+import { CityBlock } from './CityBlock';
+import { UnlockedArea } from '../model/unlockedArea';
+import { Button, Stack } from '@mui/material';
 
 interface MoveLog {
   id: number;
@@ -86,17 +86,17 @@ export function CityView(props: {
       if (
         (e.ctrlKey || e.metaKey) &&
         !e.shiftKey &&
-        e.key.toLowerCase() === "z"
+        e.key.toLowerCase() === 'z'
       ) {
         e.preventDefault();
         handleUndo();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         handleRedo();
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleUndo, handleRedo]);
 
   // Get all unique types for color mapping
@@ -253,17 +253,17 @@ export function CityView(props: {
   };
 
   const sellStreets = () => {
-    setBlocks((prev) => prev.filter((b) => b.type !== "street"));
+    setBlocks((prev) => prev.filter((b) => b.type !== 'street'));
   };
 
   const blockRect = (key: string | number, block: CityBlock) => {
-    const dragging = typeof key === "number";
+    const dragging = typeof key === 'number';
     const handler = dragging
       ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) =>
           handleMouseDown(e, key)
       : // eslint-disable-next-line @typescript-eslint/no-empty-function
         () => {};
-    const cursor = dragging ? "grabbing" : "grab";
+    const cursor = dragging ? 'grabbing' : 'grab';
     return (
       <rect
         key={key}
@@ -273,7 +273,7 @@ export function CityView(props: {
         width={block.width * GridSize}
         height={block.length * GridSize}
         fill={getTypeColor(block.type, allTypes, block.moved)}
-        stroke={block.moved ? "black" : "lightgray"}
+        stroke={block.moved ? 'black' : '#000'}
         strokeWidth={block.moved ? 2 : 1}
         style={{ cursor }}
         onMouseDown={handler}
@@ -284,25 +284,25 @@ export function CityView(props: {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
+    <div style={{ display: 'flex', flexDirection: 'row' }}>
       {/* Move log list */}
       <div style={{ width: 300, marginRight: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
-          <span style={{ fontWeight: "bold", marginRight: 8 }}>Move Log</span>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontWeight: 'bold', marginRight: 8 }}>Move Log</span>
           <button
             onClick={handleUndo}
             disabled={moveLog.length === 0}
             style={{
-              padding: "2px 10px",
+              padding: '2px 10px',
               fontSize: 13,
               borderRadius: 4,
-              border: "1px solid #888",
-              background: moveLog.length === 0 ? "#eee" : "#fff",
-              color: moveLog.length === 0 ? "#aaa" : "#222",
-              cursor: moveLog.length === 0 ? "not-allowed" : "pointer",
+              border: '1px solid #888',
+              background: moveLog.length === 0 ? '#eee' : '#fff',
+              color: moveLog.length === 0 ? '#aaa' : '#222',
+              cursor: moveLog.length === 0 ? 'not-allowed' : 'pointer',
               marginLeft: 8,
             }}
-            title="Undo last move"
+            title='Undo last move'
           >
             Undo (Ctrl+Z)
           </button>
@@ -310,16 +310,16 @@ export function CityView(props: {
             onClick={handleRedo}
             disabled={redoStack.length === 0}
             style={{
-              padding: "2px 10px",
+              padding: '2px 10px',
               fontSize: 13,
               borderRadius: 4,
-              border: "1px solid #888",
-              background: redoStack.length === 0 ? "#eee" : "#fff",
-              color: redoStack.length === 0 ? "#aaa" : "#222",
-              cursor: redoStack.length === 0 ? "not-allowed" : "pointer",
+              border: '1px solid #888',
+              background: redoStack.length === 0 ? '#eee' : '#fff',
+              color: redoStack.length === 0 ? '#aaa' : '#222',
+              cursor: redoStack.length === 0 ? 'not-allowed' : 'pointer',
               marginLeft: 8,
             }}
-            title="Redo last undone move"
+            title='Redo last undone move'
           >
             Redo (Ctrl+Y)
           </button>
@@ -329,14 +329,14 @@ export function CityView(props: {
             fontSize: 13,
             paddingLeft: 18,
             maxHeight: 400,
-            overflowY: "auto",
-            background: "#f8f8ff",
-            border: "1px solid #ccc",
+            overflowY: 'auto',
+            background: '#f8f8ff',
+            border: '1px solid #ccc',
             borderRadius: 4,
           }}
         >
           {moveLog.length === 0 && (
-            <li style={{ color: "#888" }}>No moves yet</li>
+            <li style={{ color: '#888' }}>No moves yet</li>
           )}
           {moveLog.map((log, idx) => (
             <li key={idx}>
@@ -345,27 +345,27 @@ export function CityView(props: {
             </li>
           ))}
         </ol>
-        <div style={{ marginTop: 12, fontSize: 12, color: "#888" }}>
+        <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>
           Most recent at bottom
         </div>
       </div>
       <Stack>
-        <Stack direction="row">
+        <Stack direction='row'>
           <Button onClick={() => sellStreets()}>Sell Streets</Button>
         </Stack>
         <div>
-          <div style={{ marginBottom: 8, fontWeight: "bold" }}>
+          <div style={{ marginBottom: 8, fontWeight: 'bold' }}>
             {mouseGrid
               ? `Grid: (${mouseGrid.x}, ${mouseGrid.y})`
-              : "Grid: (-, -)"}
+              : 'Grid: (-, -)'}
           </div>
           <svg
             ref={svgRef}
             width={GridSize * GridMax}
             height={GridSize * GridMax}
             style={{
-              border: "1px solid black",
-              cursor: dragIndex !== null ? "grabbing" : "default",
+              border: '1px solid black',
+              cursor: dragIndex !== null ? 'grabbing' : 'default',
             }}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -376,7 +376,7 @@ export function CityView(props: {
               y={0}
               width={GridSize * GridMax}
               height={GridSize * GridMax}
-              fill="#145214"
+              fill='#145214'
             />
 
             {props.unlockedAreas.map((area, idx) => (
@@ -386,33 +386,35 @@ export function CityView(props: {
                 y={area.y * GridSize}
                 width={area.width * GridSize}
                 height={area.length * GridSize}
-                fill="rgba(255, 255, 255, 0.3)"
-                stroke="green"
+                fill='rgba(255, 255, 255, 0.3)'
+                stroke='green'
                 strokeWidth={1}
-                pointerEvents="none"
+                pointerEvents='none'
               />
             ))}
 
+
             {Array.from({ length: GridMax }).map((_, i) => (
-              <g key={"grid-" + i}>
+              <g key={'grid-' + i} style={{ pointerEvents: 'none' }}>
                 <line
-                  x1="0"
+                  x1='0'
                   y1={i * GridSize}
                   x2={GridSize * GridMax}
                   y2={i * GridSize}
-                  stroke="lightgray"
+                  stroke='#ffffff80'
                   strokeWidth={i % 5 === 0 ? 2 : 1}
                 />
                 <line
                   x1={i * GridSize}
-                  y1="0"
+                  y1='0'
                   x2={i * GridSize}
                   y2={GridSize * GridMax}
-                  stroke="lightgray"
+                  stroke='#ffffff80'
                   strokeWidth={i % 5 === 0 ? 2 : 1}
                 />
               </g>
             ))}
+
             {(() => {
               // If dragging, render dragged block last (on top)
               if (dragIndex !== null) {
@@ -428,7 +430,7 @@ export function CityView(props: {
                     blockRect(index, block)
                   ),
                   ...blocksBelow.map((block, index) => blockRect(index, block)),
-                  blockRect("dragged", draggedBlock),
+                  blockRect('dragged', draggedBlock),
                 ];
               } else {
                 const blocksBelowUnmoved = blocks
@@ -441,7 +443,9 @@ export function CityView(props: {
                   ...blocksBelowUnmoved.map(([block, index]) =>
                     blockRect(index, block)
                   ),
-                  ...blocksBelow.map(([block, index]) => blockRect(index, block)),
+                  ...blocksBelow.map(([block, index]) =>
+                    blockRect(index, block)
+                  ),
                 ];
               }
             })()}
@@ -451,24 +455,24 @@ export function CityView(props: {
 
       {/* Legend */}
       <div style={{ width: 300, marginLeft: 16 }}>
-        <div style={{ fontWeight: "bold", marginBottom: 8 }}>Type Legend</div>
-        <ul style={{ listStyle: "none", padding: 0, fontSize: 13 }}>
+        <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Type Legend</div>
+        <ul style={{ listStyle: 'none', padding: 0, fontSize: 13 }}>
           {allTypes.map((type) => (
             <li
               key={type}
               style={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 marginBottom: 6,
               }}
             >
               <span
                 style={{
-                  display: "inline-block",
+                  display: 'inline-block',
                   width: 18,
                   height: 18,
                   background: getTypeColor(type, allTypes, false),
-                  border: "1px solid #888",
+                  border: '1px solid #888',
                   borderRadius: 4,
                   marginRight: 8,
                 }}
@@ -484,37 +488,42 @@ export function CityView(props: {
 
 // Utility: assign a color for each type
 const TYPE_COLORS: string[] = [
-  "#1f77b4", // blue
-  "#ff7f0e", // orange
-  "#2ca02c", // green
-  "#d62728", // red
-  "#9467bd", // purple
-  "#8c564b", // brown
-  "#e377c2", // pink
-  "#7f7f7f", // gray
-  "#bcbd22", // olive
-  "#17becf", // cyan
+  '#1f77b4', // blue
+  '#ff7f0e', // orange
+  '#2ca02c', // green
+  '#d62728', // red
+  '#9467bd', // purple
+  '#8c564b', // brown
+  '#e377c2', // pink
+  '#7f7f7f', // gray
+  '#bcbd22', // olive
+  '#17becf', // cyan
 ];
 
 const knownTypes: Record<string, string> = {
-  culture_residential: "#9452FE",
-  culture: "#9452FE",
-  expiring: "#9452FE",
-  main_building: "#F9C602",
-  trader: "#F9C602",
-  residential: "#F9C602",
-  premium_residential: "#F9C602",
-  worker_hut: "#F9C602",
-  academy: "#F9C602",
-  goods: "#FE2AD5",
-  production: "#13B7F4",
-  premium_production: "#13B7F4",
-  ancient_wonder: "#FEF7C6",
-  portal: "#02E880",
-  guardian: "#02E880",
-  military: "#FE0230",
-  armory: "#FE0230",
-  street: "#d7d7d7ff",
+  culture_residential: '#9452FE',
+  culture_residential_x: '#AAF5FE',
+  culture_x: '#AAF5FE',
+  culture: '#9452FE',
+  expiring: '#9452FE',
+  main_building: '#F9C602',
+  trader: '#F9C602',
+  residential: '#F9C602',
+  premium_residential: '#F9C602',
+  worker_hut: '#F9C602',
+  academy: '#F9C602',
+  goods: '#FE2AD5',
+  production: '#13B7F4',
+  premium_production: '#13B7F4',
+  ancient_wonder: '#FEF7C6',
+  ancient_wonder_x: '#FEF7C6',
+  portal: '#02E880',
+  portal_x: '#02E880',
+  goods_x: '#02E880',
+  guardian: '#02E880',
+  military: '#FE0230',
+  armory: '#FE0230',
+  street: '#d7d7d7ff',
 };
 
 function getTypeColor(
@@ -526,14 +535,14 @@ function getTypeColor(
   if (knownTypes[type]) {
     // Ensure color starts with #
     const knownColor = knownTypes[type];
-    color = knownColor.startsWith("#") ? knownColor : `#${knownColor}`;
+    color = knownColor.startsWith('#') ? knownColor : `#${knownColor}`;
   } else {
     const idx = allTypes.indexOf(type);
-    color = TYPE_COLORS[idx % TYPE_COLORS.length] || "#000";
+    color = TYPE_COLORS[idx % TYPE_COLORS.length] || '#000';
   }
   if (moved) {
     // Dim color for moved blocks
-    color = color + "DD"; // Add alpha for transparency
+    color = color + 'AA'; // Add alpha for transparency
   }
   return color;
 }

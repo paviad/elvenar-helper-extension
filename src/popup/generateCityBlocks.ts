@@ -1,19 +1,49 @@
 import { CityEntity } from '../model/cityEntity';
 import { CityBlock } from './CityBlock';
 
-export function generateCityBlocks(cityEntities: CityEntity[]) {
+interface ElvenarchitectEntry {
+  link: string;
+  name: string;
+}
+
+
+export async function generateCityBlocks(cityEntities: CityEntity[]) {
+  const elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
+  const elvenarchitectData: ElvenarchitectEntry[] = await (await fetch(elvenarchitectDataUrl, { method: 'GET' })).json();
+
+  function findInElvenarchitect(cityentity_id: string): string | undefined {
+    for (const entry of elvenarchitectData) {
+      if (entry.link.localeCompare(cityentity_id, undefined, { sensitivity: 'base' }) === 0) {
+        return entry.name;
+      }
+      const stripLevel = cityentity_id.replace(/_\d+$/i, '');
+      if (entry.link.localeCompare(stripLevel, undefined, { sensitivity: 'base' }) === 0) {
+        return entry.name;
+      }
+    }
+    return undefined;
+  }
+
+  function getType(entity: CityEntity): string {
+    if (/^[a-zA-Z]_Ch\d+_/.test(entity.cityentity_id)) {
+      return entity.type + '_x';
+    }
+    return entity.type;
+  }
+
   const blocks: CityBlock[] = cityEntities.map((entity, index) => ({
     id: index,
     originalX: entity.x || 0,
     originalY: entity.y || 0,
     x: entity.x || 0,
     y: entity.y || 0,
-    type: entity.type,
+    type: getType(entity),
     width: entity.width || 1,
     length: entity.length || 1,
     moved: false,
-    name: entity.name || entity.cityentity_id,
-  }));
+    name: entity.name || findInElvenarchitect(entity.cityentity_id) || entity.cityentity_id,
+    entity,
+  } satisfies CityBlock));
 
   return blocks;
 }

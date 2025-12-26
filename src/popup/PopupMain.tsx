@@ -1,26 +1,27 @@
-import * as React from "react";
-import { Box, Button, Container, Stack } from "@mui/material";
-import { sendInventoryQuery } from "../elvenar/sendInventoryQuery";
+import * as React from 'react';
+import { Box, Button, Container, Stack } from '@mui/material';
+import { sendInventoryQuery } from '../elvenar/sendInventoryQuery';
 import {
   getBuildings,
   sendBuildingsQuery,
-} from "../elvenar/sendBuildingsQuery";
+} from '../elvenar/sendBuildingsQuery';
 import {
   getCityEntities,
   getUnlockedAreas,
   sendCityDataQuery,
-} from "../elvenar/sendCityDataQuery";
+} from '../elvenar/sendCityDataQuery';
 import {
   getGoodsBuildings,
   sendRenderConfigQuery,
-} from "../elvenar/sendRenderConfigQuery";
-import { Building } from "../model/building";
-import { GoodsBuilding } from "../model/goodsBuilding";
-import { CityEntity } from "../model/cityEntity";
-import { CityBlock } from "./CityBlock";
-import { CityView } from "./CityView";
-import { UnlockedArea } from "../model/unlockedArea";
+} from '../elvenar/sendRenderConfigQuery';
+import { Building } from '../model/building';
+import { GoodsBuilding } from '../model/goodsBuilding';
+import { CityEntity } from '../model/cityEntity';
+import { CityBlock } from './CityBlock';
+import { CityView } from './CityView';
+import { UnlockedArea } from '../model/unlockedArea';
 import { generateCityBlocks } from './generateCityBlocks';
+import { sendMoveBuildingCommand } from '../elvenar/sendMoveBuildingCommand';
 
 export function PopupMain() {
   const [cityEntities, setCityEntities] = React.useState([[], []] as [
@@ -40,22 +41,31 @@ export function PopupMain() {
   }, []);
 
   React.useEffect(() => {
-    const blocks = generateCityBlocks(cityEntities[0]);
-    const unlockedAres = generateUnlockedAreas(cityEntities[1]);
-    setBlocks(blocks);
-    setUnlockedAreas(unlockedAres);
+    async function updateBlocks() {
+      const blocks = await generateCityBlocks(cityEntities[0]);
+      const unlockedAres = generateUnlockedAreas(cityEntities[1]);
+      setBlocks(blocks);
+      setUnlockedAreas(unlockedAres);
+    }
+    updateBlocks();
   }, [cityEntities]);
 
   return (
-    <Container maxWidth={false} sx={{ maxWidth: "none" }}>
+    <Container maxWidth={false} sx={{ maxWidth: 'none' }}>
       <Stack>
-        <Stack direction={"row"}></Stack>
+        <Stack direction={'row'}>
+          {/* <Button onClick={() => moveBuildingTest()}>Test Move Building</Button> */}
+        </Stack>
         <Box>
           <CityView blocks={blocks} unlockedAreas={unlockedAreas} />
         </Box>
       </Stack>
     </Container>
   );
+}
+
+async function moveBuildingTest() {
+  await sendMoveBuildingCommand(15419, 19, 35);
 }
 
 function generateUnlockedAreas(unlockedAreas: UnlockedArea[]): UnlockedArea[] {
@@ -93,7 +103,7 @@ async function generateCity(
   const chapterRegex = /_Ch\d+/;
 
   const approxBuildings = buildings.reduce((acc, building) => {
-    const baseName = building.base_name.replace(chapterRegex, "_Ch");
+    const baseName = building.base_name.replace(chapterRegex, '_Ch');
     acc[baseName] = acc[baseName] || [];
     acc[baseName].push(building);
     return acc;
@@ -105,12 +115,12 @@ async function generateCity(
       r.id.endsWith(`_${entity.level}`)
     );
     const stdBuilding = buildingsDictionary[baseName]?.find((r) => true);
-    const approxBaseName = baseName.replace(chapterRegex, "_Ch");
+    const approxBaseName = baseName.replace(chapterRegex, '_Ch');
     const approxBuilding = approxBuildings[approxBaseName];
     const length = goodsBuilding?.tile_length || stdBuilding?.length || 1;
     const width = goodsBuilding?.tile_width || stdBuilding?.width || 1;
-    const description = stdBuilding?.description || "";
-    const name = stdBuilding?.name || "";
+    const description = stdBuilding?.description || '';
+    const name = stdBuilding?.name || '';
 
     return { ...entity, length, width, description, name };
   });

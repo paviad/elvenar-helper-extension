@@ -26,6 +26,17 @@ const opt_extraInfoSpec: chrome.webRequest.OnCompletedOptions[] = [
   "responseHeaders"
 ];
 
+async function fetchJson(): Promise<any> {
+  const elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
+  const elvenarchitectData = (await fetch(elvenarchitectDataUrl, { method: 'GET' })).json();
+}
+
+fetchJson().then(data => {
+  console.log('Elvenarchitect data loaded:', data);
+}).catch(error => {
+  console.error('Error loading elvenarchitect data:', error);
+});
+
 console.log('hi', chrome.webRequest);
 chrome.webRequest.onCompleted.addListener(
   callback, filter, opt_extraInfoSpec);
