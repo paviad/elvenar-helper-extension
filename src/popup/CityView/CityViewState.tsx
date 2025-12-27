@@ -11,8 +11,8 @@ export class CityViewState {
   rDragIndex = useState<number | null>(null);
   rDragOffset = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   rOriginalPos = useState<{ x: number; y: number } | null>(null);
-  rMouseGrid = useState<{ x: number; y: number } | null>(null);
   svgRef = useRef<SVGSVGElement>(null);
+  mousePositionRef = useRef<HTMLDivElement>(null);
   allTypes;
   rBlocks;
   GridSize = 15;
@@ -22,6 +22,7 @@ export class CityViewState {
   handleRedo = () => handleRedo(this);
 
   constructor(public props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[] }) {
+    console.log('CityViewState');
     this.rBlocks = useState<CityBlock[]>(props.blocks);
 
     // Get all unique types for color mapping

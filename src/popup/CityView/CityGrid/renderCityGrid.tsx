@@ -10,7 +10,6 @@ export const renderCityGrid = (s: CityViewState) => {
   const { GridSize, GridMax, svgRef } = s;
   const [blocks, _1] = s.rBlocks;
   const [dragIndex, _2] = s.rDragIndex;
-  const [mouseGrid, _3] = s.rMouseGrid;
 
   return (
     <Stack>
@@ -18,8 +17,8 @@ export const renderCityGrid = (s: CityViewState) => {
         <Button onClick={() => sellStreets(s)}>Sell Streets</Button>
       </Stack>
       <div>
-        <div style={{ marginBottom: 8, fontWeight: 'bold' }}>
-          {mouseGrid ? `Grid: (${mouseGrid.x}, ${mouseGrid.y})` : 'Grid: (-, -)'}
+        <div ref={s.mousePositionRef} style={{ marginBottom: 8, fontWeight: 'bold' }}>
+          Grid: (-, -)
         </div>
         <svg
           ref={svgRef}

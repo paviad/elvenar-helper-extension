@@ -5,7 +5,6 @@ export const handleMouseUp = (s: CityViewState) => {
   const [blocks, setBlocks] = s.rBlocks;
   const [dragIndex, setDragIndex] = s.rDragIndex;
   const [originalPos, setOriginalPos] = s.rOriginalPos;
-  const [_1, setMouseGrid] = s.rMouseGrid;
   const [_2, setMoveLog] = s.rMoveLog;
   const [_3, setRedoStack] = s.rRedoStack;
 
@@ -64,5 +63,4 @@ export const handleMouseUp = (s: CityViewState) => {
   }
   setDragIndex(null);
   setOriginalPos(null);
-  setMouseGrid(null);
 };
