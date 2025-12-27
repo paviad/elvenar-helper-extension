@@ -67,6 +67,7 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
         name: entity.name || findInElvenarchitect(entity.cityentity_id) || entity.cityentity_id,
         entity,
         label: getLabel(entity),
+        highlighted: false,
       }) satisfies CityBlock,
   );
 

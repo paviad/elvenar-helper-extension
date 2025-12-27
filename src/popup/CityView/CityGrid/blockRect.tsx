@@ -13,8 +13,21 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
     : // eslint-disable-next-line @typescript-eslint/no-empty-function
       () => {};
   const cursor = dragging ? 'grab' : 'grabbing';
+
+  // SVG pattern for crosshatch
+  const patternId = `block-crosshatch-${key}`;
+  const isHighlighted = !!block.highlighted;
+
   return (
     <g key={key}>
+      {isHighlighted && (
+        <defs>
+          <pattern id={patternId} patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#000" strokeWidth="1" strokeOpacity="1" />
+            <line x1="4" y1="0" x2="4" y2="8" stroke="#000" strokeWidth="1" strokeOpacity="1" />
+          </pattern>
+        </defs>
+      )}
       <rect
         opacity={opacity}
         x={block.x * GridSize}
@@ -29,6 +42,28 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
       >
         <title>{block.name}</title>
       </rect>
+      {isHighlighted && (
+        <>
+          <rect
+            x={block.x * GridSize}
+            y={block.y * GridSize}
+            width={block.width * GridSize}
+            height={block.length * GridSize}
+            fill={`url(#${patternId})`}
+            pointerEvents="none"
+          />
+          <rect
+            x={block.x * GridSize}
+            y={block.y * GridSize}
+            width={block.width * GridSize}
+            height={block.length * GridSize}
+            fill="none"
+            stroke="#ff0000"
+            strokeWidth={3}
+            pointerEvents="none"
+          />
+        </>
+      )}
       {dragging && (
         <rect
           x={block.x * GridSize - 2}

@@ -1,5 +1,5 @@
-import { Stack, Button } from '@mui/material';
-import React from 'react';
+import { Stack, Button, TextField } from '@mui/material';
+import React, { useState } from 'react';
 import { blockRect } from './blockRect';
 import { CityViewState } from '../CityViewState';
 import { handleMouseMove } from './handleMouseMove';
@@ -8,8 +8,34 @@ import { sellStreets } from './sellStreets';
 
 export const renderCityGrid = (s: CityViewState) => {
   const { GridSize, GridMax, svgRef } = s;
-  const [blocks, _1] = s.rBlocks;
+  const [blocks, setBlocks] = s.rBlocks;
   const [dragIndex, _2] = s.rDragIndex;
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('');
+
+  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const term = e.target.value;
+    setSearchTerm(term);
+    let matcher: ((name: string) => boolean) | null = null;
+    if (term.length > 2 && term.startsWith('/') && term.endsWith('/')) {
+      // Regex mode
+      try {
+        const regex = new RegExp(term.slice(1, -1), 'i');
+        matcher = (name: string) => regex.test(name);
+      } catch {
+        matcher = null; // Invalid regex, no highlight
+      }
+    } else if (term) {
+      matcher = (name: string) => name.toLowerCase().includes(term.toLowerCase());
+    }
+    setBlocks((prev) =>
+      prev.map((b) => ({
+        ...b,
+        highlighted: Boolean(!!matcher && ((b.name && matcher(b.name)) || (b.type && matcher(b.type)))),
+      })),
+    );
+  }
 
   return (
     <Stack>
@@ -17,6 +43,14 @@ export const renderCityGrid = (s: CityViewState) => {
         <Button onClick={() => sellStreets(s)}>Sell Streets</Button>
       </Stack>
       <div>
+        <TextField
+          label='Search buildings (string or /regexp/)'
+          variant='outlined'
+          size='small'
+          value={searchTerm}
+          onChange={handleSearchChange}
+          style={{ marginBottom: 8, width: '100%' }}
+        />
         <div ref={s.mousePositionRef} style={{ marginBottom: 8, fontWeight: 'bold' }}>
           Grid: (-, -)
         </div>
@@ -72,23 +106,20 @@ export const renderCityGrid = (s: CityViewState) => {
 
           {(() => {
             // If dragging, render dragged block last (on top)
+            const withIndex = blocks.map((b, i) => [b, i] as const);
+            const blocksBelowUnmoved = withIndex.filter(([b, i]) => i !== dragIndex && !b.moved && !b.highlighted);
+            const blocksBelow = withIndex.filter(([b, i]) => i !== dragIndex && b.moved && !b.highlighted);
+            const blocksHighlighted = withIndex.filter(([b, i]) => i !== dragIndex && b.highlighted);
+            const sortedBlocks = [
+              ...blocksBelowUnmoved.map(([block, index]) => blockRect(s, index, block)),
+              ...blocksBelow.map(([block, index]) => blockRect(s, index, block)),
+              ...blocksHighlighted.map(([block, index]) => blockRect(s, index, block)),
+            ];
             if (dragIndex !== null) {
-              const blocksBelowUnmoved = blocks.filter((b, i) => i !== dragIndex && !b.moved);
-              const blocksBelow = blocks.filter((b, i) => i !== dragIndex && b.moved);
               const draggedBlock = blocks[dragIndex];
-              return [
-                ...blocksBelowUnmoved.map((block, index) => blockRect(s, index, block)),
-                ...blocksBelow.map((block, index) => blockRect(s, index, block)),
-                blockRect(s, 'dragged', draggedBlock),
-              ];
-            } else {
-              const blocksBelowUnmoved = blocks.map((b, i) => [b, i] as const).filter(([b, i]) => !b.moved);
-              const blocksBelow = blocks.map((b, i) => [b, i] as const).filter(([b, i]) => b.moved);
-              return [
-                ...blocksBelowUnmoved.map(([block, index]) => blockRect(s, index, block)),
-                ...blocksBelow.map(([block, index]) => blockRect(s, index, block)),
-              ];
+              sortedBlocks.push(blockRect(s, 'dragged', draggedBlock));
             }
+            return sortedBlocks;
           })()}
         </svg>
       </div>
