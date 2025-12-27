@@ -5,11 +5,7 @@ import { CityViewState } from '../CityViewState';
 export const keyboardShortcutsEffect = (s: CityViewState) =>
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        !e.shiftKey &&
-        e.key.toLowerCase() === 'z'
-      ) {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         s.handleUndo();
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {

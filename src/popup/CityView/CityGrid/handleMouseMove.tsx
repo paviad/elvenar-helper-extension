@@ -16,20 +16,13 @@ export const handleMouseMove = (s: CityViewState, e: React.MouseEvent) => {
   if (dragIndex !== null) {
     const newX = Math.max(
       0,
-      Math.min(
-        GridMax - blocks[dragIndex].width,
-        Math.round((mouseX - dragOffset.x) / GridSize)
-      )
+      Math.min(GridMax - blocks[dragIndex].width, Math.round((mouseX - dragOffset.x) / GridSize)),
     );
     const newY = Math.max(
       0,
-      Math.min(
-        GridMax - blocks[dragIndex].length,
-        Math.round((mouseY - dragOffset.y) / GridSize)
-      )
+      Math.min(GridMax - blocks[dragIndex].length, Math.round((mouseY - dragOffset.y) / GridSize)),
     );
-    setBlocks((prev) => prev.map((b, i) => (i === dragIndex ? { ...b, x: newX, y: newY } : b))
-    );
+    setBlocks((prev) => prev.map((b, i) => (i === dragIndex ? { ...b, x: newX, y: newY } : b)));
     setMouseGrid({ x: newX, y: newY });
   } else {
     const gridX = Math.floor(mouseX / GridSize);

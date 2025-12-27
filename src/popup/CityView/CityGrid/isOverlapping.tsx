@@ -6,7 +6,8 @@ export function isOverlapping(
   movingIndex: number,
   newX: number,
   newY: number,
-  allBlocks: CityBlock[]): boolean {
+  allBlocks: CityBlock[],
+): boolean {
   const mx1 = newX;
   const my1 = newY;
   const mx2 = newX + moving.width - 1;

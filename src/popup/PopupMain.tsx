@@ -1,19 +1,9 @@
 import * as React from 'react';
 import { Box, Button, Container, Stack } from '@mui/material';
 import { sendInventoryQuery } from '../elvenar/sendInventoryQuery';
-import {
-  getBuildings,
-  sendBuildingsQuery,
-} from '../elvenar/sendBuildingsQuery';
-import {
-  getCityEntities,
-  getUnlockedAreas,
-  sendCityDataQuery,
-} from '../elvenar/sendCityDataQuery';
-import {
-  getGoodsBuildings,
-  sendRenderConfigQuery,
-} from '../elvenar/sendRenderConfigQuery';
+import { getBuildings, sendBuildingsQuery } from '../elvenar/sendBuildingsQuery';
+import { getCityEntities, getUnlockedAreas, sendCityDataQuery } from '../elvenar/sendCityDataQuery';
+import { getGoodsBuildings, sendRenderConfigQuery } from '../elvenar/sendRenderConfigQuery';
 import { Building } from '../model/building';
 import { GoodsBuilding } from '../model/goodsBuilding';
 import { CityEntity } from '../model/cityEntity';
@@ -24,14 +14,9 @@ import { generateCityBlocks } from './generateCityBlocks';
 import { sendMoveBuildingCommand } from '../elvenar/sendMoveBuildingCommand';
 
 export function PopupMain() {
-  const [cityEntities, setCityEntities] = React.useState([[], []] as [
-    CityEntity[],
-    UnlockedArea[]
-  ]);
+  const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntity[], UnlockedArea[]]);
   const [blocks, setBlocks] = React.useState([] as CityBlock[]);
-  const [unlockedAreas, setUnlockedAreas] = React.useState(
-    [] as UnlockedArea[]
-  );
+  const [unlockedAreas, setUnlockedAreas] = React.useState([] as UnlockedArea[]);
 
   React.useEffect(() => {
     async function fetchCityData() {
@@ -53,9 +38,7 @@ export function PopupMain() {
   return (
     <Container maxWidth={false} sx={{ maxWidth: 'none' }}>
       <Stack>
-        <Stack direction={'row'}>
-          {/* <Button onClick={() => moveBuildingTest()}>Test Move Building</Button> */}
-        </Stack>
+        <Stack direction={'row'}>{/* <Button onClick={() => moveBuildingTest()}>Test Move Building</Button> */}</Stack>
         <Box>
           <CityView blocks={blocks} unlockedAreas={unlockedAreas} />
         </Box>
@@ -72,13 +55,9 @@ function generateUnlockedAreas(unlockedAreas: UnlockedArea[]): UnlockedArea[] {
   return unlockedAreas.map((r) => ({ ...r, x: r.x || 0, y: r.y || 0 }));
 }
 
-async function generateCity(
-  setCityEntities: React.Dispatch<
-    React.SetStateAction<[CityEntity[], UnlockedArea[]]>
-  >
-) {
+async function generateCity(setCityEntities: React.Dispatch<React.SetStateAction<[CityEntity[], UnlockedArea[]]>>) {
   await sendBuildingsQuery();
-  await sendInventoryQuery();
+  // await sendInventoryQuery();
   await sendCityDataQuery();
   await sendRenderConfigQuery();
 
@@ -87,33 +66,40 @@ async function generateCity(
   const cityEntities = getCityEntities();
   const unlockedAreas = getUnlockedAreas();
 
-  const buildingsDictionary = buildings.reduce((acc, building) => {
-    acc[building.base_name] = acc[building.base_name] || [];
-    acc[building.base_name].push(building);
-    return acc;
-  }, {} as Record<string, Building[]>);
+  const buildingsDictionary = buildings.reduce(
+    (acc, building) => {
+      acc[building.base_name] = acc[building.base_name] || [];
+      acc[building.base_name].push(building);
+      return acc;
+    },
+    {} as Record<string, Building[]>,
+  );
 
-  const goodsDictionary = goodsBuildings.reduce((acc, goods) => {
-    const building_base_name = getBaseName(goods.id).baseName;
-    acc[building_base_name] = acc[building_base_name] || [];
-    acc[building_base_name].push(goods);
-    return acc;
-  }, {} as Record<string, GoodsBuilding[]>);
+  const goodsDictionary = goodsBuildings.reduce(
+    (acc, goods) => {
+      const building_base_name = getBaseName(goods.id).baseName;
+      acc[building_base_name] = acc[building_base_name] || [];
+      acc[building_base_name].push(goods);
+      return acc;
+    },
+    {} as Record<string, GoodsBuilding[]>,
+  );
 
   const chapterRegex = /_Ch\d+/;
 
-  const approxBuildings = buildings.reduce((acc, building) => {
-    const baseName = building.base_name.replace(chapterRegex, '_Ch');
-    acc[baseName] = acc[baseName] || [];
-    acc[baseName].push(building);
-    return acc;
-  }, {} as Record<string, Building[]>);
+  const approxBuildings = buildings.reduce(
+    (acc, building) => {
+      const baseName = building.base_name.replace(chapterRegex, '_Ch');
+      acc[baseName] = acc[baseName] || [];
+      acc[baseName].push(building);
+      return acc;
+    },
+    {} as Record<string, Building[]>,
+  );
 
   const q = cityEntities.map((entity) => {
     const { baseName, chapter } = getBaseName(entity.cityentity_id);
-    const goodsBuilding = goodsDictionary[baseName]?.find((r) =>
-      r.id.endsWith(`_${entity.level}`)
-    );
+    const goodsBuilding = goodsDictionary[baseName]?.find((r) => r.id.endsWith(`_${entity.level}`));
     const stdBuilding = buildingsDictionary[baseName]?.find((r) => true);
     const approxBaseName = baseName.replace(chapterRegex, '_Ch');
     const approxBuilding = approxBuildings[approxBaseName];
@@ -121,8 +107,7 @@ async function generateCity(
     const width = goodsBuilding?.tile_width || stdBuilding?.width || 1;
     const description = stdBuilding?.description || '';
     const name = stdBuilding?.name || '';
-    const connectionStrategy =
-      stdBuilding?.requirements.connectionStrategyId || 'unknown';
+    const connectionStrategy = stdBuilding?.requirements.connectionStrategyId || 'unknown';
 
     return { ...entity, length, width, description, name, connectionStrategy } satisfies CityEntity;
   });

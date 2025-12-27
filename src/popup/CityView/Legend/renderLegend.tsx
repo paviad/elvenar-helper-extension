@@ -27,7 +27,8 @@ export function renderLegend(s: CityViewState) {
                 border: '1px solid #888',
                 borderRadius: 4,
                 marginRight: 8,
-              }} />
+              }}
+            />
             <span>{desc}</span>
           </li>
         ))}
@@ -35,16 +36,12 @@ export function renderLegend(s: CityViewState) {
 
       {(() => {
         const unknownTypes = allTypes.filter(
-          (type) => !Object.keys(colorDescriptions).includes(
-            getTypeColor(type, allTypes, false)
-          )
+          (type) => !Object.keys(colorDescriptions).includes(getTypeColor(type, allTypes, false)),
         );
         if (unknownTypes.length === 0) return null;
         return (
           <>
-            <div style={{ fontWeight: 'bold', marginBottom: 8 }}>
-              Unknown Type Legend
-            </div>
+            <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Unknown Type Legend</div>
             <ul style={{ listStyle: 'none', padding: 0, fontSize: 13 }}>
               {unknownTypes.map((type) => (
                 <li
@@ -64,7 +61,8 @@ export function renderLegend(s: CityViewState) {
                       border: '1px solid #888',
                       borderRadius: 4,
                       marginRight: 8,
-                    }} />
+                    }}
+                  />
                   <span>{type}</span>
                 </li>
               ))}

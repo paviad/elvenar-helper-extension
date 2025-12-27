@@ -19,29 +19,32 @@ export const handleMouseUp = (s: CityViewState) => {
     if (isOverlapping(block, dragIndex, newX, newY, blocks)) {
       finalX = originalPos.x;
       finalY = originalPos.y;
-      setBlocks((prev) => prev.map((b, i) => i === dragIndex
-        ? {
-          ...b,
-          x: originalPos.x,
-          y: originalPos.y,
-        }
-        : b
-      )
+      setBlocks((prev) =>
+        prev.map((b, i) =>
+          i === dragIndex
+            ? {
+                ...b,
+                x: originalPos.x,
+                y: originalPos.y,
+              }
+            : b,
+        ),
       );
     } else {
       const b = blocks[dragIndex];
       const isOriginal = b.x === b.originalX && b.y === b.originalY;
       const movedChanged = block.moved === isOriginal;
 
-      setBlocks((prev) => prev.map((b, i) => {
-        if (i === dragIndex) {
-          return {
-            ...b,
-            moved: !isOriginal,
-          };
-        }
-        return b;
-      })
+      setBlocks((prev) =>
+        prev.map((b, i) => {
+          if (i === dragIndex) {
+            return {
+              ...b,
+              moved: !isOriginal,
+            };
+          }
+          return b;
+        }),
       );
       // Only log if the position actually changed
       if (originalPos.x !== finalX || originalPos.y !== finalY) {

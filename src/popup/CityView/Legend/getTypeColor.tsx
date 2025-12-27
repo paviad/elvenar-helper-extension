@@ -1,11 +1,7 @@
 import { knownTypes } from './knownTypes';
 import { TYPE_COLORS } from './TYPE_COLORS';
 
-export function getTypeColor(
-  type: string,
-  allTypes: string[],
-  moved?: boolean
-): string {
+export function getTypeColor(type: string, allTypes: string[], moved?: boolean): string {
   let color: string;
   if (knownTypes[type]) {
     // Ensure color starts with #

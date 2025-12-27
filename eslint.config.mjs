@@ -8,11 +8,6 @@ export default tseslint.config(
   {
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/quotes': [
-        'error',
-        'single',
-        { avoidEscape: true, allowTemplateLiterals: true },
-      ],
     },
   }
 );

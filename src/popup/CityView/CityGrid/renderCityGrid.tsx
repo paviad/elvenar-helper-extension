@@ -19,9 +19,7 @@ export const renderCityGrid = (s: CityViewState) => {
       </Stack>
       <div>
         <div style={{ marginBottom: 8, fontWeight: 'bold' }}>
-          {mouseGrid
-            ? `Grid: (${mouseGrid.x}, ${mouseGrid.y})`
-            : 'Grid: (-, -)'}
+          {mouseGrid ? `Grid: (${mouseGrid.x}, ${mouseGrid.y})` : 'Grid: (-, -)'}
         </div>
         <svg
           ref={svgRef}
@@ -30,18 +28,13 @@ export const renderCityGrid = (s: CityViewState) => {
           style={{
             border: '1px solid black',
             cursor: dragIndex !== null ? 'grabbing' : 'default',
+            userSelect: 'none',
           }}
           onMouseMove={(e) => handleMouseMove(s, e)}
-          onMouseUp={() => handleMouseUp(s)}
+          onClick={() => handleMouseUp(s)}
           onMouseLeave={() => handleMouseUp(s)}
         >
-          <rect
-            x={0}
-            y={0}
-            width={GridSize * GridMax}
-            height={GridSize * GridMax}
-            fill='#145214'
-          />
+          <rect x={0} y={0} width={GridSize * GridMax} height={GridSize * GridMax} fill='#145214' />
 
           {s.props.unlockedAreas.map((area, idx) => (
             <rect
@@ -81,36 +74,20 @@ export const renderCityGrid = (s: CityViewState) => {
           {(() => {
             // If dragging, render dragged block last (on top)
             if (dragIndex !== null) {
-              const blocksBelowUnmoved = blocks.filter(
-                (b, i) => i !== dragIndex && !b.moved
-              );
-              const blocksBelow = blocks.filter(
-                (b, i) => i !== dragIndex && b.moved
-              );
+              const blocksBelowUnmoved = blocks.filter((b, i) => i !== dragIndex && !b.moved);
+              const blocksBelow = blocks.filter((b, i) => i !== dragIndex && b.moved);
               const draggedBlock = blocks[dragIndex];
               return [
-                ...blocksBelowUnmoved.map((block, index) =>
-                  blockRect(s, index, block)
-                ),
-                ...blocksBelow.map((block, index) =>
-                  blockRect(s, index, block)
-                ),
+                ...blocksBelowUnmoved.map((block, index) => blockRect(s, index, block)),
+                ...blocksBelow.map((block, index) => blockRect(s, index, block)),
                 blockRect(s, 'dragged', draggedBlock),
               ];
             } else {
-              const blocksBelowUnmoved = blocks
-                .map((b, i) => [b, i] as const)
-                .filter(([b, i]) => !b.moved);
-              const blocksBelow = blocks
-                .map((b, i) => [b, i] as const)
-                .filter(([b, i]) => b.moved);
+              const blocksBelowUnmoved = blocks.map((b, i) => [b, i] as const).filter(([b, i]) => !b.moved);
+              const blocksBelow = blocks.map((b, i) => [b, i] as const).filter(([b, i]) => b.moved);
               return [
-                ...blocksBelowUnmoved.map(([block, index]) =>
-                  blockRect(s, index, block)
-                ),
-                ...blocksBelow.map(([block, index]) =>
-                  blockRect(s, index, block)
-                ),
+                ...blocksBelowUnmoved.map(([block, index]) => blockRect(s, index, block)),
+                ...blocksBelow.map(([block, index]) => blockRect(s, index, block)),
               ];
             }
           })()}

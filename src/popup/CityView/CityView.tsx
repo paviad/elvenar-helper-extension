@@ -7,10 +7,7 @@ import { renderCityGrid } from './CityGrid';
 import { renderLegend } from './Legend';
 import { setBlocksEffect } from './setBlocksEffect';
 
-export function CityView(props: {
-  blocks: CityBlock[];
-  unlockedAreas: UnlockedArea[];
-}) {
+export function CityView(props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[] }) {
   const s = new CityViewState(props);
 
   keyboardShortcutsEffect(s);

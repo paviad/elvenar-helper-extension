@@ -21,9 +21,7 @@ export class CityViewState {
   handleUndo = () => handleUndo(this);
   handleRedo = () => handleRedo(this);
 
-  constructor(
-    public props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[] }
-  ) {
+  constructor(public props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[] }) {
     this.rBlocks = useState<CityBlock[]>(props.blocks);
 
     // Get all unique types for color mapping

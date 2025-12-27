@@ -1,11 +1,7 @@
 import React from 'react';
 import { CityViewState } from '../CityViewState';
 
-export const handleMouseDown = (
-  s: CityViewState,
-  e: React.MouseEvent,
-  index: number
-) => {
+export const handleMouseDown = (s: CityViewState, e: React.MouseEvent, index: number) => {
   const [_1, setDragIndex] = s.rDragIndex;
   const [_2, setDragOffset] = s.rDragOffset;
   const [blocks, _3] = s.rBlocks;

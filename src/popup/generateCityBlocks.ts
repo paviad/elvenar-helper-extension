@@ -6,10 +6,11 @@ interface ElvenarchitectEntry {
   name: string;
 }
 
-
 export async function generateCityBlocks(cityEntities: CityEntity[]) {
   const elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
-  const elvenarchitectData: ElvenarchitectEntry[] = await (await fetch(elvenarchitectDataUrl, { method: 'GET' })).json();
+  const elvenarchitectData: ElvenarchitectEntry[] = await (
+    await fetch(elvenarchitectDataUrl, { method: 'GET' })
+  ).json();
 
   function findInElvenarchitect(cityentity_id: string): string | undefined {
     for (const entry of elvenarchitectData) {
@@ -38,12 +39,12 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
 
   function getLabel(entity: CityEntity): string | undefined {
     if (entity.type === 'culture' || entity.type === 'culture_residential') {
-      const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(entity.cityentity_id)
+      const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(entity.cityentity_id);
       if (m1) {
         return `${m1[1]}`;
       }
 
-      const m2 = /_(\d+)$/.exec(entity.cityentity_id)
+      const m2 = /_(\d+)$/.exec(entity.cityentity_id);
       if (m2) {
         return `${m2[1]}`;
       }
@@ -51,21 +52,23 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
     return undefined;
   }
 
-
-  const blocks: CityBlock[] = cityEntities.map((entity, index) => ({
-    id: index,
-    originalX: entity.x || 0,
-    originalY: entity.y || 0,
-    x: entity.x || 0,
-    y: entity.y || 0,
-    type: getType(entity),
-    width: entity.width || 1,
-    length: entity.length || 1,
-    moved: false,
-    name: entity.name || findInElvenarchitect(entity.cityentity_id) || entity.cityentity_id,
-    entity,
-    label: getLabel(entity),
-  } satisfies CityBlock));
+  const blocks: CityBlock[] = cityEntities.map(
+    (entity, index) =>
+      ({
+        id: index,
+        originalX: entity.x || 0,
+        originalY: entity.y || 0,
+        x: entity.x || 0,
+        y: entity.y || 0,
+        type: getType(entity),
+        width: entity.width || 1,
+        length: entity.length || 1,
+        moved: false,
+        name: entity.name || findInElvenarchitect(entity.cityentity_id) || entity.cityentity_id,
+        entity,
+        label: getLabel(entity),
+      }) satisfies CityBlock,
+  );
 
   return blocks;
 }

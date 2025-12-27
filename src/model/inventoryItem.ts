@@ -11,11 +11,11 @@ export interface InventoryItem {
 export type Property = Chapter | Stage;
 
 export interface Chapter {
-  __class__: "ChapterBasedInventoryItemPropertyVO";
+  __class__: 'ChapterBasedInventoryItemPropertyVO';
   chapter: number;
 }
 
 export interface Stage {
-  __class__: "InventoryItemEvoBuildingPropertyVO";
+  __class__: 'InventoryItemEvoBuildingPropertyVO';
   stage: number;
 }

@@ -1,42 +1,43 @@
-import { saveToStorage } from "./chrome/storage";
+import { saveToStorage } from './chrome/storage';
 
-console.log("Elvenar Extension: Service Worker Loaded");
+console.log('Elvenar Extension: Service Worker Loaded');
 
-const callback = async (details: { url: string }): Promise<void> => {
-  console.log('Request intercepted:', details);
+const callbackRequest = (details: {
+  url: string;
+  requestBody?: any;
+}): chrome.webRequest.BlockingResponse | undefined => {
   // Check if the URL matches the pattern and save it in a global variable
   if (/^https:\/\/en3\.elvenar\.com\/game\/json\?h=[\w\d]+$/.test(details.url)) {
-    await saveToStorage('reqUrl', details.url);
-    console.log('Saved game JSON URL:', details.url);
-  }
+    const decoder = new TextDecoder('utf-8'); // Specify the encoding, UTF-8 is common
+    const decodedString = decoder.decode(details.requestBody.raw[0].bytes);
+    // console.log('Decoded request body:', decodedString);
 
-  // if (/^https:\/\/oxen\.innogamescdn\.com\/frontend\/\/static\/feature_flags\/ch24\/en_DK\/xml\.balancing\.city\.Buildings_[a-fA-F0-9]+\.json$/.test(details.url)) {
-  //   await saveToStorage('xmlUrl', details.url);
-  //   console.log('Matched feature flags JSON URL:', details.url);
-  // }
+    saveToStorage('reqUrl', details.url);
+
+    const expectedCity =
+      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\["LoadFeatureManifestsCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"StartupService","requestMethod":"getData","requestId":\d+}]/;
+
+    if (expectedCity.test(decodedString)) {
+      saveToStorage('reqBodyCity', decodedString);
+      console.log('Saved city data request url and body (onBeforeRequest):', details.url, details.requestBody);
+    }
+
+    const expectedInventory =
+      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"InventoryService","requestMethod":"getItems","requestId":\d+}]/;
+
+    if (expectedInventory.test(decodedString)) {
+      saveToStorage('reqBodyInventory', decodedString);
+      console.log('Saved inventory data request url and body (onBeforeRequest):', details.url, details.requestBody);
+    }
+  }
 
   return;
 };
 
 const filter = {
-  urls: ["https://en3.elvenar.com/*"]
+  urls: ['https://en3.elvenar.com/*'],
 };
 
-const opt_extraInfoSpec: chrome.webRequest.OnCompletedOptions[] = [
-  "responseHeaders"
-];
+console.log('Elvenar Extension: Setting up webRequest listeners');
 
-async function fetchJson(): Promise<any> {
-  const elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
-  const elvenarchitectData = (await fetch(elvenarchitectDataUrl, { method: 'GET' })).json();
-}
-
-fetchJson().then(data => {
-  console.log('Elvenarchitect data loaded:', data);
-}).catch(error => {
-  console.error('Error loading elvenarchitect data:', error);
-});
-
-console.log('hi', chrome.webRequest);
-chrome.webRequest.onCompleted.addListener(
-  callback, filter, opt_extraInfoSpec);
+chrome.webRequest.onBeforeRequest.addListener(callbackRequest, filter, ['requestBody']);

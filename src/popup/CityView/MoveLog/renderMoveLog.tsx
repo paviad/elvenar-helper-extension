@@ -6,7 +6,7 @@ import { handleUndo } from './handleUndo';
 export function renderMoveLog(s: CityViewState) {
   const [moveLog, _1] = s.rMoveLog;
   const [redoStack, _2] = s.rRedoStack;
-  
+
   return (
     <div style={{ width: 300, marginRight: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
@@ -57,19 +57,14 @@ export function renderMoveLog(s: CityViewState) {
           borderRadius: 4,
         }}
       >
-        {moveLog.length === 0 && (
-          <li style={{ color: '#888' }}>No moves yet</li>
-        )}
+        {moveLog.length === 0 && <li style={{ color: '#888' }}>No moves yet</li>}
         {moveLog.map((log, idx) => (
           <li key={idx}>
-            <span style={{ fontWeight: 500 }}>{log.name}</span>: ({log.from.x},{' '}
-            {log.from.y}) → ({log.to.x}, {log.to.y})
+            <span style={{ fontWeight: 500 }}>{log.name}</span>: ({log.from.x}, {log.from.y}) → ({log.to.x}, {log.to.y})
           </li>
         ))}
       </ol>
-      <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>
-        Most recent at bottom
-      </div>
+      <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>Most recent at bottom</div>
     </div>
   );
 }
