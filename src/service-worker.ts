@@ -29,6 +29,14 @@ const callbackRequest = (details: {
       saveToStorage('reqBodyInventory', decodedString);
       console.log('Saved inventory data request url and body (onBeforeRequest):', details.url, details.requestBody);
     }
+
+    const expectedTrade =
+      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"TradeService","requestMethod":"getOtherPlayersTrades","requestId":\d+}]/;
+
+    if (expectedTrade.test(decodedString)) {
+      saveToStorage('reqBodyTrade', decodedString);
+      console.log('Saved trade data request url and body (onBeforeRequest):', details.url, details.requestBody);
+    }
   }
 
   return;
