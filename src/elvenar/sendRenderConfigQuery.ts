@@ -2,7 +2,12 @@ import { GoodsBuilding } from '../model/goodsBuilding';
 
 let goodsRenderConfig: GoodsBuilding[] = [];
 
-export async function sendRenderConfigQuery() {
+export async function sendRenderConfigQuery(refresh = false) {
+  if (!refresh && goodsRenderConfig.length > 0) {
+    console.log('Goods render config already fetched, skipping fetch.');
+    return;
+  }
+
   const response = await fetch(
     'https://oxen.innogamescdn.com/frontend//assets/renderconfigdata-8411549d767bbd93af72ff579b5c865f.json',
     {

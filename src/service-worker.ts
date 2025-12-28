@@ -1,11 +1,23 @@
+import { sendTradeOpenedMessage } from './chrome/messages';
 import { saveToStorage } from './chrome/storage';
+import { tradeOpenedCallback } from './popup/tradeOpenedCallback';
 
 console.log('Elvenar Extension: Service Worker Loaded');
 
 const callbackRequest = (details: {
   url: string;
+  initiator?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestBody?: any;
 }): chrome.webRequest.BlockingResponse | undefined => {
+  const extensionId = chrome.runtime.id;
+  const thisExtensionInitiatorUrl = `chrome-extension://${extensionId}`;
+  console.log('Initiator:', details.initiator);
+
+  if (details.initiator === thisExtensionInitiatorUrl) {
+    return;
+  }
+
   // Check if the URL matches the pattern and save it in a global variable
   if (/^https:\/\/en3\.elvenar\.com\/game\/json\?h=[\w\d]+$/.test(details.url)) {
     const decoder = new TextDecoder('utf-8'); // Specify the encoding, UTF-8 is common
@@ -34,8 +46,13 @@ const callbackRequest = (details: {
       /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"TradeService","requestMethod":"getOtherPlayersTrades","requestId":\d+}]/;
 
     if (expectedTrade.test(decodedString)) {
-      saveToStorage('reqBodyTrade', decodedString);
+      async function Do() {
+        await saveToStorage('reqBodyTrade', decodedString);
+        await sendTradeOpenedMessage();
+        await tradeOpenedCallback();
+      }
       console.log('Saved trade data request url and body (onBeforeRequest):', details.url, details.requestBody);
+      Do();
     }
   }
 

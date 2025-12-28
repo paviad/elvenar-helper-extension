@@ -1,30 +1,9 @@
 import { CityEntity } from '../model/cityEntity';
+import { findInElvenarchitect } from '../util/findInElvenArchitect';
 import { CityBlock } from './CityBlock';
-
-interface ElvenarchitectEntry {
-  link: string;
-  name: string;
-}
+import { ElvenarchitectEntry } from './ElvenarchitectEntry';
 
 export async function generateCityBlocks(cityEntities: CityEntity[]) {
-  const elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
-  const elvenarchitectData: ElvenarchitectEntry[] = await (
-    await fetch(elvenarchitectDataUrl, { method: 'GET' })
-  ).json();
-
-  function findInElvenarchitect(cityentity_id: string): string | undefined {
-    for (const entry of elvenarchitectData) {
-      if (entry.link.localeCompare(cityentity_id, undefined, { sensitivity: 'base' }) === 0) {
-        return entry.name;
-      }
-      const stripLevel = cityentity_id.replace(/_\d+$/i, '');
-      if (entry.link.localeCompare(stripLevel, undefined, { sensitivity: 'base' }) === 0) {
-        return entry.name;
-      }
-    }
-    return undefined;
-  }
-
   function getType(entity: CityEntity): string {
     if (entity.connectionStrategy === 'standalone') {
       return entity.type + '_y';

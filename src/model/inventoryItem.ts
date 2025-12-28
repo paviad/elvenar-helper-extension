@@ -6,6 +6,10 @@ export interface InventoryItem {
   subtype: string;
   changedAt: number;
   properties: Property[];
+
+  name?: string;
+  resaleResources?: Record<string, number>;
+  chapter?: number;
 }
 
 export type Property = Chapter | Stage;

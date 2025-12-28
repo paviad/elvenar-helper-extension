@@ -1,11 +1,11 @@
 import { getFromStorage } from '../chrome/storage';
-import { InventoryItem } from '../model/inventoryItem';
+import { Trade } from '../model/trade';
 
-let inventoryItems: InventoryItem[] = [];
+let trades: Trade[] = [];
 
-export async function sendInventoryQuery(refresh = false) {
-  if (!refresh && inventoryItems.length > 0) {
-    console.log('Inventory data already fetched, skipping fetch.');
+export async function sendTradeQuery(refresh = false) {
+  if (!refresh && trades.length > 0) {
+    console.log('Trade data already fetched, skipping fetch.');
     return;
   }
 
@@ -16,7 +16,7 @@ export async function sendInventoryQuery(refresh = false) {
     return;
   }
 
-  const reqBody = await getFromStorage('reqBodyInventory');
+  const reqBody = await getFromStorage('reqBodyTrade');
 
   if (!reqBody) {
     alert('No Request Body found in storage. Open your inventory in the game and try again.');
@@ -58,9 +58,9 @@ export async function sendInventoryQuery(refresh = false) {
 
   // console.log("Response JSON:", json);
 
-  inventoryItems = json[1].responseData;
+  trades = json[0].responseData;
 
-  console.log('Inventory Items:', inventoryItems);
+  console.log('Trade Items:', trades);
 
   // const postResponse = await fetch("https://localhost:7274/api/inventory", {
   //   method: "POST",
@@ -71,4 +71,4 @@ export async function sendInventoryQuery(refresh = false) {
   // });
 }
 
-export const getInventoryItems = () => inventoryItems;
+export const getTradeItems = () => trades;
