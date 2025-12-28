@@ -11,6 +11,9 @@ export class CityViewState {
   rDragIndex = useState<number | null>(null);
   rDragOffset = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   rOriginalPos = useState<{ x: number; y: number } | null>(null);
+  rSearchTerm = useState('');
+  rMenu = useState<{ key: string | number, x: number; y: number } | null>(null);
+  menuRef = useRef<HTMLDivElement | null>(null);
   svgRef = useRef<SVGSVGElement>(null);
   mousePositionRef = useRef<HTMLDivElement>(null);
   allTypes;
@@ -22,7 +25,6 @@ export class CityViewState {
   handleRedo = () => handleRedo(this);
 
   constructor(public props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[] }) {
-    console.log('CityViewState');
     this.rBlocks = useState<CityBlock[]>(props.blocks);
 
     // Get all unique types for color mapping
@@ -31,5 +33,27 @@ export class CityViewState {
       (props.blocks || []).forEach((b) => set.add(b.type));
       return Array.from(set);
     }, [props.blocks]);
+
+    // Close menu on click outside
+    React.useEffect(() => {
+      if (!this.rMenu[0]) return;
+      const handleClick = (e: MouseEvent) => {
+        if (this.menuRef.current && !this.menuRef.current.contains(e.target as Node)) {
+          this.rMenu[1](null);
+        }
+      };
+      window.addEventListener('mousedown', handleClick);
+      return () => window.removeEventListener('mousedown', handleClick);
+    }, [this.rMenu[0]]);
+
+    // Close menu on ESC key
+    React.useEffect(() => {
+      if (!this.rMenu[0]) return;
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') this.rMenu[1](null);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [this.rMenu[0]]);
   }
 }

@@ -12,7 +12,6 @@ const callbackRequest = (details: {
 }): chrome.webRequest.BlockingResponse | undefined => {
   const extensionId = chrome.runtime.id;
   const thisExtensionInitiatorUrl = `chrome-extension://${extensionId}`;
-  console.log('Initiator:', details.initiator);
 
   if (details.initiator === thisExtensionInitiatorUrl) {
     return;
@@ -22,7 +21,6 @@ const callbackRequest = (details: {
   if (/^https:\/\/en3\.elvenar\.com\/game\/json\?h=[\w\d]+$/.test(details.url)) {
     const decoder = new TextDecoder('utf-8'); // Specify the encoding, UTF-8 is common
     const decodedString = decoder.decode(details.requestBody.raw[0].bytes);
-    // console.log('Decoded request body:', decodedString);
 
     saveToStorage('reqUrl', details.url);
 
@@ -31,7 +29,6 @@ const callbackRequest = (details: {
 
     if (expectedCity.test(decodedString)) {
       saveToStorage('reqBodyCity', decodedString);
-      console.log('Saved city data request url and body (onBeforeRequest):', details.url, details.requestBody);
     }
 
     const expectedInventory =
@@ -39,7 +36,6 @@ const callbackRequest = (details: {
 
     if (expectedInventory.test(decodedString)) {
       saveToStorage('reqBodyInventory', decodedString);
-      console.log('Saved inventory data request url and body (onBeforeRequest):', details.url, details.requestBody);
     }
 
     const expectedTrade =
@@ -51,7 +47,6 @@ const callbackRequest = (details: {
         await sendTradeOpenedMessage();
         await tradeOpenedCallback();
       }
-      console.log('Saved trade data request url and body (onBeforeRequest):', details.url, details.requestBody);
       Do();
     }
   }
@@ -62,7 +57,5 @@ const callbackRequest = (details: {
 const filter = {
   urls: ['https://en3.elvenar.com/*'],
 };
-
-console.log('Elvenar Extension: Setting up webRequest listeners');
 
 chrome.webRequest.onBeforeRequest.addListener(callbackRequest, filter, ['requestBody']);

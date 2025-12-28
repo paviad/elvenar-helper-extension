@@ -10,7 +10,6 @@ export async function sendBuildingsQuery(refresh = false) {
     return;
   }
   if (!refresh && buildings.length > 0) {
-    console.log('Buildings data already fetched, skipping fetch.');
     return;
   }
 
@@ -32,8 +31,6 @@ export async function sendBuildingsQuery(refresh = false) {
   );
 
   buildings = await response.json();
-
-  console.log('Buildings data:', buildings);
 
   // const postResponse = await fetch("https://localhost:7274/api/buildings", {
   //   method: "POST",

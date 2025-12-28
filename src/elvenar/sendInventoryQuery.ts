@@ -5,7 +5,6 @@ let inventoryItems: InventoryItem[] = [];
 
 export async function sendInventoryQuery(refresh = false) {
   if (!refresh && inventoryItems.length > 0) {
-    console.log('Inventory data already fetched, skipping fetch.');
     return;
   }
 
@@ -22,8 +21,6 @@ export async function sendInventoryQuery(refresh = false) {
     alert('No Request Body found in storage. Open your inventory in the game and try again.');
     return;
   }
-
-  console.log('Retrieved URL from storage:', url);
 
   const response = await fetch(url, {
     headers: {
@@ -56,11 +53,7 @@ export async function sendInventoryQuery(refresh = false) {
 
   const json = await response.json();
 
-  // console.log("Response JSON:", json);
-
   inventoryItems = json[1].responseData;
-
-  console.log('Inventory Items:', inventoryItems);
 
   // const postResponse = await fetch("https://localhost:7274/api/inventory", {
   //   method: "POST",

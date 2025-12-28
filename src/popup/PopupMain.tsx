@@ -57,15 +57,10 @@ function generateUnlockedAreas(unlockedAreas: UnlockedArea[]): UnlockedArea[] {
 }
 
 async function generateCity(setCityEntities: React.Dispatch<React.SetStateAction<[CityEntity[], UnlockedArea[]]>>) {
-  console.log('Fetching city data...');
   await sendCityDataQuery();
-  console.log('Generating city...');
   await sendBuildingsQuery();
   // await sendInventoryQuery();
-  console.log('Fetching render config...');
   await sendRenderConfigQuery();
-
-  console.log('Generating city entities...');
 
   const buildings = getBuildings();
   const goodsBuildings = getGoodsBuildings();

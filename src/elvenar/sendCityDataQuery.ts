@@ -10,7 +10,6 @@ let boostedGoods: string[] = [];
 
 export async function sendCityDataQuery(refresh = false) {
   if (!refresh && cityEntities.length > 0 && unlockedAreas.length > 0) {
-    console.log('City data already fetched, skipping fetch.');
     return;
   }
 
@@ -27,8 +26,6 @@ export async function sendCityDataQuery(refresh = false) {
     alert('No Request Body found in storage. Refresh the game tab and then refresh this tab.');
     return;
   }
-
-  console.log('Retrieved URL from storage:', url);
 
   const response = await fetch(url, {
     headers: {
@@ -66,12 +63,10 @@ export async function sendCityDataQuery(refresh = false) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chapter = Number(responseData?.featureFlags?.find((r: any) => r.feature.startsWith('ch'))?.feature.replace('ch', ''));
-  console.log('Current Chapter:', chapter);
   saveToStorage('currentChapter', `${chapter}`);
 
   const boostedGoodsRaw: BoostedGoods[] = responseData?.relic_boost_good;
   boostedGoods = boostedGoodsRaw.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`);
-  console.log('Boosted Goods:', boostedGoods);
   saveToStorage('boostedGoods', JSON.stringify(boostedGoods));
 
   const city_map = responseData?.city_map;
@@ -82,8 +77,6 @@ export async function sendCityDataQuery(refresh = false) {
 
   cityEntities = city_map.entities;
   unlockedAreas = city_map.unlocked_areas;
-
-  console.log('City Entities:', cityEntities);
 
   // const postResponse = await fetch("https://localhost:7274/api/cityentities", {
   //   method: "POST",

@@ -20,7 +20,6 @@ export const OverlayMain = () => {
 
   setupMessageListener();
   setupTradeParsedListener((tradesMsg) => {
-    console.log('Trade parsed message received in overlay', tradesMsg);
     const offeredGoods = Array.from(new Set(tradesMsg.trades.map((trade) => trade.offer)));
     setOfferedGoods(offeredGoods);
     expandPanel(offeredGoods.length > 0);

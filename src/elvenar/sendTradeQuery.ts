@@ -5,7 +5,6 @@ let trades: Trade[] = [];
 
 export async function sendTradeQuery(refresh = false) {
   if (!refresh && trades.length > 0) {
-    console.log('Trade data already fetched, skipping fetch.');
     return;
   }
 
@@ -22,8 +21,6 @@ export async function sendTradeQuery(refresh = false) {
     alert('No Request Body found in storage. Open your inventory in the game and try again.');
     return;
   }
-
-  console.log('Retrieved URL from storage:', url);
 
   const response = await fetch(url, {
     headers: {
@@ -56,11 +53,7 @@ export async function sendTradeQuery(refresh = false) {
 
   const json = await response.json();
 
-  // console.log("Response JSON:", json);
-
   trades = json[0].responseData;
-
-  console.log('Trade Items:', trades);
 
   // const postResponse = await fetch("https://localhost:7274/api/inventory", {
   //   method: "POST",

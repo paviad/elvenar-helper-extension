@@ -8,7 +8,7 @@ export const handleMouseUp = (s: CityViewState) => {
   const [_2, setMoveLog] = s.rMoveLog;
   const [_3, setRedoStack] = s.rRedoStack;
 
-  if (dragIndex !== null && originalPos) {
+  if (dragIndex !== null) {
     const block = blocks[dragIndex];
     const newX = block.x;
     const newY = block.y;
@@ -16,20 +16,26 @@ export const handleMouseUp = (s: CityViewState) => {
     let finalY = newY;
 
     if (isOverlapping(block, dragIndex, newX, newY, blocks)) {
-      finalX = originalPos.x;
-      finalY = originalPos.y;
-      setBlocks((prev) =>
-        prev.map((b, i) =>
-          i === dragIndex
-            ? {
-                ...b,
-                x: originalPos.x,
-                y: originalPos.y,
-              }
-            : b,
-        ),
-      );
-    } else {
+      if (originalPos) {
+        // Normal case: snap back
+        finalX = originalPos.x;
+        finalY = originalPos.y;
+        setBlocks((prev) =>
+          prev.map((b, i) =>
+            i === dragIndex
+              ? {
+                  ...b,
+                  x: originalPos.x,
+                  y: originalPos.y,
+                }
+              : b,
+          ),
+        );
+      } else {
+        // Duplicate case: remove the block
+        setBlocks((prev) => prev.filter((_, i) => i !== dragIndex));
+      }
+    } else if (originalPos) {
       const b = blocks[dragIndex];
       const isOriginal = b.x === b.originalX && b.y === b.originalY;
       const movedChanged = block.moved === isOriginal;
@@ -60,7 +66,7 @@ export const handleMouseUp = (s: CityViewState) => {
         setRedoStack([]); // Clear redo stack on new move
       }
     }
+    setDragIndex(null);
+    setOriginalPos(null);
   }
-  setDragIndex(null);
-  setOriginalPos(null);
 };

@@ -7,12 +7,14 @@ import { handleMouseUp } from './handleMouseUp';
 import { sellStreets } from './sellStreets';
 
 export const renderCityGrid = (s: CityViewState) => {
-  const { GridSize, GridMax, svgRef } = s;
+  const { GridSize, GridMax, svgRef, menuRef } = s;
   const [blocks, setBlocks] = s.rBlocks;
-  const [dragIndex, _2] = s.rDragIndex;
+  const [dragIndex, setDragIndex] = s.rDragIndex;
+  const [_, setDragOffset] = s.rDragOffset;
 
   // Search state
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = s.rSearchTerm;
+  const [menu, setMenu] = s.rMenu;
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const term = e.target.value;
@@ -65,7 +67,7 @@ export const renderCityGrid = (s: CityViewState) => {
           }}
           onMouseMove={(e) => handleMouseMove(s, e)}
           onClick={() => handleMouseUp(s)}
-          onMouseLeave={() => handleMouseUp(s)}
+          // onMouseLeave={() => handleMouseUp(s)}
         >
           <rect x={0} y={0} width={GridSize * GridMax} height={GridSize * GridMax} fill='#145214' />
 
@@ -121,8 +123,89 @@ export const renderCityGrid = (s: CityViewState) => {
             }
             return sortedBlocks;
           })()}
+
+          {/* Context Menu */}
+          {menu && (
+            <foreignObject x={menu.x} y={menu.y} width={140} height={70} style={{ pointerEvents: 'none' }}>
+              <div
+                ref={menuRef}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  background: 'white',
+                  border: '1px solid #ccc',
+                  borderRadius: 4,
+                  // boxShadow removed due to visual issues
+                  zIndex: 9999,
+                  minWidth: 120,
+                  pointerEvents: 'auto',
+                }}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <MenuEntry
+                  label='Duplicate'
+                  onClick={() => {
+                    // Duplicate the block and start dragging it
+                    if (typeof menu.key !== 'number') return setMenu(null);
+                    const blockToDup = blocks[menu.key];
+                    if (!blockToDup) return setMenu(null);
+                    const newBlock = {
+                      ...blockToDup,
+                      id: blocks.length,
+                      // Optionally assign a new id if needed
+                      // id: Math.random().toString(36).slice(2),
+                      x: blockToDup.x + 1, // Offset to avoid overlap
+                      y: blockToDup.y + 1,
+                    };
+                    setBlocks((prev) => {
+                      const newBlocks = [...prev, newBlock];
+                      return newBlocks;
+                    });
+                    // Set dragIndex to new block
+                    setDragIndex(newBlock.id);
+                    // Set originalPos to null to indicate this is a duplicate
+                    s.rOriginalPos[1](null);
+                    setMenu(null);
+                  }}
+                />
+                <MenuEntry
+                  label='Delete'
+                  onClick={() => {
+                    // Remove the block with the stored key from the blocks array
+                    const [blocks, setBlocks] = s.rBlocks;
+                    setBlocks(blocks.filter((b, i) => i !== menu.key));
+                    setMenu(null);
+                  }}
+                />
+              </div>
+            </foreignObject>
+          )}
         </svg>
       </div>
     </Stack>
+  );
+};
+
+// Context menu entry with hover effect
+interface MenuEntryProps {
+  label: string;
+  onClick?: () => void;
+}
+const MenuEntry: React.FC<MenuEntryProps> = ({ label, onClick }) => {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <div
+      style={{
+        padding: '8px 16px',
+        cursor: 'pointer',
+        background: hover ? '#e6f0fa' : undefined,
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onClick={onClick}
+    >
+      {label}
+    </div>
   );
 };

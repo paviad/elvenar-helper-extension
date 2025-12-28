@@ -69,7 +69,5 @@ export async function generateInventory() {
     } satisfies InventoryItem;
   });
 
-  console.log('Generated inventory items:', inventory);
-
   return inventory;
 }

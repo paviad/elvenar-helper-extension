@@ -45,7 +45,6 @@ const messageReceiver = (
   sender: chrome.runtime.MessageSender,
   sendResponse: () => void,
 ): boolean | undefined => {
-  console.log('Popup received message:', message, sender);
   const callback = callbackMap[(message as AllMessages).type];
   if (callback) {
     callback(message);

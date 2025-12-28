@@ -4,7 +4,6 @@ let goodsRenderConfig: GoodsBuilding[] = [];
 
 export async function sendRenderConfigQuery(refresh = false) {
   if (!refresh && goodsRenderConfig.length > 0) {
-    console.log('Goods render config already fetched, skipping fetch.');
     return;
   }
 
@@ -27,8 +26,6 @@ export async function sendRenderConfigQuery(refresh = false) {
   const json = await response.json();
 
   goodsRenderConfig = json.building_configs;
-
-  console.log('Response JSON:', goodsRenderConfig);
 
   // const postResponse = await fetch("https://localhost:7274/api/goods", {
   //   method: "POST",

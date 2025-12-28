@@ -9,13 +9,10 @@ export const tradeOpenedCallback = async () => {
   const trades = getTradeItems();
   const boostedGoods = await getBoostedGoods();
   const boostedTrades = trades.filter((trade) => boostedGoods.includes(trade.need.good_id));
-  console.log('Boosted Trades:', boostedTrades);
   const boostedAscendedTrades = boostedTrades.filter((trade) => trade.need.good_id.startsWith('ascended'));
-  console.log('Boosted Ascended Trades:', boostedAscendedTrades);
   const tradesOfferingNotBoostedGoods = boostedAscendedTrades.filter(
     (trade) => !boostedGoods.includes(trade.offer.good_id)
   );
-  console.log('Trades offering not boosted goods:', tradesOfferingNotBoostedGoods);
   const byGoodId = tradesOfferingNotBoostedGoods.reduce((acc, trade) => {
     if (!acc[trade.need.good_id]) {
       acc[trade.need.good_id] = [];
@@ -23,7 +20,6 @@ export const tradeOpenedCallback = async () => {
     acc[trade.need.good_id].push(trade);
     return acc;
   }, {} as Record<string, Trade[]>);
-  console.log('Boosted Ascended Trades by Good ID:', byGoodId);
 
   const goodNames: Record<string, string> = {
     ascendedmarble: 'Primordial Minerals',
@@ -42,7 +38,6 @@ export const tradeOpenedCallback = async () => {
     need: trade.need.good_id,
     player: trade.trader.name,
   }));
-  console.log('Summary of trades offering not boosted goods:', summary);
 
   sendTradeParsedMessage(summary);
 };

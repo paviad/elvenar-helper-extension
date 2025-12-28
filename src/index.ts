@@ -4,7 +4,6 @@ let expandFn: (state: boolean) => void;
 
 console.log('Content script loaded');
 window.addEventListener('load', async () => {
-  console.log('Initializing draggable and collapsible panel');
   // Create the div
   const draggableDiv = document.createElement('div');
   draggableDiv.style.position = 'fixed';
