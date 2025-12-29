@@ -1,12 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Elvenar Helper Extension",
-  "version": "1.8.0",
-  "description": "Hooks to help with Elvenar",
+  "version": "2.0.0",
+  "description": "A comprehensive toolkit for Elvenar featuring a live city planner, inventory manager, and trade helper.",
   "permissions": [
     "storage",
-    "clipboardRead",
-    "clipboardWrite",
     "webRequest",
     "tabs"
   ],

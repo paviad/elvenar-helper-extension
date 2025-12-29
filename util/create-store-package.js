@@ -38,4 +38,4 @@ const files = getAllFilesInDirectory("./dist").filter(
   (r) => !r.endsWith(".zip")
 );
 
-createZipFile(files, "store-dist/mandarin-blueprint-prop-customizer");
+createZipFile(files, "store-dist/elvenar-helper");

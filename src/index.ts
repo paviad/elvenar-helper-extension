@@ -89,6 +89,20 @@ window.addEventListener('load', async () => {
   function updateStateByCollapsed() {
     content.style.display = collapsed ? 'none' : '';
     collapseBtn.textContent = collapsed ? '+' : '-';
+    if (collapsed) {
+      // Minimize the draggableDiv width and set opacity for the collapse button
+      draggableDiv.style.width = '32px';
+      header.style.justifyContent = 'flex-end';
+      title.style.display = 'none';
+      draggableDiv.style.opacity = '0.5';
+      draggableDiv.title = 'Elvenar Extension Helper Window';
+    } else {
+      draggableDiv.style.width = '250px';
+      header.style.justifyContent = 'space-between';
+      title.style.display = '';
+      draggableDiv.style.opacity = '1';
+      draggableDiv.title = '';
+    }
   }
 
   expandFn = (state: boolean) => {
