@@ -36,7 +36,7 @@ export async function generateInventory() {
     return acc;
   }, {} as Record<string, Tome>);
 
-  function findTome(item: InventoryItem): Tome | undefined {
+  function getTome(item: InventoryItem): Tome | undefined {
     return tomesDictionary[item.subtype];
   }
 
@@ -87,7 +87,7 @@ export async function generateInventory() {
   const inventory = inventoryItems.map((r) => {
     const building = getBuilding(r);
     const item = getItem(r);
-    const tome = findTome(r);
+    const tome = getTome(r);
     return {
       ...r,
       type: getPrettyType(r.type),

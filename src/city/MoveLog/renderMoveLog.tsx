@@ -60,7 +60,15 @@ export function renderMoveLog(s: CityViewState) {
         {moveLog.length === 0 && <li style={{ color: '#888' }}>No moves yet</li>}
         {moveLog.map((log, idx) => (
           <li key={idx}>
-            <span style={{ fontWeight: 500 }}>{log.name}</span>: ({log.from.x}, {log.from.y}) → ({log.to.x}, {log.to.y})
+            {log.type === 'delete' ? (
+              <span style={{ color: '#b00', fontWeight: 500 }}>
+                Deleted <span style={{ fontWeight: 400 }}>{log.name}</span> at ({log.from.x}, {log.from.y})
+              </span>
+            ) : (
+              <span>
+                <span style={{ fontWeight: 500 }}>{log.name}</span>: ({log.from.x}, {log.from.y}) → ({log.to.x}, {log.to.y})
+              </span>
+            )}
           </li>
         ))}
       </ol>

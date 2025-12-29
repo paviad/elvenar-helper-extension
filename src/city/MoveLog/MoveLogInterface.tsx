@@ -10,4 +10,6 @@ export interface MoveLogInterface {
     y: number;
   };
   movedChanged: boolean;
+  type?: 'move' | 'delete';
+  deletedBlock?: any;
 }

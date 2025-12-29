@@ -172,9 +172,22 @@ export const renderCityGrid = (s: CityViewState) => {
                 <MenuEntry
                   label='Delete'
                   onClick={() => {
-                    // Remove the block with the stored key from the blocks array
                     const [blocks, setBlocks] = s.rBlocks;
+                    const [moveLog, setMoveLog] = s.rMoveLog;
+                    const blockToDelete = blocks[menu.key as number];
                     setBlocks(blocks.filter((b, i) => i !== menu.key));
+                    setMoveLog((prev) => [
+                      ...prev,
+                      {
+                        id: blockToDelete.id,
+                        name: blockToDelete.name,
+                        from: { x: blockToDelete.x, y: blockToDelete.y },
+                        to: { x: blockToDelete.x, y: blockToDelete.y },
+                        movedChanged: false,
+                        type: 'delete',
+                        deletedBlock: blockToDelete,
+                      },
+                    ]);
                     setMenu(null);
                   }}
                 />
