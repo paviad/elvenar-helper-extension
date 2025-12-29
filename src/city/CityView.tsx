@@ -1,5 +1,5 @@
 import React from 'react';
-import { UnlockedArea } from '../../model/unlockedArea';
+import { UnlockedArea } from '../model/unlockedArea';
 import { CityBlock } from './CityBlock';
 import { CityViewState } from './CityViewState';
 import { renderMoveLog, keyboardShortcutsEffect } from './MoveLog';

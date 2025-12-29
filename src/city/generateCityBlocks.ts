@@ -1,5 +1,5 @@
-import { CityEntity } from '../../model/cityEntity';
-import { findInElvenarchitect } from '../../util/findInElvenArchitect';
+import { CityEntity } from '../model/cityEntity';
+import { findInElvenarchitect } from '../util/findInElvenArchitect';
 import { CityBlock } from './CityBlock';
 
 export async function generateCityBlocks(cityEntities: CityEntity[]) {

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UnlockedArea } from '../../model/unlockedArea';
+import { UnlockedArea } from '../model/unlockedArea';
 import { CityBlock } from './CityBlock';
 import { MoveLogInterface } from './MoveLog/MoveLogInterface';
 import { handleUndo } from './MoveLog/handleUndo';
