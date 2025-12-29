@@ -10,6 +10,7 @@ export interface InventoryItem {
   name?: string;
   resaleResources?: Record<string, number>;
   chapter?: number;
+  spellFragments?: number;
 }
 
 export type Property = Chapter | Stage;
