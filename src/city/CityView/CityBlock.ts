@@ -1,4 +1,4 @@
-import { CityEntity } from '../model/cityEntity';
+import { CityEntity } from '../../model/cityEntity';
 
 export interface CityBlock {
   id: number;

@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { Box, Container, Stack } from '@mui/material';
-import { getBuildings, sendBuildingsQuery } from '../elvenar/sendBuildingsQuery';
-import { getCityEntities, getUnlockedAreas, sendCityDataQuery } from '../elvenar/sendCityDataQuery';
-import { getGoodsBuildings, sendRenderConfigQuery } from '../elvenar/sendRenderConfigQuery';
-import { Building } from '../model/building';
-import { GoodsBuilding } from '../model/goodsBuilding';
-import { CityEntity } from '../model/cityEntity';
+import { getBuildings, sendBuildingsQuery } from '../../elvenar/sendBuildingsQuery';
+import { getCityEntities, getUnlockedAreas, sendCityDataQuery } from '../../elvenar/sendCityDataQuery';
+import { getGoodsBuildings, sendRenderConfigQuery } from '../../elvenar/sendRenderConfigQuery';
+import { Building } from '../../model/building';
+import { GoodsBuilding } from '../../model/goodsBuilding';
+import { CityEntity } from '../../model/cityEntity';
 import { CityBlock } from './CityBlock';
-import { CityView } from './CityView/CityView';
-import { UnlockedArea } from '../model/unlockedArea';
+import { CityView } from './CityView';
+import { UnlockedArea } from '../../model/unlockedArea';
 import { generateCityBlocks } from './generateCityBlocks';
-import { sendMoveBuildingCommand } from '../elvenar/sendMoveBuildingCommand';
-import { initElvenarchitectData } from '../util/findInElvenArchitect';
+import { sendMoveBuildingCommand } from '../../elvenar/sendMoveBuildingCommand';
+import { initElvenarchitectData } from '../../util/findInElvenArchitect';
 
 export function PopupMain() {
   const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntity[], UnlockedArea[]]);

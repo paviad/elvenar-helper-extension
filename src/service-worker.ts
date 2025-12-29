@@ -1,6 +1,6 @@
 import { sendTradeOpenedMessage } from './chrome/messages';
 import { saveToStorage } from './chrome/storage';
-import { tradeOpenedCallback } from './popup/tradeOpenedCallback';
+import { tradeOpenedCallback } from './trade/tradeOpenedCallback';
 
 console.log('Elvenar Extension: Service Worker Loaded');
 

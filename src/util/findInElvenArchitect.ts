@@ -1,4 +1,4 @@
-import { ElvenarchitectEntry } from '../popup/ElvenarchitectEntry';
+import { ElvenarchitectEntry } from '../model/elvenarchitectEntry';
 import { normalizeString } from './normalizeString';
 
 const elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');

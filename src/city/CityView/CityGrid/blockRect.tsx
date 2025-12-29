@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CityBlock } from '../../CityBlock';
+import { CityBlock } from '../CityBlock';
 import { getTypeColor } from '../Legend/getTypeColor';
 import { CityViewState } from '../CityViewState';
 import { handleMouseDown } from './handleMouseDown';

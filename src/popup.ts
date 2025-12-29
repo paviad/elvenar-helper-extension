@@ -1,4 +1,4 @@
-import { createReactUi } from './popup/createReactUi';
+import { createReactUi } from './city/createReactUi';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const extensionId = chrome.runtime.id;

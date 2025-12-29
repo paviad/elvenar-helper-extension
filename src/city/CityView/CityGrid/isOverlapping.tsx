@@ -1,4 +1,4 @@
-import { CityBlock } from '../../CityBlock';
+import { CityBlock } from '../CityBlock';
 
 // Helper to check overlap
 export function isOverlapping(

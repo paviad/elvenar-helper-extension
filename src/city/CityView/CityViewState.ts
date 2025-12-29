@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UnlockedArea } from '../../model/unlockedArea';
-import { CityBlock } from '../CityBlock';
+import { CityBlock } from './CityBlock';
 import { MoveLogInterface } from './MoveLog/MoveLogInterface';
 import { handleUndo } from './MoveLog/handleUndo';
 import { handleRedo } from './MoveLog/handleRedo';
@@ -12,7 +12,7 @@ export class CityViewState {
   rDragOffset = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   rOriginalPos = useState<{ x: number; y: number } | null>(null);
   rSearchTerm = useState('');
-  rMenu = useState<{ key: string | number, x: number; y: number } | null>(null);
+  rMenu = useState<{ key: string | number; x: number; y: number } | null>(null);
   menuRef = useRef<HTMLDivElement | null>(null);
   svgRef = useRef<SVGSVGElement>(null);
   mousePositionRef = useRef<HTMLDivElement>(null);
@@ -55,5 +55,10 @@ export class CityViewState {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }, [this.rMenu[0]]);
+
+    React.useEffect(() => {
+      const [_, setBlocks] = this.rBlocks;
+      setBlocks(this.props.blocks);
+    }, [this.props.blocks]);
   }
 }
