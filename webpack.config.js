@@ -6,6 +6,7 @@ module.exports = {
   entry: {
     main: "./src/index.ts",
     svc: "./src/service-worker.ts",
+    tab: "./src/tab.ts",
     popup: "./src/popup.ts",
   },
   mode: "production",

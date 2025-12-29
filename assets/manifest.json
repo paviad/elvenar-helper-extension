@@ -15,8 +15,7 @@
     "service_worker": "svc.bundle.js"
   },
   "action": {
-    "default_title": "(Click to show menu)",
-    "default_popup": "popup.html"
+    "default_title": "(Click to show tab)"
   },
   "web_accessible_resources": [
     {

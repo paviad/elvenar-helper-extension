@@ -4,6 +4,20 @@ import { tradeOpenedCallback } from './trade/tradeOpenedCallback';
 
 console.log('Elvenar Extension: Service Worker Loaded');
 
+chrome.action.onClicked.addListener(async (tab) => {
+  const extensionId = chrome.runtime.id;
+  const url = `chrome-extension://${extensionId}/tab.html`;
+  const extensionTab = await chrome.tabs.query({ url });
+  if (extensionTab.length === 0 || !extensionTab[0].id) {
+    chrome.tabs.create({
+      url: 'tab.html',
+      active: true,
+    });
+  } else {
+    chrome.tabs.update(extensionTab[0].id, { active: true });
+  }
+});
+
 const callbackRequest = (details: {
   url: string;
   initiator?: string;

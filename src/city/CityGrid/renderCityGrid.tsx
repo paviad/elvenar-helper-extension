@@ -1,5 +1,5 @@
 import { Stack, Button, TextField } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { blockRect } from './blockRect';
 import { CityViewState } from '../CityViewState';
 import { handleMouseMove } from './handleMouseMove';
@@ -10,9 +10,6 @@ export const renderCityGrid = (s: CityViewState) => {
   const { GridSize, GridMax, svgRef, menuRef } = s;
   const [blocks, setBlocks] = s.rBlocks;
   const [dragIndex, setDragIndex] = s.rDragIndex;
-  const [_, setDragOffset] = s.rDragOffset;
-
-  // Search state
   const [searchTerm, setSearchTerm] = s.rSearchTerm;
   const [menu, setMenu] = s.rMenu;
 
@@ -39,20 +36,67 @@ export const renderCityGrid = (s: CityViewState) => {
     );
   }
 
+  // Sticky-to-fixed search box logic (fixed: returns to original position when scrolling up)
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  const searchBoxOffset = useRef<number | null>(null);
+  const [isFixed, setIsFixed] = useState(false);
+  useEffect(() => {
+    const updateOffset = () => {
+      if (searchBoxRef.current) {
+        searchBoxOffset.current = searchBoxRef.current.getBoundingClientRect().top + window.scrollY;
+      }
+    };
+    updateOffset();
+    window.addEventListener('resize', updateOffset);
+    return () => window.removeEventListener('resize', updateOffset);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (searchBoxOffset.current === null) return;
+      if (window.scrollY >= searchBoxOffset.current) {
+        setIsFixed(true);
+      } else {
+        setIsFixed(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <Stack>
       <Stack direction='row'>
         <Button onClick={() => sellStreets(s)}>Sell Streets</Button>
       </Stack>
       <div>
-        <TextField
-          label='Search buildings (string or /regexp/)'
-          variant='outlined'
-          size='small'
-          value={searchTerm}
-          onChange={handleSearchChange}
-          style={{ marginBottom: 8, width: '100%' }}
-        />
+        <div
+          ref={searchBoxRef}
+          style={
+            isFixed
+              ? {
+                  position: 'fixed',
+                  top: 0,
+                  left: '20%',
+                  width: '60%',
+                  zIndex: 9999,
+                  background: 'rgba(255,255,255,0.95)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  padding: 8,
+                  transition: 'box-shadow 0.2s',
+                }
+              : { marginBottom: 8, background: 'inherit', transition: 'box-shadow 0.2s' }
+          }
+        >
+          <TextField
+            label='Search buildings (string or /regexp/)'
+            variant='outlined'
+            size='small'
+            value={searchTerm}
+            onChange={handleSearchChange}
+            style={{ width: '100%' }}
+          />
+        </div>
         <div ref={s.mousePositionRef} style={{ marginBottom: 8, fontWeight: 'bold' }}>
           Grid: (-, -)
         </div>

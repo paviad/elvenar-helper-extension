@@ -2,19 +2,3 @@
   width: 400px;
   height: 700px;
 }
-
-div[role="tabpanel"] {
-  overflow-y: scroll;
-  position: absolute;
-  top: 61px;
-  left: 7px;
-  right: 7px;
-  bottom: 7px;
-}
-
-.settings-description {
-  font-size: 0.9em;
-  color: #444;
-  margin: 22px;
-  margin-top: -14px;
-}
