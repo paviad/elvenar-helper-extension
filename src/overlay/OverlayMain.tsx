@@ -3,15 +3,15 @@ import { setupMessageListener, setupTradeParsedListener } from '../chrome/messag
 import { expandPanel } from '..';
 
 const goodNames: Record<string, { name: string; x: number; y: number }> = {
-  ascendedmarble: { name: 'Primordial Minerals', x: 25, y: 0 },
-  ascendedsteel: { name: 'Ignited Ingots', x: 25, y: 103 },
-  ascendedplanks: { name: 'Scholarly Sprouts', x: 25, y: 26 },
+  ascendedmarble: { name: 'Primordial Minerals', x: 26, y: 0 },
+  ascendedsteel: { name: 'Ignited Ingots', x: 26, y: 104 },
+  ascendedplanks: { name: 'Scholarly Sprouts', x: 26, y: 26 },
   ascendedcrystal: { name: 'Ethereal Aerosols', x: 0, y: 130 },
-  ascendedscrolls: { name: 'Wonder Wax', x: 25, y: 51 },
-  ascendedsilk: { name: 'Finest Flying Powder', x: 25, y: 78 },
+  ascendedscrolls: { name: 'Wonder Wax', x: 26, y: 52 },
+  ascendedsilk: { name: 'Finest Flying Powder', x: 26, y: 78 },
   ascendedelixir: { name: 'Spicy Spread', x: 0, y: 156 },
-  ascendedmagic_dust: { name: 'Genius Granule', x: 0, y: 207 },
-  ascendedgems: { name: 'Marvellous Marbles', x: 0, y: 181 },
+  ascendedmagic_dust: { name: 'Genius Granule', x: 0, y: 208 },
+  ascendedgems: { name: 'Marvellous Marbles', x: 0, y: 182 },
 };
 
 export const OverlayMain = () => {
@@ -39,8 +39,8 @@ export const OverlayMain = () => {
                     <img
                       src={spriteUrl}
                       alt={goodInfo.name}
-                      width={26}
-                      height={26}
+                      width={24}
+                      height={24}
                       style={{
                         objectFit: 'none',
                         objectPosition: `-${goodInfo.x}px -${goodInfo.y}px`,
