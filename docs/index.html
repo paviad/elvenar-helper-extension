@@ -244,7 +244,19 @@
           />
           <div
             id="carousel-caption"
-            style="margin-top: 0.5rem; margin-bottom: 2.2rem; font-size: 1.1rem; color: #ffd700; min-height: 1.5em; position: relative; z-index: 2; background: rgba(36,11,54,0.7); border-radius: 8px; padding: 0.3em 0.8em; display: inline-block;"
+            style="
+              margin-top: 0.5rem;
+              margin-bottom: 2.2rem;
+              font-size: 1.1rem;
+              color: #ffd700;
+              min-height: 1.5em;
+              position: relative;
+              z-index: 2;
+              background: rgba(36, 11, 54, 0.7);
+              border-radius: 8px;
+              padding: 0.3em 0.8em;
+              display: inline-block;
+            "
           ></div>
           <button
             id="carousel-prev"
@@ -313,7 +325,16 @@
           const indicators = document.getElementById('carousel-indicators');
           const captionEl = document.getElementById('carousel-caption');
 
-          function updateCarousel() {
+          let carouselTimer = null;
+          function startCarouselTimer() {
+            if (carouselTimer) clearInterval(carouselTimer);
+            carouselTimer = setInterval(() => {
+              carouselIndex = (carouselIndex + 1) % carouselImages.length;
+              updateCarousel(false);
+            }, 5000);
+          }
+
+          function updateCarousel(resetTimer = true) {
             imgEl.style.opacity = 0.3;
             setTimeout(() => {
               imgEl.src = carouselImages[carouselIndex].src;
@@ -324,6 +345,7 @@
                 dot.style.background = i === carouselIndex ? '#ffd700' : '#fff3';
               });
             }, 150);
+            if (resetTimer) startCarouselTimer();
           }
 
           prevBtn.onclick = () => {
@@ -350,8 +372,9 @@
             };
             indicators.appendChild(dot);
           });
-          // Set initial caption
+          // Set initial caption and start auto-cycling
           captionEl.textContent = carouselImages[0].caption || '';
+          startCarouselTimer();
         </script>
       </section>
 
