@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elvenar City Tools - The Modern City Planner</title>
+    <meta
+      name="description"
+      content="The ultimate free City Planner and Helper for Elvenar. Supports Chapter 23 & 24, live city syncing, and inventory management."
+    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #5c2d91; /* Deep Purple */
+        --secondary: #240b36; /* Darker Purple */
+        --accent: #ffd700; /* Gold */
+        --text: #f3f4f6;
+        --text-muted: #d1d5db;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, var(--secondary) 0%, #1a1a2e 100%);
+        color: var(--text);
+        line-height: 1.6;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: 'Cinzel', serif;
+        color: #fff;
+      }
+
+      /* Container */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      /* Header */
+      header {
+        padding: 2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      /* Hero Section */
+      .hero {
+        padding: 5rem 0;
+        text-align: center;
+        position: relative;
+      }
+      .hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+      .hero p {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto 2rem;
+      }
+      .hero-tag {
+        background: rgba(255, 215, 0, 0.1);
+        color: var(--accent);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+        border: 1px solid var(--accent);
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-block;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--secondary);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+      }
+      .btn-outline {
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: var(--text);
+        margin-left: 1rem;
+      }
+      .btn-outline:hover {
+        border-color: var(--text);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      /* Features Grid */
+      .features {
+        padding: 4rem 0;
+        background: rgba(0, 0, 0, 0.2);
+      }
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+      .feature-card {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.2s;
+      }
+      .feature-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent);
+      }
+      .feature-icon {
+        font-size: 2rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+      }
+
+      /* Screenshot Area */
+      .preview {
+        padding: 4rem 0;
+        text-align: center;
+      }
+      .preview-img {
+        max-width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* Footer */
+      footer {
+        padding: 3rem 0;
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      @media (max-width: 768px) {
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+        .btn {
+          display: block;
+          margin: 0.5rem 0;
+          width: 100%;
+          text-align: center;
+        }
+        .btn-outline {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <a href="#" class="logo">Elvenar City Tools ✨</a>
+      <nav>
+        <a
+          href="https://github.com/paviad/elvenar-helper-extension"
+          target="_blank"
+          style="color: white; font-size: 1.5rem"
+        >
+          <i class="fab fa-github"></i>
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero container">
+        <span class="hero-tag">Now supporting Chapter 23 & 24!</span>
+        <h1>The Missing Tool for Elvenar</h1>
+        <p>
+          A modern, open-source City Planner and Inventory Manager that runs directly in your browser. No more manual
+          exports. No more outdated buildings.
+        </p>
+
+        <div style="margin-top: 2rem">
+          <a href="#" class="btn btn-primary"><i class="fab fa-chrome"></i> Add to Chrome</a>
+          <a href="https://github.com/paviad/elvenar-helper-extension" class="btn btn-outline"
+            ><i class="fab fa-github"></i> View Source</a
+          >
+        </div>
+      </section>
+
+      <section class="preview container">
+        <img
+          src="ss1.png"
+          alt="City Planner Interface"
+          class="preview-img"
+          style="
+            min-height: 400px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+          "
+        />
+        <p style="margin-top: 1rem; font-style: italic; opacity: 0.7">Actual screenshot of the live city planner</p>
+      </section>
+
+      <section class="features">
+        <div class="container">
+          <h2 style="text-align: center">Why Switch?</h2>
+          <div class="features-grid">
+            <div class="feature-card">
+              <i class="fas fa-city feature-icon"></i>
+              <h3>Live City Planner</h3>
+              <p>
+                Works just like the tools you know, but uses live data. It automatically detects your layout so you can
+                start planning immediately.
+              </p>
+            </div>
+            <div class="feature-card">
+              <i class="fas fa-dragon feature-icon"></i>
+              <h3>Chapters 23 & 24</h3>
+              <p>
+                The only planner updated with the latest chapters. We have the building sizes and assets that others are
+                missing.
+              </p>
+            </div>
+            <div class="feature-card">
+              <i class="fas fa-boxes feature-icon"></i>
+              <h3>Smart Inventory</h3>
+              <p>Search, sort, and filter your inventory instantly. Find that lost event building in seconds.</p>
+            </div>
+            <div class="feature-card">
+              <i class="fas fa-shield-alt feature-icon"></i>
+              <h3>Safe & Open Source</h3>
+              <p>
+                We believe in transparency. Our code is 100% open source on GitHub and runs locally on your machine.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>Elvenar City Tools is a fan-made project.</p>
+        <p>Elvenar is a trademark of InnoGames GmbH. This project is not affiliated with or endorsed by InnoGames.</p>
+        <br />
+        <p>&copy; 2025 - <a href="https://github.com/paviad">paviad</a></p>
+      </div>
+    </footer>
+  </body>
+</html>
