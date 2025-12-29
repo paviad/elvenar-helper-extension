@@ -9,7 +9,11 @@ export const handleUndo = (s: CityViewState) => {
   if (moveLog.length === 0) return;
   const last = moveLog[moveLog.length - 1];
   if (last.type === 'delete' && last.deletedBlock) {
-    setBlocks((prev) => [...prev, last.deletedBlock]);
+    const g = last.deletedBlock;
+    setBlocks((prev) => [...prev, g]);
+  } else if (last.type === 'duplicate' && last.duplicatedBlock) {
+    const g = last.duplicatedBlock;
+    setBlocks((prev) => prev.filter((b) => b.id !== g.id));
   } else {
     setBlocks((prev) =>
       prev.map((b) => {

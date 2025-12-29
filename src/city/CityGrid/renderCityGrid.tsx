@@ -146,25 +146,20 @@ export const renderCityGrid = (s: CityViewState) => {
                 <MenuEntry
                   label='Duplicate'
                   onClick={() => {
-                    // Duplicate the block and start dragging it
                     if (typeof menu.key !== 'number') return setMenu(null);
                     const blockToDup = blocks[menu.key];
                     if (!blockToDup) return setMenu(null);
                     const newBlock = {
                       ...blockToDup,
                       id: blocks.length,
-                      // Optionally assign a new id if needed
-                      // id: Math.random().toString(36).slice(2),
-                      x: blockToDup.x + 1, // Offset to avoid overlap
+                      x: blockToDup.x + 1,
                       y: blockToDup.y + 1,
                     };
                     setBlocks((prev) => {
                       const newBlocks = [...prev, newBlock];
                       return newBlocks;
                     });
-                    // Set dragIndex to new block
                     setDragIndex(newBlock.id);
-                    // Set originalPos to null to indicate this is a duplicate
                     s.rOriginalPos[1](null);
                     setMenu(null);
                   }}

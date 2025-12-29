@@ -10,6 +10,9 @@ export const handleRedo = (s: CityViewState) => {
   const last = redoStack[redoStack.length - 1];
   if (last.type === 'delete' && last.deletedBlock) {
     setBlocks((prev) => prev.filter((b) => b.id !== last.id));
+  } else if (last.type === 'duplicate' && last.duplicatedBlock) {
+    const g = last.duplicatedBlock;
+    setBlocks((prev) => [...prev, g]);
   } else {
     setBlocks((prev) =>
       prev.map((b) => {

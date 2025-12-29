@@ -7,6 +7,9 @@ let elvenarchitectData: ElvenarchitectEntry[];
 let elvenarchitectDictionary: Record<string, string>;
 
 export async function initElvenarchitectData() {
+  if (elvenarchitectData) {
+    return;
+  }
   elvenarchitectData = await (await fetch(elvenarchitectDataUrl, { method: 'GET' })).json();
   elvenarchitectDictionary = elvenarchitectData.reduce((acc, entry) => {
     acc[normalizeString(entry.link)] = entry.name;

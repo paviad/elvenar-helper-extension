@@ -1,3 +1,4 @@
+
 import { CityViewState } from '../CityViewState';
 import { isOverlapping } from './isOverlapping';
 
@@ -65,6 +66,21 @@ export const handleMouseUp = (s: CityViewState) => {
         ]);
         setRedoStack([]); // Clear redo stack on new move
       }
+    } else if (!originalPos) {
+      // This is a duplicate drop
+      setMoveLog((prev) => [
+        ...prev,
+        {
+          id: block.id,
+          name: block.name,
+          from: { x: block.x, y: block.y },
+          to: { x: block.x, y: block.y },
+          movedChanged: false,
+          type: 'duplicate',
+          duplicatedBlock: block,
+        },
+      ]);
+      setRedoStack([]);
     }
     setDragIndex(null);
     setOriginalPos(null);

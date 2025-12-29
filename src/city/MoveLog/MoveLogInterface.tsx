@@ -1,3 +1,5 @@
+import { CityBlock } from '../CityBlock';
+
 export interface MoveLogInterface {
   id: number;
   name: string;
@@ -10,6 +12,7 @@ export interface MoveLogInterface {
     y: number;
   };
   movedChanged: boolean;
-  type?: 'move' | 'delete';
-  deletedBlock?: any;
+  type?: 'move' | 'delete' | 'duplicate';
+  deletedBlock?: CityBlock;
+  duplicatedBlock?: CityBlock;
 }
