@@ -208,7 +208,7 @@
         <h1>The Missing Tool for Elvenar</h1>
         <p>
           A modern, open-source City Planner and Inventory Manager that runs directly in your browser. No more manual
-          exports. No more outdated buildings.
+          exports. No more outdated buildings. Instantly detect lucrative trades with our smart trade detection feature.
         </p>
 
         <div style="margin-top: 2rem">
@@ -224,20 +224,135 @@
       </section>
 
       <section class="preview container">
-        <img
-          src="ss1.jpg"
-          alt="City Planner Interface"
-          class="preview-img"
-          style="
-            min-height: 400px;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #777;
-          "
-        />
+        <div id="carousel" style="position: relative; max-width: 1200px; margin: 0 auto">
+          <img
+            src="ss1.jpg"
+            alt="City Planner Interface"
+            class="preview-img"
+            id="carousel-img"
+            style="
+              width: 1200px;
+              max-width: 100%;
+              min-height: 400px;
+              background: #333;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #777;
+              transition: opacity 0.3s;
+            "
+          />
+          <div
+            id="carousel-caption"
+            style="margin-top: 0.5rem; margin-bottom: 2.2rem; font-size: 1.1rem; color: #ffd700; min-height: 1.5em; position: relative; z-index: 2; background: rgba(36,11,54,0.7); border-radius: 8px; padding: 0.3em 0.8em; display: inline-block;"
+          ></div>
+          <button
+            id="carousel-prev"
+            aria-label="Previous image"
+            style="
+              position: absolute;
+              top: 50%;
+              left: 10px;
+              transform: translateY(-50%);
+              background: rgba(0, 0, 0, 0.4);
+              border: none;
+              color: #fff;
+              font-size: 2rem;
+              border-radius: 50%;
+              width: 40px;
+              height: 40px;
+              cursor: pointer;
+            "
+          >
+            &#8249;
+          </button>
+          <button
+            id="carousel-next"
+            aria-label="Next image"
+            style="
+              position: absolute;
+              top: 50%;
+              right: 10px;
+              transform: translateY(-50%);
+              background: rgba(0, 0, 0, 0.4);
+              border: none;
+              color: #fff;
+              font-size: 2rem;
+              border-radius: 50%;
+              width: 40px;
+              height: 40px;
+              cursor: pointer;
+            "
+          >
+            &#8250;
+          </button>
+          <div
+            id="carousel-indicators"
+            style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px"
+          ></div>
+        </div>
         <p style="margin-top: 1rem; font-style: italic; opacity: 0.7">Actual screenshot of the live city planner</p>
+        <script>
+          const carouselImages = [
+            {
+              src: 'ss1.jpg',
+              alt: 'City Planner Interface',
+              caption: 'Plan your city layout with drag-and-drop simplicity.',
+            },
+            { src: 'ss3.jpg', alt: 'Inventory Management', caption: 'Track and manage your inventory in real time.' },
+            {
+              src: 'ss2.jpg',
+              alt: 'Trade Overview',
+              caption: 'Detect lucrative trade opportunities (non-boosted for boosted ascended).',
+            },
+          ];
+          let carouselIndex = 0;
+          const imgEl = document.getElementById('carousel-img');
+          const prevBtn = document.getElementById('carousel-prev');
+          const nextBtn = document.getElementById('carousel-next');
+          const indicators = document.getElementById('carousel-indicators');
+          const captionEl = document.getElementById('carousel-caption');
+
+          function updateCarousel() {
+            imgEl.style.opacity = 0.3;
+            setTimeout(() => {
+              imgEl.src = carouselImages[carouselIndex].src;
+              imgEl.alt = carouselImages[carouselIndex].alt;
+              captionEl.textContent = carouselImages[carouselIndex].caption || '';
+              imgEl.style.opacity = 1;
+              Array.from(indicators.children).forEach((dot, i) => {
+                dot.style.background = i === carouselIndex ? '#ffd700' : '#fff3';
+              });
+            }, 150);
+          }
+
+          prevBtn.onclick = () => {
+            carouselIndex = (carouselIndex - 1 + carouselImages.length) % carouselImages.length;
+            updateCarousel();
+          };
+          nextBtn.onclick = () => {
+            carouselIndex = (carouselIndex + 1) % carouselImages.length;
+            updateCarousel();
+          };
+
+          // Indicators
+          carouselImages.forEach((_, i) => {
+            const dot = document.createElement('span');
+            dot.style.width = '12px';
+            dot.style.height = '12px';
+            dot.style.borderRadius = '50%';
+            dot.style.display = 'inline-block';
+            dot.style.background = i === 0 ? '#ffd700' : '#fff3';
+            dot.style.cursor = 'pointer';
+            dot.onclick = () => {
+              carouselIndex = i;
+              updateCarousel();
+            };
+            indicators.appendChild(dot);
+          });
+          // Set initial caption
+          captionEl.textContent = carouselImages[0].caption || '';
+        </script>
       </section>
 
       <section class="features">
