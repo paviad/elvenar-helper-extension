@@ -1,5 +1,7 @@
 # Elvenar City Tools Chrome Extension
 
+[![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/kikdpnpfhakidgkojboebobjlknflilc)](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb)
+
 ## Overview
 
 Elvenar City Tools is a Chrome extension designed to enhance your experience with the Elvenar browser game. This extension provides a set of tools to help you plan, optimize, and experiment with your city layout, inventory, and trades directly from your browser.
@@ -17,6 +19,10 @@ Elvenar City Tools is a Chrome extension designed to enhance your experience wit
 
 ## Installation
 
+### From Chrome Web Store (Recommended)
+Install the latest stable version directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb).
+
+### From Release
 1. Download the latest release from this repository, and unpack it into a directory on your computer.
 2. Open Chrome and navigate to `chrome://extensions/`.
 3. Enable "Developer mode" (top right corner).
@@ -39,5 +45,6 @@ Contributions are welcome! Please open an issue or submit a pull request with yo
 This project is licensed under the MIT License.
 
 ---
+**Author:** Aviad Pineles
 
 *Elvenar is a trademark of InnoGames GmbH. This project is not affiliated with or endorsed by InnoGames.*
