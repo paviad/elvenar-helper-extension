@@ -6,15 +6,16 @@ console.log('Elvenar Extension: Service Worker Loaded');
 
 chrome.action.onClicked.addListener(async (tab) => {
   const extensionId = chrome.runtime.id;
-  const url = `chrome-extension://${extensionId}/tab.html`;
-  const extensionTab = await chrome.tabs.query({ url });
-  if (extensionTab.length === 0 || !extensionTab[0].id) {
+
+  const views = await chrome.runtime.getContexts({ contextTypes: ['TAB'] });
+
+  if (views.length === 0) {
     chrome.tabs.create({
       url: 'tab.html',
       active: true,
     });
   } else {
-    chrome.tabs.update(extensionTab[0].id, { active: true });
+    chrome.tabs.update(views[0].tabId, { active: true });
   }
 });
 

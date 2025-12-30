@@ -1,15 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Elvenar Helper Extension",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "A comprehensive toolkit for Elvenar featuring a live city planner, inventory manager, and trade helper.",
   "permissions": [
     "storage",
-    "webRequest",
-    "tabs"
+    "webRequest"
   ],
   "host_permissions": [
-    "*://*.elvenar.com/*"
+    "https://*.elvenar.com/*"
   ],
   "background": {
     "service_worker": "svc.bundle.js"
@@ -24,14 +23,14 @@
         "sprite.png"
       ],
       "matches": [
-        "https://en3.elvenar.com/*"
+        "https://*.elvenar.com/*"
       ]
     }
   ],
   "content_scripts": [
     {
       "matches": [
-        "https://en3.elvenar.com/*"
+        "https://*.elvenar.com/*"
       ],
       "js": [
         "main.bundle.js",
