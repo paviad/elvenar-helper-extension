@@ -1,6 +1,7 @@
 # Elvenar City Tools Chrome Extension
 
 [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/kikdpnpfhakidgkojboebobjlknflilc)](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb)
+[![Firefox Add-On](https://img.shields.io/amo/v/elvenar-helper-extension)](https://addons.mozilla.org/en-US/firefox/addon/elvenar-helper-extension/)
 
 ## Overview
 
@@ -19,15 +20,25 @@ Elvenar City Tools is a Chrome extension designed to enhance your experience wit
 
 ## Installation
 
-### From Chrome Web Store (Recommended)
+### Chrome/Edge: From Chrome Web Store
 Install the latest stable version directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb).
 
-### From Release
+### Firefox: From Firefox Add-Ons
+The extension is published on the Firefox Add-Ons repository at [Firefox Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/elvenar-helper-extension/)
+
+### From Release (Chrome)
 1. Download the latest release from this repository, and unpack it into a directory on your computer.
 2. Open Chrome and navigate to `chrome://extensions/`.
 3. Enable "Developer mode" (top right corner).
 4. Click "Load unpacked" and select the directory of the downloaded release.
 5. The Elvenar City Tools extension should now appear in your extensions list.
+
+### From Release (Firefox)
+1. Download the latest release from this repository, and unpack it into a directory on your computer.
+2. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
+3. Click _Load Temporary Add-On..._
+4. Select the Zip file of the downloaded release (do not extract it).
+5. Refresh the game tab, the extension should be active.
 
 ## Usage
 
