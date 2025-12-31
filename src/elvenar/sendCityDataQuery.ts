@@ -16,14 +16,14 @@ export async function sendCityDataQuery(refresh = false) {
   const url = await getFromStorage('reqUrl');
 
   if (!url) {
-    alert('No URL found in storage.');
+    alert("I can't find your city data, please refresh the game tab and then refresh this tab.");
     return;
   }
 
   const reqBody = await getFromStorage('reqBodyCity');
 
   if (!reqBody) {
-    alert('No Request Body found in storage. Refresh the game tab and then refresh this tab.');
+    alert("I can't find your city data, please refresh the game tab and then refresh this tab.");
     return;
   }
 
@@ -71,7 +71,7 @@ export async function sendCityDataQuery(refresh = false) {
 
   const city_map = responseData?.city_map;
   if (!city_map) {
-    alert('City map data not found in response.');
+    alert('City map data not found in response. Please report this bug to the developer.');
     return;
   }
 

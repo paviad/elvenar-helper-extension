@@ -11,14 +11,12 @@ export async function sendTradeQuery(refresh = false) {
   const url = await getFromStorage('reqUrl');
 
   if (!url) {
-    alert('No URL found in storage.');
     return;
   }
 
   const reqBody = await getFromStorage('reqBodyTrade');
 
   if (!reqBody) {
-    alert('No Request Body found in storage. Open your inventory in the game and try again.');
     return;
   }
 

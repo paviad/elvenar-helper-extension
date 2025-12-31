@@ -11,14 +11,14 @@ export async function sendInventoryQuery(refresh = false) {
   const url = await getFromStorage('reqUrl');
 
   if (!url) {
-    alert('No URL found in storage.');
+    alert("I can't find your inventory, you have to open it in the game (press I) and then refresh this tab.");
     return;
   }
 
   const reqBody = await getFromStorage('reqBodyInventory');
 
   if (!reqBody) {
-    alert('No Request Body found in storage. Open your inventory in the game and try again.');
+    alert("I can't find your inventory, you have to open it in the game (press I) and then refresh this tab.");
     return;
   }
 
