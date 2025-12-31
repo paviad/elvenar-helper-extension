@@ -1,6 +1,6 @@
 {
   "name": "elvenar-helper",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Extension to help with Elvenar",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
@@ -8,11 +8,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack": "webpack",
+    "webpack": "copy assets\\manifest-chrome.json assets\\manifest.json && webpack",
+    "webpack:firefox": "copy assets\\manifest-firefox.json assets\\manifest.json && webpack",
     "start": "ts-node index.ts",
     "pack": "npm run pack:chrome",
-    "pack:chrome": "copy assets\\manifest-chrome.json assets\\manifest.json && npm run webpack && node util/create-store-package.js",
-    "pack:firefox": "copy assets\\manifest-firefox.json assets\\manifest.json && npm run webpack && node util/create-store-package.js store-dist-firefox",
+    "pack:chrome": "copy assets\\manifest-chrome.json assets\\manifest.json && webpack && node util/create-store-package.js",
+    "pack:firefox": "copy assets\\manifest-firefox.json assets\\manifest.json && webpack && node util/create-store-package.js store-dist-firefox",
     "lint": "eslint src"
   },
   "devDependencies": {
@@ -37,7 +38,6 @@
     "@mui/material": "^7.3.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router": "^7.11.0",
-    "rxjs": "^7.8.2"
+    "react-router": "^7.11.0"
   }
 }

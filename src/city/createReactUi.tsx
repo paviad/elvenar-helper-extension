@@ -5,8 +5,6 @@ import { CityMain } from './CityMain';
 import { InventoryMain } from '../inventory/InventoryMain';
 import { LayoutMain } from '../layout/LayoutMain';
 import { TradeMain } from '../trade/TradeMain';
-import { setupMessageListener, setupTradeOpenedListener } from '../chrome/messages';
-import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
 export function createReactUi() {
   const root = createRoot(document.getElementById('root') as HTMLElement);
@@ -23,8 +21,4 @@ export function createReactUi() {
       </Routes>
     </HashRouter>,
   );
-
-  setupMessageListener();
-  setupTradeOpenedListener(tradeOpenedCallback);
 }
-

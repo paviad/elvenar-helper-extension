@@ -22,13 +22,17 @@ chrome.action.onClicked.addListener(async (tab) => {
 const callbackRequest = (details: {
   url: string;
   initiator?: string;
+  originUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestBody?: any;
 }): chrome.webRequest.BlockingResponse | undefined => {
-  const extensionId = chrome.runtime.id;
-  const thisExtensionInitiatorUrl = `chrome-extension://${extensionId}`;
+  // Chrome
+  if (details.initiator?.startsWith('chrome-extension://')) {
+    return;
+  }
 
-  if (details.initiator === thisExtensionInitiatorUrl) {
+  // Firefox
+  if (details.originUrl?.startsWith('moz-extension://')) {
     return;
   }
 
