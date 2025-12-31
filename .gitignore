@@ -37,6 +37,8 @@ Thumbs.db
 # Ignore built ts files
 dist/**/*
 store-dist/**/*
+store-dist-firefox/**/*
+assets/manifest.json
 
 # ignore yarn.lock
 yarn.lock

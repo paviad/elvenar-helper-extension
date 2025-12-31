@@ -1,6 +1,7 @@
 const JSZip = require("jszip");
 const fs = require("fs");
 const path = require("path");
+const process = require("process");
 
 async function createZipFile(filesToZip, outputZipName) {
   const zip = new JSZip();
@@ -38,4 +39,5 @@ const files = getAllFilesInDirectory("./dist").filter(
   (r) => !r.endsWith(".zip")
 );
 
-createZipFile(files, "store-dist/elvenar-helper");
+const outputDir = process.argv[2] || "store-dist";
+createZipFile(files, `${outputDir}/elvenar-helper`);

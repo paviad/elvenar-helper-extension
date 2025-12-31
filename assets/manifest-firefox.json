@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Elvenar Helper Extension",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "A comprehensive toolkit for Elvenar featuring a live city planner, inventory manager, and more.",
   "permissions": [
     "storage",
