@@ -36,6 +36,7 @@ Thumbs.db
 
 # Ignore built ts files
 dist/**/*
+dist-firefox/**/*
 store-dist/**/*
 store-dist-firefox/**/*
 assets/manifest.json

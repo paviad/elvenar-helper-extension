@@ -19,7 +19,7 @@ const splitChunks = {
   },
 };
 
-const commonConfig = {
+const commonConfig = (env) => ({
   mode: 'production',
   optimization: commonOptimization,
   performance: {
@@ -42,7 +42,7 @@ const commonConfig = {
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, env.firefox ? 'dist-firefox' : 'dist'),
   },
   plugins: [
     new CopyWebpackPlugin({
@@ -58,16 +58,16 @@ const commonConfig = {
       hashDigestLength: 20,
     }),
   ],
-};
+});
 
-module.exports = [
+module.exports = (env) => [
   {
     entry: {
       main: './src/index.ts',
       tab: './src/tab.ts',
       popup: './src/popup.ts',
     },
-    ...commonConfig,
+    ...commonConfig(env),
     optimization: {
       ...commonOptimization,
       splitChunks,
@@ -77,7 +77,7 @@ module.exports = [
     entry: {
       svc: './src/service-worker.ts',
     },
-    ...commonConfig,
+    ...commonConfig(env),
     optimization: {
       ...commonOptimization,
     },

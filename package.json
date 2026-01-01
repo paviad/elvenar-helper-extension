@@ -8,8 +8,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack": "copy manifest\\manifest-chrome.json assets\\manifest.json && webpack",
-    "webpack:firefox": "copy manifest\\manifest-firefox.json assets\\manifest.json && webpack",
+    "webpack": "npm run webpack:chrome",
+    "webpack:chrome": "copy manifest\\manifest-chrome.json assets\\manifest.json && webpack",
+    "webpack:firefox": "copy manifest\\manifest-firefox.json assets\\manifest.json && webpack --env=firefox",
     "start": "ts-node index.ts",
     "pack": "npm run pack:chrome",
     "pack:chrome": "copy manifest\\manifest-chrome.json assets\\manifest.json && webpack && node util/create-store-package.js",
