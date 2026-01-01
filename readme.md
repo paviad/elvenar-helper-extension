@@ -2,6 +2,8 @@
 
 [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/kikdpnpfhakidgkojboebobjlknflilc)](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb)
 [![Firefox Add-On](https://img.shields.io/amo/v/elvenar-helper-extension)](https://addons.mozilla.org/en-US/firefox/addon/elvenar-helper-extension/)
+[![Safari Add-On](https://img.shields.io/itunes/v/com.paviad.elvenar-helper-extension)](https://addons.mozilla.org/en-US/firefox/addon/elvenar-helper-extension/)
+
 
 ## Overview
 

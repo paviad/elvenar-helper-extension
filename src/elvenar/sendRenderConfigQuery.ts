@@ -1,9 +1,17 @@
+import { getFromStorage } from '../chrome/storage';
 import { GoodsBuilding } from '../model/goodsBuilding';
 
 let goodsRenderConfig: GoodsBuilding[] = [];
 
 export async function sendRenderConfigQuery(refresh = false) {
   if (!refresh && goodsRenderConfig.length > 0) {
+    return;
+  }
+
+  const referrer = await getFromStorage('reqReferrer');
+
+  if (!referrer) {
+    alert("I didn't see your city, please refresh the game tab and then refresh this tab.");
     return;
   }
 
@@ -15,7 +23,7 @@ export async function sendRenderConfigQuery(refresh = false) {
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
       },
-      referrer: 'https://en3.elvenar.com/',
+      referrer,
       body: null,
       method: 'GET',
       mode: 'cors',

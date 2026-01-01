@@ -1,9 +1,17 @@
+import { getFromStorage } from '../chrome/storage';
 import { Tome } from '../model/tome';
 
 let tomes: Tome[] = [];
 
 export async function sendTomesQuery(refresh = false) {
   if (!refresh && tomes.length > 0) {
+    return;
+  }
+
+  const referrer = await getFromStorage('reqReferrer');
+
+  if (!referrer) {
+    alert("I didn't see your city, please refresh the game tab and then refresh this tab.");
     return;
   }
 
@@ -16,7 +24,7 @@ export async function sendTomesQuery(refresh = false) {
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
       },
-      referrer: 'https://en3.elvenar.com/',
+      referrer,
       body: null,
       method: 'GET',
       mode: 'cors',

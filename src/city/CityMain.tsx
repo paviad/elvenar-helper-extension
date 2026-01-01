@@ -10,7 +10,6 @@ import { CityBlock } from './CityBlock';
 import { CityView } from './CityView';
 import { UnlockedArea } from '../model/unlockedArea';
 import { generateCityBlocks } from './generateCityBlocks';
-import { sendMoveBuildingCommand } from '../elvenar/sendMoveBuildingCommand';
 import { initElvenarchitectData } from '../util/findInElvenArchitect';
 
 export function CityMain() {
@@ -46,10 +45,6 @@ export function CityMain() {
       </Stack>
     </Container>
   );
-}
-
-async function moveBuildingTest() {
-  await sendMoveBuildingCommand(15419, 19, 35);
 }
 
 function generateUnlockedAreas(unlockedAreas: UnlockedArea[]): UnlockedArea[] {

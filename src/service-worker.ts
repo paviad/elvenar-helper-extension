@@ -36,8 +36,14 @@ const callbackRequest = (details: {
     return;
   }
 
+  const urlMatcher = /^(https:\/\/.*?\.elvenar\.com\/)game\/json\?h=[\w\d]+$/;
   // Check if the URL matches the pattern and save it in a global variable
-  if (/^https:\/\/en3\.elvenar\.com\/game\/json\?h=[\w\d]+$/.test(details.url)) {
+  const urlMatch = details.url.match(urlMatcher);
+
+  if (urlMatch) {
+    const referer = urlMatch[1];
+    saveToStorage('reqReferrer', referer);
+
     const decoder = new TextDecoder('utf-8'); // Specify the encoding, UTF-8 is common
     const decodedString = decoder.decode(details.requestBody.raw[0].bytes);
 
@@ -74,7 +80,7 @@ const callbackRequest = (details: {
 };
 
 const filter = {
-  urls: ['https://en3.elvenar.com/*'],
+  urls: ['https://*.elvenar.com/*'],
 };
 
 chrome.webRequest.onBeforeRequest.addListener(callbackRequest, filter, ['requestBody']);

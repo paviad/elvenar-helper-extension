@@ -14,8 +14,9 @@ export async function sendCityDataQuery(refresh = false) {
   }
 
   const url = await getFromStorage('reqUrl');
+  const referrer = await getFromStorage('reqReferrer');
 
-  if (!url) {
+  if (!url || !referrer) {
     alert("I can't find your city data, please refresh the game tab and then refresh this tab.");
     return;
   }
@@ -42,7 +43,7 @@ export async function sendCityDataQuery(refresh = false) {
       'sec-fetch-site': 'same-origin',
       'x-requested-with': 'ElvenarHaxeClient',
     },
-    referrer: 'https://en3.elvenar.com/game',
+    referrer,
     body: reqBody,
     method: 'POST',
     mode: 'cors',

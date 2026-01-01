@@ -9,8 +9,9 @@ export async function sendInventoryQuery(refresh = false) {
   }
 
   const url = await getFromStorage('reqUrl');
+  const referrer = await getFromStorage('reqReferrer');
 
-  if (!url) {
+  if (!url || !referrer) {
     alert("I can't find your inventory, you have to open it in the game (press I) and then refresh this tab.");
     return;
   }
@@ -37,7 +38,7 @@ export async function sendInventoryQuery(refresh = false) {
       'sec-fetch-site': 'same-origin',
       'x-requested-with': 'ElvenarHaxeClient',
     },
-    referrer: 'https://en3.elvenar.com/game',
+    referrer,
     body: reqBody,
     method: 'POST',
     mode: 'cors',

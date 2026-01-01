@@ -1,11 +1,13 @@
+import { getFromStorage } from '../chrome/storage';
 import { Building } from '../model/building';
 import { getCurrentChapter } from './sendCityDataQuery';
 
 let buildings: Building[] = [];
 
 export async function sendBuildingsQuery(refresh = false) {
+  const referrer = await getFromStorage('reqReferrer');
   const chapter = await getCurrentChapter();
-  if (chapter === undefined) {
+  if (chapter === undefined || !referrer) {
     alert('Chapter information is missing. Please fetch city data first.');
     return;
   }
@@ -22,7 +24,7 @@ export async function sendBuildingsQuery(refresh = false) {
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
       },
-      referrer: 'https://en3.elvenar.com/',
+      referrer,
       body: null,
       method: 'GET',
       mode: 'cors',
