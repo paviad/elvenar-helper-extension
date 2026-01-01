@@ -11,12 +11,17 @@ export interface CityEntity {
   connected: boolean;
   setConnections: SetConnections;
   connectionStrategy: string;
-
-  length?: number;
-  width?: number;
-  description?: string;
-  name?: string;
 }
+
+export interface CityEntityExData {
+  length: number;
+  width: number;
+  description: string;
+  name: string;
+  connectionStrategy: string;
+}
+
+export type CityEntityEx = CityEntity & CityEntityExData;
 
 export interface SetConnections {
   __class__: string;

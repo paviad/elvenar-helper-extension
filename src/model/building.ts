@@ -1,5 +1,4 @@
 export interface Building {
-  __class__: string;
   id: string;
   name: string;
   description: string;

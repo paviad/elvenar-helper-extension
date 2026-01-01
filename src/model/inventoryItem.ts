@@ -1,5 +1,4 @@
 export interface InventoryItem {
-  __class__: string;
   id: number;
   amount: number;
   type: string;
@@ -11,6 +10,7 @@ export interface InventoryItem {
   resaleResources?: Record<string, number>;
   chapter?: number;
   spellFragments?: number;
+  size?: string;
 }
 
 export type Property = Chapter | Stage;

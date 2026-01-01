@@ -3922,5 +3922,9 @@
     {
         "link": "z_humans_workerhut",
         "name": "Builders' Hut"
+    },
+    {
+        "link": "a_ch23_premium_large2",
+        "name": "Sheltered Childhood"
     }
 ]

@@ -1,8 +1,7 @@
-import { CityEntity } from '../model/cityEntity';
-import { findInElvenarchitect } from '../util/findInElvenArchitect';
+import { CityEntity, CityEntityEx } from '../model/cityEntity';
 import { CityBlock } from './CityBlock';
 
-export async function generateCityBlocks(cityEntities: CityEntity[]) {
+export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
   function getType(entity: CityEntity): string {
     if (entity.connectionStrategy === 'standalone') {
       return entity.type + '_y';
@@ -27,6 +26,11 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
         return `${m2[1]}`;
       }
     }
+
+    if (/^[GPR]_/.test(entity.cityentity_id)) {
+      return `${entity.level}`;
+    }
+
     return undefined;
   }
 
@@ -42,11 +46,11 @@ export async function generateCityBlocks(cityEntities: CityEntity[]) {
         width: entity.width || 1,
         length: entity.length || 1,
         moved: false,
-        name: entity.name || findInElvenarchitect(entity.cityentity_id) || entity.cityentity_id,
+        name: entity.name,
         entity,
         label: getLabel(entity),
         highlighted: false,
-      }) satisfies CityBlock,
+      } satisfies CityBlock),
   );
 
   return blocks;

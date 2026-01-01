@@ -1,30 +1,23 @@
-import { getBuildings, sendBuildingsQuery } from '../elvenar/sendBuildingsQuery';
-import { getCurrentChapter } from '../elvenar/sendCityDataQuery';
+import { BuildingFinder } from '../city/buildingFinder';
 import { getInventoryItems, sendInventoryQuery } from '../elvenar/sendInventoryQuery';
 import { getItemDefinitions, sendItemsQuery } from '../elvenar/sendItemsQuery';
 import { getTomes, sendTomesQuery } from '../elvenar/sendTomesQuery';
-import { Building } from '../model/building';
+import { BuildingEx } from '../model/buildingEx';
 import { InventoryItem } from '../model/inventoryItem';
 import { ItemDefinition } from '../model/itemDefinition';
 import { Tome } from '../model/tome';
-import { findInElvenarchitect, initElvenarchitectData } from '../util/findInElvenArchitect';
 
 export async function generateInventory() {
-  await initElvenarchitectData();
   await sendInventoryQuery();
-  await sendBuildingsQuery();
   await sendItemsQuery();
   await sendTomesQuery();
   const inventoryItems = getInventoryItems();
-  const buildings = getBuildings();
+
+  const finder = new BuildingFinder();
+  await finder.ensureInitialized();
+
   const items = getItemDefinitions();
   const tomes = getTomes();
-
-  const buildingsDictionary = buildings.reduce((acc, building) => {
-    acc[building.base_name] = acc[building.base_name] || [];
-    acc[building.base_name].push(building);
-    return acc;
-  }, {} as Record<string, Building[]>);
 
   const itemsDictionary = items.reduce((acc, item) => {
     acc[item.id] = item;
@@ -44,21 +37,15 @@ export async function generateInventory() {
     return itemsDictionary[item.subtype];
   }
 
-  function getBuilding(item: InventoryItem): Building | undefined {
+  function getBuilding(item: InventoryItem) {
     if (item.type !== 'city_entity') {
-      return undefined;
+      return;
     }
 
-    const subtypeBaseName = item.subtype.replace(/_\d+/, '');
-    const buildings = buildingsDictionary[subtypeBaseName];
-    if (!buildings || buildings.length === 0) {
-      return undefined;
-    }
-
-    return buildings[0];
+    return finder.getBuilding(item.subtype);
   }
 
-  function getResaleResources(building: Building): Record<string, number> {
+  function getResaleResources(building: BuildingEx): Record<string, number> {
     const resources = { ...building.resale_resources.resources };
 
     delete resources['__class__'];
@@ -91,10 +78,11 @@ export async function generateInventory() {
     return {
       ...r,
       type: getPrettyType(r.type),
-      name: findInElvenarchitect(r.subtype) || building?.name || item?.name || tome?.name || r.subtype,
+      name: building?.name || item?.name || tome?.name || r.subtype,
       resaleResources: (building && getResaleResources(building)) || {},
       chapter: getChapter(r),
       spellFragments: building?.spellFragments || Number(item?.spellFragments) || undefined,
+      size: (building && `${building.width}x${building.length}`) || undefined,
     } satisfies InventoryItem;
   });
 

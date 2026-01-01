@@ -23,7 +23,9 @@ export const InventoryMain = () => {
   const [inventory, setInventory] = React.useState<InventoryItem[]>([]);
   const [search, setSearch] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState('');
-  const [sortBy, setSortBy] = React.useState<'name' | 'chapter' | 'amount' | 'changedAt' | 'cc' | 'rr' | 'spellFragments' | ''>('');
+  const [sortBy, setSortBy] = React.useState<
+    'name' | 'chapter' | 'amount' | 'changedAt' | 'cc' | 'rr' | 'spellFragments' | 'size' | ''
+  >('');
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
   const [aggregate, setAggregate] = React.useState(false);
 
@@ -45,6 +47,7 @@ export const InventoryMain = () => {
       const lower = search.toLowerCase();
       if (item.name && item.name.toLowerCase().includes(lower)) return true;
       if (item.type.toLowerCase().includes(lower)) return true;
+      if (item.size && item.size.toLowerCase().includes(lower)) return true;
       if (item.resaleResources) {
         for (const key of Object.keys(item.resaleResources)) {
           if (key.toLowerCase().includes(lower)) return true;
@@ -65,12 +68,12 @@ export const InventoryMain = () => {
     cc: number;
     rr: number;
     spellFragments: number;
+    size?: string;
   }
   type AggregatedRowDisplay = Omit<AggregatedRow, 'chapters'> & { chapters: string };
   function isAggregatedRowDisplay(row: InventoryItem | AggregatedRowDisplay): row is AggregatedRowDisplay {
     return (
-      typeof (row as AggregatedRowDisplay).cc === 'number' &&
-      typeof (row as AggregatedRowDisplay).chapters === 'string'
+      typeof (row as AggregatedRowDisplay).cc === 'number' && typeof (row as AggregatedRowDisplay).chapters === 'string'
     );
   }
   let displayRows: (InventoryItem | AggregatedRowDisplay)[] = filtered;
@@ -87,6 +90,7 @@ export const InventoryMain = () => {
           cc: 0,
           rr: 0,
           spellFragments: 0,
+          size: item.size,
         });
       }
       const agg = map.get(key);
@@ -132,6 +136,9 @@ export const InventoryMain = () => {
       } else if (sortBy === 'spellFragments') {
         aVal = isAggregatedRowDisplay(a) ? a.spellFragments : a.spellFragments ?? 0;
         bVal = isAggregatedRowDisplay(b) ? b.spellFragments : b.spellFragments ?? 0;
+      } else if (sortBy === 'size') {
+        aVal = (a as InventoryItem).size || '';
+        bVal = (b as InventoryItem).size || '';
       }
       if (aVal === bVal) return 0;
       if (sortDir === 'asc') {
@@ -211,6 +218,15 @@ export const InventoryMain = () => {
               <TableCell
                 style={{ cursor: 'pointer' }}
                 onClick={() => {
+                  setSortBy('size');
+                  setSortDir(sortBy === 'size' && sortDir === 'asc' ? 'desc' : 'asc');
+                }}
+              >
+                Size {sortBy === 'size' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+              </TableCell>
+              <TableCell
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
                   setSortBy('cc');
                   setSortDir(sortBy === 'cc' && sortDir === 'asc' ? 'desc' : 'asc');
                 }}
@@ -253,15 +269,14 @@ export const InventoryMain = () => {
                 <TableCell>{isAggregatedRowDisplay(item) ? item.chapters : item.chapter ?? ''}</TableCell>
                 <TableCell>{item.type}</TableCell>
                 <TableCell>{item.amount}</TableCell>
+                <TableCell>{(item as InventoryItem).size || ''}</TableCell>
                 <TableCell>
                   {isAggregatedRowDisplay(item) ? item.cc : item.resaleResources?.combiningcatalyst ?? ''}
                 </TableCell>
                 <TableCell>
                   {isAggregatedRowDisplay(item) ? item.rr : item.resaleResources?.royalrestoration ?? ''}
                 </TableCell>
-                <TableCell>
-                  {isAggregatedRowDisplay(item) ? item.spellFragments : item.spellFragments ?? ''}
-                </TableCell>
+                <TableCell>{isAggregatedRowDisplay(item) ? item.spellFragments : item.spellFragments ?? ''}</TableCell>
                 <TableCell>
                   {isAggregatedRowDisplay(item)
                     ? '<n/a>'
