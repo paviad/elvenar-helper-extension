@@ -1,6 +1,6 @@
 {
   "name": "elvenar-helper",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Extension to help with Elvenar",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
@@ -14,7 +14,7 @@
     "start": "ts-node index.ts",
     "pack": "npm run pack:chrome",
     "pack:chrome": "copy manifest\\manifest-chrome.json assets\\manifest.json && webpack && node util/create-store-package.js",
-    "pack:firefox": "copy manifest\\manifest-firefox.json assets\\manifest.json && webpack && node util/create-store-package.js store-dist-firefox",
+    "pack:firefox": "copy manifest\\manifest-firefox.json assets\\manifest.json && webpack --env=firefox && node util/create-store-package.js store-dist-firefox",
     "lint": "eslint src"
   },
   "devDependencies": {

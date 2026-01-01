@@ -1,6 +1,7 @@
 import { CityEntity } from '../model/cityEntity';
 
 export interface CityBlock {
+  gameId: string;
   id: number;
   originalX: number;
   originalY: number;

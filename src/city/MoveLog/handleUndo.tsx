@@ -10,24 +10,23 @@ export const handleUndo = (s: CityViewState) => {
   const last = moveLog[moveLog.length - 1];
   if (last.type === 'delete' && last.deletedBlock) {
     const g = last.deletedBlock;
-    setBlocks((prev) => [...prev, g]);
+    setBlocks((prev) => ({ ...prev, [g.id]: g }));
   } else if (last.type === 'duplicate' && last.duplicatedBlock) {
     const g = last.duplicatedBlock;
-    setBlocks((prev) => prev.filter((b) => b.id !== g.id));
+    setBlocks((prev) => {
+      const { [g.id]: _, ...rest } = prev;
+      return rest;
+    });
   } else {
-    setBlocks((prev) =>
-      prev.map((b) => {
-        if (b.id === last.id) {
-          const moved = last.movedChanged !== b.moved;
-          return {
-            ...b,
-            x: last.from.x,
-            y: last.from.y,
-            moved,
-          };
-        } else return b;
-      }),
-    );
+    setBlocks((prev) => ({
+      ...prev,
+      [last.id]: {
+        ...prev[last.id],
+        x: last.from.x,
+        y: last.from.y,
+        moved: last.movedChanged !== prev[last.id].moved,
+      },
+    }));
   }
   setMoveLog((prev) => prev.slice(0, -1));
   setRedoStack((prev) => [...prev, last]);

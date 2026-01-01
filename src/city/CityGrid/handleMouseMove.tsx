@@ -22,7 +22,15 @@ export const handleMouseMove = (s: CityViewState, e: React.MouseEvent) => {
       0,
       Math.min(GridMax - blocks[dragIndex].length, Math.round((mouseY - dragOffset.y) / GridSize)),
     );
-    setBlocks((prev) => prev.map((b, i) => (i === dragIndex ? { ...b, x: newX, y: newY } : b)));
+
+    setBlocks((prev) => ({
+      ...prev,
+      [dragIndex]: {
+        ...prev[dragIndex],
+        x: newX,
+        y: newY,
+      },
+    }));
 
     if (mouseGrid) {
       mouseGrid.innerText = `Grid: (${newX}, ${newY})`;

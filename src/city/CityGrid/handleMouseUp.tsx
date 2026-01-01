@@ -1,4 +1,3 @@
-
 import { CityViewState } from '../CityViewState';
 import { isOverlapping } from './isOverlapping';
 
@@ -21,37 +20,33 @@ export const handleMouseUp = (s: CityViewState) => {
         // Normal case: snap back
         finalX = originalPos.x;
         finalY = originalPos.y;
-        setBlocks((prev) =>
-          prev.map((b, i) =>
-            i === dragIndex
-              ? {
-                  ...b,
-                  x: originalPos.x,
-                  y: originalPos.y,
-                }
-              : b,
-          ),
-        );
+        setBlocks((prev) => ({
+          ...prev,
+          [dragIndex]: {
+            ...prev[dragIndex],
+            x: originalPos.x,
+            y: originalPos.y,
+          },
+        }));
       } else {
         // Duplicate case: remove the block
-        setBlocks((prev) => prev.filter((_, i) => i !== dragIndex));
+        setBlocks((prev) => {
+          const { [dragIndex]: _, ...newBlocks } = prev;
+          return newBlocks;
+        });
       }
     } else if (originalPos) {
       const b = blocks[dragIndex];
       const isOriginal = b.x === b.originalX && b.y === b.originalY;
       const movedChanged = block.moved === isOriginal;
 
-      setBlocks((prev) =>
-        prev.map((b, i) => {
-          if (i === dragIndex) {
-            return {
-              ...b,
-              moved: !isOriginal,
-            };
-          }
-          return b;
-        }),
-      );
+      setBlocks((prev) => ({
+        ...prev,
+        [dragIndex]: {
+          ...prev[dragIndex],
+          moved: !isOriginal,
+        },
+      }));
       // Only log if the position actually changed
       if (originalPos.x !== finalX || originalPos.y !== finalY) {
         setMoveLog((prev) => [

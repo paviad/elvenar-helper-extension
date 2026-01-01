@@ -20,7 +20,7 @@ export class BuildingFinder {
   private chapterRegex = /_Ch\d+/;
   private goodsDictionary!: Record<string, GoodsBuilding[]>;
 
-  elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
+  private elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
   private elvenarchitectData!: ElvenarchitectEntry[];
   private elvenarchitectDictionary!: Record<string, string>;
 
@@ -93,17 +93,17 @@ export class BuildingFinder {
   public getBuilding(id: string, level = 1): BuildingEx | undefined {
     const { baseName } = this.getBaseName(id);
 
-    const buildings = this.buildingsDictionary[baseName]?.[0];
+    const building = this.buildingsDictionary[baseName]?.[0];
     const approx = this.buildingsDictionaryNoLevel[baseName]?.[0];
     const goodsBuilding = this.goodsDictionary[baseName]?.find((r) => r.id.endsWith(`_${level}`)) || approx;
 
-    const length = goodsBuilding?.tile_length || buildings?.length || 1;
-    const width = goodsBuilding?.tile_width || buildings?.width || 1;
+    const length = goodsBuilding?.tile_length || building?.length || 1;
+    const width = goodsBuilding?.tile_width || building?.width || 1;
 
-    if (buildings) {
-      const bldg = buildings;
+    if (building) {
+      const bldg = building;
       return {
-        id,
+        id: goodsBuilding?.id || bldg.id,
         name: bldg.name,
         description: bldg.description,
         length,
@@ -117,7 +117,7 @@ export class BuildingFinder {
     if (goodsBuilding) {
       const bldg = goodsBuilding;
       return {
-        id,
+        id: bldg.id,
         name: this.findInElvenarchitect(bldg.id) || bldg.id,
         description: '',
         length,

@@ -27,7 +27,7 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
       }
     }
 
-    if (/^[GPR]_/.test(entity.cityentity_id)) {
+    if (/^[GPRHMO]_/.test(entity.cityentity_id)) {
       return `${entity.level}`;
     }
 
@@ -37,6 +37,7 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
   const blocks: CityBlock[] = cityEntities.map(
     (entity, index) =>
       ({
+        gameId: entity.cityentity_id,
         id: index,
         originalX: entity.x || 0,
         originalY: entity.y || 0,

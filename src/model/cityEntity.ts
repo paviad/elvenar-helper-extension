@@ -1,5 +1,4 @@
 export interface CityEntity {
-  __class__: string;
   cityentity_id: string;
   id: number;
   level: number;

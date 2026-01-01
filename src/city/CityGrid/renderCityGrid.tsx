@@ -1,15 +1,40 @@
-import { Stack, Button, TextField } from '@mui/material';
+import {
+  Stack,
+  Button,
+  TextField,
+  Dialog,
+  Slider,
+  Typography,
+  Divider,
+  List,
+  ListItemButton,
+  ListItemText,
+  Paper,
+} from '@mui/material';
 import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { blockRect } from './blockRect';
 import { CityViewState } from '../CityViewState';
 import { handleMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
 import { sellStreets } from './sellStreets';
+import { BuildingFinder } from '../buildingFinder';
+import { getMaxLevels } from '../../elvenar/sendRenderConfigQuery';
+import { CityBlock } from '../CityBlock';
+
+interface ShowLevelDialogData {
+  open: boolean;
+  index: number;
+}
 
 export const renderCityGrid = (s: CityViewState) => {
+  // State for Change Level dialog
+  const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
+  const [levelInput, setLevelInput] = useState(1);
   const { GridSize, GridMax, svgRef, menuRef } = s;
   const [blocks, setBlocks] = s.rBlocks;
   const [dragIndex, setDragIndex] = s.rDragIndex;
+  const [dragOffset, setDragOffset] = s.rDragOffset;
   const [searchTerm, setSearchTerm] = s.rSearchTerm;
   const [menu, setMenu] = s.rMenu;
 
@@ -29,10 +54,15 @@ export const renderCityGrid = (s: CityViewState) => {
       matcher = (name: string) => name.toLowerCase().includes(term.toLowerCase());
     }
     setBlocks((prev) =>
-      prev.map((b) => ({
-        ...b,
-        highlighted: Boolean(!!matcher && ((b.name && matcher(b.name)) || (b.type && matcher(b.type)))),
-      })),
+      Object.fromEntries(
+        Object.entries(prev).map(([key, b]) => [
+          Number(key),
+          {
+            ...b,
+            highlighted: Boolean(!!matcher && ((b.name && matcher(b.name)) || (b.type && matcher(b.type)))),
+          },
+        ]),
+      ),
     );
   }
 
@@ -63,6 +93,239 @@ export const renderCityGrid = (s: CityViewState) => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Helper for level up/down: duplicate block, delete original, start drag
+  // mode: 'up' | 'down'
+  async function duplicateAndDeleteBlock(index: number, newLevel: number) {
+    const blockToDup = blocks[index];
+    if (!blockToDup || !blockToDup.label) return;
+    let width = blockToDup.width;
+    let length = blockToDup.length;
+
+    const finder = new BuildingFinder();
+    await finder.ensureInitialized();
+
+    const newBuilding = finder.getBuilding(blockToDup.gameId, newLevel);
+
+    if (!newBuilding || !newBuilding.id.endsWith(`_${newLevel}`)) {
+      return; // Cannot level up/down
+    }
+
+    width = newBuilding.width;
+    length = newBuilding.length;
+
+    const newBlock = {
+      ...blockToDup,
+      id: new Date().getTime(), // Unique ID
+      x: blockToDup.x + 1,
+      y: blockToDup.y + 1,
+      label: `${newLevel}`,
+      width,
+      length,
+    };
+    setBlocks((prev) => {
+      const { [index]: _, ...filtered } = prev;
+      return { ...filtered, [newBlock.id]: newBlock };
+    });
+    // Log the delete for undo/redo
+    const [moveLog, setMoveLog] = s.rMoveLog;
+    setMoveLog((prev) => [
+      ...prev,
+      {
+        id: blockToDup.id,
+        name: blockToDup.name,
+        from: { x: blockToDup.x, y: blockToDup.y },
+        to: { x: blockToDup.x, y: blockToDup.y },
+        movedChanged: false,
+        type: 'delete',
+        deletedBlock: blockToDup,
+      },
+    ]);
+    setDragIndex(newBlock.id);
+    setDragOffset({
+      x: 10,
+      y: 10,
+    });
+    s.rOriginalPos[1](null);
+    setMenu(null);
+  }
+
+  function getPrefix(r: CityBlock) {
+    const c = r.entity.cityentity_id[0];
+    if (r.type.includes('premium')) return `X${c}`;
+    if (c === 'M') return `M${r.entity.cityentity_id[2]}`;
+    return c;
+  }
+
+  function renderLevelDialog() {
+    const block = blocks[showLevelDialog.index];
+    const prefix = getPrefix(block);
+    const maxLevels = getMaxLevels();
+    const maxLevel = maxLevels[prefix];
+    return (
+      <Dialog open={showLevelDialog.open} onClose={() => setShowLevelDialog({ open: false, index: -1 })}>
+        <Stack spacing={2} sx={{ p: 3, minWidth: 300, alignItems: 'center' }}>
+          <Typography variant='h6'>Select Building Level</Typography>
+          <Stack direction='row' alignItems='center' spacing={1} sx={{ mb: 1 }}>
+            <Button
+              variant='outlined'
+              size='small'
+              onClick={() => setLevelInput((prev) => Math.max(1, prev - 1))}
+              sx={{ minWidth: 32, px: 0 }}
+            >
+              -
+            </Button>
+            <TextField
+              label='Level'
+              type='number'
+              slotProps={{ htmlInput: { min: 1, max: maxLevel } }}
+              value={levelInput}
+              onChange={(e) => {
+                let v = Number(e.target.value);
+                if (isNaN(v)) v = 1;
+                if (v < 1) v = 1;
+                if (v > maxLevel) v = maxLevel;
+                setLevelInput(v);
+              }}
+              size='small'
+              sx={{ width: 80 }}
+            />
+            <Button
+              variant='outlined'
+              size='small'
+              onClick={() => setLevelInput((prev) => Math.min(maxLevel, prev + 1))}
+              sx={{ minWidth: 32, px: 0 }}
+            >
+              +
+            </Button>
+          </Stack>
+          <Slider
+            min={1}
+            max={maxLevel}
+            value={levelInput}
+            onChange={(_, v) => setLevelInput(Number(v))}
+            valueLabelDisplay='auto'
+            sx={{ width: 250 }}
+          />
+          <Stack direction='row' spacing={2} sx={{ mt: 2 }}>
+            <Button
+              variant='contained'
+              onClick={() => {
+                setShowLevelDialog({ open: false, index: -1 });
+                duplicateAndDeleteBlock(showLevelDialog.index, levelInput);
+                setMenu(null);
+              }}
+            >
+              OK
+            </Button>
+            <Button variant='outlined' onClick={() => setShowLevelDialog({ open: false, index: -1 })}>
+              Cancel
+            </Button>
+          </Stack>
+        </Stack>
+      </Dialog>
+    );
+  }
+
+  // Helper to convert SVG coordinates to page coordinates
+  function svgToPageCoords(svg: SVGSVGElement | null, x: number, y: number) {
+    if (!svg) return { left: x, top: y };
+    const pt = svg.createSVGPoint();
+    pt.x = x;
+    pt.y = y;
+    const screenCTM = svg.getScreenCTM();
+    if (!screenCTM) return { left: x, top: y };
+    const transformed = pt.matrixTransform(screenCTM);
+    return {
+      left: transformed.x + window.scrollX,
+      top: transformed.y + window.scrollY,
+    };
+  }
+
+  function renderContextMenu() {
+    if (!menu) return null;
+    const svgElem = svgRef.current;
+    const coords = svgToPageCoords(svgElem, menu.x, menu.y);
+    // Render menu as a portal to body
+    return ReactDOM.createPortal(
+      <Paper
+        ref={menuRef}
+        elevation={4}
+        sx={{
+          position: 'absolute',
+          left: coords.left,
+          top: coords.top,
+          minWidth: 140,
+          zIndex: 9999,
+          pointerEvents: 'auto',
+        }}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <List dense disablePadding>
+          <ListItemButton
+            onClick={() => {
+              if (typeof menu.key !== 'number') return setMenu(null);
+              const blockToDup = blocks[menu.key];
+              if (!blockToDup) return setMenu(null);
+              const newBlock = {
+                ...blockToDup,
+                id: new Date().getTime(),
+                x: blockToDup.x + 1,
+                y: blockToDup.y + 1,
+              };
+              setBlocks((prev) => {
+                const newBlocks = { ...prev, [newBlock.id]: newBlock };
+                return newBlocks;
+              });
+              setDragIndex(newBlock.id);
+              s.rOriginalPos[1](null);
+              setMenu(null);
+            }}
+          >
+            <ListItemText primary='Duplicate' />
+          </ListItemButton>
+          <Divider />
+          <ListItemButton
+            onClick={() => {
+              const [blocks, setBlocks] = s.rBlocks;
+              const [moveLog, setMoveLog] = s.rMoveLog;
+              const blockToDelete = blocks[menu.key as number];
+              const { [menu.key as number]: _, ...newBlocks } = blocks;
+              setBlocks(newBlocks);
+              setMoveLog((prev) => [
+                ...prev,
+                {
+                  id: blockToDelete.id,
+                  name: blockToDelete.name,
+                  from: { x: blockToDelete.x, y: blockToDelete.y },
+                  to: { x: blockToDelete.x, y: blockToDelete.y },
+                  movedChanged: false,
+                  type: 'delete',
+                  deletedBlock: blockToDelete,
+                },
+              ]);
+              setMenu(null);
+            }}
+          >
+            <ListItemText primary='Delete' />
+          </ListItemButton>
+          <Divider />
+          {typeof menu.key === 'number' && blocks[menu.key] && /^[GPRHMO]_/.test(blocks[menu.key].gameId) && (
+            <ListItemButton
+              onClick={() => {
+                if (typeof menu.key !== 'number') return setMenu(null);
+                setLevelInput(Number(blocks[menu.key].label) || 1);
+                setShowLevelDialog({ open: true, index: menu.key });
+              }}
+            >
+              <ListItemText primary='Change Level' />
+            </ListItemButton>
+          )}
+        </List>
+      </Paper>,
+      document.body,
+    );
+  }
 
   return (
     <Stack>
@@ -152,14 +415,16 @@ export const renderCityGrid = (s: CityViewState) => {
 
           {(() => {
             // If dragging, render dragged block last (on top)
-            const withIndex = blocks.map((b, i) => [b, i] as const);
-            const blocksBelowUnmoved = withIndex.filter(([b, i]) => i !== dragIndex && !b.moved && !b.highlighted);
-            const blocksBelow = withIndex.filter(([b, i]) => i !== dragIndex && b.moved && !b.highlighted);
-            const blocksHighlighted = withIndex.filter(([b, i]) => i !== dragIndex && b.highlighted);
+            const withIndex = Object.entries(blocks);
+            const blocksBelowUnmoved = withIndex.filter(
+              ([i, b]) => Number(i) !== dragIndex && !b.moved && !b.highlighted,
+            );
+            const blocksBelow = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.moved && !b.highlighted);
+            const blocksHighlighted = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.highlighted);
             const sortedBlocks = [
-              ...blocksBelowUnmoved.map(([block, index]) => blockRect(s, index, block)),
-              ...blocksBelow.map(([block, index]) => blockRect(s, index, block)),
-              ...blocksHighlighted.map(([block, index]) => blockRect(s, index, block)),
+              ...blocksBelowUnmoved.map(([index, block]) => blockRect(s, Number(index), block)),
+              ...blocksBelow.map(([index, block]) => blockRect(s, Number(index), block)),
+              ...blocksHighlighted.map(([index, block]) => blockRect(s, Number(index), block)),
             ];
             if (dragIndex !== null) {
               const draggedBlock = blocks[dragIndex];
@@ -168,71 +433,11 @@ export const renderCityGrid = (s: CityViewState) => {
             return sortedBlocks;
           })()}
 
-          {/* Context Menu */}
-          {menu && (
-            <foreignObject x={menu.x} y={menu.y} width={140} height={70} style={{ pointerEvents: 'none' }}>
-              <div
-                ref={menuRef}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  background: 'white',
-                  border: '1px solid #ccc',
-                  borderRadius: 4,
-                  // boxShadow removed due to visual issues
-                  zIndex: 9999,
-                  minWidth: 120,
-                  pointerEvents: 'auto',
-                }}
-                onContextMenu={(e) => e.preventDefault()}
-              >
-                <MenuEntry
-                  label='Duplicate'
-                  onClick={() => {
-                    if (typeof menu.key !== 'number') return setMenu(null);
-                    const blockToDup = blocks[menu.key];
-                    if (!blockToDup) return setMenu(null);
-                    const newBlock = {
-                      ...blockToDup,
-                      id: blocks.length,
-                      x: blockToDup.x + 1,
-                      y: blockToDup.y + 1,
-                    };
-                    setBlocks((prev) => {
-                      const newBlocks = [...prev, newBlock];
-                      return newBlocks;
-                    });
-                    setDragIndex(newBlock.id);
-                    s.rOriginalPos[1](null);
-                    setMenu(null);
-                  }}
-                />
-                <MenuEntry
-                  label='Delete'
-                  onClick={() => {
-                    const [blocks, setBlocks] = s.rBlocks;
-                    const [moveLog, setMoveLog] = s.rMoveLog;
-                    const blockToDelete = blocks[menu.key as number];
-                    setBlocks(blocks.filter((b, i) => i !== menu.key));
-                    setMoveLog((prev) => [
-                      ...prev,
-                      {
-                        id: blockToDelete.id,
-                        name: blockToDelete.name,
-                        from: { x: blockToDelete.x, y: blockToDelete.y },
-                        to: { x: blockToDelete.x, y: blockToDelete.y },
-                        movedChanged: false,
-                        type: 'delete',
-                        deletedBlock: blockToDelete,
-                      },
-                    ]);
-                    setMenu(null);
-                  }}
-                />
-              </div>
-            </foreignObject>
-          )}
+          {/* Modal Numeric Input Dialog */}
+          {showLevelDialog.open && renderLevelDialog()}
+
+          {/* Context Menu (now rendered as portal) */}
+          {menu && renderContextMenu()}
         </svg>
       </div>
     </Stack>

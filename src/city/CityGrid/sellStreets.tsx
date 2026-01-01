@@ -2,5 +2,5 @@ import { CityViewState } from '../CityViewState';
 
 export const sellStreets = (s: CityViewState) => {
   const [_, setBlocks] = s.rBlocks;
-  setBlocks((prev) => prev.filter((b) => b.type !== 'street'));
+  setBlocks((prev) => Object.fromEntries(Object.entries(prev).filter(([_, b]) => b.type !== 'street')));
 };

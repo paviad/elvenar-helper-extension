@@ -6,15 +6,15 @@ export function isOverlapping(
   movingIndex: number,
   newX: number,
   newY: number,
-  allBlocks: CityBlock[],
+  allBlocks: Record<number, CityBlock>,
 ): boolean {
   const mx1 = newX;
   const my1 = newY;
   const mx2 = newX + moving.width - 1;
   const my2 = newY + moving.length - 1;
-  for (let i = 0; i < allBlocks.length; i++) {
-    if (i === movingIndex) continue;
-    const b = allBlocks[i];
+  for (const [k, v] of Object.entries(allBlocks)) {
+    if (Number(k) === movingIndex) continue;
+    const b = v;
     const bx1 = b.x;
     const by1 = b.y;
     const bx2 = b.x + b.width - 1;

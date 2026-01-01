@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { CityBlock } from '../CityBlock';
 import { getTypeColor } from '../Legend/getTypeColor';
 import { CityViewState } from '../CityViewState';
 import { handleMouseDown } from './handleMouseDown';
 
 export const blockRect = (s: CityViewState, key: string | number, block: CityBlock) => {
-  const { GridSize, opacity, menuRef } = s;
+  const { GridSize, opacity } = s;
 
   // Context menu state
   const [_1, setMenu] = s.rMenu;

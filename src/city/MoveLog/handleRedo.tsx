@@ -9,24 +9,20 @@ export const handleRedo = (s: CityViewState) => {
   if (redoStack.length === 0) return;
   const last = redoStack[redoStack.length - 1];
   if (last.type === 'delete' && last.deletedBlock) {
-    setBlocks((prev) => prev.filter((b) => b.id !== last.id));
+    setBlocks((prev) => Object.fromEntries(Object.entries(prev).filter(([_, b]) => b.id !== last.id)));
   } else if (last.type === 'duplicate' && last.duplicatedBlock) {
     const g = last.duplicatedBlock;
-    setBlocks((prev) => [...prev, g]);
+    setBlocks((prev) => ({ ...prev, [g.id]: g }));
   } else {
-    setBlocks((prev) =>
-      prev.map((b) => {
-        if (b.id === last.id) {
-          const moved = last.movedChanged !== b.moved;
-          return {
-            ...b,
-            x: last.to.x,
-            y: last.to.y,
-            moved,
-          };
-        } else return b;
-      }),
-    );
+    setBlocks((prev) => ({
+      ...prev,
+      [last.id]: {
+        ...prev[last.id],
+        x: last.to.x,
+        y: last.to.y,
+        moved: last.movedChanged !== prev[last.id].moved,
+      },
+    }));
   }
   setMoveLog((prev) => [...prev, last]);
   setRedoStack((prev) => prev.slice(0, -1));

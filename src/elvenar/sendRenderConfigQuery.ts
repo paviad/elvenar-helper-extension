@@ -2,6 +2,7 @@ import { getFromStorage } from '../chrome/storage';
 import { GoodsBuilding } from '../model/goodsBuilding';
 
 let goodsRenderConfig: GoodsBuilding[] = [];
+let maxLevels: Record<string, number> = {};
 
 export async function sendRenderConfigQuery(refresh = false) {
   if (!refresh && goodsRenderConfig.length > 0) {
@@ -35,6 +36,22 @@ export async function sendRenderConfigQuery(refresh = false) {
 
   goodsRenderConfig = json.building_configs;
 
+  maxLevels = goodsRenderConfig
+    .filter((r) => /^[GPRHMO]_/.test(r.id))
+    .map((r) => ({
+      prefix: getPrefix(r),
+      level: Number(/_(\d+)$/.exec(r.id)?.[1]),
+    }))
+    .reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr.prefix]: Math.max(acc[curr.prefix] || 0, curr.level),
+      }),
+      {} as Record<string, number>,
+    );
+
+  console.log('Max Levels:', maxLevels);
+
   // const postResponse = await fetch("https://localhost:7274/api/goods", {
   //   method: "POST",
   //   headers: {
@@ -44,4 +61,12 @@ export async function sendRenderConfigQuery(refresh = false) {
   // });
 }
 
+export const getPrefix = (r: GoodsBuilding) => {
+  const c = r.id[0];
+  if (r.type.includes('premium')) return `X${c}`;
+  if (c === 'M') return `M${r.id[2]}`;
+  return c;
+};
+
 export const getGoodsBuildings = () => goodsRenderConfig;
+export const getMaxLevels = () => maxLevels;
