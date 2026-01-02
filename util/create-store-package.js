@@ -35,9 +35,12 @@ function getAllFilesInDirectory(dir) {
   return results;
 }
 
-const files = getAllFilesInDirectory("./dist").filter(
+const isFirefox = process.argv[2] === "firefox";
+const distDir = isFirefox ? "./dist-firefox" : "./dist";
+const storeDistDir = isFirefox ? "./store-dist-firefox" : "./store-dist";
+
+const files = getAllFilesInDirectory(distDir).filter(
   (r) => !r.endsWith(".zip")
 );
 
-const outputDir = process.argv[2] || "store-dist";
-createZipFile(files, `${outputDir}/elvenar-helper`);
+createZipFile(files, `${storeDistDir}/elvenar-helper`);
