@@ -1,32 +1,12 @@
-import { getFromStorage, saveToStorage } from '../chrome/storage';
 import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { UnlockedArea } from '../model/unlockedArea';
+import { ElvenarUserData } from '../model/userData';
+import { AccountData, getAccountId, setAccountData } from './AccountManager';
 
-let cityEntities: CityEntity[] = [];
-let unlockedAreas: UnlockedArea[] = [];
-let chapter: number;
-let boostedGoods: string[] = [];
-
-export async function sendCityDataQuery(refresh = false) {
-  if (!refresh && cityEntities.length > 0 && unlockedAreas.length > 0) {
-    return;
-  }
-
-  const url = await getFromStorage('reqUrl');
-  const referrer = await getFromStorage('reqReferrer');
-
-  if (!url || !referrer) {
-    alert("I can't find your city data, please refresh the game tab and then refresh this tab.");
-    return;
-  }
-
-  const reqBody = await getFromStorage('reqBodyCity');
-
-  if (!reqBody) {
-    alert("I can't find your city data, please refresh the game tab and then refresh this tab.");
-    return;
-  }
+export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
+  const { reqUrl: url, reqReferrer: referrer, reqBodyCity: reqBody, worldId } = sharedInfo;
 
   const response = await fetch(url, {
     headers: {
@@ -57,52 +37,54 @@ export async function sendCityDataQuery(refresh = false) {
     return;
   }
 
-  const json = await response.json();
+  const json = (await response.json()) as [{ requestClass: string; responseData: unknown }];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const responseData = json.find((r: any) => r.requestClass === 'StartupService')?.responseData;
+  const responseData = json.find((r) => r.requestClass === 'StartupService')?.responseData as {
+    user_data: ElvenarUserData;
+    featureFlags: { feature: string }[];
+    city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
+    relic_boost_good: BoostedGoods[];
+  };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  chapter = Number(responseData?.featureFlags?.find((r: any) => r.feature.startsWith('ch'))?.feature.replace('ch', ''));
-  saveToStorage('currentChapter', `${chapter}`);
+  console.log(responseData);
 
-  const boostedGoodsRaw: BoostedGoods[] = responseData?.relic_boost_good;
-  boostedGoods = boostedGoodsRaw.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`);
-  saveToStorage('boostedGoods', JSON.stringify(boostedGoods));
+  const { user_data, featureFlags, city_map, relic_boost_good } = responseData;
 
-  const city_map = responseData?.city_map;
-  if (!city_map) {
-    alert('City map data not found in response. Please report this bug to the developer.');
-    return;
-  }
+  const maxChapter = Number(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    featureFlags?.find((r: any) => r.feature.startsWith('ch'))?.feature.replace('ch', ''),
+  );
 
-  cityEntities = city_map.entities;
-  unlockedAreas = city_map.unlocked_areas;
+  const boostedGoods = relic_boost_good.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`);
 
-  // const postResponse = await fetch("https://localhost:7274/api/cityentities", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json", // Declare the content type
-  //   },
-  //   body: JSON.stringify(cityEntities),
-  // });
+  const chapter = user_data.technologySection.index;
+
+  const cityEntities = city_map.entities;
+  const unlockedAreas = city_map.unlocked_areas;
+
+  const worldNames: Record<string, string> = {
+    '1': 'Arendyll',
+    '2': 'Wyniandor',
+    '3': 'Felyndral',
+  };
+  const accountId = getAccountId(user_data.player_id, worldId);
+  const worldName = worldNames[worldId[worldId.length - 1]] || 'Unknown World';
+  const accountName = `${user_data.user_name} (${worldId} ${worldName})`;
+
+  const data = {
+    cityQuery: {
+      maxChapter,
+      boostedGoods,
+      chapter,
+      cityEntities,
+      unlockedAreas,
+      userData: user_data,
+      accountId,
+      accountName,
+      url,
+    },
+    sharedInfo,
+  } satisfies AccountData;
+
+  await setAccountData(accountId, data);
 }
-
-export const getCityEntities = () => cityEntities;
-export const getUnlockedAreas = () => unlockedAreas;
-export const getCurrentChapter = async () => {
-  const ch = await getFromStorage('currentChapter');
-  if (ch === undefined) {
-    await sendCityDataQuery();
-    return chapter;
-  }
-  return ch ? Number(ch) : undefined;
-};
-export const getBoostedGoods = async () => {
-  const bg = await getFromStorage('boostedGoods');
-  if (bg === undefined) {
-    await sendCityDataQuery();
-    return boostedGoods;
-  }
-  return bg ? JSON.parse(bg) : [];
-};

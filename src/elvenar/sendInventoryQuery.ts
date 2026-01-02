@@ -1,27 +1,9 @@
-import { getFromStorage } from '../chrome/storage';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { InventoryItem } from '../model/inventoryItem';
+import { getAccountBySessionId } from './AccountManager';
 
-let inventoryItems: InventoryItem[] = [];
-
-export async function sendInventoryQuery(refresh = false) {
-  if (!refresh && inventoryItems.length > 0) {
-    return;
-  }
-
-  const url = await getFromStorage('reqUrl');
-  const referrer = await getFromStorage('reqReferrer');
-
-  if (!url || !referrer) {
-    alert("I can't find your inventory, you have to open it in the game (press I) and then refresh this tab.");
-    return;
-  }
-
-  const reqBody = await getFromStorage('reqBodyInventory');
-
-  if (!reqBody) {
-    alert("I can't find your inventory, you have to open it in the game (press I) and then refresh this tab.");
-    return;
-  }
+export async function sendInventoryQuery(sharedInfo: ExtensionSharedInfo) {
+  const { reqUrl: url, reqReferrer: referrer, reqBodyInventory: reqBody, worldId } = sharedInfo;
 
   const response = await fetch(url, {
     headers: {
@@ -52,17 +34,12 @@ export async function sendInventoryQuery(refresh = false) {
     return;
   }
 
-  const json = await response.json();
+  const json = (await response.json()) as [unknown, { responseData: InventoryItem[] }];
+  console.log('inventory response', json, sharedInfo.sessionId);
 
-  inventoryItems = json[1].responseData;
+  const accountData = getAccountBySessionId(sharedInfo.sessionId);
 
-  // const postResponse = await fetch("https://localhost:7274/api/inventory", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json", // Declare the content type
-  //   },
-  //   body: JSON.stringify(inventoryItems),
-  // });
+  if (accountData) {
+    accountData.inventoryItems = json[1].responseData;
+  }
 }
-
-export const getInventoryItems = () => inventoryItems;

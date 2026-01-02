@@ -1,46 +1,33 @@
 import { getFromStorage } from '../chrome/storage';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Tome } from '../model/tome';
 
-let tomes: Tome[] = [];
+export async function sendTomesQuery(sharedInfo: ExtensionSharedInfo) {
+  const { reqUrl: url, reqReferrer: referrer } = sharedInfo;
 
-export async function sendTomesQuery(refresh = false) {
-  if (!refresh && tomes.length > 0) {
-    return;
-  }
-
-  const referrer = await getFromStorage('reqReferrer');
-
-  if (!referrer) {
-    alert("I didn't see your city, please refresh the game tab and then refresh this tab.");
-    return;
-  }
-
-  // for (let chapter = maxChapter; chapter >= 1; chapter--) {
-  const response = await fetch(
-    'https://oxen.innogamescdn.com/frontend//static/en_DK/xml.balancing.rewards.reward_selection_kit.RewardSelectionKit_6c00f58ca35542ceaefa429b36ef22c3.json',
-    {
-      headers: {
-        'sec-ch-ua': '"Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-      },
-      referrer,
-      body: null,
-      method: 'GET',
-      mode: 'cors',
-      credentials: 'omit',
+  const response = await fetch(url, {
+    headers: {
+      'sec-ch-ua': '"Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
     },
-  );
+    referrer,
+    body: null,
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'omit',
+  });
 
-  tomes = await response.json();
+  const tomes = (await response.json()) as Tome[];
 
-  // const postResponse = await fetch("https://localhost:7274/api/buildings", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json", // Declare the content type
-  //   },
-  //   body: JSON.stringify(buildings),
-  // });
+  return tomes;
 }
 
-export const getTomes = () => tomes;
+export async function getTomes() {
+  const json = await getFromStorage('tomes');
+  if (json) {
+    return JSON.parse(json) as Tome[];
+  } else {
+    return [];
+  }
+}

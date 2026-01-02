@@ -1,24 +1,40 @@
 import * as React from 'react';
 import { Box, Container, Stack } from '@mui/material';
-import { getCityEntities, getUnlockedAreas, sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { CityEntityEx } from '../model/cityEntity';
 import { CityBlock } from './CityBlock';
 import { CityView } from './CityView';
 import { UnlockedArea } from '../model/unlockedArea';
 import { generateCityBlocks } from './generateCityBlocks';
-import { BuildingFinder } from './buildingFinder';
+
+import { useGlobalStore } from '../util/globalStore';
+import { generateCity } from './generateCity';
+import { generateUnlockedAreas } from './generateUnlockedAreas';
 
 export function CityMain() {
   const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntityEx[], UnlockedArea[]]);
   const [blocks, setBlocks] = React.useState([] as CityBlock[]);
   const [unlockedAreas, setUnlockedAreas] = React.useState([] as UnlockedArea[]);
 
+  const accountId = useGlobalStore((state) => state.accountId);
+
+  const [f, forceUpdate] = React.useReducer((x) => {
+    console.log('Force update called', x);
+    return x + 1;
+  }, 0);
+
   React.useEffect(() => {
     async function fetchCityData() {
-      await generateCity(setCityEntities);
+      console.log('Fetching city data for accountId:', accountId);
+      if (!accountId) {
+        return;
+      }
+      const entities = await generateCity(accountId);
+      if (entities) {
+        setCityEntities([entities.q, entities.unlockedAreas]);
+      }
     }
     fetchCityData();
-  }, []);
+  }, [accountId, f]);
 
   React.useEffect(() => {
     async function updateBlocks() {
@@ -35,31 +51,9 @@ export function CityMain() {
       <Stack>
         <Stack direction={'row'}>{/* <Button onClick={() => moveBuildingTest()}>Test Move Building</Button> */}</Stack>
         <Box>
-          <CityView blocks={blocks} unlockedAreas={unlockedAreas} />
+          <CityView blocks={blocks} unlockedAreas={unlockedAreas} forceUpdate={forceUpdate} />
         </Box>
       </Stack>
     </Container>
   );
-}
-
-function generateUnlockedAreas(unlockedAreas: UnlockedArea[]): UnlockedArea[] {
-  return unlockedAreas.map((r) => ({ ...r, x: r.x || 0, y: r.y || 0 }));
-}
-
-async function generateCity(setCityEntities: React.Dispatch<React.SetStateAction<[CityEntityEx[], UnlockedArea[]]>>) {
-  await sendCityDataQuery();
-  // await sendInventoryQuery();
-
-  const finder = new BuildingFinder();
-  await finder.ensureInitialized();
-
-  const cityEntities = getCityEntities();
-  const unlockedAreas = getUnlockedAreas();
-
-  const q = cityEntities.map((entity) => ({
-    ...entity,
-    ...finder.getCityEntityExtraData(entity.cityentity_id, entity.level),
-  })) satisfies CityEntityEx[];
-
-  setCityEntities([q, unlockedAreas]);
 }

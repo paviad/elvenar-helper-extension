@@ -1,6 +1,6 @@
 {
   "name": "elvenar-helper",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "Extension to help with Elvenar",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
@@ -39,6 +39,7 @@
     "@mui/material": "^7.3.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router": "^7.11.0"
+    "react-router": "^7.11.0",
+    "zustand": "^5.0.9"
   }
 }

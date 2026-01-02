@@ -18,9 +18,10 @@ import {
   FormControlLabel,
   Switch,
 } from '@mui/material';
+import { useGlobalStore } from '../util/globalStore';
 
 export const InventoryMain = () => {
-  const [inventory, setInventory] = React.useState<InventoryItem[]>([]);
+  const [inventory, setInventory] = React.useState<InventoryItem[] | undefined>([]);
   const [search, setSearch] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState('');
   const [sortBy, setSortBy] = React.useState<
@@ -29,19 +30,25 @@ export const InventoryMain = () => {
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
   const [aggregate, setAggregate] = React.useState(false);
 
+  const accountId = useGlobalStore((state) => state.accountId);
+
   React.useEffect(() => {
     async function fetchInventory() {
-      const inventory = await generateInventory();
+      if (!accountId) {
+        return;
+      }
+      const inventory = await generateInventory(accountId);
+      console.log('Generated inventory for accountId:', accountId, inventory);
       setInventory(inventory);
     }
     fetchInventory();
-  }, []);
+  }, [accountId]);
 
   // Get unique types and subtypes for filter dropdowns
-  const types = React.useMemo(() => Array.from(new Set(inventory.map((i) => i.type))).sort(), [inventory]);
+  const types = React.useMemo(() => Array.from(new Set((inventory || []).map((i) => i.type))).sort(), [inventory]);
 
   // Filtered and searched inventory
-  const filtered = inventory.filter((item) => {
+  const filtered = (inventory || []).filter((item) => {
     const matchesSearch = (() => {
       if (!search) return true;
       const lower = search.toLowerCase();
@@ -150,7 +157,7 @@ export const InventoryMain = () => {
   }
 
   // Total items if only type filter is applied (no text filter)
-  const totalTypeFiltered = inventory.filter((item) => {
+  const totalTypeFiltered = (inventory || []).filter((item) => {
     const matchesType = !typeFilter || item.type === typeFilter;
     return matchesType;
   }).length;
@@ -183,112 +190,128 @@ export const InventoryMain = () => {
       <Box mb={1} fontWeight='bold'>
         Showing {displayRows.length} of {totalTypeFiltered} items
       </Box>
-      <TableContainer component={Paper}>
-        <Table size='small'>
-          <TableHead>
-            <TableRow>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('name');
-                  setSortDir(sortBy === 'name' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                Name {sortBy === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('chapter');
-                  setSortDir(sortBy === 'chapter' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                Chapter{aggregate ? 's' : ''} {sortBy === 'chapter' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('amount');
-                  setSortDir(sortBy === 'amount' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                Amount {sortBy === 'amount' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('size');
-                  setSortDir(sortBy === 'size' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                Size {sortBy === 'size' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('cc');
-                  setSortDir(sortBy === 'cc' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                CC {sortBy === 'cc' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('rr');
-                  setSortDir(sortBy === 'rr' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                RR {sortBy === 'rr' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('spellFragments');
-                  setSortDir(sortBy === 'spellFragments' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                Spell Fragments {sortBy === 'spellFragments' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-              <TableCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSortBy('changedAt');
-                  setSortDir(sortBy === 'changedAt' && sortDir === 'asc' ? 'desc' : 'asc');
-                }}
-              >
-                Changed At {sortBy === 'changedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {displayRows.map((item, idx) => (
-              <TableRow key={('id' in item ? item.id : item.name) ?? idx}>
-                <TableCell>{item.name || ''}</TableCell>
-                <TableCell>{isAggregatedRowDisplay(item) ? item.chapters : item.chapter ?? ''}</TableCell>
-                <TableCell>{item.type}</TableCell>
-                <TableCell>{item.amount}</TableCell>
-                <TableCell>{(item as InventoryItem).size || ''}</TableCell>
-                <TableCell>
-                  {isAggregatedRowDisplay(item) ? item.cc : item.resaleResources?.combiningcatalyst ?? ''}
+      {((inventory !== undefined) && (
+        <TableContainer component={Paper}>
+          <Table size='small'>
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('name');
+                    setSortDir(sortBy === 'name' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Name {sortBy === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </TableCell>
-                <TableCell>
-                  {isAggregatedRowDisplay(item) ? item.rr : item.resaleResources?.royalrestoration ?? ''}
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('chapter');
+                    setSortDir(sortBy === 'chapter' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Chapter{aggregate ? 's' : ''} {sortBy === 'chapter' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </TableCell>
-                <TableCell>{isAggregatedRowDisplay(item) ? item.spellFragments : item.spellFragments ?? ''}</TableCell>
-                <TableCell>
-                  {isAggregatedRowDisplay(item)
-                    ? '<n/a>'
-                    : item.changedAt
-                    ? new Date(item.changedAt * 1000).toLocaleString()
-                    : ''}
+                <TableCell>Type</TableCell>
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('amount');
+                    setSortDir(sortBy === 'amount' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Amount {sortBy === 'amount' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                </TableCell>
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('size');
+                    setSortDir(sortBy === 'size' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Size {sortBy === 'size' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                </TableCell>
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('cc');
+                    setSortDir(sortBy === 'cc' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  CC {sortBy === 'cc' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                </TableCell>
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('rr');
+                    setSortDir(sortBy === 'rr' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  RR {sortBy === 'rr' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                </TableCell>
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('spellFragments');
+                    setSortDir(sortBy === 'spellFragments' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Spell Fragments {sortBy === 'spellFragments' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                </TableCell>
+                <TableCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSortBy('changedAt');
+                    setSortDir(sortBy === 'changedAt' && sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Changed At {sortBy === 'changedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {displayRows.map((item, idx) => (
+                <TableRow key={('id' in item ? item.id : item.name) ?? idx}>
+                  <TableCell>{item.name || ''}</TableCell>
+                  <TableCell>{isAggregatedRowDisplay(item) ? item.chapters : item.chapter ?? ''}</TableCell>
+                  <TableCell>{item.type}</TableCell>
+                  <TableCell>{item.amount}</TableCell>
+                  <TableCell>{(item as InventoryItem).size || ''}</TableCell>
+                  <TableCell>
+                    {isAggregatedRowDisplay(item) ? item.cc : item.resaleResources?.combiningcatalyst ?? ''}
+                  </TableCell>
+                  <TableCell>
+                    {isAggregatedRowDisplay(item) ? item.rr : item.resaleResources?.royalrestoration ?? ''}
+                  </TableCell>
+                  <TableCell>
+                    {isAggregatedRowDisplay(item) ? item.spellFragments : item.spellFragments ?? ''}
+                  </TableCell>
+                  <TableCell>
+                    {isAggregatedRowDisplay(item)
+                      ? '<n/a>'
+                      : item.changedAt
+                      ? new Date(item.changedAt * 1000).toLocaleString()
+                      : ''}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )) || (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <Box textAlign="center">
+            <Box fontSize={28} fontWeight="bold" color="text.secondary" mb={1}>
+              Inventory not found
+            </Box>
+            <Box fontSize={20} color="text.secondary">
+              Please open your inventory in Elvenar and switch to the "Summons" tab to load the data.<br />
+              Then refresh this page.
+            </Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };

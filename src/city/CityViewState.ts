@@ -4,6 +4,8 @@ import { CityBlock } from './CityBlock';
 import { MoveLogInterface } from './MoveLog/MoveLogInterface';
 import { handleUndo } from './MoveLog/handleUndo';
 import { handleRedo } from './MoveLog/handleRedo';
+import { useGlobalStore } from '../util/globalStore';
+import { getMaxLevels } from '../elvenar/sendRenderConfigQuery';
 
 export class CityViewState {
   rMoveLog = useState<MoveLogInterface[]>([]);
@@ -13,9 +15,12 @@ export class CityViewState {
   rOriginalPos = useState<{ x: number; y: number } | null>(null);
   rSearchTerm = useState('');
   rMenu = useState<{ key: string | number; x: number; y: number } | null>(null);
+  rMaxLevels = useState<Record<string, number>>({});
+
   menuRef = useRef<HTMLDivElement | null>(null);
   svgRef = useRef<SVGSVGElement>(null);
   mousePositionRef = useRef<HTMLDivElement>(null);
+  accountId = useGlobalStore((state) => state.accountId);
   allTypes;
   rBlocks;
   GridSize = 15;
@@ -24,7 +29,7 @@ export class CityViewState {
   handleUndo = () => handleUndo(this);
   handleRedo = () => handleRedo(this);
 
-  constructor(public props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[] }) {
+  constructor(public props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[]; forceUpdate: () => void }) {
     this.rBlocks = useState<Record<number, CityBlock>>(props.blocks);
 
     // Get all unique types for color mapping
@@ -60,5 +65,13 @@ export class CityViewState {
       const [_, setBlocks] = this.rBlocks;
       setBlocks(this.props.blocks);
     }, [this.props.blocks]);
+
+    React.useEffect(() => {
+      const fetchMaxLevels = async () => {
+        const maxLevels = await getMaxLevels();
+        this.rMaxLevels[1](maxLevels);
+      };
+      fetchMaxLevels();
+    }, []);
   }
 }

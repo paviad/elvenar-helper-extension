@@ -75,7 +75,7 @@ module.exports = (env) => [
   },
   {
     entry: {
-      svc: './src/service-worker.ts',
+      svc: './src/service-worker/svc.ts',
     },
     ...commonConfig(env),
     optimization: {

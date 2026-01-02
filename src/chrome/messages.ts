@@ -13,7 +13,12 @@ export interface TradeParsedMessage {
   }[];
 }
 
-export type AllMessages = TradeOpenedMessage | TradeParsedMessage;
+export interface RefreshCityMessage {
+  type: 'refreshCity';
+  accountId: string;
+}
+
+export type AllMessages = TradeOpenedMessage | TradeParsedMessage | RefreshCityMessage;
 
 export const sendTradeOpenedMessage = async () => {
   try {
@@ -37,8 +42,25 @@ export const sendTradeParsedMessage = async (trades: TradeSummary[]) => {
   } satisfies TradeParsedMessage);
 };
 
+export const sendRefreshCityMessage = async (accountId: string) => {
+  let resolveFn: () => void = () => {
+    // Do nothing
+  };
+  const responsePromise = new Promise<void>((resolve) => (resolveFn = resolve));
+  await chrome.runtime.sendMessage(
+    {
+      type: 'refreshCity',
+      accountId,
+    } satisfies RefreshCityMessage,
+    undefined,
+    resolveFn,
+  );
+
+  await responsePromise;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const callbackMap: Record<string, (...args: any[]) => void> = {};
+const callbackMap: Record<string, (...args: any[]) => any> = {};
 
 const messageReceiver = (
   message: unknown,
@@ -47,7 +69,15 @@ const messageReceiver = (
 ): boolean | undefined => {
   const callback = callbackMap[(message as AllMessages).type];
   if (callback) {
-    callback(message);
+    const rc = callback(message);
+    if (rc instanceof Promise) {
+      rc.then(() => sendResponse());
+      return true;
+    } else {
+      sendResponse();
+    }
+  } else {
+    sendResponse();
   }
   return undefined;
 };
@@ -56,3 +86,5 @@ export const setupMessageListener = () => chrome.runtime.onMessage.addListener(m
 export const setupTradeOpenedListener = (callback: () => void) => (callbackMap['tradeOpened'] = callback);
 export const setupTradeParsedListener = (callback: (tradesMsg: TradeParsedMessage) => void) =>
   (callbackMap['tradeParsed'] = callback);
+export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<void>) =>
+  (callbackMap['refreshCity'] = callback);

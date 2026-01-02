@@ -1,25 +1,9 @@
-import { getFromStorage } from '../chrome/storage';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Trade } from '../model/trade';
+import { getAccountBySessionId } from './AccountManager';
 
-let trades: Trade[] = [];
-
-export async function sendTradeQuery(refresh = false) {
-  if (!refresh && trades.length > 0) {
-    return;
-  }
-
-  const url = await getFromStorage('reqUrl');
-  const referrer = await getFromStorage('reqReferrer');
-
-  if (!url || !referrer) {
-    return;
-  }
-
-  const reqBody = await getFromStorage('reqBodyTrade');
-
-  if (!reqBody) {
-    return;
-  }
+export async function sendTradeQuery(sharedInfo: ExtensionSharedInfo) {
+  const { reqUrl: url, reqReferrer: referrer, reqBodyTrade: reqBody, worldId } = sharedInfo;
 
   const response = await fetch(url, {
     headers: {
@@ -50,17 +34,11 @@ export async function sendTradeQuery(refresh = false) {
     return;
   }
 
-  const json = await response.json();
+  const json = (await response.json()) as [{ responseData: Trade[] }];
 
-  trades = json[0].responseData;
+  const accountData = getAccountBySessionId(sharedInfo.sessionId);
 
-  // const postResponse = await fetch("https://localhost:7274/api/inventory", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json", // Declare the content type
-  //   },
-  //   body: JSON.stringify(inventoryItems),
-  // });
+  if (accountData) {
+    accountData.trades = json[0].responseData;
+  }
 }
-
-export const getTradeItems = () => trades;

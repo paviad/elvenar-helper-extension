@@ -1,23 +1,26 @@
 import { BuildingFinder } from '../city/buildingFinder';
-import { getInventoryItems, sendInventoryQuery } from '../elvenar/sendInventoryQuery';
-import { getItemDefinitions, sendItemsQuery } from '../elvenar/sendItemsQuery';
-import { getTomes, sendTomesQuery } from '../elvenar/sendTomesQuery';
+import { getAccountById } from '../elvenar/AccountManager';
+import { getItemDefinitions } from '../elvenar/sendItemsQuery';
+import { getTomes } from '../elvenar/sendTomesQuery';
 import { BuildingEx } from '../model/buildingEx';
 import { InventoryItem } from '../model/inventoryItem';
 import { ItemDefinition } from '../model/itemDefinition';
 import { Tome } from '../model/tome';
 
-export async function generateInventory() {
-  await sendInventoryQuery();
-  await sendItemsQuery();
-  await sendTomesQuery();
-  const inventoryItems = getInventoryItems();
+export async function generateInventory(accountId: string) {
+  const accountData = getAccountById(accountId);
+  console.log('Generating inventory for accountId:', accountId, accountData);
+  if (!accountData || !accountData.inventoryItems) {
+    return;
+  }
+
+  const inventoryItems = accountData.inventoryItems;
 
   const finder = new BuildingFinder();
   await finder.ensureInitialized();
 
-  const items = getItemDefinitions();
-  const tomes = getTomes();
+  const items = await getItemDefinitions();
+  const tomes = await getTomes();
 
   const itemsDictionary = items.reduce((acc, item) => {
     acc[item.id] = item;

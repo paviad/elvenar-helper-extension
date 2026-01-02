@@ -19,8 +19,9 @@ import { handleMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
 import { sellStreets } from './sellStreets';
 import { BuildingFinder } from '../buildingFinder';
-import { getMaxLevels } from '../../elvenar/sendRenderConfigQuery';
 import { CityBlock } from '../CityBlock';
+import { sendRefreshCityMessage } from '../../chrome/messages';
+import { loadAccountManagerFromStorage } from '../../elvenar/AccountManager';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -37,6 +38,7 @@ export const renderCityGrid = (s: CityViewState) => {
   const [dragOffset, setDragOffset] = s.rDragOffset;
   const [searchTerm, setSearchTerm] = s.rSearchTerm;
   const [menu, setMenu] = s.rMenu;
+  const [maxLevels] = s.rMaxLevels;
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const term = e.target.value;
@@ -160,7 +162,6 @@ export const renderCityGrid = (s: CityViewState) => {
   function renderLevelDialog() {
     const block = blocks[showLevelDialog.index];
     const prefix = getPrefix(block);
-    const maxLevels = getMaxLevels();
     const maxLevel = maxLevels[prefix];
     return (
       <Dialog open={showLevelDialog.open} onClose={() => setShowLevelDialog({ open: false, index: -1 })}>
@@ -327,9 +328,23 @@ export const renderCityGrid = (s: CityViewState) => {
     );
   }
 
+  async function refreshCity(s: CityViewState) {
+    const accountId = s.accountId;
+    if (!accountId) {
+      console.warn('No accountId set in CityViewState, cannot refresh city');
+      return;
+    }
+    await sendRefreshCityMessage(accountId);
+    await loadAccountManagerFromStorage();
+    console.log('Refresh city message sent for accountId:', accountId);
+    s.props.forceUpdate();
+    // window.location.reload();
+  }
+
   return (
     <Stack>
       <Stack direction='row'>
+        <Button onClick={() => refreshCity(s)}>Refresh City</Button>
         <Button onClick={() => sellStreets(s)}>Sell Streets</Button>
       </Stack>
       <div>

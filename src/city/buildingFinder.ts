@@ -1,11 +1,10 @@
-import { sendBuildingsQuery, getBuildings } from '../elvenar/sendBuildingsQuery';
-import { sendRenderConfigQuery, getGoodsBuildings } from '../elvenar/sendRenderConfigQuery';
+import { getBuildings } from '../elvenar/sendBuildingsQuery';
+import { getGoodsBuildings } from '../elvenar/sendRenderConfigQuery';
 import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
 import { CityEntityExData } from '../model/cityEntity';
 import { ElvenarchitectEntry } from '../model/elvenarchitectEntry';
 import { GoodsBuilding } from '../model/goodsBuilding';
-import { InventoryItem } from '../model/inventoryItem';
 import { normalizeString } from '../util/normalizeString';
 
 interface bAndC {
@@ -15,9 +14,7 @@ interface bAndC {
 
 export class BuildingFinder {
   private buildingsDictionary!: Record<string, Building[]>;
-  private buildingsDictionaryApprox!: Record<string, Building[]>;
   private buildingsDictionaryNoLevel!: Record<string, GoodsBuilding[]>;
-  private chapterRegex = /_Ch\d+/;
   private goodsDictionary!: Record<string, GoodsBuilding[]>;
 
   private elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
@@ -37,7 +34,6 @@ export class BuildingFinder {
   }
 
   private initPromise: Promise<void> | null = null;
-  private initialized = false;
 
   constructor() {
     this.initPromise = this.initInternal();
@@ -52,11 +48,9 @@ export class BuildingFinder {
 
   private async initInternal() {
     await this.initElvenarchitectData();
-    await sendBuildingsQuery();
-    await sendRenderConfigQuery();
 
-    const buildings = getBuildings();
-    const goodsBuildings = getGoodsBuildings();
+    const buildings = await getBuildings();
+    const goodsBuildings = await getGoodsBuildings();
 
     this.buildingsDictionary = buildings.reduce((acc, building) => {
       acc[building.base_name] = acc[building.base_name] || [];
@@ -71,23 +65,12 @@ export class BuildingFinder {
       return acc;
     }, {} as Record<string, GoodsBuilding[]>);
 
-    const chapterRegex = /_Ch\d+/;
-
-    this.buildingsDictionaryApprox = buildings.reduce((acc, building) => {
-      const baseName = building.base_name.replace(chapterRegex, '_Ch');
-      acc[baseName] = acc[baseName] || [];
-      acc[baseName].push(building);
-      return acc;
-    }, {} as Record<string, Building[]>);
-
     this.buildingsDictionaryNoLevel = goodsBuildings.reduce((acc, building) => {
       const baseName = building.id.replace(/(\d+)_(\d+)$/, '');
       acc[baseName] = acc[baseName] || [];
       acc[baseName].push(building);
       return acc;
     }, {} as Record<string, GoodsBuilding[]>);
-
-    this.initialized = true;
   }
 
   public getBuilding(id: string, level = 1): BuildingEx | undefined {
