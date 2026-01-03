@@ -35,10 +35,10 @@ bower_components
 Thumbs.db
 
 # Ignore built ts files
-dist/**/*
-dist-firefox/**/*
-store-dist/**/*
-store-dist-firefox/**/*
+dist/
+dist-firefox/
+store-dist/
+store-dist-firefox/
 assets/manifest.json
 
 # ignore yarn.lock

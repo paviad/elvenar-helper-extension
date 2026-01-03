@@ -9,16 +9,17 @@
 
 Elvenar City Tools is a Chrome extension designed to enhance your experience with the Elvenar browser game. This extension provides a set of tools to help you plan, optimize, and experiment with your city layout, inventory, and trades directly from your browser.
 
+
 ### Features
 
-**Features**
-
 - **City Block Editor**: Experiment with your Elvenar city layout using an interactive editor. Move, add, and remove city blocks to find the most efficient arrangement for your city.
+- **Multiple City Management**: Seamlessly manage and switch between multiple Elvenar cities and accounts within the extension. Keep layouts and inventories organized for each city.
 - **Building Search**: Quickly find buildings in your city using the search function.
 - **Improved Legend**: Easily spot buildings that do not requiring road connections to the Main Hall.
 - **Chapter Display**: Shows chapter numbers on culture and culture/residential blocks for better city planning.
 - **Inventory Management**: View your inventory directly in the extension, includes sorting and filtering.
 - **Trade Helper**: Instantly know if you have good ascended trades offered by other players.
+
 
 ## Installation
 
