@@ -35,7 +35,6 @@ export async function sendInventoryQuery(sharedInfo: ExtensionSharedInfo) {
   }
 
   const json = (await response.json()) as [unknown, { responseData: InventoryItem[] }];
-  console.log('inventory response', json, sharedInfo.sessionId);
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 

@@ -3,16 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 // Custom storage for chrome.storage.local
 const chromeStorage = {
-  getItem: async (name: string): Promise<string | null> => {
-    console.log('Getting item from chrome storage:', name);
-    const rc = (await chrome.storage.local.get(name))[name] ?? null;
-    console.log('Retrieved item:', rc);
-    return rc;
-  },
-  setItem: async (name: string, value: string): Promise<void> => {
-    console.log('Setting item in chrome storage:', name, value);
-    return await chrome.storage.local.set({ [name]: value });
-  },
+  getItem: async (name: string): Promise<string | null> => (await chrome.storage.local.get(name))[name] ?? null,
+  setItem: async (name: string, value: string): Promise<void> => await chrome.storage.local.set({ [name]: value }),
   removeItem: async (name: string): Promise<void> => await chrome.storage.local.remove([name]),
 };
 

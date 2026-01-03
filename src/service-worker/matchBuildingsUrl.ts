@@ -14,11 +14,9 @@ export function matchBuildingsUrl(details: {
   if (buildingsUrlMatcher.test(details.url)) {
     sharedInfo.reqReferrer = details.originUrl || details.initiator || 'https://en3.elvenar.com/';
     sharedInfo.reqUrl = details.url;
-    console.log('Buildings URL matched:', details.url);
     // You can add any additional logic here if needed
     async function Do() {
       const buildings = await sendBuildingsQuery(sharedInfo);
-      console.log('Fetched buildings data:', buildings);
       await saveToStorage('buildings', JSON.stringify(buildings));
     }
     Do();

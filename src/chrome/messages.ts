@@ -47,7 +47,7 @@ export const sendRefreshCityMessage = async (accountId: string) => {
     // Do nothing
   };
   const responsePromise = new Promise<void>((resolve) => (resolveFn = resolve));
-  await chrome.runtime.sendMessage(
+  chrome.runtime.sendMessage(
     {
       type: 'refreshCity',
       accountId,

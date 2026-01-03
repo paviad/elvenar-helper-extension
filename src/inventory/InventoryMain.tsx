@@ -38,7 +38,6 @@ export const InventoryMain = () => {
         return;
       }
       const inventory = await generateInventory(accountId);
-      console.log('Generated inventory for accountId:', accountId, inventory);
       setInventory(inventory);
     }
     fetchInventory();

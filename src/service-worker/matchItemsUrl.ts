@@ -14,7 +14,6 @@ export function matchItemsUrl(details: {
   if (itemsUrlMatcher.test(details.url)) {
     sharedInfo.reqReferrer = details.originUrl || details.initiator || 'https://en3.elvenar.com/';
     sharedInfo.reqUrl = details.url;
-    console.log('Items URL matched:', details.url);
     // Add any additional logic here if needed
     async function Do() {
       const items = await sendItemsQuery(sharedInfo);

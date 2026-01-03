@@ -17,14 +17,10 @@ export function CityMain() {
 
   const accountId = useGlobalStore((state) => state.accountId);
 
-  const [f, forceUpdate] = React.useReducer((x) => {
-    console.log('Force update called', x);
-    return x + 1;
-  }, 0);
+  const [f, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
   React.useEffect(() => {
     async function fetchCityData() {
-      console.log('Fetching city data for accountId:', accountId);
       if (!accountId) {
         return;
       }

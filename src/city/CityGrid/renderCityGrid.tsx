@@ -335,8 +335,7 @@ export const renderCityGrid = (s: CityViewState) => {
       return;
     }
     await sendRefreshCityMessage(accountId);
-    await loadAccountManagerFromStorage();
-    console.log('Refresh city message sent for accountId:', accountId);
+    await loadAccountManagerFromStorage(true);
     s.props.forceUpdate();
     // window.location.reload();
   }

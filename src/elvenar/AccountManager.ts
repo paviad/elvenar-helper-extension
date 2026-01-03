@@ -38,17 +38,14 @@ export function getAccountId(playerId: number, worldId: string): string {
 export async function setAccountData(accountId: string, accountData: AccountData) {
   accounts[accountId] = accountData;
   sessions[accountData.sharedInfo.sessionId] = accountId;
-  console.log(`Account data saved for accountId: ${accountId}`, accounts, sessions);
 }
 
 export async function saveAllAccounts() {
-  console.log('Saving all accounts to storage:', accounts);
   await saveToStorage('accounts', JSON.stringify(accounts));
 }
 
 export function getAccountBySessionId(sessionId: string): AccountData | undefined {
   const accountId = sessions[sessionId];
-  console.log('Getting account by sessionId:', sessionId, accountId);
   if (accountId) {
     return accounts[accountId];
   }
@@ -58,18 +55,34 @@ export function getAccountById(accountId: string): AccountData | undefined {
   return accounts[accountId];
 }
 
-export const loadAccountManagerFromStorage = async () => {
+let loadReadyResolve: () => void;
+let loadReadyPromise: Promise<void> | undefined;
+let initialized = false;
+
+export const loadAccountManagerFromStorage = async (refresh = false) => {
+  if (initialized && !refresh) {
+    return;
+  }
+  initialized = false;
+  if (loadReadyPromise) {
+    await loadReadyPromise;
+    return;
+  }
+  loadReadyPromise = new Promise<void>((resolve) => {
+    loadReadyResolve = resolve;
+  });
   const accountsRaw = await getFromStorage('accounts');
   if (accountsRaw) {
     const parsedAccounts = JSON.parse(accountsRaw) as Record<string, AccountData>;
     Object.assign(accounts, parsedAccounts);
-    console.log('AccountManager loaded accounts from storage:', accounts);
     // Rebuild sessions map
     for (const [accountId, accountData] of Object.entries(accounts)) {
       sessions[accountData.sharedInfo.sessionId] = accountId;
     }
-    console.log('AccountManager rebuilt sessions map:', sessions);
   }
+  initialized = true;
+  loadReadyPromise = undefined;
+  loadReadyResolve();
 };
 
 export const getAllStoredAccounts = (): [string, AccountData][] => {

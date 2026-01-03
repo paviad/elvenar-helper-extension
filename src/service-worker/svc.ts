@@ -19,19 +19,18 @@ import { matchTomesUrl } from './matchTomesUrl';
 console.log('Elvenar Extension: Service Worker Loaded');
 
 async function initialize() {
-  await loadAccountManagerFromStorage();
-  console.log('Account Manager loaded in Service Worker');
   setupMessageListener();
   setupRefreshCityListener(async (msg) => {
+    await loadAccountManagerFromStorage();
     const accountData = getAccountById(msg.accountId);
     if (!accountData || !accountData.cityQuery) {
       return;
     }
-    console.log('refreshCity message received in Service Worker');
     await sendCityDataQuery({ ...accountData.sharedInfo, reqUrl: accountData.cityQuery.url });
     await saveAllAccounts();
-    console.log('refreshCity message received handled');
   });
+  await loadAccountManagerFromStorage();
+  console.log('Account Manager loaded in Service Worker');
 }
 
 initialize();
@@ -120,7 +119,6 @@ const callbackRequest = (details: {
       /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"InventoryService","requestMethod":"getItems","requestId":\d+}]/;
 
     if (expectedInventory.test(decodedString)) {
-      console.log('Inventory request detected');
       async function Do() {
         sharedInfo.reqBodyInventory = decodedString;
         await sendInventoryQuery(sharedInfo);

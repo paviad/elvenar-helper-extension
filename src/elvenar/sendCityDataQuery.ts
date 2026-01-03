@@ -46,8 +46,6 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     relic_boost_good: BoostedGoods[];
   };
 
-  console.log(responseData);
-
   const { user_data, featureFlags, city_map, relic_boost_good } = responseData;
 
   const maxChapter = Number(
@@ -68,7 +66,7 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     '3': 'Felyndral',
   };
   const accountId = getAccountId(user_data.player_id, worldId);
-  const worldName = worldNames[worldId[worldId.length - 1]] || 'Unknown World';
+  const worldName = worldId === 'zz' ? 'Beta' : (worldNames[worldId[worldId.length - 1]] || 'Unknown World');
   const accountName = `${user_data.user_name} (${worldId} ${worldName})`;
 
   const data = {

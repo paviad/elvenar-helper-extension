@@ -14,11 +14,9 @@ export function matchRenderConfigUrl(details: {
   if (renderConfigMatcher.test(details.url)) {
     sharedInfo.reqReferrer = details.originUrl || details.initiator || 'https://en3.elvenar.com/';
     sharedInfo.reqUrl = details.url;
-    console.log('Render config URL matched:', details.url);
     // Add any additional logic here if needed
     async function Do() {
       const { goodsRenderConfig, maxLevels } = await sendRenderConfigQuery(sharedInfo);
-      console.log(goodsRenderConfig);
       await saveToStorage('goodsRenderConfig', JSON.stringify(goodsRenderConfig));
       await saveToStorage('maxLevels', JSON.stringify(maxLevels));
     }

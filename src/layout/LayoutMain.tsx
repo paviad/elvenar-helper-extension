@@ -27,7 +27,6 @@ export const LayoutMain = () => {
 
   React.useEffect(() => {
     if (!accountId) {
-      console.log('No accountId selected, defaulting to first account if available', accountList);
       setAccountId(accountList[0]?.[0]);
     }
     const accountData = accountList.find(([id]) => id === accountId)?.[1];

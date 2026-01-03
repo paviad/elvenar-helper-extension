@@ -9,7 +9,6 @@ import { Tome } from '../model/tome';
 
 export async function generateInventory(accountId: string) {
   const accountData = getAccountById(accountId);
-  console.log('Generating inventory for accountId:', accountId, accountData);
   if (!accountData || !accountData.inventoryItems) {
     return;
   }

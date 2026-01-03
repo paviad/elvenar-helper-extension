@@ -14,7 +14,6 @@ export function matchTomesUrl(details: {
   if (rewardSelectionKitMatcher.test(details.url)) {
     sharedInfo.reqReferrer = details.originUrl || details.initiator || 'https://en3.elvenar.com/';
     sharedInfo.reqUrl = details.url;
-    console.log('Reward Selection Kit URL matched:', details.url);
     // Add any additional logic here if needed
     async function Do() {
       const tomes = await sendTomesQuery(sharedInfo);
