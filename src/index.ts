@@ -1,4 +1,5 @@
 import { createOverlayUi } from './overlay/createOverlayUi';
+import { openOrRestoreTab } from './service-worker/openOrRestoreTab';
 
 let expandFn: (state: boolean) => void;
 
@@ -31,16 +32,52 @@ window.addEventListener('load', async () => {
   // Title
   const title = document.createElement('span');
   title.textContent = 'Helper Window';
+  title.style.flexGrow = '1';
+  title.style.textAlign = 'start';
   header.appendChild(title);
 
-  // Collapse button
+  // Extension icon (hidden by default, shown when collapsed)
+  const iconImg = document.createElement('img');
+  iconImg.src = chrome.runtime.getURL('icon32.png');
+  iconImg.alt = 'Extension Icon';
+  iconImg.style.cursor = 'pointer';
+  iconImg.style.width = '20px';
+  iconImg.style.height = '20px';
+  iconImg.style.marginRight = '4px';
+  iconImg.style.display = '';
+  iconImg.title = 'Open City Planner';
+
+  iconImg.addEventListener('click', async () => {
+    chrome.runtime.sendMessage({ type: 'openExtensionTab' });
+  });
+  header.appendChild(iconImg);
+
+  // Collapse button with inline SVG icon
   const collapseBtn = document.createElement('button');
-  collapseBtn.textContent = '−';
   collapseBtn.style.border = 'none';
   collapseBtn.style.background = 'transparent';
   collapseBtn.style.fontSize = '18px';
   collapseBtn.style.cursor = 'pointer';
   collapseBtn.style.lineHeight = '1';
+  collapseBtn.style.display = 'flex';
+  collapseBtn.style.alignItems = 'center';
+  // SVG icons
+  const svgPlus = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svgPlus.setAttribute('width', '18');
+  svgPlus.setAttribute('height', '18');
+  svgPlus.setAttribute('viewBox', '0 0 18 18');
+  svgPlus.innerHTML = '<rect x="8" y="3" width="2" height="12" fill="currentColor"/><rect x="3" y="8" width="12" height="2" fill="currentColor"/>';
+  svgPlus.style.display = 'none';
+
+  const svgMinus = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svgMinus.setAttribute('width', '18');
+  svgMinus.setAttribute('height', '18');
+  svgMinus.setAttribute('viewBox', '0 0 18 18');
+  svgMinus.innerHTML = '<rect x="3" y="8" width="12" height="2" fill="currentColor"/>';
+  svgMinus.style.display = '';
+
+  collapseBtn.appendChild(svgPlus);
+  collapseBtn.appendChild(svgMinus);
   header.appendChild(collapseBtn);
 
   draggableDiv.appendChild(header);
@@ -88,20 +125,25 @@ window.addEventListener('load', async () => {
 
   function updateStateByCollapsed() {
     content.style.display = collapsed ? 'none' : '';
-    collapseBtn.textContent = collapsed ? '+' : '-';
+    svgPlus.style.display = collapsed ? '' : 'none';
+    svgMinus.style.display = collapsed ? 'none' : '';
     if (collapsed) {
       // Minimize the draggableDiv width and set opacity for the collapse button
-      draggableDiv.style.width = '32px';
+      draggableDiv.style.width = '';
       header.style.justifyContent = 'flex-end';
       title.style.display = 'none';
+      iconImg.style.display = '';
       draggableDiv.style.opacity = '0.5';
       draggableDiv.title = 'Elvenar Extension Helper Window';
+      collapseBtn.title = 'Expand This Panel';
     } else {
       draggableDiv.style.width = '250px';
       header.style.justifyContent = 'space-between';
       title.style.display = '';
+      iconImg.style.display = '';
       draggableDiv.style.opacity = '1';
       draggableDiv.title = '';
+      collapseBtn.title = 'Collapse Panel';
     }
   }
 

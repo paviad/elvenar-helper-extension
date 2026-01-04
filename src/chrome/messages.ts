@@ -18,7 +18,11 @@ export interface RefreshCityMessage {
   accountId: string;
 }
 
-export type AllMessages = TradeOpenedMessage | TradeParsedMessage | RefreshCityMessage;
+export interface OpenExtensionTabMessage {
+  type: 'openExtensionTab';
+}
+
+export type AllMessages = TradeOpenedMessage | TradeParsedMessage | RefreshCityMessage | OpenExtensionTabMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -93,3 +97,4 @@ export const setupTradeParsedListener = (callback: (tradesMsg: TradeParsedMessag
   (callbackMap['tradeParsed'] = callback);
 export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
   (callbackMap['refreshCity'] = callback);
+export const setupOpenExtensionTabListener = (callback: () => void) => (callbackMap['openExtensionTab'] = callback);

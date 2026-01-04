@@ -1,5 +1,4 @@
-import { setupMessageListener, setupRefreshCityListener } from '../chrome/messages';
-import { saveToStorage } from '../chrome/storage';
+import { setupMessageListener, setupOpenExtensionTabListener, setupRefreshCityListener } from '../chrome/messages';
 import {
   getAccountById,
   getAccountBySessionId,
@@ -15,11 +14,15 @@ import { matchBuildingsUrl } from './matchBuildingsUrl';
 import { matchItemsUrl } from './matchItemsUrl';
 import { matchRenderConfigUrl } from './matchRenderConfigUrl';
 import { matchTomesUrl } from './matchTomesUrl';
+import { openOrRestoreTab } from './openOrRestoreTab';
 
 console.log('Elvenar Extension: Service Worker Loaded');
 
 async function initialize() {
   setupMessageListener();
+  setupOpenExtensionTabListener(async () => {
+    await openOrRestoreTab();
+  });
   setupRefreshCityListener(async (msg) => {
     await loadAccountManagerFromStorage();
     const accountData = getAccountById(msg.accountId);
@@ -48,16 +51,7 @@ async function initialize() {
 initialize();
 
 chrome.action.onClicked.addListener(async (tab) => {
-  const views = await chrome.runtime.getContexts({ contextTypes: ['TAB'] });
-
-  if (views.length === 0) {
-    chrome.tabs.create({
-      url: 'tab.html',
-      active: true,
-    });
-  } else {
-    chrome.tabs.update(views[0].tabId, { active: true });
-  }
+  await openOrRestoreTab();
 });
 
 export const sharedInfo: ExtensionSharedInfo = {
