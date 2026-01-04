@@ -14,6 +14,7 @@ interface CityQuery {
   unlockedAreas: UnlockedArea[];
   accountId: string;
   accountName: string;
+  cityName: string;
   maxChapter: number;
   chapter: number;
   userData: ElvenarUserData;

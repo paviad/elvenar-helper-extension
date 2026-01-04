@@ -16,6 +16,7 @@ export const LayoutMain = () => {
   const accountList = getAllStoredAccounts();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [accountName, setAccountName] = React.useState('Select Account');
+  const [cityName, setCityName] = React.useState('');
   const open = Boolean(anchorEl);
 
   const handleAccountClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -36,6 +37,8 @@ export const LayoutMain = () => {
     const accountData = accountList.find(([id]) => id === accountId)?.[1];
     const name = accountData?.cityQuery?.accountName || 'Select Account';
     setAccountName(name);
+    const city = accountData?.cityQuery?.cityName || '';
+    setCityName(city);
   }, [accountId]);
 
   return (
@@ -63,9 +66,16 @@ export const LayoutMain = () => {
             Trade
           </Button> */}
           <Box sx={{ flexGrow: 1 }} />
-          <Typography variant='h6' sx={{ ml: 'auto', cursor: 'pointer' }} onClick={handleAccountClick}>
-            {accountName}
-          </Typography>
+          <Box sx={{ ml: 'auto', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }} onClick={handleAccountClick}>
+            <Typography variant='h6'>
+              {accountName}
+            </Typography>
+            {cityName && (
+              <Typography variant='caption' sx={{ lineHeight: 1, color: 'rgba(255,255,255,0.7)' }}>
+                {cityName}
+              </Typography>
+            )}
+          </Box>
           <Menu
             anchorEl={anchorEl}
             open={open}
