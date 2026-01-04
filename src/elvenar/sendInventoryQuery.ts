@@ -28,10 +28,9 @@ export async function sendInventoryQuery(sharedInfo: ExtensionSharedInfo) {
   });
 
   if (!response.ok) {
-    alert(
+    throw new Error(
       'Your game session has expired since last time you used this tool. Please refresh the game tab and then refresh this tab.',
     );
-    return;
   }
 
   const json = (await response.json()) as [unknown, { responseData: InventoryItem[] }];

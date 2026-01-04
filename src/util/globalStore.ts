@@ -11,6 +11,8 @@ const chromeStorage = {
 interface GlobalState {
   accountId: string | undefined;
   setAccountId: (id: string | undefined) => void;
+  globalError: string | undefined | null;
+  setGlobalError: (error: string | undefined | null) => void;
   // Add other global state fields and setters here as needed
 }
 
@@ -19,6 +21,8 @@ export const useGlobalStore = create<GlobalState>()(
     (set) => ({
       accountId: undefined,
       setAccountId: (id) => set({ accountId: id }),
+      globalError: undefined,
+      setGlobalError: (error) => set({ globalError: error }),
     }),
     {
       name: 'global-store',

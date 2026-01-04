@@ -1,13 +1,17 @@
 import * as React from 'react';
-import { Box, AppBar, Toolbar, IconButton, Typography, Button, Menu, MenuItem } from '@mui/material';
+import { Box, AppBar, Toolbar, IconButton, Typography, Button, Menu, MenuItem, Alert } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { NavLink, Outlet } from 'react-router';
 import { useGlobalStore } from '../util/globalStore';
 import { getAllStoredAccounts } from '../elvenar/AccountManager';
 
+const ERROR_BAR_HEIGHT = 48; // px
+
 export const LayoutMain = () => {
   const setAccountId = useGlobalStore((state) => state.setAccountId);
   const accountId = useGlobalStore((state) => state.accountId);
+  const globalError = useGlobalStore((state) => state.globalError);
+  const setGlobalError = useGlobalStore((state) => state.setGlobalError);
   // Dummy account list for dropdown
   const accountList = getAllStoredAccounts();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -36,7 +40,15 @@ export const LayoutMain = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position='fixed'>
+      {/* Error bar overlays AppBar, both are fixed at top */}
+      {globalError != null && (
+        <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, height: ERROR_BAR_HEIGHT, display: 'flex', alignItems: 'center' }}>
+          <Alert severity='error' onClose={() => setGlobalError(undefined)} sx={{ width: '100%' }}>
+            {globalError}
+          </Alert>
+        </Box>
+      )}
+      <AppBar position='fixed' sx={{ top: globalError != null ? `${ERROR_BAR_HEIGHT}px` : 0 }}>
         <Toolbar>
           <IconButton size='large' edge='start' color='inherit' aria-label='menu' sx={{ mr: 2 }}>
             <MenuIcon />
@@ -73,6 +85,8 @@ export const LayoutMain = () => {
           </Menu>
         </Toolbar>
       </AppBar>
+      {/* Only one Toolbar for AppBar, content starts below both bars */}
+      { globalError != null && <Toolbar sx={{ height: `${ERROR_BAR_HEIGHT}px` }} /> }
       <Toolbar />
       <Outlet />
     </Box>

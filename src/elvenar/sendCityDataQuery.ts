@@ -31,10 +31,9 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
   });
 
   if (!response.ok) {
-    alert(
+    throw new Error(
       'Your game session has expired since last time you used this tool. Please refresh the game tab and then refresh this tab.',
     );
-    return;
   }
 
   const json = (await response.json()) as [{ requestClass: string; responseData: unknown }];
@@ -66,7 +65,7 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     '3': 'Felyndral',
   };
   const accountId = getAccountId(user_data.player_id, worldId);
-  const worldName = worldId === 'zz' ? 'Beta' : (worldNames[worldId[worldId.length - 1]] || 'Unknown World');
+  const worldName = worldId === 'zz' ? 'Beta' : worldNames[worldId[worldId.length - 1]] || 'Unknown World';
   const accountName = `${user_data.user_name} (${worldId} ${worldName})`;
 
   const data = {

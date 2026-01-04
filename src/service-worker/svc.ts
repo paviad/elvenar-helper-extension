@@ -24,10 +24,22 @@ async function initialize() {
     await loadAccountManagerFromStorage();
     const accountData = getAccountById(msg.accountId);
     if (!accountData || !accountData.cityQuery) {
-      return;
+      return {
+        success: false,
+        message: 'Account data or city query not found',
+      };
     }
-    await sendCityDataQuery({ ...accountData.sharedInfo, reqUrl: accountData.cityQuery.url });
-    await saveAllAccounts();
+    try {
+      await sendCityDataQuery({ ...accountData.sharedInfo, reqUrl: accountData.cityQuery.url });
+      await saveAllAccounts();
+      return { success: true };
+    } catch (error) {
+      console.error('Error in refreshCityListener sendCityDataQuery:', error);
+      return {
+        success: false,
+        message: 'Error in sendCityDataQuery',
+      };
+    }
   });
   await loadAccountManagerFromStorage();
   console.log('Account Manager loaded in Service Worker');
@@ -109,8 +121,12 @@ const callbackRequest = (details: {
     if (expectedCity.test(decodedString)) {
       async function Do() {
         sharedInfo.reqBodyCity = decodedString;
-        await sendCityDataQuery(sharedInfo);
-        await saveAllAccounts();
+        try {
+          await sendCityDataQuery(sharedInfo);
+          await saveAllAccounts();
+        } catch (error) {
+          console.error('Error in sendCityDataQuery:', error);
+        }
       }
       Do();
     }
@@ -121,8 +137,12 @@ const callbackRequest = (details: {
     if (expectedInventory.test(decodedString)) {
       async function Do() {
         sharedInfo.reqBodyInventory = decodedString;
-        await sendInventoryQuery(sharedInfo);
-        await saveAllAccounts();
+        try {
+          await sendInventoryQuery(sharedInfo);
+          await saveAllAccounts();
+        } catch (error) {
+          console.error('Error in sendInventoryQuery:', error);
+        }
       }
       Do();
     }
@@ -133,11 +153,15 @@ const callbackRequest = (details: {
     if (expectedTrade.test(decodedString)) {
       async function Do() {
         sharedInfo.reqBodyTrade = decodedString;
-        await sendTradeQuery(sharedInfo);
-        await saveAllAccounts();
-        const accountData = getAccountBySessionId(sessionId);
-        if (accountData) {
-          await tradeOpenedCallback(accountData);
+        try {
+          await sendTradeQuery(sharedInfo);
+          await saveAllAccounts();
+          const accountData = getAccountBySessionId(sessionId);
+          if (accountData) {
+            await tradeOpenedCallback(accountData);
+          }
+        } catch (error) {
+          console.error('Error in sendTradeQuery:', error);
         }
       }
       Do();

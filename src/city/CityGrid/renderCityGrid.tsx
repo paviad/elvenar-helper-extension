@@ -22,6 +22,7 @@ import { BuildingFinder } from '../buildingFinder';
 import { CityBlock } from '../CityBlock';
 import { sendRefreshCityMessage } from '../../chrome/messages';
 import { loadAccountManagerFromStorage } from '../../elvenar/AccountManager';
+import { useGlobalStore } from '../../util/globalStore';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -39,6 +40,7 @@ export const renderCityGrid = (s: CityViewState) => {
   const [searchTerm, setSearchTerm] = s.rSearchTerm;
   const [menu, setMenu] = s.rMenu;
   const [maxLevels] = s.rMaxLevels;
+  const setGlobalError = useGlobalStore((state) => state.setGlobalError);
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const term = e.target.value;
@@ -316,6 +318,7 @@ export const renderCityGrid = (s: CityViewState) => {
               onClick={() => {
                 if (typeof menu.key !== 'number') return setMenu(null);
                 setLevelInput(Number(blocks[menu.key].label) || 1);
+                setMenu(null);
                 setShowLevelDialog({ open: true, index: menu.key });
               }}
             >
@@ -334,7 +337,13 @@ export const renderCityGrid = (s: CityViewState) => {
       console.warn('No accountId set in CityViewState, cannot refresh city');
       return;
     }
-    await sendRefreshCityMessage(accountId);
+    const response = await sendRefreshCityMessage(accountId);
+    if (!response.success) {
+      console.error('Failed to refresh city:', response.message);
+      setGlobalError('Failed to refresh city, please refresh your Elvenar tab and try again.');
+      return;
+    }
+    setGlobalError(undefined);
     await loadAccountManagerFromStorage(true);
     s.props.forceUpdate();
     // window.location.reload();
