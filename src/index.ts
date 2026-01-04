@@ -3,9 +3,17 @@ import { createOverlayUi } from './overlay/createOverlayUi';
 let expandFn: (state: boolean) => void;
 
 console.log('Content script loaded');
-window.addEventListener('load', async () => {
+
+const initFunc = async () => {
+  // Remove existing panel if present
+  const existingPanel = document.getElementById('elvenar-helper-draggable-panel');
+  if (existingPanel) {
+    existingPanel.remove();
+  }
+
   // Create the div
   const draggableDiv = document.createElement('div');
+  draggableDiv.id = 'elvenar-helper-draggable-panel';
   draggableDiv.style.position = 'fixed';
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
@@ -188,10 +196,12 @@ window.addEventListener('load', async () => {
   document.body.appendChild(draggableDiv);
 
   createOverlayUi(content);
-});
+};
 
 export const expandPanel = (state: boolean) => {
   if (expandFn) {
     expandFn(!state);
   }
 };
+
+initFunc();
