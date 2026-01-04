@@ -4,6 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { NavLink, Outlet } from 'react-router';
 import { useGlobalStore } from '../util/globalStore';
 import { getAllStoredAccounts } from '../elvenar/AccountManager';
+import { AboutDialog } from './AboutDialog';
 
 const ERROR_BAR_HEIGHT = 48; // px
 
@@ -18,6 +19,9 @@ export const LayoutMain = () => {
   const [accountName, setAccountName] = React.useState('Select Account');
   const [cityName, setCityName] = React.useState('');
   const open = Boolean(anchorEl);
+
+  const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
+  const [aboutOpen, setAboutOpen] = React.useState(false);
 
   const handleAccountClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -41,11 +45,35 @@ export const LayoutMain = () => {
     setCityName(city);
   }, [accountId]);
 
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchor(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+  const handleAboutOpen = () => {
+    setAboutOpen(true);
+    setMenuAnchor(null);
+  };
+  const handleAboutClose = () => {
+    setAboutOpen(false);
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       {/* Error bar overlays AppBar, both are fixed at top */}
       {globalError != null && (
-        <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, height: ERROR_BAR_HEIGHT, display: 'flex', alignItems: 'center' }}>
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: ERROR_BAR_HEIGHT,
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
           <Alert severity='error' onClose={() => setGlobalError(undefined)} sx={{ width: '100%' }}>
             {globalError}
           </Alert>
@@ -53,9 +81,25 @@ export const LayoutMain = () => {
       )}
       <AppBar position='fixed' sx={{ top: globalError != null ? `${ERROR_BAR_HEIGHT}px` : 0 }}>
         <Toolbar>
-          <IconButton size='large' edge='start' color='inherit' aria-label='menu' sx={{ mr: 2 }}>
+          <IconButton
+            size='large'
+            edge='start'
+            color='inherit'
+            aria-label='menu'
+            sx={{ mr: 2 }}
+            onClick={handleMenuClick}
+          >
             <MenuIcon />
           </IconButton>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          >
+            <MenuItem onClick={handleAboutOpen}>About</MenuItem>
+          </Menu>
           <Button component={NavLink} to='/city' color='inherit' sx={{ mr: 2 }}>
             City
           </Button>
@@ -66,10 +110,11 @@ export const LayoutMain = () => {
             Trade
           </Button> */}
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ ml: 'auto', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }} onClick={handleAccountClick}>
-            <Typography variant='h6'>
-              {accountName}
-            </Typography>
+          <Box
+            sx={{ ml: 'auto', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}
+            onClick={handleAccountClick}
+          >
+            <Typography variant='h6'>{accountName}</Typography>
             {cityName && (
               <Typography variant='caption' sx={{ lineHeight: 1, color: 'rgba(255,255,255,0.7)' }}>
                 {cityName}
@@ -93,10 +138,11 @@ export const LayoutMain = () => {
               </MenuItem>
             ))}
           </Menu>
+          <AboutDialog open={aboutOpen} onClose={handleAboutClose} />
         </Toolbar>
       </AppBar>
       {/* Only one Toolbar for AppBar, content starts below both bars */}
-      { globalError != null && <Toolbar sx={{ height: `${ERROR_BAR_HEIGHT}px` }} /> }
+      {globalError != null && <Toolbar sx={{ height: `${ERROR_BAR_HEIGHT}px` }} />}
       <Toolbar />
       <Outlet />
     </Box>
