@@ -1,12 +1,11 @@
-export async function openOrRestoreTab() {
+export async function openOrRestoreTab(accountId?: string) {
   const views = await chrome.runtime.getContexts({ contextTypes: ['TAB'] });
 
+  const params = { url: accountId ? `tab.html#/activate/?accountId=${accountId}` : 'tab.html#/city', active: true };
+
   if (views.length === 0) {
-    chrome.tabs.create({
-      url: 'tab.html',
-      active: true,
-    });
+    chrome.tabs.create(params);
   } else {
-    chrome.tabs.update(views[0].tabId, { active: true });
+    chrome.tabs.update(views[0].tabId, params);
   }
 }

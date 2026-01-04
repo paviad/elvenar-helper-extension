@@ -1,7 +1,9 @@
 import { getFromStorage, saveToStorage } from '../chrome/storage';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
+import { PotionEffect } from '../model/potionEffect';
 import { Trade } from '../model/trade';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
@@ -16,6 +18,12 @@ interface CityQuery {
   chapter: number;
   userData: ElvenarUserData;
   url: string;
+  tabId: number;
+}
+
+interface CauldronQuery {
+  potionEffects: PotionEffect[];
+  ingredients: Ingredient[];
 }
 
 export interface AccountData {
@@ -26,6 +34,8 @@ export interface AccountData {
   inventoryItems?: InventoryItem[];
 
   trades?: Trade[];
+
+  cauldron?: CauldronQuery;
 }
 
 const accounts: Record<string, AccountData> = {};
@@ -49,6 +59,11 @@ export function getAccountBySessionId(sessionId: string): AccountData | undefine
   if (accountId) {
     return accounts[accountId];
   }
+}
+
+export function getAccountByTabId(tabId: number): string | undefined {
+  const account = Object.entries(accounts).find(([k, r]) => r.cityQuery?.tabId === tabId);
+  return account ? account[0] : undefined;
 }
 
 export function getAccountById(accountId: string): AccountData | undefined {

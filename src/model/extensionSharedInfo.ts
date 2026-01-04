@@ -4,6 +4,8 @@ export interface ExtensionSharedInfo {
   reqBodyCity?: string;
   reqBodyInventory?: string;
   reqBodyTrade?: string;
+  reqBodyCauldron?: string;
   worldId: string;
   sessionId: string;
+  tabId: number;
 }

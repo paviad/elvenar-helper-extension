@@ -79,7 +79,7 @@ const messageReceiver = (
 ): boolean | undefined => {
   const callback = callbackMap[(message as AllMessages).type];
   if (callback) {
-    const rc = callback(message);
+    const rc = callback(message, sender);
     if (rc instanceof Promise) {
       rc.then((r) => sendResponse(r));
       return true;
@@ -97,4 +97,6 @@ export const setupTradeParsedListener = (callback: (tradesMsg: TradeParsedMessag
   (callbackMap['tradeParsed'] = callback);
 export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
   (callbackMap['refreshCity'] = callback);
-export const setupOpenExtensionTabListener = (callback: () => void) => (callbackMap['openExtensionTab'] = callback);
+export const setupOpenExtensionTabListener = (
+  callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void,
+) => (callbackMap['openExtensionTab'] = callback);

@@ -79,6 +79,7 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       accountId,
       accountName,
       url,
+      tabId: sharedInfo.tabId,
     },
     sharedInfo,
   } satisfies AccountData;

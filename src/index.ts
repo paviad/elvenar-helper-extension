@@ -1,5 +1,4 @@
 import { createOverlayUi } from './overlay/createOverlayUi';
-import { openOrRestoreTab } from './service-worker/openOrRestoreTab';
 
 let expandFn: (state: boolean) => void;
 
@@ -48,7 +47,38 @@ window.addEventListener('load', async () => {
   iconImg.title = 'Open City Planner';
 
   iconImg.addEventListener('click', async () => {
-    chrome.runtime.sendMessage({ type: 'openExtensionTab' });
+    try {
+      await chrome.runtime.sendMessage({ type: 'openExtensionTab' });
+    } catch (error) {
+      console.error('Error opening extension tab:', error);
+      // Show a red cross SVG in place of the icon
+      iconImg.src = '';
+      iconImg.alt = 'Error';
+      iconImg.style.background = 'none';
+      iconImg.style.display = '';
+      iconImg.style.width = '20px';
+      iconImg.style.height = '20px';
+      const parentNode = iconImg.parentNode;
+      const nextSibling = iconImg.nextSibling;
+      parentNode?.removeChild(iconImg);
+
+      const errorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      errorSvg.setAttribute('width', '20');
+      errorSvg.setAttribute('height', '20');
+      errorSvg.setAttribute('viewBox', '0 0 20 20');
+      errorSvg.innerHTML = `
+        <circle cx="10" cy="10" r="9" fill="#fff" stroke="#e53935" stroke-width="2"/>
+        <line x1="6" y1="6" x2="14" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+        <line x1="14" y1="6" x2="6" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+      `;
+      const titleElem = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+      titleElem.textContent = 'Extension Updated, Please Refresh the Tab';
+      errorSvg.appendChild(titleElem);
+      if (nextSibling) {
+        parentNode?.removeChild(nextSibling);
+      }
+      parentNode?.appendChild(errorSvg);
+    }
   });
   header.appendChild(iconImg);
 
@@ -66,7 +96,8 @@ window.addEventListener('load', async () => {
   svgPlus.setAttribute('width', '18');
   svgPlus.setAttribute('height', '18');
   svgPlus.setAttribute('viewBox', '0 0 18 18');
-  svgPlus.innerHTML = '<rect x="8" y="3" width="2" height="12" fill="currentColor"/><rect x="3" y="8" width="12" height="2" fill="currentColor"/>';
+  svgPlus.innerHTML =
+    '<rect x="8" y="3" width="2" height="12" fill="currentColor"/><rect x="3" y="8" width="12" height="2" fill="currentColor"/>';
   svgPlus.style.display = 'none';
 
   const svgMinus = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

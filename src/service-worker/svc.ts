@@ -1,10 +1,13 @@
-import { setupMessageListener, setupOpenExtensionTabListener, setupRefreshCityListener } from '../chrome/messages';
+import { OpenExtensionTabMessage, setupMessageListener, setupOpenExtensionTabListener, setupRefreshCityListener } from '../chrome/messages';
 import {
   getAccountById,
   getAccountBySessionId,
+  getAccountByTabId,
+  getAllStoredAccounts,
   loadAccountManagerFromStorage,
   saveAllAccounts,
 } from '../elvenar/AccountManager';
+import { sendCauldronQuery } from '../elvenar/sendCauldronQuery';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { sendInventoryQuery } from '../elvenar/sendInventoryQuery';
 import { sendTradeQuery } from '../elvenar/sendTradeQuery';
@@ -20,8 +23,12 @@ console.log('Elvenar Extension: Service Worker Loaded');
 
 async function initialize() {
   setupMessageListener();
-  setupOpenExtensionTabListener(async () => {
-    await openOrRestoreTab();
+  setupOpenExtensionTabListener(async (msg, sender) => {
+    let accountId: string | undefined;
+    if (sender.tab?.id) {
+      accountId = getAccountByTabId(sender.tab.id);
+    }
+    await openOrRestoreTab(accountId);
   });
   setupRefreshCityListener(async (msg) => {
     await loadAccountManagerFromStorage();
@@ -59,6 +66,7 @@ export const sharedInfo: ExtensionSharedInfo = {
   reqReferrer: '',
   worldId: '',
   sessionId: '',
+  tabId: -1,
 };
 
 const callbackRequest = (details: {
@@ -67,6 +75,7 @@ const callbackRequest = (details: {
   originUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestBody?: any;
+  tabId: number;
 }): chrome.webRequest.BlockingResponse | undefined => {
   // Chrome
   if (details.initiator?.startsWith('chrome-extension://')) {
@@ -105,6 +114,7 @@ const callbackRequest = (details: {
     sharedInfo.worldId = worldId;
     sharedInfo.reqUrl = details.url;
     sharedInfo.sessionId = sessionId;
+    sharedInfo.tabId = details.tabId;
 
     const decoder = new TextDecoder('utf-8'); // Specify the encoding, UTF-8 is common
     const decodedString = decoder.decode(details.requestBody.raw[0].bytes);
@@ -157,6 +167,18 @@ const callbackRequest = (details: {
         } catch (error) {
           console.error('Error in sendTradeQuery:', error);
         }
+      }
+      Do();
+    }
+
+    const expectedCauldron =
+      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"CauldronService","requestMethod":"getIngredients","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"CauldronService","requestMethod":"getPotionEffects","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureStartupDataCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["FlushUncaughtErrorBuffer"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureWindowCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureTooltipCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureViewBehaviorsCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"TreasureService","requestMethod":"refresh","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureIsoEngineCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+}]/;
+
+    if (expectedCauldron.test(decodedString)) {
+      async function Do() {
+        sharedInfo.reqBodyCauldron = decodedString;
+        await sendCauldronQuery(sharedInfo);
+        await saveAllAccounts();
       }
       Do();
     }

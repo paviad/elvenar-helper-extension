@@ -5,6 +5,7 @@ import { CityMain } from './CityMain';
 import { InventoryMain } from '../inventory/InventoryMain';
 import { LayoutMain } from '../layout/LayoutMain';
 import { TradeMain } from '../trade/TradeMain';
+import { Activate } from './Activate';
 
 export function createReactUi() {
   const root = createRoot(document.getElementById('root') as HTMLElement);
@@ -13,6 +14,7 @@ export function createReactUi() {
     <HashRouter>
       <Routes>
         <Route element={<LayoutMain />}>
+          <Route path='/activate' element={<Activate />} />
           <Route path='/city' element={<CityMain />} />
           <Route path='/inventory' element={<InventoryMain />} />
           <Route path='/trade' element={<TradeMain />} />
