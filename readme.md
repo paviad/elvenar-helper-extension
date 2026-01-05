@@ -1,13 +1,13 @@
-# Elvenar City Tools Chrome Extension
+# ElvenAssist Chrome Extension
 
 [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/kikdpnpfhakidgkojboebobjlknflilc)](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb)
-[![Firefox Add-On](https://img.shields.io/amo/v/elvenar-helper-extension)](https://addons.mozilla.org/en-US/firefox/addon/elvenar-helper-extension/)
-[![Safari Add-On](https://img.shields.io/itunes/v/com.paviad.elvenar-helper-extension)](https://addons.mozilla.org/en-US/firefox/addon/elvenar-helper-extension/)
+[![Firefox Add-On](https://img.shields.io/amo/v/elven-assist)](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/)
+[![Safari Add-On](https://img.shields.io/itunes/v/com.paviad.elven-assist)](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/)
 
 
 ## Overview
 
-Elvenar City Tools is a Chrome extension designed to enhance your experience with the Elvenar browser game. This extension provides a set of tools to help you plan, optimize, and experiment with your city layout, inventory, and trades directly from your browser.
+ElvenAssist is a Chrome extension designed to enhance your experience with the Elvenar browser game. This extension provides a set of tools to help you plan, optimize, and experiment with your city layout, inventory, and trades directly from your browser.
 
 
 ### Features
@@ -27,14 +27,14 @@ Elvenar City Tools is a Chrome extension designed to enhance your experience wit
 Install the latest stable version directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb).
 
 ### Firefox: From Firefox Add-Ons
-The extension is published on the Firefox Add-Ons repository at [Firefox Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/elvenar-helper-extension/)
+The extension is published on the Firefox Add-Ons repository at [Firefox Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/)
 
 ### From Release (Chrome)
 1. Download the latest release from this repository, and unpack it into a directory on your computer.
 2. Open Chrome and navigate to `chrome://extensions/`.
 3. Enable "Developer mode" (top right corner).
 4. Click "Load unpacked" and select the directory of the downloaded release.
-5. The Elvenar City Tools extension should now appear in your extensions list.
+5. The ElvenAssist extension should now appear in your extensions list.
 
 ### From Release (Firefox)
 1. Download the latest release from this repository, and unpack it into a directory on your computer.
@@ -46,7 +46,7 @@ The extension is published on the Firefox Add-Ons repository at [Firefox Add-Ons
 ## Usage
 
 - Refresh the Elvenar tab once to allow the extension to get relevant data.
-- Click the Elvenar extension icon in your Chrome toolbar to open the city editor.
+- Click the ElvenAssist extension icon in your Chrome toolbar to open the city editor.
 - Use the city editor to experiment with different city layouts.
 - Changes made in the editor are for planning purposes only and do not affect your actual Elvenar city.
 

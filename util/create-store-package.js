@@ -46,7 +46,7 @@ const storeDistDir = isFirefox ? './store-dist-firefox' : './store-dist';
 
 const files = getAllFilesInDirectory(distDir).filter((r) => !r.endsWith('.zip'));
 
-createZipFile(files, `${storeDistDir}/elvenar-helper-extension-v${packageVersion}${isFirefox ? '-firefox' : ''}`);
+createZipFile(files, `${storeDistDir}/elven-assist-v${packageVersion}${isFirefox ? '-firefox' : ''}`);
 const git = simpleGit();
 
 async function createSourceZip() {

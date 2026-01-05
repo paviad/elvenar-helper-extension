@@ -6,14 +6,14 @@ console.log('Content script loaded');
 
 const initFunc = async () => {
   // Remove existing panel if present
-  const existingPanel = document.getElementById('elvenar-helper-draggable-panel');
+  const existingPanel = document.getElementById('elven-assist-draggable-panel');
   if (existingPanel) {
     existingPanel.remove();
   }
 
   // Create the div
   const draggableDiv = document.createElement('div');
-  draggableDiv.id = 'elvenar-helper-draggable-panel';
+  draggableDiv.id = 'elven-assist-draggable-panel';
   draggableDiv.style.position = 'fixed';
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
@@ -173,7 +173,7 @@ const initFunc = async () => {
       title.style.display = 'none';
       iconImg.style.display = '';
       draggableDiv.style.opacity = '0.5';
-      draggableDiv.title = 'Elvenar Extension Helper Window';
+      draggableDiv.title = 'ElvenAssist Helper Window';
       collapseBtn.title = 'Expand This Panel';
     } else {
       draggableDiv.style.width = '250px';
