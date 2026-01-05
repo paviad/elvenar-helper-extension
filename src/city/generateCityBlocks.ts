@@ -14,6 +14,24 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
     return entity.type;
   }
 
+  function getChapter(entity: CityEntity): number | undefined {
+    if (entity.type === 'culture' || entity.type === 'culture_residential') {
+      const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(entity.cityentity_id);
+      if (m1) {
+        return Number(m1[1]);
+      }
+
+      const m2 = /_(\d+)$/.exec(entity.cityentity_id);
+      if (m2) {
+        return Number(m2[1]);
+      }
+    }
+
+    if (/^[PR]_/.test(entity.cityentity_id) && entity.type.includes('premium')) {
+      return entity.level;
+    }
+  }
+
   function getLabel(entity: CityEntity): string | undefined {
     if (entity.type === 'culture' || entity.type === 'culture_residential') {
       const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(entity.cityentity_id);
@@ -50,6 +68,7 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
         name: entity.name,
         entity,
         label: getLabel(entity),
+        chapter: getChapter(entity),
         highlighted: false,
       } satisfies CityBlock),
   );

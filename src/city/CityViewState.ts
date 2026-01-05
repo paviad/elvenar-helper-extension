@@ -21,6 +21,8 @@ export class CityViewState {
   svgRef = useRef<SVGSVGElement>(null);
   mousePositionRef = useRef<HTMLDivElement>(null);
   accountId = useGlobalStore((state) => state.accountId);
+  techSprite = useGlobalStore((state) => state.techSprite);
+
   allTypes;
   rBlocks;
   GridSize = 15;

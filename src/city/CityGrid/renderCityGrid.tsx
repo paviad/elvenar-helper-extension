@@ -126,7 +126,8 @@ export const renderCityGrid = (s: CityViewState) => {
       label: `${newLevel}`,
       width,
       length,
-    };
+      moved: true,
+    } satisfies CityBlock;
     setBlocks((prev) => {
       const { [index]: _, ...filtered } = prev;
       return { ...filtered, [newBlock.id]: newBlock };
@@ -275,6 +276,7 @@ export const renderCityGrid = (s: CityViewState) => {
                 id: new Date().getTime(),
                 x: blockToDup.x + 1,
                 y: blockToDup.y + 1,
+                moved: true,
               };
               setBlocks((prev) => {
                 const newBlocks = { ...prev, [newBlock.id]: newBlock };

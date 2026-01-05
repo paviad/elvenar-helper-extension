@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 
 const EXTENSION_NAME = 'Elvenar Helper Extension';
-const EXTENSION_VERSION = '3.2.0';
+const EXTENSION_VERSION = '3.3.0';
 const EXTENSION_DATE = '5-Jan-2026';
 
 export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => void }) {

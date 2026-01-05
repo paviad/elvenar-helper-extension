@@ -21,6 +21,7 @@ import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { matchBuildingsUrl } from './matchBuildingsUrl';
 import { matchItemsUrl } from './matchItemsUrl';
 import { matchRenderConfigUrl } from './matchRenderConfigUrl';
+import { matchTechTreeUrl } from './matchTechTreeUrl';
 import { matchTomesUrl } from './matchTomesUrl';
 import { openOrRestoreTab } from './openOrRestoreTab';
 
@@ -103,8 +104,10 @@ const callbackRequest = (details: {
   matchRenderConfigUrl(details, sharedInfo);
 
   matchItemsUrl(details, sharedInfo);
-  
+
   matchTomesUrl(details, sharedInfo);
+
+  matchTechTreeUrl(details, sharedInfo);
 
   const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
   // Check if the URL matches the pattern and save it in a global variable

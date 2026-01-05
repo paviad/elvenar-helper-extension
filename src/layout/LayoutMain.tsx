@@ -5,6 +5,7 @@ import { NavLink, Outlet } from 'react-router';
 import { useGlobalStore } from '../util/globalStore';
 import { getAllStoredAccounts } from '../elvenar/AccountManager';
 import { AboutDialog } from './AboutDialog';
+import { getFromStorage } from '../chrome/storage';
 
 const ERROR_BAR_HEIGHT = 48; // px
 
@@ -22,6 +23,21 @@ export const LayoutMain = () => {
 
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const [aboutOpen, setAboutOpen] = React.useState(false);
+
+  const setTechSprite = useGlobalStore((state) => state.setTechSprite);
+
+  React.useEffect(() => {
+    async function getSpriteUrl() {
+      const url = await getFromStorage('techTreeSpriteUrl');
+      if (!url) return;
+      const img = new window.Image();
+      img.onload = () => {
+        return setTechSprite({ url, width: img.width, height: img.height });
+      };
+      img.src = url;
+    }
+    getSpriteUrl();
+  }, []);
 
   const handleAccountClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

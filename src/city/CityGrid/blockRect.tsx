@@ -3,6 +3,7 @@ import { CityBlock } from '../CityBlock';
 import { getTypeColor } from '../Legend/getTypeColor';
 import { CityViewState } from '../CityViewState';
 import { handleMouseDown } from './handleMouseDown';
+import { BlockLabel } from './BlockLabel';
 
 export const blockRect = (s: CityViewState, key: string | number, block: CityBlock) => {
   const { GridSize, opacity } = s;
@@ -45,6 +46,23 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
   const patternId = `block-crosshatch-${key}`;
   const isHighlighted = !!block.highlighted;
 
+  // Utility to determine contrast color
+  function getContrastColor(hex: string) {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    // Parse r, g, b
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    // Return white for dark backgrounds, black for light
+    return luminance < 0.35 ? '#ffffff' : '#000000';
+  }
+
+  const fillColor = getTypeColor(block.type, s.allTypes, block.moved);
+  const textColor = getContrastColor(fillColor);
+
   return (
     <g key={key}>
       {isHighlighted && (
@@ -61,7 +79,7 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
         y={block.y * GridSize}
         width={block.width * GridSize}
         height={block.length * GridSize}
-        fill={getTypeColor(block.type, s.allTypes, block.moved)}
+        fill={fillColor}
         stroke={block.moved ? 'black' : '#000'}
         strokeWidth={block.moved ? 2 : 1}
         style={{ cursor }}
@@ -104,26 +122,7 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
           pointerEvents='none'
         />
       )}
-      {block.label && (
-        <text
-          x={(block.x + block.width / 2) * GridSize}
-          y={(block.y + block.length / 2) * GridSize}
-          textAnchor='middle'
-          alignmentBaseline='middle'
-          fontSize={Math.max(GridSize * 0.6, 10)}
-          fill='#222'
-          pointerEvents='none'
-          transform={
-            block.length > 1 && block.width > 1
-              ? `scale(2,2) translate(${-(block.x + block.width / 2) * GridSize * 0.5},${
-                  -(block.y + block.length / 2) * GridSize * 0.5
-                })`
-              : undefined
-          }
-        >
-          {block.label}
-        </text>
-      )}
+      <BlockLabel block={block} GridSize={GridSize} textColor={textColor} sprite={s.techSprite} />
     </g>
   );
 };

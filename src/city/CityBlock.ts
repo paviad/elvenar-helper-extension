@@ -14,5 +14,6 @@ export interface CityBlock {
   moved: boolean;
   entity: CityEntity;
   label?: string;
+  chapter?: number;
   highlighted: boolean;
 }
