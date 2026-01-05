@@ -20,6 +20,7 @@ interface CityQuery {
   userData: ElvenarUserData;
   url: string;
   tabId: number;
+  sessionId: string;
 }
 
 interface CauldronQuery {
@@ -40,7 +41,6 @@ export interface AccountData {
 }
 
 const accounts: Record<string, AccountData> = {};
-const sessions: Record<string, string> = {};
 
 export function getAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
@@ -48,7 +48,6 @@ export function getAccountId(playerId: number, worldId: string): string {
 
 export async function setAccountData(accountId: string, accountData: AccountData) {
   accounts[accountId] = accountData;
-  sessions[accountData.sharedInfo.sessionId] = accountId;
 }
 
 export async function saveAllAccounts() {
@@ -56,10 +55,8 @@ export async function saveAllAccounts() {
 }
 
 export function getAccountBySessionId(sessionId: string): AccountData | undefined {
-  const accountId = sessions[sessionId];
-  if (accountId) {
-    return accounts[accountId];
-  }
+  const account = Object.entries(accounts).find(([k, r]) => r.cityQuery?.sessionId === sessionId);
+  return account ? account[1] : undefined;
 }
 
 export function getAccountByTabId(tabId: number): string | undefined {
@@ -91,10 +88,6 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
   if (accountsRaw) {
     const parsedAccounts = JSON.parse(accountsRaw) as Record<string, AccountData>;
     Object.assign(accounts, parsedAccounts);
-    // Rebuild sessions map
-    for (const [accountId, accountData] of Object.entries(accounts)) {
-      sessions[accountData.sharedInfo.sessionId] = accountId;
-    }
   }
   initialized = true;
   loadReadyPromise = undefined;

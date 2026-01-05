@@ -1,6 +1,6 @@
 import { saveToStorage } from '../chrome/storage';
 import { sendTomesQuery } from '../elvenar/sendTomesQuery';
-import { sharedInfo } from './svc';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 
 export function matchTomesUrl(details: {
   url: string;
@@ -8,7 +8,7 @@ export function matchTomesUrl(details: {
   originUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestBody?: any;
-}) {
+}, sharedInfo: ExtensionSharedInfo) {
   const rewardSelectionKitMatcher = /^https:\/\/[a-z]+\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.rewards\.reward_selection_kit\.RewardSelectionKit_[a-f0-9]{32}\.json$/;
 
   if (rewardSelectionKitMatcher.test(details.url)) {

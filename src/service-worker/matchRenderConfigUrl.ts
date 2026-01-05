@@ -1,6 +1,6 @@
 import { saveToStorage } from '../chrome/storage';
 import { sendRenderConfigQuery } from '../elvenar/sendRenderConfigQuery';
-import { sharedInfo } from './svc';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 
 export function matchRenderConfigUrl(details: {
   url: string;
@@ -8,7 +8,7 @@ export function matchRenderConfigUrl(details: {
   originUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestBody?: any;
-}) {
+}, sharedInfo: ExtensionSharedInfo) {
   const renderConfigMatcher = /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/assets\/renderconfigdata-[a-f0-9]{32}\.json$/;
 
   if (renderConfigMatcher.test(details.url)) {

@@ -1,4 +1,9 @@
-import { OpenExtensionTabMessage, setupMessageListener, setupOpenExtensionTabListener, setupRefreshCityListener } from '../chrome/messages';
+import {
+  OpenExtensionTabMessage,
+  setupMessageListener,
+  setupOpenExtensionTabListener,
+  setupRefreshCityListener,
+} from '../chrome/messages';
 import {
   getAccountById,
   getAccountBySessionId,
@@ -61,14 +66,6 @@ chrome.action.onClicked.addListener(async (tab) => {
   await openOrRestoreTab();
 });
 
-export const sharedInfo: ExtensionSharedInfo = {
-  reqUrl: '',
-  reqReferrer: '',
-  worldId: '',
-  sessionId: '',
-  tabId: -1,
-};
-
 const callbackRequest = (details: {
   url: string;
   initiator?: string;
@@ -93,13 +90,21 @@ const callbackRequest = (details: {
     return;
   }
 
-  matchBuildingsUrl(details);
+  const sharedInfo: ExtensionSharedInfo = {
+    reqUrl: '',
+    reqReferrer: '',
+    worldId: '',
+    sessionId: '',
+    tabId: -1,
+  };
 
-  matchRenderConfigUrl(details);
+  matchBuildingsUrl(details, sharedInfo);
 
-  matchItemsUrl(details);
+  matchRenderConfigUrl(details, sharedInfo);
 
-  matchTomesUrl(details);
+  matchItemsUrl(details, sharedInfo);
+  
+  matchTomesUrl(details, sharedInfo);
 
   const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
   // Check if the URL matches the pattern and save it in a global variable

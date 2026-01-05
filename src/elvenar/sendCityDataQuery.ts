@@ -81,6 +81,7 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       cityName: user_data.city_name,
       url,
       tabId: sharedInfo.tabId,
+      sessionId: sharedInfo.sessionId,
     },
     sharedInfo,
   } satisfies AccountData;

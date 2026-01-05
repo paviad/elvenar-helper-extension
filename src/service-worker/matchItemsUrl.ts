@@ -1,6 +1,6 @@
 import { saveToStorage } from '../chrome/storage';
 import { sendItemsQuery } from '../elvenar/sendItemsQuery';
-import { sharedInfo } from './svc';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 
 export function matchItemsUrl(details: {
   url: string;
@@ -8,7 +8,7 @@ export function matchItemsUrl(details: {
   originUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestBody?: any;
-}) {
+}, sharedInfo: ExtensionSharedInfo) {
   const itemsUrlMatcher = /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.city\.Items_[a-f0-9]{32}\.json$/;
 
   if (itemsUrlMatcher.test(details.url)) {
