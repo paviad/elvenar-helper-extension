@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { setupMessageListener, setupTradeParsedListener } from '../chrome/messages';
 import { expandPanel } from '..';
-import { useOverlayStore } from './overlayStore';
+import { getOverlayStore } from './overlayStore';
 
 const goodNames: Record<string, { name: string; x: number; y: number }> = {
   ascendedmarble: { name: 'Primordial Minerals', x: 26, y: 0 },
@@ -16,6 +16,7 @@ const goodNames: Record<string, { name: string; x: number; y: number }> = {
 };
 
 export const TradeView = () => {
+  const useOverlayStore = getOverlayStore();
   const offeredGoods = useOverlayStore((state) => state.offeredGoods);
   const spriteUrl = chrome.runtime.getURL('sprite.png');
 

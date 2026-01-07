@@ -3,30 +3,52 @@ import { Tab, Tabs } from '@mui/material';
 import { ChatView } from './ChatView';
 import { TradeView } from './TradeView';
 import { expandPanel } from '..';
-import {
-  clearTradeParsedListener,
-  setupCityDataUpdatedListener,
-  setupTradeParsedListener,
-  TradeParsedMessage,
-} from '../chrome/messages';
-import { useOverlayStore } from './overlayStore';
+import { clearTradeParsedListener, setupTradeParsedListener, TradeParsedMessage } from '../chrome/messages';
+import { getOverlayStore } from './overlayStore';
 import { MessageFromInjectedScript } from '../inject/MessageFromInjectedScript';
-import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from '../elvenar/AccountManager';
 import { parseSocketMessage } from './parseSocketMessage';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 
 export function OverlayMain() {
   const [tab, setTab] = React.useState(0);
-  const [chapter, setChapter] = React.useState(0);
   const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
+
+  const useOverlayStore = getOverlayStore();
+
+  const chapter = useOverlayStore((state) => state.chapter);
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
   const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
 
   const storeChatMessages = useOverlayStore((state) => state.chatMessages);
   const storeSetChatMessages = useOverlayStore((state) => state.setChatMessages);
+
+  // Keyboard shortcut: 'C' expands overlay and goes to chat tab
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const overlayExpanded = useOverlayStore.getState().overlayExpanded;
+      if (
+        (event.key === 'c' || event.key === 'C') &&
+        event.altKey &&
+        !event.repeat &&
+        !event.ctrlKey &&
+        !event.metaKey
+      ) {
+        if (overlayExpanded && tab === 0) {
+          expandPanel(false);
+        } else {
+          expandPanel(true);
+          setTab(0); // 0 is the Chat tab
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   React.useEffect(() => {
     const newMessages = chatMessages.filter((m) => !storeChatMessages?.some((sm) => sm.uuid === m.uuid));
@@ -85,29 +107,16 @@ export function OverlayMain() {
     const offeredGoods = Array.from(new Set(tradesMsg.trades.map((trade) => trade.offer)));
     setOfferedGoods(offeredGoods);
     expandPanel(offeredGoods.length > 0);
-    setTab(1);
+    if (offeredGoods.length > 0) {
+      setTab(1);
+    }
   }, [tradesMsg, chapter]);
 
   React.useEffect(() => {
     window.addEventListener('message', messageHandler);
 
-    async function setup(tabId: number) {
-      await loadAccountManagerFromStorage();
-      const accountId = getAccountByTabId(tabId);
-      if (accountId) {
-        const account = getAccountById(accountId);
-        if (account && account.cityQuery) {
-          setChapter(account.cityQuery.chapter);
-        }
-      }
-    }
-
     setupTradeParsedListener((tradesMsg) => {
       setTradesMsg(tradesMsg);
-    });
-
-    setupCityDataUpdatedListener(({ tabId }) => {
-      setup(tabId);
     });
 
     return () => {

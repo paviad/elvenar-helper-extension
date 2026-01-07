@@ -1,5 +1,5 @@
 import React from 'react';
-import { useOverlayStore } from './overlayStore';
+import { getOverlayStore } from './overlayStore';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
@@ -17,10 +17,14 @@ declare global {
 
 export function ChatView() {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const useOverlayStore = getOverlayStore();
   const chatMessages = useOverlayStore((state) => state.chatMessages);
   const userMap = useOverlayStore((state) => state.userMap);
   const forceUpdate = useOverlayStore((state) => state.forceUpdate);
   const [sortedMessages, setSortedMessages] = React.useState<ChatMessage[]>([]);
+  const [visibleCount, setVisibleCount] = React.useState(30);
+  // Used to preserve scroll position when showing more
+  const prevScrollHeightRef = React.useRef<number | null>(null);
 
   // Helper to get user display name and avatar
   function getUserInfo(userId: string) {
@@ -44,16 +48,27 @@ export function ChatView() {
 
   React.useLayoutEffect(() => {
     const el = containerRef.current;
-    if (el) {
+    if (!el) return;
+    if (prevScrollHeightRef.current !== null) {
+      // After showing more, keep scroll at the same message
+      el.scrollTop = el.scrollHeight - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = null;
+    } else {
+      // On new messages, scroll to bottom
       el.scrollTop = el.scrollHeight;
     }
-  }, [sortedMessages, forceUpdate]);
+  }, [sortedMessages, forceUpdate, visibleCount]);
 
   React.useEffect(() => {
     if (sortedMessages.length > 0) {
       ensureMinWidthAndHeight(400, 600);
     }
   }, [sortedMessages]);
+
+  // Determine which messages to show
+  const total = sortedMessages.length;
+  const startIdx = total > visibleCount ? total - visibleCount : 0;
+  const visibleMessages = sortedMessages.slice(startIdx);
 
   return (
     <Paper
@@ -72,8 +87,26 @@ export function ChatView() {
       }}
       ref={containerRef}
     >
-      {sortedMessages && sortedMessages.length > 0 ? (
-        sortedMessages.map((msg) => {
+      {total > visibleCount && (
+        <Box sx={{ textAlign: 'center', mb: 1 }}>
+          <a
+            href="#"
+            style={{ color: '#1976d2', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
+            onClick={e => {
+              e.preventDefault();
+              const el = containerRef.current;
+              if (el) {
+                prevScrollHeightRef.current = el.scrollHeight - el.scrollTop;
+              }
+              setVisibleCount(v => v + 30);
+            }}
+          >
+            Show more...
+          </a>
+        </Box>
+      )}
+      {visibleMessages && visibleMessages.length > 0 ? (
+        visibleMessages.map((msg) => {
           const { name } = getUserInfo(msg.user);
           // Parse timestamp as number (milliseconds)
           const tsNum = typeof msg.timestamp === 'string' ? parseInt(msg.timestamp, 10) : msg.timestamp;

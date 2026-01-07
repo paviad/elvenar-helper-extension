@@ -1,5 +1,7 @@
+import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
-import { useOverlayStore } from './overlay/overlayStore';
+import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
 
 let expandFn: (state: boolean) => void;
 let ensureWidthAndHeightAtLeastFn: (minWidth: number, minHeight: number) => void;
@@ -237,6 +239,9 @@ const initFunc = async () => {
     content.style.display = collapsed ? 'none' : '';
     svgPlus.style.display = collapsed ? '' : 'none';
     svgMinus.style.display = collapsed ? 'none' : '';
+
+    getOverlayStore()?.getState().setOverlayExpanded(!collapsed);
+
     if (collapsed) {
       // Minimize the draggableDiv width and set opacity for the collapse button
       draggableDiv.style.width = '';
@@ -259,7 +264,7 @@ const initFunc = async () => {
       collapseBtn.title = 'Collapse Panel';
       resizeHandle.style.display = '';
 
-      useOverlayStore.getState().triggerForceUpdate();
+      getOverlayStore().getState().triggerForceUpdate();
     }
   }
 
@@ -292,8 +297,22 @@ const initFunc = async () => {
   draggableDiv.style.pointerEvents = 'auto';
   document.body.appendChild(draggableDiv);
 
-  createOverlayUi(content);
+  setupMessageListener();
+  setupCityDataUpdatedListener(({ tabId }) => {
+    setup(tabId, content);
+  });
 };
+
+async function setup(tabId: number, contentDiv: HTMLDivElement) {
+  await loadAccountManagerFromStorage();
+  const accountId = getAccountByTabId(tabId);
+  if (accountId) {
+    generateOverlayStore(accountId);
+    createOverlayUi(contentDiv);
+    const chapter = (await getAccountById(accountId))?.cityQuery?.chapter || 0;
+    getOverlayStore().getState().setChapter(chapter);
+  }
+}
 
 export const expandPanel = (state: boolean) => {
   if (expandFn) {
