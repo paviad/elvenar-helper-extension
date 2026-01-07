@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import { ensureMinWidthAndHeight } from '..';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { IconButton } from '@mui/material';
 
 // Extend the Window interface to include forceChatRerender
 declare global {
@@ -15,7 +16,13 @@ declare global {
   }
 }
 
-export function ChatView() {
+interface ChatViewProps {
+  searchActive?: boolean;
+  searchTerm?: string;
+  setSearchActive: (v: boolean) => void;
+}
+
+export function ChatView({ searchActive = false, searchTerm = '', setSearchActive }: ChatViewProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const useOverlayStore = getOverlayStore();
   const chatMessages = useOverlayStore((state) => state.chatMessages);
@@ -25,6 +32,19 @@ export function ChatView() {
   const [visibleCount, setVisibleCount] = React.useState(30);
   // Used to preserve scroll position when showing more
   const prevScrollHeightRef = React.useRef<number | null>(null);
+  // Array of refs for each message
+  const messageRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+
+  // Search state
+  // searchActive and searchTerm now come from props
+  const [searchMatches, setSearchMatches] = React.useState<number[]>([]); // indices in sortedMessages
+  const [searchIndex, setSearchIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const handler = () => setSearchActive(true);
+    window.addEventListener('chat-search-activate', handler);
+    return () => window.removeEventListener('chat-search-activate', handler);
+  }, []);
 
   // Helper to get user display name and avatar
   function getUserInfo(userId: string) {
@@ -45,6 +65,35 @@ export function ChatView() {
       : [];
     setSortedMessages(sortedMessages);
   }, [chatMessages]);
+
+  // Search logic
+  React.useEffect(() => {
+    if (!searchTerm) {
+      setSearchMatches([]);
+      setSearchIndex(0);
+      return;
+    }
+    const term = searchTerm.toLowerCase();
+    const matches = sortedMessages
+      .map((msg, idx) =>
+        msg.text.toLowerCase().includes(term) || (userMap[msg.user] || msg.user).toLowerCase().includes(term)
+          ? idx
+          : -1,
+      )
+      .filter((idx) => idx !== -1);
+    setSearchMatches(matches);
+    setSearchIndex(matches.length > 0 ? matches.length - 1 : 0);
+  }, [searchTerm, sortedMessages, userMap]);
+
+  // Scroll highlighted match into view
+  React.useEffect(() => {
+    if (!searchActive || searchMatches.length === 0) return;
+    const currentIdx = searchMatches[searchIndex];
+    const el = messageRefs.current[currentIdx];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [searchActive, searchIndex, searchMatches]);
 
   React.useLayoutEffect(() => {
     const el = containerRef.current;
@@ -72,7 +121,10 @@ export function ChatView() {
   // Determine which messages to show
   const total = sortedMessages.length;
   const startIdx = total > visibleCount ? total - visibleCount : 0;
-  const visibleMessages = sortedMessages.slice(startIdx);
+  const visibleMessages =
+    searchActive && searchTerm
+      ? sortedMessages // show all for search
+      : sortedMessages.slice(startIdx);
 
   return (
     <Paper
@@ -91,7 +143,60 @@ export function ChatView() {
       }}
       ref={containerRef}
     >
-      {total > visibleCount && (
+      {searchActive && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mb: 1,
+            mt: 1,
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            background: '#f9f9fb',
+            pr: 2,
+            border: '2px solid #222',
+            borderRadius: 6,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            alignSelf: 'end',
+          }}
+        >
+          <Box sx={{ ml: 2, fontSize: 13, color: '#555' }}>
+            {searchMatches.length > 0
+              ? `${searchIndex + 1} of ${searchMatches.length}`
+              : '0 matches'}
+          </Box>
+          <IconButton
+            aria-label='Previous match'
+            size='small'
+            sx={{ ml: 1 }}
+            disabled={searchMatches.length === 0}
+            onClick={() => setSearchIndex((i) => (i - 1 + searchMatches.length) % searchMatches.length)}
+          >
+            <span style={{ fontSize: 16 }}>▲</span>
+          </IconButton>
+          <IconButton
+            aria-label='Next match'
+            size='small'
+            sx={{ ml: 0.5 }}
+            disabled={searchMatches.length === 0}
+            onClick={() => setSearchIndex((i) => (i + 1) % searchMatches.length)}
+          >
+            <span style={{ fontSize: 16 }}>▼</span>
+          </IconButton>
+          <IconButton
+            aria-label='Close search'
+            size='small'
+            sx={{ ml: 1 }}
+            onClick={() => {
+              if (setSearchActive) setSearchActive(false);
+            }}
+          >
+            ×
+          </IconButton>
+        </Box>
+      )}
+      {!searchActive && total > visibleCount && (
         <Box sx={{ textAlign: 'center', mb: 1 }}>
           <a
             href='#'
@@ -111,7 +216,7 @@ export function ChatView() {
       )}
       {visibleMessages && visibleMessages.length > 0 ? (
         <>
-          {visibleMessages.map((msg) => {
+          {visibleMessages.map((msg, idx) => {
             const { name } = getUserInfo(msg.user);
             // Parse timestamp as number (milliseconds)
             const tsNum = typeof msg.timestamp === 'string' ? parseInt(msg.timestamp, 10) : msg.timestamp;
@@ -127,8 +232,22 @@ export function ChatView() {
             const dateStr = isToday
               ? ''
               : date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+            // Highlight match
+            const isMatch = searchActive && searchMatches.includes(idx);
+            const isCurrent = isMatch && searchMatches[searchIndex] === idx;
+            // (No useEffect here)
             return (
-              <Stack key={msg.uuid} direction='row' alignItems='flex-start' spacing={1} mb={1.2}>
+              <Stack
+                key={msg.uuid}
+                ref={(el) => {
+                  messageRefs.current[idx] = el;
+                }}
+                direction='row'
+                alignItems='flex-start'
+                spacing={1}
+                mb={1.2}
+                sx={isCurrent ? { background: '#ffe082' } : isMatch ? { background: '#fffde7' } : {}}
+              >
                 <Avatar
                   sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }}
                   title={name}
@@ -161,7 +280,7 @@ export function ChatView() {
               </Stack>
             );
           })}
-          {visibleCount > 30 && (
+          {!searchActive && visibleCount > 30 && (
             <Box sx={{ textAlign: 'center', mt: 1 }}>
               <a
                 href='#'

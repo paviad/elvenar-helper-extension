@@ -1,5 +1,6 @@
 import React from 'react';
-import { Tab, Tabs } from '@mui/material';
+import { Tab, Tabs, IconButton, TextField, Box } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { ChatView } from './ChatView';
 import { TradeView } from './TradeView';
 import { expandPanel } from '..';
@@ -10,6 +11,8 @@ import { parseSocketMessage } from './parseSocketMessage';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 
 export function OverlayMain() {
+  const [searchActive, setSearchActive] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
   const [tab, setTab] = React.useState(0);
   const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
@@ -131,11 +134,42 @@ export function OverlayMain() {
 
   return (
     <div style={{ height: '100%' }}>
-      <Tabs value={tab} onChange={handleChange} aria-label='Overlay Tabs'>
-        <Tab label='Chat' />
-        {chapter >= 18 && <Tab label='Trade' />}
-      </Tabs>
-      {tab === 0 && <ChatView />}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          position: 'sticky',
+          top: 0,
+          zIndex: 2,
+          background: '#f9f9fb',
+          pr: 2,
+        }}
+      >
+        <Tabs value={tab} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
+          <Tab label='Chat' />
+          {chapter >= 18 && <Tab label='Trade' />}
+        </Tabs>
+        {tab === 0 && (
+          <>
+            <IconButton aria-label='Search chat' size='small' sx={{ ml: 1 }} onClick={() => setSearchActive((v) => !v)}>
+              <SearchIcon fontSize='small' />
+            </IconButton>
+            {searchActive && (
+              <TextField
+                autoFocus
+                size='small'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder='Search chat...'
+                sx={{ ml: 1, minWidth: 180 }}
+                onKeyDown={(e) => e.stopPropagation()}
+                onKeyUp={(e) => e.stopPropagation()}
+              />
+            )}
+          </>
+        )}
+      </Box>
+      {tab === 0 && <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />}
       {chapter >= 18 && tab === 1 && <TradeView />}
     </div>
   );
