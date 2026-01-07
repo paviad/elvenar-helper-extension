@@ -314,6 +314,6 @@ injectScriptTag();
 function injectScriptTag() {
   const script = document.createElement('script');
   script.setAttribute('type', 'text/javascript');
-  script.setAttribute('src', chrome.runtime.getURL('inject.bundle.js'));
+  script.setAttribute('src', chrome.runtime.getURL('elvenassist-inject.bundle.js'));
   (document.head || document.documentElement).appendChild(script);
 }

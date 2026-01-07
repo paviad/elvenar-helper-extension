@@ -23,7 +23,7 @@
   ],
   "background": {
     "scripts": [
-      "svc.bundle.js"
+      "elvenassist-service-worker.bundle.js"
     ]
   },
   "action": {
@@ -34,7 +34,7 @@
       "resources": [
         "icon32.png",
         "sprite.png",
-        "inject.bundle.js"
+        "elvenassist-inject.bundle.js"
       ],
       "matches": [
         "https://*.elvenar.com/*"
@@ -47,8 +47,8 @@
         "https://*.elvenar.com/*"
       ],
       "js": [
-        "vendors.bundle.js",
-        "main.bundle.js"
+        "elvenassist-vendors.bundle.js",
+        "elvenassist-overlay.bundle.js"
       ],
       "run_at": "document_idle"
     }

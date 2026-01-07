@@ -12,7 +12,7 @@
     "https://*.innogamescdn.com/*"
   ],
   "background": {
-    "service_worker": "svc.bundle.js"
+    "service_worker": "elvenassist-service-worker.bundle.js"
   },
   "action": {
     "default_title": "(Click to show tab)"
@@ -22,7 +22,7 @@
       "resources": [
         "icon32.png",
         "sprite.png",
-        "inject.bundle.js"
+        "elvenassist-inject.bundle.js"
       ],
       "matches": [
         "https://*.elvenar.com/*"
@@ -35,8 +35,8 @@
         "https://*.elvenar.com/*"
       ],
       "js": [
-        "vendors.bundle.js",
-        "main.bundle.js"
+        "elvenassist-vendors.bundle.js",
+        "elvenassist-overlay.bundle.js"
       ],
       "run_at": "document_idle"
     }

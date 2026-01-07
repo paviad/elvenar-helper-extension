@@ -12,7 +12,7 @@ const splitChunks = {
   cacheGroups: {
     vendor: {
       test: /[\\/]node_modules[\\/]/,
-      name: 'vendors',
+      name: 'elvenassist-vendors',
       chunks: 'all',
       enforce: true,
     },
@@ -63,10 +63,10 @@ const commonConfig = (env) => ({
 module.exports = (env) => [
   {
     entry: {
-      main: './src/index.ts',
-      tab: './src/tab.ts',
+      'elvenassist-overlay': './src/index.ts',
+      'elvenassist-tab': './src/tab.ts',
       popup: './src/popup.ts',
-      inject: './src/inject/inject-main.ts'
+      'elvenassist-inject': './src/inject/inject-main.ts',
     },
     ...commonConfig(env),
     optimization: {
@@ -76,7 +76,7 @@ module.exports = (env) => [
   },
   {
     entry: {
-      svc: './src/service-worker/svc.ts',
+      'elvenassist-service-worker': './src/service-worker/svc.ts',
     },
     ...commonConfig(env),
     optimization: {
