@@ -1,9 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
-
-const EXTENSION_NAME = 'ElvenAssist';
-const EXTENSION_VERSION = '4.0.0';
-const EXTENSION_DATE = '5-Jan-2026';
+import { EXTENSION_DATE, EXTENSION_NAME, EXTENSION_VERSION } from './ExtensionAboutInfo';
 
 export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (

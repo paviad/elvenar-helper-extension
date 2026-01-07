@@ -1,16 +1,19 @@
-import React from 'react';
-import { Tab, Tabs, IconButton, TextField, Box } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SearchIcon from '@mui/icons-material/Search';
-import { ChatView } from './ChatView';
-import { TradeView } from './TradeView';
-import { expandPanel } from '..';
+import { Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
+import React from 'react';
+import { expandPanel } from '../overlay';
 import { clearTradeParsedListener, setupTradeParsedListener, TradeParsedMessage } from '../chrome/messages';
-import { getOverlayStore } from './overlayStore';
 import { MessageFromInjectedScript } from '../inject/MessageFromInjectedScript';
-import { parseSocketMessage } from './parseSocketMessage';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { ChatView } from './ChatView';
+import { HelpDialog } from './HelpDialog';
+import { getOverlayStore } from './overlayStore';
+import { parseSocketMessage } from './parseSocketMessage';
+import { TradeView } from './TradeView';
 
 export function OverlayMain() {
+  const [helpOpen, setHelpOpen] = React.useState(false);
   const [searchActive, setSearchActive] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [tab, setTab] = React.useState(0);
@@ -173,6 +176,15 @@ export function OverlayMain() {
             )}
           </>
         )}
+        <IconButton
+          aria-label='Help'
+          size='small'
+          sx={{ position: 'absolute', top: -46, right: 62, zIndex: 10 }} // User can adjust top/right as needed
+          onClick={() => setHelpOpen(true)}
+        >
+          <HelpOutlineIcon fontSize='small' />
+        </IconButton>
+        <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
       </Box>
       {tab === 0 && <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />}
       {chapter >= 18 && tab === 1 && <TradeView />}

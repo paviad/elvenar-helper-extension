@@ -63,7 +63,7 @@ const commonConfig = (env) => ({
 module.exports = (env) => [
   {
     entry: {
-      'elvenassist-overlay': './src/index.ts',
+      'elvenassist-overlay': './src/overlay.ts',
       'elvenassist-tab': './src/tab.ts',
       popup: './src/popup.ts',
       'elvenassist-inject': './src/inject/inject-main.ts',

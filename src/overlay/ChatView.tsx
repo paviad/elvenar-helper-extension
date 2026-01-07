@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import { ensureMinWidthAndHeight } from '..';
+import { ensureMinWidthAndHeight } from '../overlay';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { IconButton } from '@mui/material';
 
@@ -162,13 +162,14 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
             zIndex: 2,
             background: '#f9f9fb',
             pr: 2,
+            pl: 2,
             border: '2px solid #222',
             borderRadius: 6,
             boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
             alignSelf: 'end',
           }}
         >
-          <Box sx={{ ml: 2, fontSize: 13, color: '#555' }}>
+          <Box sx={{ fontSize: 13, color: '#555' }}>
             {searchMatches.length > 0 ? `${searchIndex + 1} of ${searchMatches.length}` : '0 matches'}
           </Box>
           <IconButton

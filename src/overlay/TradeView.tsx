@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { setupMessageListener, setupTradeParsedListener } from '../chrome/messages';
-import { expandPanel } from '..';
+import { expandPanel } from '../overlay';
 import { getOverlayStore } from './overlayStore';
 
 const goodNames: Record<string, { name: string; x: number; y: number }> = {
