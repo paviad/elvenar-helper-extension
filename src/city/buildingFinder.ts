@@ -80,8 +80,8 @@ export class BuildingFinder {
     const approx = this.buildingsDictionaryNoLevel[baseName]?.[0];
     const goodsBuilding = this.goodsDictionary[baseName]?.find((r) => r.id.endsWith(`_${level}`)) || approx;
 
-    const length = goodsBuilding?.tile_length || building?.length || 1;
-    const width = goodsBuilding?.tile_width || building?.width || 1;
+    const length = goodsBuilding?.l || building?.length || 1;
+    const width = goodsBuilding?.w || building?.width || 1;
 
     if (building) {
       const bldg = building;

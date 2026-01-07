@@ -468,26 +468,3 @@ export const renderCityGrid = (s: CityViewState) => {
     </Stack>
   );
 };
-
-// Context menu entry with hover effect
-interface MenuEntryProps {
-  label: string;
-  onClick?: () => void;
-}
-const MenuEntry: React.FC<MenuEntryProps> = ({ label, onClick }) => {
-  const [hover, setHover] = React.useState(false);
-  return (
-    <div
-      style={{
-        padding: '8px 16px',
-        cursor: 'pointer',
-        background: hover ? '#e6f0fa' : undefined,
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onClick={onClick}
-    >
-      {label}
-    </div>
-  );
-};

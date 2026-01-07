@@ -17,6 +17,7 @@ export function OverlayMain() {
   const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
+  const tabRef = React.useRef<number>(tab);
 
   const useOverlayStore = getOverlayStore();
 
@@ -39,7 +40,7 @@ export function OverlayMain() {
         !event.ctrlKey &&
         !event.metaKey
       ) {
-        if (overlayExpanded && tab === 0) {
+        if (overlayExpanded && tabRef.current === 0) {
           expandPanel(false);
         } else {
           expandPanel(true);
@@ -52,6 +53,10 @@ export function OverlayMain() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  React.useEffect(() => {
+    tabRef.current = tab;
+  }, [tab]);
 
   React.useEffect(() => {
     const newMessages = chatMessages.filter((m) => !storeChatMessages?.some((sm) => sm.uuid === m.uuid));

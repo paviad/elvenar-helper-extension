@@ -12,9 +12,10 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
   const [_1, setMenu] = s.rMenu;
   const [blocks, _3] = s.rBlocks;
   const [_2, setDragOffset] = s.rDragOffset;
+  const [dragIndex, _4] = s.rDragIndex;
 
   const dragging = typeof key === 'string';
-  const handler = !dragging
+  const handler = !dragging && dragIndex === null
     ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(s, e, key)
     : () => {
         /* no-op for dragging */

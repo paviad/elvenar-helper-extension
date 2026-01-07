@@ -28,6 +28,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   const chatMessages = useOverlayStore((state) => state.chatMessages);
   const userMap = useOverlayStore((state) => state.userMap);
   const forceUpdate = useOverlayStore((state) => state.forceUpdate);
+  const overlayExpanded = useOverlayStore((state) => state.overlayExpanded);
   const [sortedMessages, setSortedMessages] = React.useState<ChatMessage[]>([]);
   const [visibleCount, setVisibleCount] = React.useState(30);
   // Used to preserve scroll position when showing more
@@ -118,6 +119,12 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     }
   }, [sortedMessages]);
 
+  React.useEffect(() => {
+    if (setSearchActive && !overlayExpanded) {
+      setSearchActive(false);
+    }
+  }, [overlayExpanded]);
+
   // Determine which messages to show
   const total = sortedMessages.length;
   const startIdx = total > visibleCount ? total - visibleCount : 0;
@@ -162,9 +169,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
           }}
         >
           <Box sx={{ ml: 2, fontSize: 13, color: '#555' }}>
-            {searchMatches.length > 0
-              ? `${searchIndex + 1} of ${searchMatches.length}`
-              : '0 matches'}
+            {searchMatches.length > 0 ? `${searchIndex + 1} of ${searchMatches.length}` : '0 matches'}
           </Box>
           <IconButton
             aria-label='Previous match'

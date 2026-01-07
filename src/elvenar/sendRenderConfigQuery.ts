@@ -1,6 +1,6 @@
 import { getFromStorage } from '../chrome/storage';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { GoodsBuilding } from '../model/goodsBuilding';
+import { GoodsBuilding, GoodsBuildingRaw } from '../model/goodsBuilding';
 
 export async function sendRenderConfigQuery(sharedInfo: ExtensionSharedInfo) {
   const { reqUrl: url, reqReferrer: referrer } = sharedInfo;
@@ -20,12 +20,15 @@ export async function sendRenderConfigQuery(sharedInfo: ExtensionSharedInfo) {
 
   const json = await response.json();
 
-  const goodsRenderConfig = (json.building_configs as GoodsBuilding[]).map((r) => ({
-    type: r.type,
-    id: r.id,
-    tile_width: r.tile_width,
-    tile_length: r.tile_length,
-  }));
+  const goodsRenderConfig = (json.building_configs as GoodsBuildingRaw[]).map(
+    (r) =>
+      ({
+        t: r.type,
+        id: r.id,
+        w: r.tile_width,
+        l: r.tile_length,
+      } as GoodsBuilding),
+  );
 
   const maxLevels = goodsRenderConfig
     .filter((r) => /^[GPRHMO]_/.test(r.id))
@@ -50,7 +53,7 @@ export async function sendRenderConfigQuery(sharedInfo: ExtensionSharedInfo) {
 export async function getGoodsBuildings() {
   const json = await getFromStorage('goodsRenderConfig');
   if (json) {
-    return JSON.parse(json) as GoodsBuilding[];
+    return decompress(JSON.parse(json) as GoodsBuilding[]);
   } else {
     return [];
   }
@@ -67,7 +70,37 @@ export async function getMaxLevels() {
 
 export const getPrefix = (r: GoodsBuilding) => {
   const c = r.id[0];
-  if (r.type.includes('premium')) return `X${c}`;
+  if (r.t.includes('premium')) return `X${c}`;
   if (c === 'M') return `M${r.id[2]}`;
   return c;
 };
+
+const decompression: Record<string, string> = {
+  c: 'culture',
+  cr: 'culture_residential',
+  e: 'expiring',
+  g: 'goods',
+  a: 'ancient_wonder',
+  gu: 'guardian',
+  po: 'portal',
+  ac: 'academy',
+  mb: 'main_building',
+  m: 'military',
+  ar: 'armory',
+  pp: 'premium_production',
+  p: 'production',
+  pr: 'premium_residential',
+  r: 'residential',
+  s: 'street',
+  t: 'trader',
+  wh: 'worker_hut',
+};
+
+function decompress(goodsRenderConfig: GoodsBuilding[]): GoodsBuilding[] {
+  return goodsRenderConfig.map((r) => ({
+    t: decompression[r.t],
+    id: r.id,
+    w: r.w,
+    l: r.l,
+  }));
+}
