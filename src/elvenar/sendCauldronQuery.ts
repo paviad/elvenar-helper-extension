@@ -43,7 +43,5 @@ export async function sendCauldronQuery(sharedInfo: ExtensionSharedInfo) {
       ingredients: json[1].responseData,
       potionEffects: json[2].responseData,
     };
-
-    // console.log('Cauldron data updated for account:', accountData.cauldron);
   }
 }

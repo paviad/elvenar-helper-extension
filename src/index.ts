@@ -1,8 +1,10 @@
 import { createOverlayUi } from './overlay/createOverlayUi';
+import { useOverlayStore } from './overlay/overlayStore';
 
 let expandFn: (state: boolean) => void;
+let ensureWidthAndHeightAtLeastFn: (minWidth: number, minHeight: number) => void;
 
-console.log('Content script loaded');
+console.log('ElvenAssist: Content script loaded');
 
 const initFunc = async () => {
   // Remove existing panel if present
@@ -18,12 +20,14 @@ const initFunc = async () => {
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
   draggableDiv.style.width = '250px';
+  draggableDiv.style.height = '450px';
   draggableDiv.style.background = '#fff';
   draggableDiv.style.border = '1px solid #ccc';
   draggableDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
   draggableDiv.style.zIndex = '9999';
   draggableDiv.style.borderRadius = '6px';
-  draggableDiv.style.userSelect = 'none';
+  // draggableDiv.style.userSelect = 'none';
+  draggableDiv.style.maxHeight = '800px';
 
   // Header for dragging and collapse
   const header = document.createElement('div');
@@ -55,6 +59,7 @@ const initFunc = async () => {
   iconImg.title = 'Open City Planner';
 
   iconImg.addEventListener('click', async () => {
+    if (isDragging) return;
     try {
       await chrome.runtime.sendMessage({ type: 'openExtensionTab' });
     } catch (error) {
@@ -125,37 +130,103 @@ const initFunc = async () => {
   const content = document.createElement('div');
   content.style.padding = '12px';
   content.style.color = '#333';
+  content.style.height = 'calc(100% - 140px)';
   content.textContent = 'This is a draggable and collapsible panel.';
   draggableDiv.appendChild(content);
+  // Add resize handle for resizable panel
+  const resizeHandle = document.createElement('div');
+  resizeHandle.style.position = 'absolute';
+  resizeHandle.style.right = '0';
+  resizeHandle.style.bottom = '0';
+  resizeHandle.style.width = '16px';
+  resizeHandle.style.height = '16px';
+  resizeHandle.style.cursor = 'nwse-resize';
+  resizeHandle.style.background = 'transparent';
+  resizeHandle.style.zIndex = '10000';
+  resizeHandle.style.borderBottomRightRadius = '6px';
+  resizeHandle.style.display = 'none';
+  resizeHandle.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16"><line x1="4" y1="12" x2="12" y2="4" stroke="#aaa" stroke-width="2"/><line x1="8" y1="14" x2="14" y2="8" stroke="#aaa" stroke-width="2"/></svg>`;
+  draggableDiv.appendChild(resizeHandle);
+
+  let isResizing = false;
+  let startX = 0;
+  let startY = 0;
+  let startWidth = 0;
+  let startHeight = 0;
+
+  resizeHandle.addEventListener('mousedown', (e) => {
+    if (collapsed) return;
+    if (!document.defaultView) return;
+    isResizing = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startWidth = parseInt(document.defaultView.getComputedStyle(draggableDiv).width, 10);
+    startHeight = parseInt(document.defaultView.getComputedStyle(draggableDiv).height, 10);
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    const newWidth = Math.max(180, startWidth + (e.clientX - startX));
+    const newHeight = Math.max(60, startHeight + (e.clientY - startY));
+    draggableDiv.style.width = newWidth + 'px';
+    draggableDiv.style.height = newHeight + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.userSelect = '';
+    }
+  });
 
   document.body.appendChild(draggableDiv);
 
   // Drag logic
   let isDragging = false;
+  let maybeDragging = false;
   let offsetX = 0;
   let offsetY = 0;
 
   header.addEventListener('mousedown', (e) => {
-    isDragging = true;
+    maybeDragging = true;
     offsetX = e.clientX - draggableDiv.getBoundingClientRect().left;
     offsetY = e.clientY - draggableDiv.getBoundingClientRect().top;
     document.body.style.userSelect = 'none';
   });
 
   document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
+    if (!isDragging && !maybeDragging) return;
+    if (!isDragging && maybeDragging) {
+      isDragging = true;
+      maybeDragging = false;
+    }
     draggableDiv.style.left = `${e.clientX - offsetX}px`;
     draggableDiv.style.top = `${e.clientY - offsetY}px`;
   });
 
   document.addEventListener('mouseup', () => {
-    isDragging = false;
+    setTimeout(() => {
+      // Delay to prevent click event after drag
+      isDragging = false;
+    }, 0);
+    maybeDragging = false;
     document.body.style.userSelect = '';
   });
 
   // Collapse logic
   let collapsed = true;
+  let lastExpandedWidth = '250px';
+  let lastExpandedHeight = '450px';
   collapseBtn.addEventListener('click', () => {
+    if (isDragging) return;
+    if (!collapsed) {
+      // About to collapse, save current size
+      lastExpandedWidth = draggableDiv.style.width || '250px';
+      lastExpandedHeight = draggableDiv.style.height || '450px';
+    }
     collapsed = !collapsed;
     updateStateByCollapsed();
   });
@@ -169,26 +240,52 @@ const initFunc = async () => {
     if (collapsed) {
       // Minimize the draggableDiv width and set opacity for the collapse button
       draggableDiv.style.width = '';
+      draggableDiv.style.height = '';
       header.style.justifyContent = 'flex-end';
       title.style.display = 'none';
       iconImg.style.display = '';
       draggableDiv.style.opacity = '0.5';
       draggableDiv.title = 'ElvenAssist Helper Window';
       collapseBtn.title = 'Expand This Panel';
+      resizeHandle.style.display = 'none';
     } else {
-      draggableDiv.style.width = '250px';
+      draggableDiv.style.width = lastExpandedWidth;
+      draggableDiv.style.height = lastExpandedHeight;
       header.style.justifyContent = 'space-between';
       title.style.display = '';
       iconImg.style.display = '';
       draggableDiv.style.opacity = '1';
       draggableDiv.title = '';
       collapseBtn.title = 'Collapse Panel';
+      resizeHandle.style.display = '';
+
+      useOverlayStore.getState().triggerForceUpdate();
     }
   }
 
   expandFn = (state: boolean) => {
+    if (!state) {
+      // About to expand, restore last size
+      draggableDiv.style.width = lastExpandedWidth;
+      draggableDiv.style.height = lastExpandedHeight;
+    }
     collapsed = state;
     updateStateByCollapsed();
+  };
+
+  ensureWidthAndHeightAtLeastFn = (minWidth: number, minHeight: number) => {
+    const currentWidth = parseInt(draggableDiv.style.width, 10) || 0;
+    if (!collapsed && currentWidth < minWidth) {
+      draggableDiv.style.width = `${minWidth}px`;
+    } else if (parseInt(lastExpandedWidth, 10) < minWidth) {
+      lastExpandedWidth = `${minWidth}px`;
+    }
+    const currentHeight = parseInt(draggableDiv.style.height, 10) || 0;
+    if (!collapsed && currentHeight < minHeight) {
+      draggableDiv.style.height = `${minHeight}px`;
+    } else if (parseInt(lastExpandedHeight, 10) < minHeight) {
+      lastExpandedHeight = `${minHeight}px`;
+    }
   };
 
   draggableDiv.style.display = 'block';
@@ -204,4 +301,19 @@ export const expandPanel = (state: boolean) => {
   }
 };
 
+export const ensureMinWidthAndHeight = (minWidth: number, minHeight: number) => {
+  if (ensureWidthAndHeightAtLeastFn) {
+    ensureWidthAndHeightAtLeastFn(minWidth, minHeight);
+  }
+};
+
 initFunc();
+
+injectScriptTag();
+
+function injectScriptTag() {
+  const script = document.createElement('script');
+  script.setAttribute('type', 'text/javascript');
+  script.setAttribute('src', chrome.runtime.getURL('inject.bundle.js'));
+  (document.head || document.documentElement).appendChild(script);
+}

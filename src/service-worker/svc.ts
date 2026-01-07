@@ -1,5 +1,6 @@
 import {
   OpenExtensionTabMessage,
+  sendCityDataUpdatedMessage,
   setupMessageListener,
   setupOpenExtensionTabListener,
   setupRefreshCityListener,
@@ -58,7 +59,7 @@ async function initialize() {
     }
   });
   await loadAccountManagerFromStorage();
-  console.log('Account Manager loaded in Service Worker');
+  console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }
 
 initialize();
@@ -136,6 +137,7 @@ const callbackRequest = (details: {
         try {
           await sendCityDataQuery(sharedInfo);
           await saveAllAccounts();
+          sendCityDataUpdatedMessage(details.tabId);
         } catch (error) {
           console.error('Error in sendCityDataQuery:', error);
         }

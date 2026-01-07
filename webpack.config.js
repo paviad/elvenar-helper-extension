@@ -66,6 +66,7 @@ module.exports = (env) => [
       main: './src/index.ts',
       tab: './src/tab.ts',
       popup: './src/popup.ts',
+      inject: './src/inject/inject-main.ts'
     },
     ...commonConfig(env),
     optimization: {

@@ -22,7 +22,7 @@ import { BuildingFinder } from '../buildingFinder';
 import { CityBlock } from '../CityBlock';
 import { sendRefreshCityMessage } from '../../chrome/messages';
 import { loadAccountManagerFromStorage } from '../../elvenar/AccountManager';
-import { useGlobalStore } from '../../util/globalStore';
+import { useTabStore } from '../../util/tabStore';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -40,7 +40,7 @@ export const renderCityGrid = (s: CityViewState) => {
   const [searchTerm, setSearchTerm] = s.rSearchTerm;
   const [menu, setMenu] = s.rMenu;
   const [maxLevels] = s.rMaxLevels;
-  const setGlobalError = useGlobalStore((state) => state.setGlobalError);
+  const setGlobalError = useTabStore((state) => state.setGlobalError);
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const term = e.target.value;

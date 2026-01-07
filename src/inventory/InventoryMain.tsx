@@ -18,7 +18,7 @@ import {
   FormControlLabel,
   Switch,
 } from '@mui/material';
-import { useGlobalStore } from '../util/globalStore';
+import { useTabStore } from '../util/tabStore';
 
 export const InventoryMain = () => {
   const [inventory, setInventory] = React.useState<InventoryItem[] | undefined>([]);
@@ -30,7 +30,7 @@ export const InventoryMain = () => {
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
   const [aggregate, setAggregate] = React.useState(false);
 
-  const accountId = useGlobalStore((state) => state.accountId);
+  const accountId = useTabStore((state) => state.accountId);
 
   React.useEffect(() => {
     async function fetchInventory() {

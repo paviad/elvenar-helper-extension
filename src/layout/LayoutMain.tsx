@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Box, AppBar, Toolbar, IconButton, Typography, Button, Menu, MenuItem, Alert } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { NavLink, Outlet } from 'react-router';
-import { useGlobalStore } from '../util/globalStore';
+import { useTabStore } from '../util/tabStore';
 import { getAllStoredAccounts } from '../elvenar/AccountManager';
 import { AboutDialog } from './AboutDialog';
 import { getFromStorage } from '../chrome/storage';
@@ -10,10 +10,10 @@ import { getFromStorage } from '../chrome/storage';
 const ERROR_BAR_HEIGHT = 48; // px
 
 export const LayoutMain = () => {
-  const setAccountId = useGlobalStore((state) => state.setAccountId);
-  const accountId = useGlobalStore((state) => state.accountId);
-  const globalError = useGlobalStore((state) => state.globalError);
-  const setGlobalError = useGlobalStore((state) => state.setGlobalError);
+  const setAccountId = useTabStore((state) => state.setAccountId);
+  const accountId = useTabStore((state) => state.accountId);
+  const globalError = useTabStore((state) => state.globalError);
+  const setGlobalError = useTabStore((state) => state.setGlobalError);
   // Dummy account list for dropdown
   const accountList = getAllStoredAccounts();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -24,7 +24,7 @@ export const LayoutMain = () => {
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const [aboutOpen, setAboutOpen] = React.useState(false);
 
-  const setTechSprite = useGlobalStore((state) => state.setTechSprite);
+  const setTechSprite = useTabStore((state) => state.setTechSprite);
 
   React.useEffect(() => {
     async function getSpriteUrl() {

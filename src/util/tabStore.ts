@@ -1,14 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { chromeStorage } from './chromeStorage';
 
-// Custom storage for chrome.storage.local
-const chromeStorage = {
-  getItem: async (name: string): Promise<string | null> => (await chrome.storage.local.get(name))[name] ?? null,
-  setItem: async (name: string, value: string): Promise<void> => await chrome.storage.local.set({ [name]: value }),
-  removeItem: async (name: string): Promise<void> => await chrome.storage.local.remove([name]),
-};
-
-interface GlobalState {
+interface TabState {
   accountId: string | undefined;
   setAccountId: (id: string | undefined) => void;
   globalError: string | undefined | null;
@@ -18,7 +12,7 @@ interface GlobalState {
   // Add other global state fields and setters here as needed
 }
 
-export const useGlobalStore = create<GlobalState>()(
+export const useTabStore = create<TabState>()(
   persist(
     (set) => ({
       accountId: undefined,
@@ -29,7 +23,7 @@ export const useGlobalStore = create<GlobalState>()(
       setTechSprite: (size: { url: string; width: number; height: number } | undefined) => set({ techSprite: size }),
     }),
     {
-      name: 'global-store',
+      name: 'tab-store',
       storage: createJSONStorage(() => chromeStorage),
     },
   ),

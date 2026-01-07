@@ -4,7 +4,7 @@ import { CityBlock } from './CityBlock';
 import { MoveLogInterface } from './MoveLog/MoveLogInterface';
 import { handleUndo } from './MoveLog/handleUndo';
 import { handleRedo } from './MoveLog/handleRedo';
-import { useGlobalStore } from '../util/globalStore';
+import { useTabStore } from '../util/tabStore';
 import { getMaxLevels } from '../elvenar/sendRenderConfigQuery';
 
 export class CityViewState {
@@ -20,8 +20,8 @@ export class CityViewState {
   menuRef = useRef<HTMLDivElement | null>(null);
   svgRef = useRef<SVGSVGElement>(null);
   mousePositionRef = useRef<HTMLDivElement>(null);
-  accountId = useGlobalStore((state) => state.accountId);
-  techSprite = useGlobalStore((state) => state.techSprite);
+  accountId = useTabStore((state) => state.accountId);
+  techSprite = useTabStore((state) => state.techSprite);
 
   allTypes;
   rBlocks;

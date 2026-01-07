@@ -22,7 +22,17 @@ export interface OpenExtensionTabMessage {
   type: 'openExtensionTab';
 }
 
-export type AllMessages = TradeOpenedMessage | TradeParsedMessage | RefreshCityMessage | OpenExtensionTabMessage;
+export interface CityDataUpdatedMessage {
+  type: 'cityDataUpdated';
+  tabId: number;
+}
+
+export type AllMessages =
+  | TradeOpenedMessage
+  | TradeParsedMessage
+  | RefreshCityMessage
+  | OpenExtensionTabMessage
+  | CityDataUpdatedMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -35,17 +45,12 @@ export const sendTradeOpenedMessage = async () => {
       type: 'tradeOpened',
     } satisfies TradeOpenedMessage);
   } catch (e) {
-    console.log('Error sending tradeOpened message:', e);
+    console.log('ElvenAssist: Error sending tradeOpened message:', e);
   }
 };
 
-export const sendTradeParsedMessage = async (trades: TradeSummary[]) => {
-  const tabs = await chrome.tabs.query({ url: '*://*.elvenar.com/*' });
-  if (tabs.length === 0 || !tabs[0].id) {
-    console.warn('No tabs found for Elvenar to send tradeParsed message');
-    return;
-  }
-  await chrome.tabs.sendMessage(tabs[0].id, {
+export const sendTradeParsedMessage = async (tabId: number, trades: TradeSummary[]) => {
+  await chrome.tabs.sendMessage(tabId, {
     type: 'tradeParsed',
     trades,
   } satisfies TradeParsedMessage);
@@ -66,6 +71,14 @@ export const sendRefreshCityMessage = async (accountId: string): Promise<Message
   );
 
   return await responsePromise;
+};
+
+export const sendCityDataUpdatedMessage = async (tabId: number) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'cityDataUpdated', tabId } satisfies CityDataUpdatedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending cityDataUpdated message:', e);
+  }
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,6 +106,9 @@ const messageReceiver = (
 
 export const setupMessageListener = () => chrome.runtime.onMessage.addListener(messageReceiver);
 export const setupTradeOpenedListener = (callback: () => void) => (callbackMap['tradeOpened'] = callback);
+export const clearTradeParsedListener = () => {
+  delete callbackMap['tradeParsed'];
+};
 export const setupTradeParsedListener = (callback: (tradesMsg: TradeParsedMessage) => void) =>
   (callbackMap['tradeParsed'] = callback);
 export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
@@ -100,3 +116,6 @@ export const setupRefreshCityListener = (callback: (message: RefreshCityMessage)
 export const setupOpenExtensionTabListener = (
   callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void,
 ) => (callbackMap['openExtensionTab'] = callback);
+
+export const setupCityDataUpdatedListener = (callback: (tabId: CityDataUpdatedMessage) => void) =>
+  (callbackMap['cityDataUpdated'] = callback);

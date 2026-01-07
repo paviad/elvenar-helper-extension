@@ -6,7 +6,7 @@ import { CityView } from './CityView';
 import { UnlockedArea } from '../model/unlockedArea';
 import { generateCityBlocks } from './generateCityBlocks';
 
-import { useGlobalStore } from '../util/globalStore';
+import { useTabStore } from '../util/tabStore';
 import { generateCity } from './generateCity';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
 
@@ -15,7 +15,7 @@ export function CityMain() {
   const [blocks, setBlocks] = React.useState([] as CityBlock[]);
   const [unlockedAreas, setUnlockedAreas] = React.useState([] as UnlockedArea[]);
 
-  const accountId = useGlobalStore((state) => state.accountId);
+  const accountId = useTabStore((state) => state.accountId);
 
   const [f, forceUpdate] = React.useReducer((x) => x + 1, 0);
 

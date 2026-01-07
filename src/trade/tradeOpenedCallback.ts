@@ -21,5 +21,5 @@ export const tradeOpenedCallback = async (accountData: AccountData) => {
     player: trade.trader.name,
   }));
 
-  sendTradeParsedMessage(summary);
+  sendTradeParsedMessage(accountData.cityQuery.tabId, summary);
 };

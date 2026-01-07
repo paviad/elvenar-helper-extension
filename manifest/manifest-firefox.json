@@ -33,7 +33,8 @@
     {
       "resources": [
         "icon32.png",
-        "sprite.png"
+        "sprite.png",
+        "inject.bundle.js"
       ],
       "matches": [
         "https://*.elvenar.com/*"

@@ -1,11 +1,11 @@
 import React from 'react';
 import { useSearchParams, Navigate, useNavigate, Link } from 'react-router';
-import { useGlobalStore } from '../util/globalStore';
+import { useTabStore } from '../util/tabStore';
 import { loadAccountManagerFromStorage } from '../elvenar/AccountManager';
 
 export function Activate() {
   const [doNavigate, setDoNavigate] = React.useState(false);
-  const setAccountId = useGlobalStore((s) => s.setAccountId);
+  const setAccountId = useTabStore((s) => s.setAccountId);
 
   const [searchParams] = useSearchParams();
   const routeAccountId = searchParams.get('accountId');
