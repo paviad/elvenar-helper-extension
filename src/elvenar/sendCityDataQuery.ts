@@ -1,3 +1,4 @@
+import { Badges } from '../model/badges';
 import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
@@ -38,14 +39,15 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
 
   const json = (await response.json()) as [{ requestClass: string; responseData: unknown }];
 
-  const responseData = json.find((r) => r.requestClass === 'StartupService')?.responseData as {
+  const startupService = json.find((r) => r.requestClass === 'StartupService')?.responseData as {
     user_data: ElvenarUserData;
     featureFlags: { feature: string }[];
     city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
     relic_boost_good: BoostedGoods[];
+    resources: { resources: Badges };
   };
 
-  const { user_data, featureFlags, city_map, relic_boost_good } = responseData;
+  const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
   const maxChapter = Number(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,6 +60,24 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
 
   const cityEntities = city_map.entities;
   const unlockedAreas = city_map.unlocked_areas;
+  const badges: Badges = {
+    badge_brewery: resources.resources.badge_brewery,
+    badge_carpenters: resources.resources.badge_carpenters,
+    badge_farmers: resources.resources.badge_farmers,
+    badge_blacksmith: resources.resources.badge_blacksmith,
+    golden_bracelet: resources.resources.golden_bracelet,
+    diamond_necklace: resources.resources.diamond_necklace,
+    elegant_statue: resources.resources.elegant_statue,
+    witch_hat: resources.resources.witch_hat,
+    druid_staff: resources.resources.druid_staff,
+    badge_wonderhelper: resources.resources.badge_wonderhelper,
+    badge_unit: resources.resources.badge_unit,
+    money_sack: resources.resources.money_sack,
+    arcane_residue: resources.resources.arcane_residue,
+    recycled_potion: resources.resources.recycled_potion,
+    enchanted_tiara: resources.resources.enchanted_tiara,
+    ghost_in_a_bottle: resources.resources.ghost_in_a_bottle,
+  };
 
   const worldNames: Record<string, string> = {
     '1': 'Arendyll',
@@ -82,6 +102,7 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       url,
       tabId: sharedInfo.tabId,
       sessionId: sharedInfo.sessionId,
+      badges,
     },
     sharedInfo,
   } satisfies AccountData;

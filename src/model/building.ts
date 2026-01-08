@@ -30,23 +30,19 @@ export interface Components {
 }
 
 export interface Is {
-  __class__: string;
   id: string;
 }
 
 export interface Provisions {
-  __class__: string;
   resources: Resources;
 }
 
 export interface Requirements {
-  __class__: string;
   resources: Resources;
   chapter: number;
   connectionStrategyId: string;
 }
 
 export interface Resources {
-  __class__: string;
   resources: Record<string, number>;
 }

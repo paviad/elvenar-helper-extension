@@ -1,4 +1,5 @@
 import { getFromStorage, saveToStorage } from '../chrome/storage';
+import { Badges } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Ingredient } from '../model/ingredient';
@@ -21,6 +22,7 @@ interface CityQuery {
   url: string;
   tabId: number;
   sessionId: string;
+  badges: Badges;
 }
 
 interface CauldronQuery {

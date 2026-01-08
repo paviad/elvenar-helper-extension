@@ -27,14 +27,15 @@ export interface SetConnections {
 }
 
 export interface State {
-  __class__: string;
   next_state_transition_in: number;
   current_product: CurrentProduct;
   resources: RequiredResourcesClass;
 }
 
 export interface CurrentProduct {
-  __class__: string;
+  name?: string;
+  asset_name?: string;
+
   production_time: number;
   production_option: number;
   productionAmount: number;
@@ -45,16 +46,13 @@ export interface CurrentProduct {
 }
 
 export interface Revenue {
-  __class__: string;
   resources: OriginalRevenueResources;
 }
 
 export interface OriginalRevenueResources {
-  __class__: string;
   seeds: number;
 }
 
 export interface RequiredResourcesClass {
-  __class__: string;
   resources: SetConnections;
 }
