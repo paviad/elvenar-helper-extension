@@ -1,6 +1,6 @@
-import { create, StoreApi, UseBoundStore } from 'zustand';
-import { createJSONStorage, persist, PersistOptions } from 'zustand/middleware';
-import { chromeStorage } from '../util/chromeStorage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { chromeStorage, chromeStorageWithLogging } from '../util/chromeStorage';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 
 interface OverlayState {
@@ -16,12 +16,14 @@ interface OverlayState {
   setChapter: (chapter: number) => void;
   overlayExpanded: boolean;
   setOverlayExpanded: (expanded: boolean) => void;
+  lastSeenChat?: number;
+  setLastSeenChat: (timestamp: number) => void;
 }
 
-let overlayStore: ReturnType<ReturnType<typeof create<OverlayState>>>;
+let overlayStore: ReturnType<typeof generateOverlayStore>;
 
 export const generateOverlayStore = (accountId: string) => {
-  overlayStore = create<OverlayState>()(
+  const store = create<OverlayState>()(
     persist(
       (set) => ({
         offeredGoods: [],
@@ -36,6 +38,8 @@ export const generateOverlayStore = (accountId: string) => {
         setChapter: (chapter) => set({ chapter }),
         overlayExpanded: false,
         setOverlayExpanded: (expanded) => set({ overlayExpanded: expanded }),
+        lastSeenChat: undefined,
+        setLastSeenChat: (timestamp) => set({ lastSeenChat: timestamp }),
       }),
       {
         name: `overlay-store-${accountId}`,
@@ -47,6 +51,8 @@ export const generateOverlayStore = (accountId: string) => {
       },
     ),
   );
+  overlayStore = store;
+  return store;
 };
 
 export const getOverlayStore = () => overlayStore;

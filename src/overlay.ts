@@ -264,7 +264,7 @@ const initFunc = async () => {
       collapseBtn.title = 'Collapse Panel';
       resizeHandle.style.display = '';
 
-      getOverlayStore().getState().triggerForceUpdate();
+      getOverlayStore()?.getState().triggerForceUpdate();
     }
   }
 
@@ -308,9 +308,18 @@ async function setup(tabId: number, contentDiv: HTMLDivElement) {
   const accountId = getAccountByTabId(tabId);
   if (accountId) {
     generateOverlayStore(accountId);
-    createOverlayUi(contentDiv);
-    const chapter = (await getAccountById(accountId))?.cityQuery?.chapter || 0;
-    getOverlayStore().getState().setChapter(chapter);
+    const store = getOverlayStore();
+    store.persist.onFinishHydration(async (state) => {
+      const chapter = (await getAccountById(accountId))?.cityQuery?.chapter || 0;
+      state.setChapter(chapter);
+
+      if(!state.lastSeenChat) {
+        // First time setup, set last seen chat to now
+        state.setLastSeenChat(Date.now());
+      }
+
+      createOverlayUi(contentDiv);
+    });
   }
 }
 

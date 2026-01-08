@@ -26,10 +26,12 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   const containerRef = React.useRef<HTMLDivElement>(null);
   const useOverlayStore = getOverlayStore();
   const chatMessages = useOverlayStore((state) => state.chatMessages);
+  const [sortedMessages, setSortedMessages] = React.useState<ChatMessage[]>([]);
   const userMap = useOverlayStore((state) => state.userMap);
   const forceUpdate = useOverlayStore((state) => state.forceUpdate);
   const overlayExpanded = useOverlayStore((state) => state.overlayExpanded);
-  const [sortedMessages, setSortedMessages] = React.useState<ChatMessage[]>([]);
+  const lastSeenChat = useOverlayStore((state) => state.lastSeenChat);
+  const setLastSeenChat = useOverlayStore((state) => state.setLastSeenChat);
   const [visibleCount, setVisibleCount] = React.useState(30);
   // Used to preserve scroll position when showing more
   const prevScrollHeightRef = React.useRef<number | null>(null);
@@ -59,8 +61,8 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   React.useEffect(() => {
     const sortedMessages = chatMessages
       ? [...chatMessages].sort((a, b) => {
-          const aNum = typeof a.timestamp === 'string' ? parseInt(a.timestamp, 10) : a.timestamp;
-          const bNum = typeof b.timestamp === 'string' ? parseInt(b.timestamp, 10) : b.timestamp;
+          const aNum = parseInt(a.timestamp, 10);
+          const bNum = parseInt(b.timestamp, 10);
           return aNum - bNum;
         })
       : [];
@@ -125,13 +127,47 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     }
   }, [overlayExpanded]);
 
+  const [unreadUuid, setUnreadUuid] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (searchActive || !lastSeenChat) {
+      setUnreadUuid(undefined);
+      return;
+    }
+    // Update last seen chat timestamp
+    const firstUnread = sortedMessages.find((msg) => {
+      const tsNum = parseInt(msg.timestamp, 10);
+      return tsNum > lastSeenChat;
+    });
+    setUnreadUuid(firstUnread?.uuid);
+  }, [sortedMessages, lastSeenChat, searchActive]);
+
   // Determine which messages to show
   const total = sortedMessages.length;
-  const startIdx = total > visibleCount ? total - visibleCount : 0;
-  const visibleMessages =
-    searchActive && searchTerm
-      ? sortedMessages // show all for search
-      : sortedMessages.slice(startIdx);
+  let firstUnreadIdx = total;
+  let visMsg: ChatMessage[];
+  if (searchActive && searchTerm) {
+    visMsg = sortedMessages;
+  } else if (lastSeenChat && !searchActive) {
+    // Show messages since last seen
+    firstUnreadIdx = sortedMessages.findIndex((msg) => {
+      const tsNum = parseInt(msg.timestamp, 10);
+      return tsNum > lastSeenChat;
+    });
+
+    if (firstUnreadIdx === -1) firstUnreadIdx = total; // all read
+    const realVisibleCount = total - firstUnreadIdx + visibleCount;
+    const startIdx = total > realVisibleCount ? total - realVisibleCount : 0;
+    visMsg = sortedMessages.slice(startIdx);
+  } else {
+    const startIdx = total > visibleCount ? total - visibleCount : 0;
+    visMsg = sortedMessages.slice(startIdx);
+  }
+  const visibleMessages = visMsg;
+  let unreadIdx = visibleMessages.findIndex((msg) => msg.uuid === unreadUuid);
+  if (unreadIdx === -1) {
+    unreadIdx = visibleMessages.length + 1; // not in visible messages
+  }
 
   return (
     <Paper
@@ -202,7 +238,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
           </IconButton>
         </Box>
       )}
-      {!searchActive && total > visibleCount && (
+      {!searchActive && sortedMessages.length > visibleCount + total - firstUnreadIdx && (
         <Box sx={{ textAlign: 'center', mb: 1 }}>
           <a
             href='#'
@@ -225,7 +261,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
           {visibleMessages.map((msg, idx) => {
             const { name } = getUserInfo(msg.user);
             // Parse timestamp as number (milliseconds)
-            const tsNum = typeof msg.timestamp === 'string' ? parseInt(msg.timestamp, 10) : msg.timestamp;
+            const tsNum = parseInt(msg.timestamp, 10);
             const date = new Date(tsNum);
             const now = new Date();
             const isToday =
@@ -241,49 +277,108 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
             // Highlight match
             const isMatch = searchActive && searchMatches.includes(idx);
             const isCurrent = isMatch && searchMatches[searchIndex] === idx;
-            // (No useEffect here)
+
+            // Insert unread separator if needed
+            const showUnreadSeparator = idx === unreadIdx;
+            const isUnread = idx >= unreadIdx;
+
             return (
-              <Stack
-                key={msg.uuid}
-                ref={(el) => {
-                  messageRefs.current[idx] = el;
-                }}
-                direction='row'
-                alignItems='flex-start'
-                spacing={1}
-                mb={1.2}
-                sx={isCurrent ? { background: '#ffe082' } : isMatch ? { background: '#fffde7' } : {}}
-              >
-                <Avatar
-                  sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }}
-                  title={name}
-                >
-                  {name[0]}
-                </Avatar>
-                <Box flex={1}>
-                  <Stack direction='row' alignItems='baseline' spacing={1}>
-                    <Typography fontWeight={600} color='text.primary' component='span'>
-                      {name}
-                    </Typography>
-                    <Typography color='text.secondary' fontSize={12} component='span'>
-                      {time}
-                      {dateStr && (
-                        <>
-                          {' '}
-                          <span style={{ fontSize: 11, color: '#aaa' }}>({dateStr})</span>
-                        </>
-                      )}
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    color='text.primary'
-                    align='left'
-                    sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', textAlign: 'left', pl: 0 }}
+              <React.Fragment key={msg.uuid}>
+                {showUnreadSeparator && (
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      my: 1.5,
+                      py: 0.5,
+                      background: '#e3f2fd',
+                      color: '#1976d2',
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      fontSize: 13,
+                      letterSpacing: 1,
+                      boxShadow: '0 1px 4px rgba(25, 118, 210, 0.08)',
+                    }}
                   >
-                    {msg.text}
-                  </Typography>
-                </Box>
-              </Stack>
+                    Unread messages{' '}
+                    <a
+                      href='#'
+                      style={{
+                        color: '#1976d2',
+                        textDecoration: 'underline',
+                        marginLeft: 8,
+                        fontWeight: 400,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        // Mark all as read
+                        if (sortedMessages.length > 0) {
+                          const lastMsg = sortedMessages[sortedMessages.length - 1];
+                          setLastSeenChat(parseInt(lastMsg.timestamp, 10));
+                          // Scroll to last message
+                          setTimeout(() => {
+                            const el = messageRefs.current[visibleMessages.length - 1];
+                            if (el && el.scrollIntoView) {
+                              el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            }
+                          }, 100);
+                        }
+                      }}
+                    >
+                      Mark all as read & jump to last
+                    </a>
+                  </Box>
+                )}
+                <Stack
+                  ref={(el) => {
+                    messageRefs.current[idx] = el;
+                  }}
+                  direction='row'
+                  alignItems='flex-start'
+                  spacing={1}
+                  mb={1.2}
+                  sx={
+                    isCurrent
+                      ? { background: '#ffe082' }
+                      : isMatch
+                      ? { background: '#fffde7' }
+                      : isUnread
+                      ? { background: '#39d53646' }
+                      : {}
+                  }
+                >
+                  <Avatar
+                    sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }}
+                    title={name}
+                  >
+                    {name[0]}
+                  </Avatar>
+                  <Box flex={1}>
+                    <Stack direction='row' alignItems='baseline' spacing={1}>
+                      <Typography fontWeight={600} color='text.primary' component='span'>
+                        {name}
+                      </Typography>
+                      <Typography color='text.secondary' fontSize={12} component='span'>
+                        {time}
+                        {dateStr && (
+                          <>
+                            {' '}
+                            <span style={{ fontSize: 11, color: '#aaa' }}>({dateStr})</span>
+                          </>
+                        )}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      color='text.primary'
+                      align='left'
+                      sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', textAlign: 'left', pl: 0 }}
+                    >
+                      {msg.text}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </React.Fragment>
             );
           })}
           {!searchActive && visibleCount > 30 && (
