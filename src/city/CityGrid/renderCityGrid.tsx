@@ -20,9 +20,8 @@ import { handleMouseUp } from './handleMouseUp';
 import { sellStreets } from './sellStreets';
 import { BuildingFinder } from '../buildingFinder';
 import { CityBlock } from '../CityBlock';
-import { sendRefreshCityMessage } from '../../chrome/messages';
-import { loadAccountManagerFromStorage } from '../../elvenar/AccountManager';
 import { useTabStore } from '../../util/tabStore';
+import { refreshCity } from './refreshCity';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -333,29 +332,23 @@ export const renderCityGrid = (s: CityViewState) => {
     );
   }
 
-  async function refreshCity(s: CityViewState) {
-    const accountId = s.accountId;
-    if (!accountId) {
-      console.warn('No accountId set in CityViewState, cannot refresh city');
-      return;
-    }
-    const response = await sendRefreshCityMessage(accountId);
-    if (!response.success) {
-      console.error('Failed to refresh city:', response.message);
-      setGlobalError('Failed to refresh city, please refresh your Elvenar tab and try again.');
-      return;
-    }
-    setGlobalError(undefined);
-    await loadAccountManagerFromStorage(true);
-    s.props.forceUpdate();
-    // window.location.reload();
+  function exportCityAsJson(s: CityViewState) {
+    const unlockedAreas = s.props.unlockedAreas;
+    const entities = Object.values(blocks).map((b, idx) => ({
+      id: idx + 1,
+      cityentity_id: b.entity.cityentity_id,
+      x: b.x,
+      y: b.y,
+      stage: null,
+    }));
   }
 
   return (
     <Stack>
       <Stack direction='row'>
-        <Button onClick={() => refreshCity(s)}>Refresh City</Button>
+        <Button onClick={() => refreshCity(s.accountId, s.props.forceUpdate)}>Refresh City</Button>
         <Button onClick={() => sellStreets(s)}>Sell Streets</Button>
+        <Button onClick={() => exportCityAsJson(s)}>Export City</Button>
       </Stack>
       <div>
         <div

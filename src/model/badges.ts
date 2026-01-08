@@ -16,3 +16,15 @@ export interface Badges {
   enchanted_tiara: number;
   ghost_in_a_bottle: number;
 }
+
+export interface Relics {
+  relic_crystal: number;
+  relic_elixir: number;
+  relic_gems: number;
+  relic_magic_dust: number;
+  relic_marble: number;
+  relic_planks: number;
+  relic_scrolls: number;
+  relic_silk: number;
+  relic_steel: number;
+}

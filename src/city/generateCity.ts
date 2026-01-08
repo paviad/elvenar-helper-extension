@@ -1,18 +1,15 @@
-import { getAccountById } from '../elvenar/AccountManager';
+import { AccountData } from '../elvenar/AccountManager';
 import { CityEntityEx } from '../model/cityEntity';
 import { BuildingFinder } from './buildingFinder';
 
-export async function generateCity(accountId: string) {
-  const accountData = getAccountById(accountId);
-  if (!accountData || !accountData.cityQuery) {
-    return;
-  }
-
+export async function generateCity(accountData: AccountData) {
   const finder = new BuildingFinder();
   await finder.ensureInitialized();
 
-  const cityEntities = accountData.cityQuery.cityEntities;
-  const unlockedAreas = accountData.cityQuery.unlockedAreas;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const cityEntities = accountData.cityQuery!.cityEntities;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const unlockedAreas = accountData.cityQuery!.unlockedAreas;
 
   const q = cityEntities.map((entity) => ({
     ...entity,

@@ -20,6 +20,7 @@ import { sendTradeQuery } from '../elvenar/sendTradeQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { matchBuildingsUrl } from './matchBuildingsUrl';
+import { matchEffectsUrl } from './matchEffectsUrl';
 import { matchItemsUrl } from './matchItemsUrl';
 import { matchRenderConfigUrl } from './matchRenderConfigUrl';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
@@ -109,6 +110,8 @@ const callbackRequest = (details: {
   matchTomesUrl(details, sharedInfo);
 
   matchTechTreeUrl(details, sharedInfo);
+
+  matchEffectsUrl(details, sharedInfo);
 
   const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
   // Check if the URL matches the pattern and save it in a global variable

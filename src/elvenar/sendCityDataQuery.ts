@@ -1,10 +1,11 @@
-import { Badges } from '../model/badges';
+import { Badges, Relics } from '../model/badges';
 import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { Quest } from '../model/quest';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
-import { AccountData, getAccountId, setAccountData } from './AccountManager';
+import { AccountData, FaQuest, getAccountId, setAccountData } from './AccountManager';
 
 export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
   const { reqUrl: url, reqReferrer: referrer, reqBodyCity: reqBody, worldId } = sharedInfo;
@@ -44,8 +45,32 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     featureFlags: { feature: string }[];
     city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
     relic_boost_good: BoostedGoods[];
-    resources: { resources: Badges };
+    resources: { resources: Badges & Relics };
+    production_boost: { boost: number; relics_needed: number }[];
+    effects: {
+      actionId: string;
+      ownerId: string;
+      type: string;
+      owner: string;
+      remainingTime: number;
+    }[];
   };
+
+  const questService = json.find((r) => r.requestClass === 'QuestService')?.responseData as Quest[];
+
+  const faRequirements = Object.fromEntries(
+    questService.map((r, idx) => [
+      r.rewards[0].iconType,
+      {
+        id: idx,
+        badge: r.rewards[0].iconType,
+        maxProgress: r.successConditions[0].maxProgress,
+        currentProgress: r.successConditions[0].currentProgress || 0,
+      } satisfies FaQuest,
+    ]),
+  );
+
+  console.log('Quest Service Data:', questService, faRequirements);
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
@@ -78,6 +103,30 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     enchanted_tiara: resources.resources.enchanted_tiara,
     ghost_in_a_bottle: resources.resources.ghost_in_a_bottle,
   };
+  const relics: Relics = {
+    relic_crystal: resources.resources.relic_crystal,
+    relic_elixir: resources.resources.relic_elixir,
+    relic_gems: resources.resources.relic_gems,
+    relic_magic_dust: resources.resources.relic_magic_dust,
+    relic_marble: resources.resources.relic_marble,
+    relic_planks: resources.resources.relic_planks,
+    relic_scrolls: resources.resources.relic_scrolls,
+    relic_silk: resources.resources.relic_silk,
+    relic_steel: resources.resources.relic_steel,
+  };
+  const boostsTable = startupService.production_boost
+    .map((r) => [r.relics_needed || 0, r.boost])
+    .sort((a, b) => b[0] - a[0]);
+  const relicBoosts = Object.fromEntries(
+    Object.entries(relics).map(
+      ([k, v]: [string, number]) => [k as keyof Relics, boostsTable.find(([req]) => v >= req)?.[1] || 0] as const,
+    ),
+  ) as Record<keyof Relics, number>;
+
+  console.log('relics:', relics);
+  console.log('boosts table:', boostsTable);
+  console.log('relic boosts:', relicBoosts);
+  console.log('boosted goods:', boostedGoods);
 
   const worldNames: Record<string, string> = {
     '1': 'Arendyll',
@@ -103,6 +152,10 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       tabId: sharedInfo.tabId,
       sessionId: sharedInfo.sessionId,
       badges,
+      relics,
+      timestamp: Date.now(),
+      faRequirements,
+      relicBoosts,
     },
     sharedInfo,
   } satisfies AccountData;

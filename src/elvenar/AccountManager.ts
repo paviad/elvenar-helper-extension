@@ -1,5 +1,5 @@
 import { getFromStorage, saveToStorage } from '../chrome/storage';
-import { Badges } from '../model/badges';
+import { Badges, Relics } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Ingredient } from '../model/ingredient';
@@ -23,6 +23,17 @@ interface CityQuery {
   tabId: number;
   sessionId: string;
   badges: Badges;
+  relics: Relics;
+  timestamp: number;
+  faRequirements: Record<string, FaQuest>;
+  relicBoosts: Record<keyof Relics, number>;
+}
+
+export interface FaQuest {
+  id: number;
+  badge: string;
+  maxProgress: number;
+  currentProgress: number;
 }
 
 interface CauldronQuery {

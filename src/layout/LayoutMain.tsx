@@ -122,6 +122,10 @@ export const LayoutMain = () => {
           <Button component={NavLink} to='/inventory' color='inherit' sx={{ mr: 2 }}>
             Inventory
           </Button>
+          <Button component={NavLink} to='/fellowship-adventure' color='inherit' sx={{ mr: 2 }}>
+            Fellowship Adventure
+          </Button>
+
           {/* <Button component={NavLink} to='/trade' color='inherit' sx={{ mr: 2 }}>
             Trade
           </Button> */}

@@ -1,0 +1,18 @@
+export const badgeSpriteInfo: Record<string, { name: string; x: number; y: number; }> = {
+  badge_brewery: { name: 'Breweries', x: 5, y: 3 },
+  badge_carpenters: { name: 'Carpenters', x: 5, y: 4 },
+  badge_farmers: { name: 'Farmers', x: 5, y: 5 },
+  badge_blacksmith: { name: 'Blacksmiths', x: 5, y: 2 },
+  golden_bracelet: { name: 'Bracelets', x: 10, y: 4 },
+  diamond_necklace: { name: 'Necklaces', x: 8, y: 5 },
+  elegant_statue: { name: 'Statues', x: 9, y: 1 },
+  // witch_hat: { name: 'Hats', x: 21, y: 5 },
+  // druid_staff: { name: 'Staffs', x: 8, y: 6 },
+  // badge_wonderhelper: { name: 'AW', x: 5, y: 8 },
+  // badge_unit: { name: 'Elvarian', x: 5, y: 7 },
+  // money_sack: { name: 'Money', x: 18, y: 0 },
+  // arcane_residue: { name: 'Residue', x: 0, y: 4 },
+  // recycled_potion: { name: 'Potions', x: 9, y: 4 },
+  // enchanted_tiara: { name: 'Tiaras', x: 9, y: 3 },
+  // ghost_in_a_bottle: { name: 'Ghosts', x: 10, y: 3 },
+};
