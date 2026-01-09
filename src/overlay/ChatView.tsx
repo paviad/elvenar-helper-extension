@@ -109,9 +109,6 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
       }
       el.scrollTop = el.scrollHeight - prevScrollHeightRef.current - adjustment;
       prevScrollHeightRef.current = null;
-    } else {
-      // On new messages, scroll to bottom
-      el.scrollTop = el.scrollHeight;
     }
   }, [sortedMessages, forceUpdate, visibleCount]);
 
@@ -124,6 +121,13 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   React.useEffect(() => {
     if (setSearchActive && !overlayExpanded) {
       setSearchActive(false);
+    }
+    // Scroll to end only when overlay is expanded
+    if (overlayExpanded) {
+      const el = containerRef.current;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
     }
   }, [overlayExpanded]);
 
