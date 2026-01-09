@@ -316,17 +316,10 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                         if (sortedMessages.length > 0) {
                           const lastMsg = sortedMessages[sortedMessages.length - 1];
                           setLastSeenChat(parseInt(lastMsg.timestamp, 10));
-                          // Scroll to last message
-                          setTimeout(() => {
-                            const el = messageRefs.current[visibleMessages.length - 1];
-                            if (el && el.scrollIntoView) {
-                              el.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                            }
-                          }, 100);
                         }
                       }}
                     >
-                      Mark all as read & jump to last
+                      Mark all as read
                     </a>
                   </Box>
                 )}
