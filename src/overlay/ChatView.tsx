@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import { ensureMinWidthAndHeight } from '../overlay';
+import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { IconButton } from '@mui/material';
 
@@ -316,6 +316,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                         if (sortedMessages.length > 0) {
                           const lastMsg = sortedMessages[sortedMessages.length - 1];
                           setLastSeenChat(parseInt(lastMsg.timestamp, 10));
+                          expandPanel(false);
                         }
                       }}
                     >
