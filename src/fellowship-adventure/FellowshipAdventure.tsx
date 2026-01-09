@@ -46,15 +46,11 @@ export function FellowshipAdventure() {
 
         const building = entities.q.find((r) => r.cityentity_id.startsWith(origin));
 
-        console.log('Linking effect to building:', effect, building);
-
         if (building) {
           const f = effect.values?.[`${building.level}`] || 0;
           factor += f;
         }
       }
-
-      console.log('Total production boost factor from buildings:', factor);
 
       const relicBoosts = accountData.cityQuery.relicBoosts;
 
@@ -65,11 +61,7 @@ export function FellowshipAdventure() {
         ]),
       );
 
-      console.log('Boosted goods with relic factors:', boostedGoods);
-
       const faRequirements = accountData.cityQuery.faRequirements;
-
-      console.log('FA Requirements:', faRequirements);
 
       const badgesInProduction = extractBadgesInProduction(
         accountData.cityQuery.cityEntities,
@@ -85,7 +77,6 @@ export function FellowshipAdventure() {
       setTimestamp(accountData.cityQuery.timestamp);
       setFaRequirements(faRequirements);
       setBadges(badges);
-      console.log('Badges in production:', badgesInProduction);
     }
     fetchCityData();
   }, [f, accountId, mmEnchantmentEnabled, enchantmentBonus]);
@@ -209,8 +200,6 @@ function extractBadgesInProduction(
   };
 
   const grpi = () => ({} as Record<number, number>);
-
-  console.log('faRequirements for golden_bracelet:', faRequirements['golden_bracelet']);
 
   const goldenBracelets1 = entities
     .filter((r) => r.level > 1 && faRequirements['golden_bracelet'])

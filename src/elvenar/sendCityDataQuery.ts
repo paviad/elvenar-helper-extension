@@ -70,8 +70,6 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     ]),
   );
 
-  console.log('Quest Service Data:', questService, faRequirements);
-
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
   const maxChapter = Number(
@@ -122,11 +120,6 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       ([k, v]: [string, number]) => [k as keyof Relics, boostsTable.find(([req]) => v >= req)?.[1] || 0] as const,
     ),
   ) as Record<keyof Relics, number>;
-
-  console.log('relics:', relics);
-  console.log('boosts table:', boostsTable);
-  console.log('relic boosts:', relicBoosts);
-  console.log('boosted goods:', boostedGoods);
 
   const worldNames: Record<string, string> = {
     '1': 'Arendyll',

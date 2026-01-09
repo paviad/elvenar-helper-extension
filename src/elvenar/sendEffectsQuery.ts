@@ -22,8 +22,6 @@ export async function sendEffectsQuery(sharedInfo: ExtensionSharedInfo) {
 
   const effects = effectsRaw.filter((r) => r.action === 'manufactories_production_boost');
 
-  console.log('Filtered Effects:', effects);
-
   return effects;
 }
 
