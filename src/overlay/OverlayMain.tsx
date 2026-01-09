@@ -37,7 +37,7 @@ export function OverlayMain() {
     const handleKeyDown = (event: KeyboardEvent) => {
       const overlayExpanded = useOverlayStore.getState().overlayExpanded;
       if (
-        (event.key === 'c' || event.key === 'C') &&
+        (event.code === 'KeyC') &&
         event.altKey &&
         !event.repeat &&
         !event.ctrlKey &&
