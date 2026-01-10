@@ -1,5 +1,5 @@
 import React from 'react';
-import { getOverlayStore } from './overlayStore';
+import { getAccountId, getOverlayStore } from './overlayStore';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
@@ -8,6 +8,8 @@ import Stack from '@mui/material/Stack';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { IconButton } from '@mui/material';
+import { MessageToInjectedScript } from '../inject/MessageFromInjectedScript';
+import { getAccountById } from '../elvenar/AccountManager';
 
 // Extend the Window interface to include forceChatRerender
 declare global {
@@ -23,8 +25,8 @@ interface ChatViewProps {
 }
 
 export function ChatView({ searchActive = false, searchTerm = '', setSearchActive }: ChatViewProps) {
-    // Ref for jumping to first unread
-    const firstUnreadRef = React.useRef<HTMLDivElement | null>(null);
+  // Ref for jumping to first unread
+  const firstUnreadRef = React.useRef<HTMLDivElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const useOverlayStore = getOverlayStore();
   const chatMessages = useOverlayStore((state) => state.chatMessages);
@@ -183,6 +185,43 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     }
   }
 
+  function sendMarkAsReadMessage() {
+    const accountId = getAccountId();
+    console.log('Sending mark as read message', accountId);
+    if (!accountId) {
+      return;
+    }
+
+    const accountData = getAccountById(accountId);
+    if (!accountData) {
+      return;
+    }
+
+    const playerId = accountData.cityQuery?.userData.player_id;
+    if (!playerId) {
+      return;
+    }
+
+    const guildId = accountData.cityQuery?.userData.guild_info.id;
+    if (!guildId) {
+      return;
+    }
+
+    console.log('Marking chat as read for playerId', playerId, guildId);
+
+    window.postMessage(
+      {
+        type: 'MY_OUTGOING_MESSAGE',
+        payload: {
+          type: 'MARK_AS_READ',
+          playerId,
+          guildId,
+        },
+      } satisfies MessageToInjectedScript,
+      '*',
+    );
+  }
+
   return (
     <Paper
       elevation={2}
@@ -332,6 +371,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                           const lastMsg = sortedMessages[sortedMessages.length - 1];
                           setLastSeenChat(parseInt(lastMsg.timestamp, 10));
                           expandPanel(false);
+                          sendMarkAsReadMessage();
                         }
                       }}
                     >
@@ -409,8 +449,14 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
           {!searchActive && unreadUuid && (
             <Box sx={{ textAlign: 'center', mt: 2, mb: 1 }}>
               <a
-                href="#"
-                style={{ color: '#1976d2', fontSize: 14, textDecoration: 'underline', cursor: 'pointer', fontWeight: 500 }}
+                href='#'
+                style={{
+                  color: '#1976d2',
+                  fontSize: 14,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
                 onClick={handleJumpToFirstUnread}
               >
                 Jump to first unread

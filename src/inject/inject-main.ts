@@ -1,4 +1,5 @@
-import { MessageFromInjectedScript } from './MessageFromInjectedScript';
+import { pl } from 'date-fns/locale';
+import { MessageFromInjectedScript, MessageToInjectedScript } from './MessageFromInjectedScript';
 
 console.log('ElvenAssist: injected script loaded');
 
@@ -13,6 +14,9 @@ declare global {
 // Retrieved 2026-01-06, License - CC BY-SA 4.0
 
 window.WebSocketUnchanged = window.WebSocket;
+
+let globalSendHook: ((message: string) => void) | null = null;
+let globalTopicId: string | null = null;
 
 class CustomWebSocket extends WebSocket {
   private onmessageListenerCallbackOriginal: (event: MessageEvent) => void = () => {
@@ -59,6 +63,25 @@ class CustomWebSocket extends WebSocket {
   }
 
   override send(...args: Parameters<WebSocket['send']>): void {
+    // install a hook to allow sending new messages if needed
+
+    const topicIdRegex = /^X-SocketServer-Topic:guild\.(\w+)$/m;
+    globalTopicId = null;
+    if (typeof args[0] === 'string') {
+      const match = args[0].match(topicIdRegex);
+      if (match) {
+        const topicId = match[1];
+        globalTopicId = topicId;
+      }
+    }
+
+    const sendMessageHook = (message: string) => {
+      console.log('Sending message via WebSocket hook', message);
+      super.send(message);
+    };
+
+    globalSendHook = sendMessageHook;
+
     // Intercept the sent message and do whatever you like with it
     super.send(...args);
   }
@@ -83,6 +106,62 @@ class CustomWebSocket extends WebSocket {
   }
 }
 
+/* 
+implement sending a "mark as read message" that looks like this:
+
+SEND
+X-SocketServer-Plugin:chat/markasread
+X-SocketServer-Method:update
+X-SocketServer-Topic:guild.169
+X-Correlation:848933052
+destination:/queue
+content-length:2
+
+{}
+*/
+
+async function sendMarkAsReadMessage(playerId: number, guildId: number) {
+  console.log('Sending mark as read message for playerId', playerId, globalSendHook, globalTopicId);
+  if (!globalSendHook) {
+    console.warn('ElvenAssist: WebSocket send hook is not installed yet.');
+    return;
+  }
+
+  // if (!globalTopicId) {
+  //   console.warn('ElvenAssist: Topic ID is not available.');
+  //   return;
+  // }
+
+  globalSendHook(`SEND
+X-SocketServer-Plugin:chat/markasread
+X-SocketServer-Method:update
+X-SocketServer-Topic:guild.${guildId}
+X-Correlation:${playerId}
+destination:/queue
+content-length:2
+
+{}\0`);
+}
+
 window.WebSocket = CustomWebSocket;
 
 console.log('ElvenAssist: Finished adding interceptor to WebSocket');
+
+const messageHandler = (event: MessageEvent<MessageToInjectedScript>) => {
+  if (event.source !== window || event.data.type !== 'MY_OUTGOING_MESSAGE') {
+    return;
+  }
+
+  console.log('Message received from page script', event.data);
+
+  const playerId = event.data.payload.playerId;
+  const guildId = event.data.payload.guildId;
+
+  console.log('Processing outgoing message', playerId);
+
+  if (event.data.payload.type === 'MARK_AS_READ') {
+    sendMarkAsReadMessage(playerId, guildId);
+  }
+};
+
+window.addEventListener('message', messageHandler);

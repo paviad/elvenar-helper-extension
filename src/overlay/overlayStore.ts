@@ -21,8 +21,10 @@ interface OverlayState {
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
+let overlayAccountId: string | null = null;
 
 export const generateOverlayStore = (accountId: string) => {
+  overlayAccountId = accountId;
   const store = create<OverlayState>()(
     persist(
       (set) => ({
@@ -56,3 +58,4 @@ export const generateOverlayStore = (accountId: string) => {
 };
 
 export const getOverlayStore = () => overlayStore;
+export const getAccountId = () => overlayAccountId;
