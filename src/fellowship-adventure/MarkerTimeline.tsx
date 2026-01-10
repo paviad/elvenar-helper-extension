@@ -7,7 +7,6 @@ export interface MarkerData {
   title: string;
   value: number;
   time: string | Date;
-  // New props for the icon
   spriteX?: number;
   spriteY?: number;
 }
@@ -15,7 +14,7 @@ export interface MarkerData {
 interface TimelineProps {
   startTime?: Date | string;
   markers: MarkerData[];
-  spriteUrl: string; // New prop for the icon source
+  spriteUrl: string;
 }
 
 interface LayoutMarker extends MarkerData {
@@ -28,8 +27,7 @@ interface LayoutMarker extends MarkerData {
 const HOURS_SPAN = 48;
 const LABEL_WIDTH_PERCENT = 12;
 const LEVEL_HEIGHT = 70;
-// Card Dimensions
-const CARD_WIDTH = 140; // Increased from 120
+const CARD_WIDTH = 140;
 const CARD_HEIGHT = 60;
 
 // --- CSS Animation ---
@@ -134,6 +132,7 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
     return calculateLayout(markers, start, totalDuration);
   }, [markers, start, totalDuration]);
 
+  // Split Logic
   const { pastDueMarkers, upcomingMarkers, hasPastDue } = useMemo(() => {
     const past: LayoutMarker[] = [];
     const future: LayoutMarker[] = [];
@@ -154,6 +153,14 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
       hasPastDue: past.length > 0,
     };
   }, [allCalculatedMarkers]);
+
+  // Get Full Marker Object for Next Finish
+  const nextFinishMarker = useMemo(() => {
+    if (upcomingMarkers.length > 0) {
+      return upcomingMarkers[0];
+    }
+    return null;
+  }, [upcomingMarkers]);
 
   useEffect(() => {
     const updateTime = () => setNow(Date.now());
@@ -249,6 +256,27 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
           </div>
           <div style={styles.headerSubtitle}>
             Current Window: {formatDate(start)} {formatTime(start)}
+            {/* --- UPDATED NEXT FINISH SECTION --- */}
+            {nextFinishMarker && (
+              <span style={styles.nextFinishContainer} title={getRelativeDelta(nextFinishMarker.time, now)}>
+                <span style={styles.separator}>|</span>
+                Next Finish:
+                <div
+                  style={{
+                    ...styles.icon, // Keeps base 24x24 size
+                    backgroundImage: `url(${spriteUrl})`,
+                    backgroundPosition: `-${nextFinishMarker.spriteX || 0}px -${nextFinishMarker.spriteY || 0}px`,
+                    // Use transform to scale down visually without clipping
+                    transform: 'scale(0.833)', // approx 20/24
+                    transformOrigin: 'left center',
+                    // Adjust margins to compensate for visual shrinkage
+                    margin: '0 -2px 0 6px',
+                  }}
+                />
+                <strong>{formatTime(nextFinishMarker.time)}</strong>
+              </span>
+            )}
+            {/* ----------------------------------- */}
           </div>
         </div>
 
@@ -261,7 +289,6 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
                 {pastDueMarkers.map((marker) => (
                   <div key={marker.id} style={styles.largeCard} title={getRelativeDelta(marker.time, now)}>
                     <div style={styles.largeCardHeader}>
-                      {/* Icon added to sidebar cards too */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div
                           style={{
@@ -311,13 +338,11 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
                       style={{
                         ...styles.card,
                         top: topPos,
-                        // Unified color for all cards (Blue)
                         borderColor: '#3b82f6',
                       }}
                       title={getRelativeDelta(marker.time, now)}
                     >
                       <div style={styles.cardHeader}>
-                        {/* Title Group with Icon */}
                         <div style={styles.cardTitleGroup}>
                           <div
                             style={{
@@ -405,7 +430,21 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#64748b',
     fontSize: '13px',
     fontWeight: 500,
+    display: 'flex',
+    alignItems: 'center',
   },
+  // --- New Header Styles ---
+  separator: {
+    margin: '0 10px',
+    color: '#cbd5e1',
+  },
+  nextFinishContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    color: '#1e293b',
+    cursor: 'help', // Indicates tooltip
+  },
+  // -------------------------
   mainContentFlex: {
     display: 'flex',
     height: '100%',
@@ -537,10 +576,9 @@ const styles: Record<string, React.CSSProperties> = {
     borderLeft: '2px dashed #cbd5e1',
     zIndex: 1,
   },
-  // --- Updated Card Styles ---
   card: {
     position: 'absolute',
-    left: `-${CARD_WIDTH / 2}px`, // Centered using new width constant
+    left: `-${CARD_WIDTH / 2}px`,
     width: `${CARD_WIDTH}px`,
     height: `${CARD_HEIGHT}px`,
     backgroundColor: 'white',
@@ -568,8 +606,9 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
-    overflow: 'hidden', // Ensures title doesn't break layout
+    overflow: 'hidden',
   },
+  // Base Icon Style (24x24)
   icon: {
     width: '24px',
     height: '24px',
@@ -582,7 +621,7 @@ const styles: Record<string, React.CSSProperties> = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    maxWidth: '75px', // Adjusted for icon presence
+    maxWidth: '75px',
   },
   cardValue: {
     fontWeight: '700',
