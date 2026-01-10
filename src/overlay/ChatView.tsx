@@ -23,6 +23,8 @@ interface ChatViewProps {
 }
 
 export function ChatView({ searchActive = false, searchTerm = '', setSearchActive }: ChatViewProps) {
+    // Ref for jumping to first unread
+    const firstUnreadRef = React.useRef<HTMLDivElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const useOverlayStore = getOverlayStore();
   const chatMessages = useOverlayStore((state) => state.chatMessages);
@@ -173,6 +175,14 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     unreadIdx = visibleMessages.length + 1; // not in visible messages
   }
 
+  // Handler for jump to first unread
+  function handleJumpToFirstUnread(e: React.MouseEvent) {
+    e.preventDefault();
+    if (firstUnreadRef.current) {
+      firstUnreadRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   return (
     <Paper
       elevation={2}
@@ -290,6 +300,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
               <React.Fragment key={msg.uuid}>
                 {showUnreadSeparator && (
                   <Box
+                    ref={firstUnreadRef}
                     sx={{
                       textAlign: 'center',
                       my: 1.5,
@@ -379,6 +390,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
               </React.Fragment>
             );
           })}
+          {/* Show less link */}
           {!searchActive && visibleCount > 30 && (
             <Box sx={{ textAlign: 'center', mt: 1 }}>
               <a
@@ -390,6 +402,18 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                 }}
               >
                 Show less...
+              </a>
+            </Box>
+          )}
+          {/* Jump to first unread link at bottom */}
+          {!searchActive && unreadUuid && (
+            <Box sx={{ textAlign: 'center', mt: 2, mb: 1 }}>
+              <a
+                href="#"
+                style={{ color: '#1976d2', fontSize: 14, textDecoration: 'underline', cursor: 'pointer', fontWeight: 500 }}
+                onClick={handleJumpToFirstUnread}
+              >
+                Jump to first unread
               </a>
             </Box>
           )}
