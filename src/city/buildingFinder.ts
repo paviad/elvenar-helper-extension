@@ -1,4 +1,5 @@
 import { getBuildings } from '../elvenar/sendBuildingsQuery';
+import { getAwBuildings } from '../elvenar/sendGoodsQuery';
 import { getGoodsBuildings } from '../elvenar/sendRenderConfigQuery';
 import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
@@ -20,6 +21,7 @@ export class BuildingFinder {
   private elvenarchitectDataUrl = chrome.runtime.getURL('elvenarchitect_data.json');
   private elvenarchitectData!: ElvenarchitectEntry[];
   private elvenarchitectDictionary!: Record<string, string>;
+  private awDictionary!: Record<string, string>;
 
   private getBaseName(goodsId: string): bAndC {
     const baseNameRex = /(.*?)(_\d+)?$/;
@@ -27,9 +29,9 @@ export class BuildingFinder {
     if (match) {
       const baseName = match[1];
       const chapter = match[2] ? parseInt(match[2].substring(1)) : undefined;
-      return { baseName, chapter };
+      return { baseName: normalizeString(baseName), chapter };
     } else {
-      return { baseName: goodsId };
+      return { baseName: normalizeString(goodsId) };
     }
   }
 
@@ -51,22 +53,26 @@ export class BuildingFinder {
 
     const buildings = await getBuildings();
     const goodsBuildings = await getGoodsBuildings();
+    const awBuildings = await getAwBuildings();
+
+    this.awDictionary = Object.fromEntries(awBuildings.map((b) => [b.id.replace(/_shards$/, ''), b.name]));
 
     this.buildingsDictionary = buildings.reduce((acc, building) => {
-      acc[building.base_name] = acc[building.base_name] || [];
-      acc[building.base_name].push(building);
+      const normalizedBaseName = normalizeString(building.base_name);
+      acc[normalizedBaseName] = acc[normalizedBaseName] || [];
+      acc[normalizedBaseName].push(building);
       return acc;
     }, {} as Record<string, Building[]>);
 
     this.goodsDictionary = goodsBuildings.reduce((acc, goods) => {
-      const building_base_name = this.getBaseName(goods.id).baseName;
+      const building_base_name = normalizeString(this.getBaseName(goods.id).baseName);
       acc[building_base_name] = acc[building_base_name] || [];
       acc[building_base_name].push(goods);
       return acc;
     }, {} as Record<string, GoodsBuilding[]>);
 
     this.buildingsDictionaryNoLevel = goodsBuildings.reduce((acc, building) => {
-      const baseName = building.id.replace(/(\d+)_(\d+)$/, '');
+      const baseName = normalizeString(building.id.replace(/(\d+)_(\d+)$/, ''));
       acc[baseName] = acc[baseName] || [];
       acc[baseName].push(building);
       return acc;
@@ -74,11 +80,13 @@ export class BuildingFinder {
   }
 
   public getBuilding(id: string, level = 1): BuildingEx | undefined {
-    const { baseName } = this.getBaseName(id);
+    const { baseName: baseName1 } = this.getBaseName(id);
+    const baseName = normalizeString(baseName1);
 
     const building = this.buildingsDictionary[baseName]?.[0];
     const approx = this.buildingsDictionaryNoLevel[baseName]?.[0];
     const goodsBuilding = this.goodsDictionary[baseName]?.find((r) => r.id.endsWith(`_${level}`)) || approx;
+    const aw = this.awDictionary[baseName];
 
     const length = goodsBuilding?.l || building?.length || 1;
     const width = goodsBuilding?.w || building?.width || 1;
@@ -102,7 +110,7 @@ export class BuildingFinder {
       const bldg = goodsBuilding;
       return {
         id: bldg.id,
-        name: this.findInElvenarchitect(bldg.id) || bldg.id,
+        name: aw || this.findInElvenarchitect(bldg.id) || bldg.id,
         description: '',
         type: 'unknown',
         length,
