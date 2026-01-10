@@ -137,8 +137,6 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
       try {
         const jsonStr = atob(data.trim());
 
-        console.log('Imported JSON:', jsonStr);
-
         const importData = JSON.parse(jsonStr) as {
           city_map: {
             unlocked_areas: { x: number; y: number; width: number; length: number }[];
@@ -155,8 +153,6 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
           user_data: { race: string };
         };
 
-        console.log('Parsed Import Data:', importData);
-
         const buildingFinder = new BuildingFinder();
         await buildingFinder.ensureInitialized();
 
@@ -164,8 +160,6 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
           const levelMatch = /_(\d+)$/.exec(e.cityentity_id);
           const level = e.level || (levelMatch ? parseInt(levelMatch[1]) : 1);
           const building = buildingFinder.getBuilding(e.cityentity_id, level);
-
-          console.log('Mapping entity:', e, 'to building:', building, 'with level:', level);
 
           return {
             id: e.id,
