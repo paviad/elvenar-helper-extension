@@ -4,6 +4,7 @@ import {
   setupMessageListener,
   setupOpenExtensionTabListener,
   setupRefreshCityListener,
+  setupCitySavedListener,
 } from '../chrome/messages';
 import {
   getAccountById,
@@ -37,6 +38,11 @@ async function initialize() {
       accountId = getAccountByTabId(sender.tab.id);
     }
     await openOrRestoreTab(accountId);
+  });
+  setupCitySavedListener(async (msg) => {
+    await loadAccountManagerFromStorage(true);
+    const allAccounts = getAllStoredAccounts();
+    console.log('ElvenAssist: City saved for account:', msg.accountId, allAccounts);
   });
   setupRefreshCityListener(async (msg) => {
     await loadAccountManagerFromStorage();

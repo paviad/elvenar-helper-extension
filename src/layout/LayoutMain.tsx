@@ -162,8 +162,8 @@ export const LayoutMain = () => {
         </Toolbar>
       </AppBar>
       {/* Only one Toolbar for AppBar, content starts below both bars */}
-      {globalError != null && <Toolbar sx={{ height: `${ERROR_BAR_HEIGHT}px` }} />}
-      <Toolbar />
+      {globalError != null && <Toolbar sx={{ height: `${ERROR_BAR_HEIGHT}px`, pointerEvents: 'none' }} />}
+      <Toolbar sx={{ pointerEvents: 'none' }} />
       <Outlet />
     </Box>
   );

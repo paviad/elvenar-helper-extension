@@ -1,6 +1,7 @@
 import { AccountData } from '../elvenar/AccountManager';
-import { CityEntityEx } from '../model/cityEntity';
+import { CityEntity, CityEntityEx } from '../model/cityEntity';
 import { BuildingFinder } from './buildingFinder';
+import { CityBlock } from './CityBlock';
 
 export async function generateCity(accountData: AccountData) {
   const finder = new BuildingFinder();
@@ -17,4 +18,27 @@ export async function generateCity(accountData: AccountData) {
   })) satisfies CityEntityEx[];
 
   return { q, unlockedAreas };
+}
+
+export function saveBack(cityBlocks: CityBlock[]) {
+  const updatedCityEntities = cityBlocks.map(
+    (block) =>
+      ({
+        ...block.entity,
+        x: block.x,
+        y: block.y,
+      } satisfies CityEntity),
+  );
+
+  return updatedCityEntities;
+}
+
+export function resetMovedInPlace(cityBlocks: CityBlock[]) {
+  cityBlocks.forEach((block) => {
+    if (block.moved) {
+      block.originalX = block.x;
+      block.originalY = block.y;
+      block.moved = false;
+    }
+  });
 }

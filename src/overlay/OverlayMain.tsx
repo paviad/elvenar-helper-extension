@@ -36,13 +36,7 @@ export function OverlayMain() {
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const overlayExpanded = useOverlayStore.getState().overlayExpanded;
-      if (
-        (event.code === 'KeyC') &&
-        event.altKey &&
-        !event.repeat &&
-        !event.ctrlKey &&
-        !event.metaKey
-      ) {
+      if (event.code === 'KeyC' && event.altKey && !event.repeat && !event.ctrlKey && !event.metaKey) {
         if (overlayExpanded && tabRef.current === 0) {
           expandPanel(false);
         } else {
@@ -52,9 +46,7 @@ export function OverlayMain() {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   React.useEffect(() => {

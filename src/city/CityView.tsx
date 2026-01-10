@@ -16,7 +16,7 @@ export function CityView(props: { blocks: CityBlock[]; unlockedAreas: UnlockedAr
   return (
     <div style={{ display: 'flex', flexDirection: 'row' }}>
       {renderMoveLog(s)}
-      {renderCityGrid(s)}
+      {renderCityGrid(s, props.forceUpdate)}
       {renderLegend(s)}
     </div>
   );

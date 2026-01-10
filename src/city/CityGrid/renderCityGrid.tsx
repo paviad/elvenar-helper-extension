@@ -22,13 +22,28 @@ import { BuildingFinder } from '../buildingFinder';
 import { CityBlock } from '../CityBlock';
 import { useTabStore } from '../../util/tabStore';
 import { refreshCity } from './refreshCity';
+import {
+  deleteCityById,
+  getAccountById,
+  getAllStoredAccounts,
+  saveCityInPlace,
+  saveCurrentCityAs,
+  saveNewCityAs,
+} from '../../elvenar/AccountManager';
+import ExportDialog from './ExportDialog';
+import SaveCityDialog from './SaveCityDialog';
+import MyConfirmDialog from '../../widgets/MyConfirmDialog';
+import { resetMovedInPlace, saveBack } from '../generateCity';
+import { sendCitySavedMessage } from '../../chrome/messages';
+import ImportDialog from './ImportDialog';
+import { CityEntity } from '../../model/cityEntity';
 
 interface ShowLevelDialogData {
   open: boolean;
   index: number;
 }
 
-export const renderCityGrid = (s: CityViewState) => {
+export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
   // State for Change Level dialog
   const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
   const [levelInput, setLevelInput] = useState(1);
@@ -40,6 +55,148 @@ export const renderCityGrid = (s: CityViewState) => {
   const [menu, setMenu] = s.rMenu;
   const [maxLevels] = s.rMaxLevels;
   const setGlobalError = useTabStore((state) => state.setGlobalError);
+  const setAccountId = useTabStore((state) => state.setAccountId);
+
+  // State for ExportDialog
+  const [exportDialog, setExportDialog] = useState({ open: false, exportStr: '' });
+
+  // State for SaveCityDialog
+  const [saveAsDialog, setSaveAsDialog] = useState({ open: false, defaultName: '', existingCities: [] as string[] });
+
+  // State for Delete Confirmation Dialog
+  const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] = useState({ open: false });
+
+  // State for ImportDialog
+  const [importDialog, setImportDialog] = useState({ open: false, existingCities: [] as string[] });
+
+  function renderExportDialog() {
+    return (
+      <ExportDialog
+        isOpen={exportDialog.open}
+        onClose={() => setExportDialog({ open: false, exportStr: '' })}
+        exportString={exportDialog.exportStr}
+      />
+    );
+  }
+
+  function renderSaveCityDialog() {
+    async function doSave(name: string) {
+      setSaveAsDialog({ open: false, defaultName: '', existingCities: [] });
+      const cityEntities = saveBack(Object.values(blocks));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await saveCurrentCityAs(s.accountId!, name, cityEntities);
+      await sendCitySavedMessage(name);
+      resetMovedInPlace(Object.values(blocks));
+      setAccountId(name);
+    }
+
+    return (
+      <SaveCityDialog
+        isOpen={saveAsDialog.open}
+        onClose={() => setSaveAsDialog({ open: false, defaultName: '', existingCities: [] })}
+        onSave={doSave}
+        defaultName={saveAsDialog.defaultName}
+        existingCities={saveAsDialog.existingCities}
+      />
+    );
+  }
+
+  function renderDeleteConfirmationDialog() {
+    async function handleDelete() {
+      setShowDeleteConfirmationDialog({ open: false });
+      if (!s.accountId) {
+        return;
+      }
+      await deleteCityById(s.accountId);
+      const storedAccounts = getAllStoredAccounts();
+      if (storedAccounts.length > 0) {
+        const [firstAccountId] = storedAccounts[0];
+        setAccountId(firstAccountId);
+      } else {
+        throw new Error('ElvenAssist: No more saved cities available after deletion.');
+      }
+    }
+
+    return (
+      <MyConfirmDialog
+        isOpen={showDeleteConfirmationDialog.open}
+        onClose={() => setShowDeleteConfirmationDialog({ open: false })}
+        onConfirm={handleDelete}
+        title='Delete Saved City?'
+        message='Are you sure you want to remove this saved city? All associated data will be permanently lost.'
+        severity='error'
+        confirmLabel='Delete'
+        cancelLabel='Keep it'
+      />
+    );
+  }
+
+  function renderImportDialog() {
+    async function handleImport(name: string, data: string) {
+      // placeholder
+      try {
+        const jsonStr = atob(data.trim());
+
+        console.log('Imported JSON:', jsonStr);
+
+        const importData = JSON.parse(jsonStr) as {
+          city_map: {
+            unlocked_areas: { x: number; y: number; width: number; length: number }[];
+            entities: {
+              id: number;
+              cityentity_id: string;
+              x: number;
+              y: number;
+              stage: number;
+              type?: string;
+              level?: number;
+            }[];
+          };
+          user_data: { race: string };
+        };
+
+        console.log('Parsed Import Data:', importData);
+
+        const buildingFinder = new BuildingFinder();
+        await buildingFinder.ensureInitialized();
+
+        const cityEntities = importData.city_map.entities.map((e: (typeof importData.city_map.entities)[0]) => {
+          const levelMatch = /_(\d+)$/.exec(e.cityentity_id);
+          const level = e.level || (levelMatch ? parseInt(levelMatch[1]) : 1);
+          const building = buildingFinder.getBuilding(e.cityentity_id, level);
+
+          console.log('Mapping entity:', e, 'to building:', building, 'with level:', level);
+
+          return {
+            id: e.id,
+            level,
+            player_id: 0,
+            cityentity_id: e.cityentity_id,
+            x: e.x,
+            y: e.y,
+            stage: e.stage,
+            type: e.type || building?.type || 'unknown',
+            connected: false,
+            connectionStrategy: building?.connectionStrategy || 'unknown',
+          } satisfies CityEntity;
+        });
+        await saveNewCityAs(name, cityEntities, importData.user_data.race, importData.city_map.unlocked_areas);
+        await sendCitySavedMessage('imported_' + name);
+        setAccountId(name);
+      } catch (e) {
+        setGlobalError('Failed to decode or parse imported city data.');
+        return;
+      }
+    }
+    return (
+      <ImportDialog
+        isOpen={importDialog.open}
+        onClose={() => setImportDialog({ open: false, existingCities: [] })}
+        onImport={handleImport}
+        existingCities={importDialog.existingCities}
+      />
+    );
+  }
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const term = e.target.value;
@@ -68,6 +225,23 @@ export const renderCityGrid = (s: CityViewState) => {
       ),
     );
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const isDetached = !!getAccountById(s.accountId!)?.isDetached;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === 'KeyS' && !event.altKey && !event.repeat && event.ctrlKey && !event.metaKey) {
+        // Ctrl+S
+        event.preventDefault();
+        if (isDetached) {
+          saveCity(s);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [s.rBlocks[0]]);
 
   // Sticky-to-fixed search box logic (fixed: returns to original position when scrolling up)
   const searchBoxRef = useRef<HTMLDivElement>(null);
@@ -333,22 +507,84 @@ export const renderCityGrid = (s: CityViewState) => {
   }
 
   function exportCityAsJson(s: CityViewState) {
-    const unlockedAreas = s.props.unlockedAreas;
+    if (!s.accountId) {
+      return;
+    }
+    const accountData = getAccountById(s.accountId);
+    if (!accountData?.cityQuery) {
+      return;
+    }
+
+    const unlocked_areas = s.props.unlockedAreas;
     const entities = Object.values(blocks).map((b, idx) => ({
       id: idx + 1,
       cityentity_id: b.entity.cityentity_id,
       x: b.x,
       y: b.y,
-      stage: null,
+      stage: b.entity.stage,
+
+      type: b.type.replace(/_[xy]$/, ''),
+      level: b.entity.level,
     }));
+    const user_data = {
+      race: accountData.cityQuery.userData.race,
+    };
+
+    const exportData = {
+      city_map: {
+        unlocked_areas,
+        entities,
+      },
+      user_data,
+    };
+
+    const jsonStr = JSON.stringify(exportData);
+    const base64Str = btoa(jsonStr);
+    setExportDialog({ open: true, exportStr: base64Str });
+  }
+
+  function importCity(s: CityViewState) {
+    const storedAccounts = getAllStoredAccounts();
+    const existingCities = storedAccounts.filter(([, data]) => data.isDetached).map(([name, _]) => name);
+    setImportDialog({ open: true, existingCities });
+  }
+
+  function saveCityAs(s: CityViewState) {
+    const storedAccounts = getAllStoredAccounts();
+    const existingCities = storedAccounts.filter(([, data]) => data.isDetached).map(([name, _]) => name);
+    setSaveAsDialog({ open: true, defaultName: `CityLayout_${new Date().toISOString().slice(0, 10)}`, existingCities });
+  }
+
+  async function saveCity(s: CityViewState) {
+    if (!s.accountId) {
+      return;
+    }
+    const newBlocks = saveBack(Object.values(blocks));
+
+    await saveCityInPlace(s.accountId, newBlocks);
+    resetMovedInPlace(Object.values(blocks));
+    forceUpdate();
+  }
+
+  function deleteCity(s: CityViewState) {
+    setShowDeleteConfirmationDialog({ open: true });
   }
 
   return (
     <Stack>
       <Stack direction='row'>
-        <Button onClick={() => refreshCity(s.accountId, s.props.forceUpdate)}>Refresh City</Button>
+        {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
+        {!isDetached && <Button onClick={() => refreshCity(s.accountId, s.props.forceUpdate)}>Refresh City</Button>}
         <Button onClick={() => sellStreets(s)}>Sell Streets</Button>
+        <Button onClick={() => importCity(s)}>Import City</Button>
         <Button onClick={() => exportCityAsJson(s)}>Export City</Button>
+        <Button onClick={() => saveCityAs(s)}>Save City As...</Button>
+        {isDetached && (
+          <Button onClick={() => deleteCity(s)} sx={{ color: 'red' }}>
+            Delete
+          </Button>
+        )}
+        {isDetached && <Button onClick={() => saveCity(s)}>Save</Button>}
       </Stack>
       <div>
         <div
@@ -457,6 +693,14 @@ export const renderCityGrid = (s: CityViewState) => {
           {/* Context Menu (now rendered as portal) */}
           {menu && renderContextMenu()}
         </svg>
+        {/* ExportDialog Modal */}
+        {exportDialog.open && renderExportDialog()}
+        {/* SaveCityDialog Modal */}
+        {saveAsDialog.open && renderSaveCityDialog()}
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirmationDialog.open && renderDeleteConfirmationDialog()}
+        {/* ImportDialog Modal */}
+        {importDialog.open && renderImportDialog()}
       </div>
     </Stack>
   );

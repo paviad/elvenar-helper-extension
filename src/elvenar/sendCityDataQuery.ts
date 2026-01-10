@@ -151,6 +151,7 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       relicBoosts,
     },
     sharedInfo,
+    isDetached: false,
   } satisfies AccountData;
 
   await setAccountData(accountId, data);

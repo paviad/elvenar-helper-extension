@@ -1,6 +1,7 @@
 export interface BuildingEx {
   id: string;
   name: string;
+  type: string;
   description?: string;
   length: number;
   width: number;

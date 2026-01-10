@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react';
 import { FaQuest, getAccountById } from '../elvenar/AccountManager';
 import { useTabStore } from '../util/tabStore';
@@ -91,7 +92,6 @@ export function FellowshipAdventure() {
     .filter((r) => badgeSpriteInfo[r])
     .map((badge) => {
       const req = faRequirements[badge];
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const spriteInfo = badgeSpriteInfo[badge]!;
 
       const storageValue = badges ? badges[badge as keyof Badges] || 0 : 0;
@@ -158,25 +158,21 @@ function extractBadgesInProduction(
   const mapr = (r: CityEntity) =>
     ({
       id: r.id,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       name: r.state!.current_product!.name!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       asset_name: r.state!.current_product!.asset_name!,
-      next_state_transition_in: r.state.next_state_transition_in,
-      productionAmount: r.state?.current_product?.productionAmount,
+      next_state_transition_in: r.state!.next_state_transition_in,
+      productionAmount: r.state!.current_product?.productionAmount,
     } satisfies ProductionBadgeInfo);
 
   const mapr2 = (r: CityEntity) => {
     const boostFactor = boostedGoods[r.state?.current_product?.asset_name?.replace(/_\d+$/, '') || ''] || 1;
     return {
       id: r.id,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       name: r.state!.current_product!.name!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       asset_name: r.state!.current_product!.asset_name!,
-      next_state_transition_in: r.state.next_state_transition_in,
+      next_state_transition_in: r.state!.next_state_transition_in,
       productionAmount:
-        ((Object.entries(r.state?.current_product?.revenue.resources).find(([k, v]) =>
+        ((Object.entries(r.state!.current_product?.revenue.resources).find(([k, v]) =>
           /marble|steel|planks/.test(k),
         )?.[1] as number) || 0) * boostFactor,
     } satisfies ProductionBadgeInfo;

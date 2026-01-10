@@ -2,13 +2,14 @@ export interface CityEntity {
   cityentity_id: string;
   id: number;
   level: number;
+  stage?: number;
   player_id: number;
-  state: State;
+  state?: State;
   type: string;
   x: number;
   y: number;
   connected: boolean;
-  setConnections: SetConnections;
+  setConnections?: SetConnections;
   connectionStrategy: string;
 }
 

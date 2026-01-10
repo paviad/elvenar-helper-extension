@@ -27,12 +27,18 @@ export interface CityDataUpdatedMessage {
   tabId: number;
 }
 
+export interface CitySavedMessage {
+  type: 'citySaved';
+  accountId: string;
+}
+
 export type AllMessages =
   | TradeOpenedMessage
   | TradeParsedMessage
   | RefreshCityMessage
   | OpenExtensionTabMessage
-  | CityDataUpdatedMessage;
+  | CityDataUpdatedMessage
+  | CitySavedMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -46,6 +52,17 @@ export const sendTradeOpenedMessage = async () => {
     } satisfies TradeOpenedMessage);
   } catch (e) {
     console.log('ElvenAssist: Error sending tradeOpened message:', e);
+  }
+};
+
+export const sendCitySavedMessage = async (accountId: string) => {
+  try {
+    await chrome.runtime.sendMessage({
+      type: 'citySaved',
+      accountId,
+    } satisfies CitySavedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending citySaved message:', e);
   }
 };
 
@@ -119,3 +136,6 @@ export const setupOpenExtensionTabListener = (
 
 export const setupCityDataUpdatedListener = (callback: (tabId: CityDataUpdatedMessage) => void) =>
   (callbackMap['cityDataUpdated'] = callback);
+
+export const setupCitySavedListener = (callback: (message: CitySavedMessage) => void) =>
+  (callbackMap['citySaved'] = callback);
