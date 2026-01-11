@@ -2,6 +2,7 @@ export const knownTypes: Record<string, string> = {
   culture_residential: '#9452fe',
   culture: '#9452fe',
   expiring: '#9452fe',
+  expiring_x: '#9452fe',
 
   culture_residential_x: '#aaf5fe',
   culture_x: '#aaf5fe',
@@ -34,4 +35,5 @@ export const knownTypes: Record<string, string> = {
   armory: '#fe0230',
 
   street: '#d7d7d7',
+  street_x: '#d7d7d7',
 };

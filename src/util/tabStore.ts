@@ -9,7 +9,8 @@ interface TabState {
   setGlobalError: (error: string | undefined | null) => void;
   techSprite: { url: string; width: number; height: number } | undefined;
   setTechSprite: (size: { url: string; width: number; height: number } | undefined) => void;
-  // Add other global state fields and setters here as needed
+  forceUpdate: number;
+  triggerForceUpdate: () => void;
 }
 
 export const useTabStore = create<TabState>()(
@@ -21,10 +22,16 @@ export const useTabStore = create<TabState>()(
       setGlobalError: (error) => set({ globalError: error }),
       techSprite: undefined,
       setTechSprite: (size: { url: string; width: number; height: number } | undefined) => set({ techSprite: size }),
+      forceUpdate: 0,
+      triggerForceUpdate: () => set((state) => ({ forceUpdate: state.forceUpdate + 1 })),
     }),
     {
       name: 'tab-store',
       storage: createJSONStorage(() => chromeStorage),
+      partialize: (state) => {
+        const { forceUpdate, ...toPersist } = state;
+        return toPersist;
+      },
     },
   ),
 );

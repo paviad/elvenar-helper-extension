@@ -27,6 +27,10 @@ export interface CityDataUpdatedMessage {
   tabId: number;
 }
 
+export interface OtherPlayerCityUpdatedMessage {
+  type: 'otherPlayerCityUpdated';
+}
+
 export interface CitySavedMessage {
   type: 'citySaved';
   accountId: string;
@@ -98,6 +102,14 @@ export const sendCityDataUpdatedMessage = async (tabId: number) => {
   }
 };
 
+export const sendOtherPlayerCityDataUpdatedMessage = async () => {
+  try {
+    await chrome.runtime.sendMessage({ type: 'otherPlayerCityUpdated' } satisfies OtherPlayerCityUpdatedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending otherPlayerCityUpdated message:', e);
+  }
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const callbackMap: Record<string, (...args: any[]) => any> = {};
 
@@ -136,6 +148,9 @@ export const setupOpenExtensionTabListener = (
 
 export const setupCityDataUpdatedListener = (callback: (tabId: CityDataUpdatedMessage) => void) =>
   (callbackMap['cityDataUpdated'] = callback);
+
+export const setupOtherPlayerCityUpdatedListener = (callback: (message: OtherPlayerCityUpdatedMessage) => void) =>
+  (callbackMap['otherPlayerCityUpdated'] = callback);
 
 export const setupCitySavedListener = (callback: (message: CitySavedMessage) => void) =>
   (callbackMap['citySaved'] = callback);

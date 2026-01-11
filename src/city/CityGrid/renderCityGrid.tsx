@@ -543,10 +543,10 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     setImportDialog({ open: true, existingCities });
   }
 
-  function saveCityAs(s: CityViewState) {
+  function saveCityAs(s: CityViewState, defaultName?: string) {
     const storedAccounts = getAllStoredAccounts();
     const existingCities = storedAccounts.filter(([, data]) => data.isDetached).map(([name, _]) => name);
-    setSaveAsDialog({ open: true, defaultName: `CityLayout_${new Date().toISOString().slice(0, 10)}`, existingCities });
+    setSaveAsDialog({ open: true, defaultName: defaultName || `CityLayout_${new Date().toISOString().slice(0, 10)}`, existingCities });
   }
 
   async function saveCity(s: CityViewState) {
@@ -554,6 +554,13 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
       return;
     }
     const newBlocks = saveBack(Object.values(blocks));
+
+    if (s.accountId === 'Visited') {
+      const accountData = getAccountById(s.accountId);
+      const defaultName = `${accountData?.cityQuery?.userData.user_name}`;
+      saveCityAs(s, defaultName);
+      return;
+    }
 
     await saveCityInPlace(s.accountId, newBlocks);
     resetMovedInPlace(Object.values(blocks));

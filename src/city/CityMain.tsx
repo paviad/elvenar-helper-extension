@@ -9,7 +9,6 @@ import { generateCityBlocks } from './generateCityBlocks';
 import { useTabStore } from '../util/tabStore';
 import { generateCity } from './generateCity';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
-import { ProductionTimeline } from '../fellowship-adventure/ProductionTimeline';
 import { getAccountById } from '../elvenar/AccountManager';
 
 export function CityMain() {
@@ -19,7 +18,9 @@ export function CityMain() {
 
   const accountId = useTabStore((state) => state.accountId);
 
-  const [f, forceUpdate] = React.useReducer((x) => x + 1, 0);
+  // const [f, forceUpdate] = React.useReducer((x) => x + 1, 0);
+  const forceUpdate = useTabStore((state) => state.triggerForceUpdate);
+  const f = useTabStore((state) => state.forceUpdate);
 
   React.useEffect(() => {
     async function fetchCityData() {

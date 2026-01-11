@@ -1,10 +1,10 @@
 import {
-  OpenExtensionTabMessage,
   sendCityDataUpdatedMessage,
   setupMessageListener,
   setupOpenExtensionTabListener,
   setupRefreshCityListener,
   setupCitySavedListener,
+  sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
 import {
   getAccountById,
@@ -18,6 +18,7 @@ import { sendCauldronQuery } from '../elvenar/sendCauldronQuery';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { sendInventoryQuery } from '../elvenar/sendInventoryQuery';
 import { sendTradeQuery } from '../elvenar/sendTradeQuery';
+import { sendVisitPlayerQuery } from '../elvenar/sendVisitPlayerQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { matchBuildingsUrl } from './matchBuildingsUrl';
@@ -201,6 +202,23 @@ const callbackRequest = (details: {
         sharedInfo.reqBodyCauldron = decodedString;
         await sendCauldronQuery(sharedInfo);
         await saveAllAccounts();
+      }
+      Do();
+    }
+
+    const expectedVisitPlayer =
+      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[\d+\],"requestClass":"OtherPlayerService","requestMethod":"visitPlayer","requestId":\d+}]/;
+
+    if (expectedVisitPlayer.test(decodedString)) {
+      async function Do() {
+        sharedInfo.reqBodyCity = decodedString;
+        try {
+          await sendVisitPlayerQuery(sharedInfo);
+          await saveAllAccounts();
+          await sendOtherPlayerCityDataUpdatedMessage();
+        } catch (error) {
+          console.error('Error in sendVisitPlayerQuery:', error);
+        }
       }
       Do();
     }

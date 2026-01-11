@@ -10,6 +10,9 @@ import { getFromStorage } from '../chrome/storage';
 const ERROR_BAR_HEIGHT = 48; // px
 
 export const LayoutMain = () => {
+  console.log('LayoutMain render');
+  const forceUpdate = useTabStore((state) => state.forceUpdate);
+
   const setAccountId = useTabStore((state) => state.setAccountId);
   const accountId = useTabStore((state) => state.accountId);
   const globalError = useTabStore((state) => state.globalError);
@@ -59,7 +62,7 @@ export const LayoutMain = () => {
     setAccountName(name);
     const city = accountData?.cityQuery?.cityName || '';
     setCityName(city);
-  }, [accountId]);
+  }, [accountId, forceUpdate]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchor(event.currentTarget);

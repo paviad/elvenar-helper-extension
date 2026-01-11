@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { chromeStorage, chromeStorageWithLogging } from '../util/chromeStorage';
+import { chromeStorage } from '../util/chromeStorage';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 
 interface OverlayState {
