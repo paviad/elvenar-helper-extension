@@ -1,5 +1,6 @@
 import { getBuildings } from '../elvenar/sendBuildingsQuery';
 import { getAwBuildings } from '../elvenar/sendGoodsQuery';
+import { getPremiumBuildingHints } from '../elvenar/sendPremiumBuildingHintsQuery';
 import { getGoodsBuildings } from '../elvenar/sendRenderConfigQuery';
 import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
@@ -22,6 +23,7 @@ export class BuildingFinder {
   private elvenarchitectData!: ElvenarchitectEntry[];
   private elvenarchitectDictionary!: Record<string, string>;
   private awDictionary!: Record<string, string>;
+  private hintsDictionary!: Record<string, string>;
 
   private getBaseName(goodsId: string): bAndC {
     const baseNameRex = /(.*?)(_\d+)?$/;
@@ -54,8 +56,13 @@ export class BuildingFinder {
     const buildings = await getBuildings();
     const goodsBuildings = await getGoodsBuildings();
     const awBuildings = await getAwBuildings();
+    const premiumHints = await getPremiumBuildingHints();
 
     this.awDictionary = Object.fromEntries(awBuildings.map((b) => [b.id.replace(/_shards$/, ''), b.name]));
+
+    this.hintsDictionary = Object.fromEntries(
+      premiumHints.map((h) => [normalizeString(h.id.replace(/_\d+$/, '')), h.section]),
+    );
 
     this.buildingsDictionary = buildings.reduce((acc, building) => {
       const normalizedBaseName = normalizeString(building.base_name);
@@ -87,6 +94,11 @@ export class BuildingFinder {
     const approx = this.buildingsDictionaryNoLevel[baseName]?.[0];
     const goodsBuilding = this.goodsDictionary[baseName]?.find((r) => r.id.endsWith(`_${level}`)) || approx;
     const aw = this.awDictionary[baseName];
+    const hint = this.hintsDictionary[baseName];
+
+    if (hint) {
+      console.log(`building id ${id}, hint ${hint}`);
+    }
 
     const length = goodsBuilding?.l || building?.length || 1;
     const width = goodsBuilding?.w || building?.width || 1;
@@ -103,6 +115,7 @@ export class BuildingFinder {
         connectionStrategy: bldg.requirements.connectionStrategyId,
         resale_resources: bldg.resale_resources,
         spellFragments: bldg.spellFragments,
+        chapter: (hint && parseInt(hint)) || undefined,
       } satisfies BuildingEx;
     }
 
@@ -118,6 +131,7 @@ export class BuildingFinder {
         connectionStrategy: 'unknown',
         resale_resources: { resources: {} },
         spellFragments: 0,
+        chapter: (hint && parseInt(hint)) || undefined,
       } satisfies BuildingEx;
     }
   }
@@ -134,7 +148,13 @@ export class BuildingFinder {
     const description = building?.description || '';
     const name = building?.name || this.findInElvenarchitect(id) || id;
     const connectionStrategy = building?.connectionStrategy || 'unknown';
-    return { length, width, description, name, connectionStrategy } satisfies CityEntityExData;
+    const chapter = building?.chapter;
+
+    if (chapter) {
+      console.log(`building id ${id}, chapter ${chapter}`);
+    }
+
+    return { length, width, description, name, connectionStrategy, chapter } satisfies CityEntityExData;
 
     // const { baseName, chapter } = this.getBaseName(id);
     // const goodsBuilding = this.goodsDictionary[baseName]?.find((r) => r.id.endsWith(`_${level}`));

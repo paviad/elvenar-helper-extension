@@ -8,4 +8,5 @@ export interface BuildingEx {
   connectionStrategy: string;
   resale_resources: { resources: Record<string, number> };
   spellFragments: number;
+  chapter?: number;
 }

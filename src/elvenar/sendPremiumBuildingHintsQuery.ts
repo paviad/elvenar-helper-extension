@@ -1,8 +1,7 @@
 import { getFromStorage } from '../chrome/storage';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { GoodsBuilding } from '../model/goodsBuilding';
 
-export async function sendGoodsQuery(sharedInfo: ExtensionSharedInfo) {
+export async function sendPremiumBuildingHintsQuery(sharedInfo: ExtensionSharedInfo) {
   const { reqUrl: url, reqReferrer: referrer } = sharedInfo;
 
   const response = await fetch(url, {
@@ -18,17 +17,15 @@ export async function sendGoodsQuery(sharedInfo: ExtensionSharedInfo) {
     credentials: 'omit',
   });
 
-  const goodsRaw = (await response.json()) as { id: string; name: string }[];
+  const premiumBuildingHintsRaw = (await response.json()) as { id: string; section: string }[];
 
-  const goods = goodsRaw
-    .filter((r) => /aw.*?_shards$/.test(r.id) && r.name !== '!!Missing text')
-    .map((r) => ({ id: r.id, name: r.name }));
+  const premiumBuildingHints = premiumBuildingHintsRaw.map((z) => ({ id: z.id, section: z.section }));
 
-  return goods;
+  return premiumBuildingHints;
 }
 
-export async function getAwBuildings(): Promise<{ id: string; name: string }[]> {
-  const json = await getFromStorage('awbuildings');
+export async function getPremiumBuildingHints(): Promise<{ id: string; section: string }[]> {
+  const json = await getFromStorage('premiumBuildingHints');
   if (json) {
     return JSON.parse(json);
   } else {

@@ -14,7 +14,12 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
     return entity.type;
   }
 
-  function getChapter(entity: CityEntity): number | undefined {
+  function getChapter(entity: CityEntityEx): number | undefined {
+    if (entity.chapter) {
+      console.log(`entity id ${entity.cityentity_id}, chapter ${entity.chapter}`);
+      return entity.chapter;
+    }
+
     if (entity.type === 'culture' || entity.type === 'culture_residential') {
       const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(entity.cityentity_id);
       if (m1) {

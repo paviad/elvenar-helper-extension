@@ -25,6 +25,7 @@ import { matchBuildingsUrl } from './matchBuildingsUrl';
 import { matchEffectsUrl } from './matchEffectsUrl';
 import { matchGoodsUrl } from './matchGoodsUrl';
 import { matchItemsUrl } from './matchItemsUrl';
+import { matchPremiumBuildingHintsUrl } from './matchPremiumBuildingHintsUrl';
 import { matchRenderConfigUrl } from './matchRenderConfigUrl';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
 import { matchTomesUrl } from './matchTomesUrl';
@@ -122,6 +123,8 @@ const callbackRequest = (details: {
   matchEffectsUrl(details, sharedInfo);
 
   matchGoodsUrl(details, sharedInfo);
+
+  matchPremiumBuildingHintsUrl(details, sharedInfo);
 
   const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
   // Check if the URL matches the pattern and save it in a global variable

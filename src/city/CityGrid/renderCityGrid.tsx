@@ -539,14 +539,24 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
 
   function importCity(s: CityViewState) {
     const storedAccounts = getAllStoredAccounts();
-    const existingCities = storedAccounts.filter(([, data]) => data.isDetached).map(([name, _]) => name);
+    const existingCities = storedAccounts
+      .filter(([id, data]) => data.isDetached && id !== 'Visited')
+      .map(([name, _]) => name);
     setImportDialog({ open: true, existingCities });
   }
 
-  function saveCityAs(s: CityViewState, defaultName?: string) {
+  function saveCityAs(s: CityViewState) {
     const storedAccounts = getAllStoredAccounts();
-    const existingCities = storedAccounts.filter(([, data]) => data.isDetached).map(([name, _]) => name);
-    setSaveAsDialog({ open: true, defaultName: defaultName || `CityLayout_${new Date().toISOString().slice(0, 10)}`, existingCities });
+    const existingCities = storedAccounts
+      .filter(([id, data]) => data.isDetached && id !== 'Visited')
+      .map(([name, _]) => name);
+    let defaultName = `CityLayout_${new Date().toISOString().slice(0, 10)}`;
+    if (s.accountId === 'Visited') {
+      const accountData = getAccountById(s.accountId);
+      defaultName = `${accountData?.cityQuery?.userData.user_name}`;
+    }
+
+    setSaveAsDialog({ open: true, defaultName, existingCities });
   }
 
   async function saveCity(s: CityViewState) {
@@ -556,9 +566,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     const newBlocks = saveBack(Object.values(blocks));
 
     if (s.accountId === 'Visited') {
-      const accountData = getAccountById(s.accountId);
-      const defaultName = `${accountData?.cityQuery?.userData.user_name}`;
-      saveCityAs(s, defaultName);
+      saveCityAs(s);
       return;
     }
 
@@ -585,7 +593,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
             Delete
           </Button>
         )}
-        {isDetached && <Button onClick={() => saveCity(s)}>Save</Button>}
+        {isDetached && s.accountId !== 'Visited' && <Button onClick={() => saveCity(s)}>Save</Button>}
       </Stack>
       <div>
         <div
