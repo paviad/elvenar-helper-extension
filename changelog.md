@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.2.1
+* Fixed drag and drop data corruption bug
+* While dragging, allow keyboard +, - and Del to change level or delete block
+
 ## v5.2.0
 - Store visited cities
 - Fellowship adventure export (work in progress)
