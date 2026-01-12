@@ -56,6 +56,7 @@ export interface AccountData {
 }
 
 let accounts: Record<string, AccountData> = {};
+let accounts_last_saved: number | null = null;
 
 export function getAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
@@ -66,8 +67,17 @@ export async function setAccountData(accountId: string, accountData: AccountData
 }
 
 export async function saveAllAccounts() {
+  const accountsLastSavedRaw = await getFromStorage('accounts_last_saved');
+  if (accountsLastSavedRaw) {
+    const accountsLastSaved = parseInt(accountsLastSavedRaw, 10);
+    if (accounts_last_saved && accountsLastSaved > accounts_last_saved) {
+      throw new Error('ElvenAssist: Detected newer accounts in storage, aborting save');
+    }
+  }
   console.log('ElvenAssist: Saving all accounts to storage:', accounts);
   await saveToStorage('accounts', JSON.stringify(accounts));
+  accounts_last_saved = Date.now();
+  await saveToStorage('accounts_last_saved', accounts_last_saved.toString());
 }
 
 export function getAccountBySessionId(sessionId: string): AccountData | undefined {
@@ -89,6 +99,15 @@ let loadReadyPromise: Promise<void> | undefined;
 let initialized = false;
 
 export const loadAccountManagerFromStorage = async (refresh = false) => {
+  const accountsLastSavedRaw = await getFromStorage('accounts_last_saved');
+  if (accountsLastSavedRaw) {
+    const accountsLastSaved = parseInt(accountsLastSavedRaw, 10);
+    if (accounts_last_saved && accountsLastSaved > accounts_last_saved) {
+      console.log('ElvenAssist: Detected newer accounts in storage, refreshing');
+      refresh = true;
+    }
+  }
+
   console.log('ElvenAssist: Loading accounts from storage', refresh);
   if (initialized && !refresh) {
     return;
@@ -110,6 +129,7 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
   }
   initialized = true;
   loadReadyPromise = undefined;
+  accounts_last_saved = new Date().getTime();
   loadReadyResolve();
 };
 
@@ -117,7 +137,12 @@ export const getAllStoredAccounts = (): [string, AccountData][] => {
   return Object.entries(accounts);
 };
 
-export const saveNewCityAs = async (accountId: string, cityEntities: CityEntity[], race: string, unlockedAreas: UnlockedArea[]) => {
+export const saveNewCityAs = async (
+  accountId: string,
+  cityEntities: CityEntity[],
+  race: string,
+  unlockedAreas: UnlockedArea[],
+) => {
   const accountData: AccountData = {
     isDetached: true,
     sharedInfo: {

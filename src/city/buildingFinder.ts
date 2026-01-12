@@ -94,11 +94,9 @@ export class BuildingFinder {
     const approx = this.buildingsDictionaryNoLevel[baseName]?.[0];
     const goodsBuilding = this.goodsDictionary[baseName]?.find((r) => r.id.endsWith(`_${level}`)) || approx;
     const aw = this.awDictionary[baseName];
-    const hint = this.hintsDictionary[baseName];
 
-    if (hint) {
-      console.log(`building id ${id}, hint ${hint}`);
-    }
+    const hint = (!/^[gprhmo]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
+    // const hint = !/^r_.*?_premium_residential/.test(baseName) && this.hintsDictionary[baseName] || undefined;
 
     const length = goodsBuilding?.l || building?.length || 1;
     const width = goodsBuilding?.w || building?.width || 1;
@@ -149,10 +147,6 @@ export class BuildingFinder {
     const name = building?.name || this.findInElvenarchitect(id) || id;
     const connectionStrategy = building?.connectionStrategy || 'unknown';
     const chapter = building?.chapter;
-
-    if (chapter) {
-      console.log(`building id ${id}, chapter ${chapter}`);
-    }
 
     return { length, width, description, name, connectionStrategy, chapter } satisfies CityEntityExData;
 

@@ -20,7 +20,8 @@ export class CityViewState {
   menuRef = useRef<HTMLDivElement | null>(null);
   svgRef = useRef<SVGSVGElement>(null);
   mousePositionRef = useRef<HTMLDivElement>(null);
-  accountId = useTabStore((state) => state.accountId);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  accountId = useTabStore((state) => state.accountId)!;
   techSprite = useTabStore((state) => state.techSprite);
 
   allTypes;

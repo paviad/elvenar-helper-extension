@@ -57,6 +57,7 @@ async function initialize() {
       };
     }
     try {
+      await loadAccountManagerFromStorage();
       await sendCityDataQuery({ ...accountData.sharedInfo, reqUrl: accountData.cityQuery.url });
       await saveAllAccounts();
       return { success: true };
@@ -151,6 +152,7 @@ const callbackRequest = (details: {
       async function Do() {
         sharedInfo.reqBodyCity = decodedString;
         try {
+          await loadAccountManagerFromStorage();
           await sendCityDataQuery(sharedInfo);
           await saveAllAccounts();
           sendCityDataUpdatedMessage(details.tabId);
@@ -168,6 +170,7 @@ const callbackRequest = (details: {
       async function Do() {
         sharedInfo.reqBodyInventory = decodedString;
         try {
+          await loadAccountManagerFromStorage();
           await sendInventoryQuery(sharedInfo);
           await saveAllAccounts();
         } catch (error) {
@@ -184,6 +187,7 @@ const callbackRequest = (details: {
       async function Do() {
         sharedInfo.reqBodyTrade = decodedString;
         try {
+          await loadAccountManagerFromStorage();
           await sendTradeQuery(sharedInfo);
           await saveAllAccounts();
           const accountData = getAccountBySessionId(sessionId);
@@ -203,8 +207,13 @@ const callbackRequest = (details: {
     if (expectedCauldron.test(decodedString)) {
       async function Do() {
         sharedInfo.reqBodyCauldron = decodedString;
-        await sendCauldronQuery(sharedInfo);
-        await saveAllAccounts();
+        try {
+          await loadAccountManagerFromStorage();
+          await sendCauldronQuery(sharedInfo);
+          await saveAllAccounts();
+        } catch (error) {
+          console.error('Error in sendTradeQuery:', error);
+        }
       }
       Do();
     }
@@ -216,6 +225,7 @@ const callbackRequest = (details: {
       async function Do() {
         sharedInfo.reqBodyCity = decodedString;
         try {
+          await loadAccountManagerFromStorage();
           await sendVisitPlayerQuery(sharedInfo);
           await saveAllAccounts();
           await sendOtherPlayerCityDataUpdatedMessage();

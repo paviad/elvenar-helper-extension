@@ -76,7 +76,6 @@ class CustomWebSocket extends WebSocket {
     }
 
     const sendMessageHook = (message: string) => {
-      console.log('Sending message via WebSocket hook', message);
       super.send(message);
     };
 
@@ -121,7 +120,6 @@ content-length:2
 */
 
 async function sendMarkAsReadMessage(playerId: number, guildId: number) {
-  console.log('Sending mark as read message for playerId', playerId, globalSendHook, globalTopicId);
   if (!globalSendHook) {
     console.warn('ElvenAssist: WebSocket send hook is not installed yet.');
     return;
@@ -152,12 +150,8 @@ const messageHandler = (event: MessageEvent<MessageToInjectedScript>) => {
     return;
   }
 
-  console.log('Message received from page script', event.data);
-
   const playerId = event.data.payload.playerId;
   const guildId = event.data.payload.guildId;
-
-  console.log('Processing outgoing message', playerId);
 
   if (event.data.payload.type === 'MARK_AS_READ') {
     sendMarkAsReadMessage(playerId, guildId);

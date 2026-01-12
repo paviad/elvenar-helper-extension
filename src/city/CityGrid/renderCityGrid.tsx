@@ -228,9 +228,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
       if (event.code === 'KeyS' && !event.altKey && !event.repeat && event.ctrlKey && !event.metaKey) {
         // Ctrl+S
         event.preventDefault();
-        if (isDetached) {
-          saveCity(s);
-        }
+        saveCity(s);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -291,6 +289,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
       x: blockToDup.x + 1,
       y: blockToDup.y + 1,
       label: `${newLevel}`,
+      level: newLevel,
       width,
       length,
       moved: true,
@@ -550,9 +549,9 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     const existingCities = storedAccounts
       .filter(([id, data]) => data.isDetached && id !== 'Visited')
       .map(([name, _]) => name);
-    let defaultName = `CityLayout_${new Date().toISOString().slice(0, 10)}`;
+    const accountData = getAccountById(s.accountId);
+    let defaultName = `${accountData?.cityQuery?.userData.user_name} ${new Date().toISOString().slice(0, 10)}`;
     if (s.accountId === 'Visited') {
-      const accountData = getAccountById(s.accountId);
       defaultName = `${accountData?.cityQuery?.userData.user_name}`;
     }
 
@@ -565,7 +564,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     }
     const newBlocks = saveBack(Object.values(blocks));
 
-    if (s.accountId === 'Visited') {
+    if (s.accountId === 'Visited' || !isDetached) {
       saveCityAs(s);
       return;
     }

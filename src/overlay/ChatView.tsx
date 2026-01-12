@@ -187,7 +187,6 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
 
   function sendMarkAsReadMessage() {
     const accountId = getAccountId();
-    console.log('Sending mark as read message', accountId);
     if (!accountId) {
       return;
     }
@@ -206,8 +205,6 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     if (!guildId) {
       return;
     }
-
-    console.log('Marking chat as read for playerId', playerId, guildId);
 
     window.postMessage(
       {

@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupMessageListener();
   setupOtherPlayerCityUpdatedListener(async () => {
     await loadAccountManagerFromStorage(true);
-    console.log('Received other player city updated message');
     useTabStore.getState()?.triggerForceUpdate();
   });
   createReactUi();

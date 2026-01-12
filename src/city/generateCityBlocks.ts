@@ -73,6 +73,7 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
         name: entity.name,
         entity,
         label: getLabel(entity),
+        level: entity.level,
         chapter: getChapter(entity),
         highlighted: false,
       } satisfies CityBlock),

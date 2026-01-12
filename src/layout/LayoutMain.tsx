@@ -10,7 +10,6 @@ import { getFromStorage } from '../chrome/storage';
 const ERROR_BAR_HEIGHT = 48; // px
 
 export const LayoutMain = () => {
-  console.log('LayoutMain render');
   const forceUpdate = useTabStore((state) => state.forceUpdate);
 
   const setAccountId = useTabStore((state) => state.setAccountId);

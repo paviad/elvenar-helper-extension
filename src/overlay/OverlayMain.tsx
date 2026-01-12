@@ -99,7 +99,6 @@ export function OverlayMain() {
         timestamp: socketMessage.body.timestamp,
       };
       setChatMessages((prev) => [...prev, newMessage]);
-      console.log(`${user}: ${msg}`);
     }
   };
 
