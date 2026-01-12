@@ -5,6 +5,10 @@ export const handleUndo = (s: CityViewState) => {
   const [moveLog, setMoveLog] = s.rMoveLog;
   const [_1, setBlocks] = s.rBlocks;
   const [_2, setRedoStack] = s.rRedoStack;
+  const [dragIndex, _3] = s.rDragIndex;
+
+  // Prevent undo while dragging
+  if (dragIndex !== null) return;
 
   if (moveLog.length === 0) return;
   const last = moveLog[moveLog.length - 1];

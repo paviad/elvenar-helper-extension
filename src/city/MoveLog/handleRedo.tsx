@@ -5,6 +5,10 @@ export const handleRedo = (s: CityViewState) => {
   const [redoStack, setRedoStack] = s.rRedoStack;
   const [_1, setBlocks] = s.rBlocks;
   const [_2, setMoveLog] = s.rMoveLog;
+  const [dragIndex, _3] = s.rDragIndex;
+
+  // Prevent redo while dragging
+  if (dragIndex !== null) return;
 
   if (redoStack.length === 0) return;
   const last = redoStack[redoStack.length - 1];

@@ -37,6 +37,7 @@ import { resetMovedInPlace, saveBack } from '../generateCity';
 import { sendCitySavedMessage } from '../../chrome/messages';
 import ImportDialog from './ImportDialog';
 import { CityEntity } from '../../model/cityEntity';
+import { generateUniqueId } from '../../util/generateUniqueId';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -44,6 +45,8 @@ interface ShowLevelDialogData {
 }
 
 export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
+  // Move log for undo/redo
+  const [moveLog, setMoveLog] = s.rMoveLog;
   // State for Change Level dialog
   const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
   const [levelInput, setLevelInput] = useState(1);
@@ -56,6 +59,126 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
   const [maxLevels] = s.rMaxLevels;
   const setGlobalError = useTabStore((state) => state.setGlobalError);
   const setAccountId = useTabStore((state) => state.setAccountId);
+
+  // Key handler for changing level while dragging
+  useEffect(() => {
+    if (dragIndex === null) return;
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      // Level up/down
+      if (event.key === '+' || event.key === '=' || event.key === '-') {
+        event.preventDefault();
+        const block = blocks[dragIndex];
+        if (!block) return;
+        const finder = new BuildingFinder();
+        await finder.ensureInitialized();
+        const prefix = block.entity.cityentity_id[0];
+        let maxLevel = 1;
+        if (block.type.includes('premium')) {
+          maxLevel = maxLevels[`X${prefix}`] || 1;
+        } else if (prefix === 'M') {
+          maxLevel = maxLevels[`M${block.entity.cityentity_id[2]}`] || 1;
+        } else {
+          maxLevel = maxLevels[prefix] || 1;
+        }
+        let newLevel = block.entity.level || 1;
+        if (event.key === '+' || event.key === '=') {
+          if (newLevel < maxLevel) newLevel++;
+        } else if (event.key === '-') {
+          if (newLevel > 1) newLevel--;
+        }
+        const originalPos = s.rOriginalPos[0];
+        if (originalPos) {
+          // This is the first level change
+          if (newLevel !== block.entity.level) {
+            const newBuilding = finder.getBuilding(block.entity.cityentity_id, newLevel);
+            if (!newBuilding) return;
+            // Prepare new block
+            const newBlock = {
+              ...block,
+              entity: {
+                ...block.entity,
+                level: newLevel,
+              },
+              width: newBuilding.width,
+              length: newBuilding.length,
+              level: newLevel,
+              label: `${newLevel}`,
+              id: generateUniqueId(), // new id for duplication
+            };
+            setBlocks((prev) => {
+              const { [dragIndex]: _, ...updated } = prev;
+              updated[newBlock.id] = newBlock;
+              return updated;
+            });
+            // Log as delete of original, then add of new
+            setMoveLog((prev) => [
+              ...prev,
+              {
+                id: block.id,
+                name: block.name,
+                from: { x: originalPos.x, y: originalPos.y, level: block.entity.level },
+                to: { x: originalPos.x, y: originalPos.y, level: block.entity.level },
+                movedChanged: false,
+                type: 'delete',
+                deletedBlock: {
+                  ...block,
+                  x: originalPos.x,
+                  y: originalPos.y,
+                },
+              },
+            ]);
+            s.rOriginalPos[1](null);
+            setDragIndex(newBlock.id);
+          }
+        } else {
+          // This is a subsequent level change
+          const newBuilding = finder.getBuilding(block.entity.cityentity_id, newLevel);
+          if (!newBuilding) return;
+          // Update block
+          setBlocks((prev) => ({
+            ...prev,
+            [dragIndex]: {
+              ...prev[dragIndex],
+              entity: {
+                ...prev[dragIndex].entity,
+                level: newLevel,
+              },
+              level: newLevel,
+              width: newBuilding.width,
+              length: newBuilding.length,
+              label: `${newLevel}`,
+            },
+          }));
+        }
+      }
+      // Delete block
+      if (event.key === 'Delete') {
+        event.preventDefault();
+        const block = blocks[dragIndex];
+        if (!block) return;
+        setBlocks((prev) => {
+          const { [dragIndex]: _, ...updated } = prev;
+          return updated;
+        });
+        setMoveLog((prev) => [
+          ...prev,
+          {
+            id: block.id,
+            name: block.name,
+            from: { x: block.x, y: block.y, level: block.entity.level },
+            to: { x: block.x, y: block.y, level: block.entity.level },
+            movedChanged: false,
+            type: 'delete',
+            deletedBlock: block,
+          },
+        ]);
+        setDragIndex(null);
+        setDragOffset({ x: 0, y: 0 });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dragIndex, blocks, maxLevels, setBlocks, setDragIndex, setDragOffset, setMoveLog]);
 
   // State for ExportDialog
   const [exportDialog, setExportDialog] = useState({ open: false, exportStr: '' });
@@ -285,7 +408,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
 
     const newBlock = {
       ...blockToDup,
-      id: new Date().getTime(), // Unique ID
+      id: generateUniqueId(), // Unique ID
       x: blockToDup.x + 1,
       y: blockToDup.y + 1,
       label: `${newLevel}`,
@@ -439,7 +562,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
               if (!blockToDup) return setMenu(null);
               const newBlock = {
                 ...blockToDup,
-                id: new Date().getTime(),
+                id: generateUniqueId(),
                 x: blockToDup.x + 1,
                 y: blockToDup.y + 1,
                 moved: true,
