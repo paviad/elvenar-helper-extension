@@ -74,7 +74,6 @@ export async function saveAllAccounts() {
       throw new Error('ElvenAssist: Detected newer accounts in storage, aborting save');
     }
   }
-  console.log('ElvenAssist: Saving all accounts to storage:', accounts);
   await saveToStorage('accounts', JSON.stringify(accounts));
   accounts_last_saved = Date.now();
   await saveToStorage('accounts_last_saved', accounts_last_saved.toString());
@@ -108,7 +107,6 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
     }
   }
 
-  console.log('ElvenAssist: Loading accounts from storage', refresh);
   if (initialized && !refresh) {
     return;
   }
@@ -123,8 +121,6 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
   const accountsRaw = await getFromStorage('accounts');
   if (accountsRaw) {
     const parsedAccounts = JSON.parse(accountsRaw) as Record<string, AccountData>;
-    console.log('ElvenAssist: Loading accounts from storage (async)', parsedAccounts);
-    // Object.assign(accounts, parsedAccounts);
     accounts = { ...parsedAccounts };
   }
   initialized = true;

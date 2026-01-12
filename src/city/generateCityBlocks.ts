@@ -16,7 +16,6 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
 
   function getChapter(entity: CityEntityEx): number | undefined {
     if (entity.chapter) {
-      console.log(`entity id ${entity.cityentity_id}, chapter ${entity.chapter}`);
       return entity.chapter;
     }
 
