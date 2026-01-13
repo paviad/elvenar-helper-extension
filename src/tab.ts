@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupOtherPlayerCityUpdatedListener(async () => {
     await loadAccountManagerFromStorage(true);
     useTabStore.getState()?.triggerForceUpdate();
+    useTabStore.getState()?.setOtherCityUpdated(true);
   });
   createReactUi();
 });

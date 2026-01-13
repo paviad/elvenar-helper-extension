@@ -6,8 +6,10 @@ import { handleUndo } from './MoveLog/handleUndo';
 import { handleRedo } from './MoveLog/handleRedo';
 import { useTabStore } from '../util/tabStore';
 import { getMaxLevels } from '../elvenar/sendRenderConfigQuery';
+import { useHelper } from '../helper/HelperContext';
 
 export class CityViewState {
+  helperContext = useHelper();
   rMoveLog = useState<MoveLogInterface[]>([]);
   rRedoStack = useState<MoveLogInterface[]>([]);
   rDragIndex = useState<number | null>(null);

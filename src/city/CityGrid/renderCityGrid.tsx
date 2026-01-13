@@ -38,6 +38,7 @@ import { sendCitySavedMessage } from '../../chrome/messages';
 import ImportDialog from './ImportDialog';
 import { CityEntity } from '../../model/cityEntity';
 import { generateUniqueId } from '../../util/generateUniqueId';
+import { getEntityMaxLevel } from './getEntityMaxLevel';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -62,24 +63,23 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
 
   // Key handler for changing level while dragging
   useEffect(() => {
-    if (dragIndex === null) return;
+    if (dragIndex === null) {
+      return;
+    }
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Level up/down
       if (event.key === '+' || event.key === '=' || event.key === '-') {
         event.preventDefault();
         const block = blocks[dragIndex];
-        if (!block) return;
+        if (!block) {
+          return;
+        }
+        const maxLevel = getEntityMaxLevel(block.entity.cityentity_id, block.type, maxLevels);
+        if (maxLevel === 1) {
+          return;
+        }
         const finder = new BuildingFinder();
         await finder.ensureInitialized();
-        const prefix = block.entity.cityentity_id[0];
-        let maxLevel = 1;
-        if (block.type.includes('premium')) {
-          maxLevel = maxLevels[`X${prefix}`] || 1;
-        } else if (prefix === 'M') {
-          maxLevel = maxLevels[`M${block.entity.cityentity_id[2]}`] || 1;
-        } else {
-          maxLevel = maxLevels[prefix] || 1;
-        }
         let newLevel = block.entity.level || 1;
         if (event.key === '+' || event.key === '=') {
           if (newLevel < maxLevel) newLevel++;

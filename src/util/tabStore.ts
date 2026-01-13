@@ -11,6 +11,8 @@ interface TabState {
   setTechSprite: (size: { url: string; width: number; height: number } | undefined) => void;
   forceUpdate: number;
   triggerForceUpdate: () => void;
+  otherCityUpdated: boolean;
+  setOtherCityUpdated: (updated: boolean) => void;
 }
 
 export const useTabStore = create<TabState>()(
@@ -24,12 +26,14 @@ export const useTabStore = create<TabState>()(
       setTechSprite: (size: { url: string; width: number; height: number } | undefined) => set({ techSprite: size }),
       forceUpdate: 0,
       triggerForceUpdate: () => set((state) => ({ forceUpdate: state.forceUpdate + 1 })),
+      otherCityUpdated: false,
+      setOtherCityUpdated: (updated: boolean) => set({ otherCityUpdated: updated }),
     }),
     {
       name: 'tab-store',
       storage: createJSONStorage(() => chromeStorage),
       partialize: (state) => {
-        const { forceUpdate, ...toPersist } = state;
+        const { forceUpdate, otherCityUpdated, ...toPersist } = state;
         return toPersist;
       },
     },

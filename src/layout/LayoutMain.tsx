@@ -6,6 +6,8 @@ import { useTabStore } from '../util/tabStore';
 import { getAllStoredAccounts } from '../elvenar/AccountManager';
 import { AboutDialog } from './AboutDialog';
 import { getFromStorage } from '../chrome/storage';
+import HelperAvatar from '../helper/HelperAvatar';
+import { useHelper } from '../helper/HelperContext';
 
 const ERROR_BAR_HEIGHT = 48; // px
 
@@ -62,6 +64,18 @@ export const LayoutMain = () => {
     const city = accountData?.cityQuery?.cityName || '';
     setCityName(city);
   }, [accountId, forceUpdate]);
+
+  const otherCityUpdated = useTabStore((state) => state.otherCityUpdated);
+  const setOtherCityUpdated = useTabStore((state) => state.setOtherCityUpdated);
+  const helper = useHelper();
+  React.useEffect(() => {
+    if (otherCityUpdated) {
+      // Reset the flag
+      setOtherCityUpdated(false);
+      const visitedCity = accountList.find((r) => r[0] === 'Visited')?.[1].cityQuery?.accountName || '???';
+      helper.showMessage('visited_other', { params: [visitedCity] });
+    }
+  }, [otherCityUpdated]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchor(event.currentTarget);
@@ -167,6 +181,7 @@ export const LayoutMain = () => {
       {globalError != null && <Toolbar sx={{ height: `${ERROR_BAR_HEIGHT}px`, pointerEvents: 'none' }} />}
       <Toolbar sx={{ pointerEvents: 'none' }} />
       <Outlet />
+      <HelperAvatar />
     </Box>
   );
 };
