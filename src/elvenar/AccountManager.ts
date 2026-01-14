@@ -53,6 +53,8 @@ export interface AccountData {
   trades?: Trade[];
 
   cauldron?: CauldronQuery;
+
+  faEndTime?: number;
 }
 
 let accounts: Record<string, AccountData> = {};
@@ -77,6 +79,11 @@ export async function saveAllAccounts() {
   await saveToStorage('accounts', JSON.stringify(accounts));
   accounts_last_saved = Date.now();
   await saveToStorage('accounts_last_saved', accounts_last_saved.toString());
+}
+
+export function getAccountIdBySessionId(sessionId: string): string | undefined {
+  const account = Object.entries(accounts).find(([k, r]) => r.cityQuery?.sessionId === sessionId);
+  return account ? account[0] : undefined;
 }
 
 export function getAccountBySessionId(sessionId: string): AccountData | undefined {

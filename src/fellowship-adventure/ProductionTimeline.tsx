@@ -5,8 +5,9 @@ import { badgeSpriteInfo } from './badgeSpriteInfo';
 export function ProductionTimeline(props: {
   badgesInProduction: Record<string, Record<number, number>>;
   timestamp: number;
+  endTime?: number;
 }) {
-  const { badgesInProduction, timestamp } = props;
+  const { badgesInProduction, timestamp, endTime } = props;
 
   const now = new Date();
 
@@ -64,5 +65,5 @@ export function ProductionTimeline(props: {
     return timelineData;
   }, [badgesInProduction, timestamp]);
 
-  return <MarkerTimeline markers={data} startTime={now} spriteUrl={spriteUrl} />;
+  return <MarkerTimeline markers={data} startTime={now} spriteUrl={spriteUrl} endTime={endTime} />;
 }

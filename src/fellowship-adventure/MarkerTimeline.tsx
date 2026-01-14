@@ -15,6 +15,8 @@ interface TimelineProps {
   startTime?: Date | string;
   markers: MarkerData[];
   spriteUrl: string;
+  // Absolute timestamp for when the event ends
+  endTime?: Date | string | number;
 }
 
 interface LayoutMarker extends MarkerData {
@@ -122,7 +124,7 @@ const calculateLayout = (markers: MarkerData[], startTime: Date, totalDuration: 
   });
 };
 
-export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, spriteUrl }) => {
+export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, spriteUrl, endTime }) => {
   const [now, setNow] = useState(() => (startTime ? new Date(startTime).getTime() : Date.now()));
 
   const start = useMemo(() => new Date(now), [now]);
@@ -132,7 +134,26 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
     return calculateLayout(markers, start, totalDuration);
   }, [markers, start, totalDuration]);
 
-  // Split Logic
+  // Calculate Shade Overlay Position based on endTime
+  const shadeStartPercent = useMemo(() => {
+    if (!endTime) return null;
+
+    const endMs = new Date(endTime).getTime();
+    const startMs = start.getTime();
+
+    // How many milliseconds from the start of the timeline until the event ends?
+    const msUntilEnd = endMs - startMs;
+
+    // If the event ends AFTER the current 48h window, we don't shade anything
+    if (msUntilEnd >= totalDuration) return null;
+
+    // If the event ended before the window starts (or is exactly now), shade everything
+    if (msUntilEnd <= 0) return 0;
+
+    // Otherwise, shade starts at the percentage where the event ends
+    return (msUntilEnd / totalDuration) * 100;
+  }, [endTime, start, totalDuration]);
+
   const { pastDueMarkers, upcomingMarkers, hasPastDue } = useMemo(() => {
     const past: LayoutMarker[] = [];
     const future: LayoutMarker[] = [];
@@ -154,7 +175,7 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
     };
   }, [allCalculatedMarkers]);
 
-  // Get Full Marker Object for Next Finish
+  // Next Finish Logic
   const nextFinishMarker = useMemo(() => {
     if (upcomingMarkers.length > 0) {
       return upcomingMarkers[0];
@@ -256,27 +277,23 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
           </div>
           <div style={styles.headerSubtitle}>
             Current Window: {formatDate(start)} {formatTime(start)}
-            {/* --- UPDATED NEXT FINISH SECTION --- */}
             {nextFinishMarker && (
               <span style={styles.nextFinishContainer} title={getRelativeDelta(nextFinishMarker.time, now)}>
                 <span style={styles.separator}>|</span>
                 Next Finish:
                 <div
                   style={{
-                    ...styles.icon, // Keeps base 24x24 size
+                    ...styles.icon,
                     backgroundImage: `url(${spriteUrl})`,
                     backgroundPosition: `-${nextFinishMarker.spriteX || 0}px -${nextFinishMarker.spriteY || 0}px`,
-                    // Use transform to scale down visually without clipping
-                    transform: 'scale(0.833)', // approx 20/24
+                    transform: 'scale(0.833)',
                     transformOrigin: 'left center',
-                    // Adjust margins to compensate for visual shrinkage
                     margin: '0 -2px 0 6px',
                   }}
                 />
                 <strong>{formatTime(nextFinishMarker.time)}</strong>
               </span>
             )}
-            {/* ----------------------------------- */}
           </div>
         </div>
 
@@ -315,6 +332,44 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
           {/* Right Scroll Area - Upcoming */}
           <div style={styles.scrollContainer}>
             <div style={{ ...styles.wrapper, height: paddingTop + paddingBottom }}>
+              {/* --- Shade Overlay with Text --- */}
+              {shadeStartPercent !== null && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${shadeStartPercent}%`,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(241, 245, 249, 0.65)',
+                    backgroundImage:
+                      'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(148, 163, 184, 0.1) 10px, rgba(148, 163, 184, 0.1) 20px)',
+                    zIndex: 5,
+                    borderLeft: '2px dashed #94a3b8',
+                    pointerEvents: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '48px',
+                      fontWeight: '900',
+                      color: '#64748b',
+                      opacity: 0.25,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      userSelect: 'none',
+                      whiteSpace: 'nowrap',
+                      transform: 'rotate(-5deg)',
+                    }}
+                  >
+                    FA Ended
+                  </span>
+                </div>
+              )}
+
               {renderTicks()}
               <div style={{ ...styles.line, top: paddingTop }} />
 
@@ -433,7 +488,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
   },
-  // --- New Header Styles ---
   separator: {
     margin: '0 10px',
     color: '#cbd5e1',
@@ -442,9 +496,8 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     color: '#1e293b',
-    cursor: 'help', // Indicates tooltip
+    cursor: 'help',
   },
-  // -------------------------
   mainContentFlex: {
     display: 'flex',
     height: '100%',
@@ -608,7 +661,6 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '6px',
     overflow: 'hidden',
   },
-  // Base Icon Style (24x24)
   icon: {
     width: '24px',
     height: '24px',

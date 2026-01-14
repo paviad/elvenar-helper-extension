@@ -6,7 +6,7 @@ import { ElvenarUserData } from '../model/userData';
 import { AccountData, setAccountData } from './AccountManager';
 
 export async function sendVisitPlayerQuery(sharedInfo: ExtensionSharedInfo) {
-  const { reqUrl: url, reqReferrer: referrer, reqBodyCity: reqBody, worldId } = sharedInfo;
+  const { reqUrl: url, reqReferrer: referrer, reqBodyVisitPlayer: reqBody, worldId } = sharedInfo;
 
   const response = await fetch(url, {
     headers: {

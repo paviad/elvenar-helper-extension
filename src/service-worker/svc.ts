@@ -17,6 +17,7 @@ import {
 import { sendCauldronQuery } from '../elvenar/sendCauldronQuery';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { sendInventoryQuery } from '../elvenar/sendInventoryQuery';
+import { sendQuestQuery } from '../elvenar/sendQuestQuery';
 import { sendTradeQuery } from '../elvenar/sendTradeQuery';
 import { sendVisitPlayerQuery } from '../elvenar/sendVisitPlayerQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
@@ -223,7 +224,7 @@ const callbackRequest = (details: {
 
     if (expectedVisitPlayer.test(decodedString)) {
       async function Do() {
-        sharedInfo.reqBodyCity = decodedString;
+        sharedInfo.reqBodyVisitPlayer = decodedString;
         try {
           await loadAccountManagerFromStorage();
           await sendVisitPlayerQuery(sharedInfo);
@@ -231,6 +232,23 @@ const callbackRequest = (details: {
           await sendOtherPlayerCityDataUpdatedMessage();
         } catch (error) {
           console.error('Error in sendVisitPlayerQuery:', error);
+        }
+      }
+      Do();
+    }
+
+    const expectedQuestUpdates =
+      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"QuestService","requestMethod":"getUpdates","requestId":\d+}]/;
+
+    if (expectedQuestUpdates.test(decodedString)) {
+      async function Do() {
+        sharedInfo.reqBodyQuest = decodedString;
+        try {
+          await loadAccountManagerFromStorage();
+          await sendQuestQuery(sharedInfo);
+          await saveAllAccounts();
+        } catch (error) {
+          console.error('Error in sendQuestQuery:', error);
         }
       }
       Do();
