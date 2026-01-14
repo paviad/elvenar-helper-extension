@@ -39,6 +39,7 @@ import ImportDialog from './ImportDialog';
 import { CityEntity } from '../../model/cityEntity';
 import { generateUniqueId } from '../../util/generateUniqueId';
 import { getEntityMaxLevel } from './getEntityMaxLevel';
+import { MoveLogInterface } from '../MoveLog/MoveLogInterface';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -341,6 +342,32 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
         ]),
       ),
     );
+  }
+
+  function deleteHighlightedBlocks(highlighted: boolean) {
+    const blocksToDelete = Object.entries(blocks).filter(([_, block]) => block.highlighted === highlighted);
+    if (blocksToDelete.length === 0) return;
+    setBlocks((prev) => {
+      const updated = Object.fromEntries(
+        Object.entries(prev).filter(([_, block]) => block.highlighted !== highlighted),
+      );
+      return updated;
+    });
+    setMoveLog((prev) => [
+      ...prev,
+      ...blocksToDelete.map(
+        ([_, block]) =>
+          ({
+            id: block.id,
+            name: block.name,
+            from: { x: block.x, y: block.y },
+            to: { x: block.x, y: block.y },
+            movedChanged: false,
+            type: 'delete',
+            deletedBlock: block,
+          } satisfies MoveLogInterface),
+      ),
+    ]);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -716,6 +743,18 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
           </Button>
         )}
         {isDetached && s.accountId !== 'Visited' && <Button onClick={() => saveCity(s)}>Save</Button>}
+        <Button
+          onClick={() => deleteHighlightedBlocks(true)}
+          disabled={Object.values(blocks).every((b) => !b.highlighted)}
+        >
+          Delete Highlighted
+        </Button>
+        <Button
+          onClick={() => deleteHighlightedBlocks(false)}
+          disabled={Object.values(blocks).every((b) => !b.highlighted)}
+        >
+          Delete Non-Highlighted
+        </Button>
       </Stack>
       <div>
         <div
