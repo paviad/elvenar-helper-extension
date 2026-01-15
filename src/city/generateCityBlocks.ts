@@ -49,7 +49,7 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
       }
     }
 
-    if (/^[GPRHMO]_/.test(entity.cityentity_id)) {
+    if (/^[GPRHMOYDBZ]_/.test(entity.cityentity_id)) {
       return `${entity.level}`;
     }
 
@@ -73,6 +73,7 @@ export async function generateCityBlocks(cityEntities: CityEntityEx[]) {
         entity,
         label: getLabel(entity),
         level: entity.level,
+        stage: entity.stage,
         chapter: getChapter(entity),
         highlighted: false,
       } satisfies CityBlock),

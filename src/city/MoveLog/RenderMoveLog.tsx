@@ -1,18 +1,17 @@
 import React from 'react';
-import { CityViewState } from '../CityViewState';
-import { handleRedo } from './handleRedo';
-import { handleUndo } from './handleUndo';
+import { useCity } from '../CityContext';
 
-export function renderMoveLog(s: CityViewState) {
-  const [moveLog, _1] = s.rMoveLog;
-  const [redoStack, _2] = s.rRedoStack;
+export const RenderMoveLog = () => {
+  const city = useCity();
+  const moveLog = city.moveLog;
+  const redoStack = city.redoStack;
 
   return (
     <div style={{ width: 300, marginRight: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
         <span style={{ fontWeight: 'bold', marginRight: 8 }}>Move Log</span>
         <button
-          onClick={() => handleUndo(s)}
+          onClick={city.handleUndo}
           disabled={moveLog.length === 0}
           style={{
             padding: '2px 10px',
@@ -29,7 +28,7 @@ export function renderMoveLog(s: CityViewState) {
           Undo (Ctrl+Z)
         </button>
         <button
-          onClick={() => handleRedo(s)}
+          onClick={city.handleRedo}
           disabled={redoStack.length === 0}
           style={{
             padding: '2px 10px',
@@ -70,7 +69,8 @@ export function renderMoveLog(s: CityViewState) {
               </span>
             ) : (
               <span>
-                <span style={{ fontWeight: 500 }}>{log.name}</span>: ({log.from.x}, {log.from.y}) → ({log.to.x}, {log.to.y})
+                <span style={{ fontWeight: 500 }}>{log.name}</span>: ({log.from.x}, {log.from.y}) → ({log.to.x},{' '}
+                {log.to.y})
               </span>
             )}
           </li>

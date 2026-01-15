@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { FaQuest } from '../elvenar/AccountManager';
 import { CityEntity } from '../model/cityEntity';
 import { ProductionBadgeInfo } from './ProductionBadgeInfo';
@@ -54,11 +55,7 @@ export function extractBadgesInProduction(
     .filter((r) => /^marble_|steel_|planks_/.test(r.state?.current_product?.asset_name || ''))
     .map(mapr2);
 
-  console.log('Extracted marble/steel/planks badges (1):', goldenBracelets1);
-
   const goldenBracelets = goldenBracelets1.reduce(grpr2('golden_bracelet'), grpi());
-
-  console.log('Extracted marble/steel/planks badges:', goldenBracelets);
 
   const diamond_necklace = entities
     .filter(fltr(/(marble_|steel_|planks_)2/))

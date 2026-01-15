@@ -15,6 +15,7 @@ export interface CityBlock {
   entity: CityEntity;
   label?: string;
   level: number;
+  stage?: number;
   chapter?: number;
   highlighted: boolean;
 }

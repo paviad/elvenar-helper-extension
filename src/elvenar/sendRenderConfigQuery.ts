@@ -1,6 +1,7 @@
 import { getFromStorage } from '../chrome/storage';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { GoodsBuilding, GoodsBuildingRaw } from '../model/goodsBuilding';
+import { getPrefix } from '../util/getPrefix';
 
 export async function sendRenderConfigQuery(sharedInfo: ExtensionSharedInfo) {
   const { reqUrl: url, reqReferrer: referrer } = sharedInfo;
@@ -31,9 +32,9 @@ export async function sendRenderConfigQuery(sharedInfo: ExtensionSharedInfo) {
   );
 
   const maxLevels = goodsRenderConfig
-    .filter((r) => /^[GPRHMO]_/.test(r.id))
+    .filter((r) => /^[GPRHMOYDBZ]_/.test(r.id))
     .map((r) => ({
-      prefix: getPrefix(r),
+      prefix: getPrefix(r.id, r.t),
       level: Number(/_(\d+)$/.exec(r.id)?.[1]),
     }))
     .reduce(
@@ -67,13 +68,6 @@ export async function getMaxLevels() {
     return {};
   }
 }
-
-export const getPrefix = (r: GoodsBuilding) => {
-  const c = r.id[0];
-  if (r.t.includes('premium')) return `X${c}`;
-  if (c === 'M') return `M${r.id[2]}`;
-  return c;
-};
 
 const decompression: Record<string, string> = {
   c: 'culture',

@@ -1,2 +1,1 @@
-export * from './renderMoveLog';
-export * from './keyboardShortcutsEffect';
+export * from './RenderMoveLog';

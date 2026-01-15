@@ -1,1 +1,1 @@
-export * from './renderCityGrid';
+export * from './RenderCityGrid';

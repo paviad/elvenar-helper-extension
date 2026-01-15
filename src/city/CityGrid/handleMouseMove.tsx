@@ -1,11 +1,14 @@
 import React from 'react';
-import { CityViewState } from '../CityViewState';
+import { useCity } from '../CityContext';
 
-export const handleMouseMove = (s: CityViewState, e: React.MouseEvent) => {
-  const [blocks, setBlocks] = s.rBlocks;
-  const [dragIndex, _1] = s.rDragIndex;
-  const [dragOffset, _2] = s.rDragOffset;
-  const { GridSize, svgRef, GridMax, mousePositionRef } = s;
+export const handleMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent) => {
+  const blocks = city.blocks;
+  const setBlocks = city.setBlocks;
+
+  const dragIndex = city.dragIndex;
+  const dragOffset = city.dragOffset;
+
+  const { GridSize, svgRef, GridMax, mousePositionRef } = city;
 
   const svg = svgRef.current;
   if (!svg) return;

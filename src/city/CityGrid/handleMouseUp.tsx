@@ -1,12 +1,16 @@
-import { CityViewState } from '../CityViewState';
+import { useCity } from '../CityContext';
 import { isOverlapping } from './isOverlapping';
 
-export const handleMouseUp = (s: CityViewState) => {
-  const [blocks, setBlocks] = s.rBlocks;
-  const [dragIndex, setDragIndex] = s.rDragIndex;
-  const [originalPos, setOriginalPos] = s.rOriginalPos;
-  const [_2, setMoveLog] = s.rMoveLog;
-  const [_3, setRedoStack] = s.rRedoStack;
+export const handleMouseUp = (city: ReturnType<typeof useCity>) => {
+  const setMoveLog = city.setMoveLog;
+  const clearRedoStack = city.clearRedoStack;
+
+  const blocks = city.blocks;
+  const setBlocks = city.setBlocks;
+  const dragIndex = city.dragIndex;
+  const setDragIndex = city.setDragIndex;
+  const originalPos = city.originalPos;
+  const setOriginalPos = city.setOriginalPos;
 
   if (dragIndex !== null) {
     const block = blocks[dragIndex];
@@ -59,7 +63,7 @@ export const handleMouseUp = (s: CityViewState) => {
             movedChanged,
           },
         ]);
-        setRedoStack([]); // Clear redo stack on new move
+        clearRedoStack(); // Clear redo stack on new move
       }
     } else if (!originalPos) {
       // This is a duplicate drop
@@ -75,7 +79,7 @@ export const handleMouseUp = (s: CityViewState) => {
           duplicatedBlock: block,
         },
       ]);
-      setRedoStack([]);
+      clearRedoStack();
     }
     setDragIndex(null);
     setOriginalPos(null);

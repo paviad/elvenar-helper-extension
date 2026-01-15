@@ -54,6 +54,7 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       owner: string;
       remainingTime: number;
     }[];
+    seasonal_events: { type: string }[];
   };
 
   const questService = json.find((r) => r.requestClass === 'QuestService')?.responseData as Quest[];
@@ -120,6 +121,10 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
       ([k, v]: [string, number]) => [k as keyof Relics, boostsTable.find(([req]) => v >= req)?.[1] || 0] as const,
     ),
   ) as Record<keyof Relics, number>;
+
+  const seasonPass = startupService.seasonal_events.find((r) => r.type === 'seasonPass') as {
+    type: string;
+  };
 
   const worldNames: Record<string, string> = {
     '1': 'Arendyll',

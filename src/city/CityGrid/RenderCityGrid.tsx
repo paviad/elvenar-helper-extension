@@ -14,10 +14,8 @@ import {
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { blockRect } from './blockRect';
-import { CityViewState } from '../CityViewState';
 import { handleMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
-import { sellStreets } from './sellStreets';
 import { BuildingFinder } from '../buildingFinder';
 import { CityBlock } from '../CityBlock';
 import { useTabStore } from '../../util/tabStore';
@@ -40,25 +38,37 @@ import { CityEntity } from '../../model/cityEntity';
 import { generateUniqueId } from '../../util/generateUniqueId';
 import { getEntityMaxLevel } from './getEntityMaxLevel';
 import { MoveLogInterface } from '../MoveLog/MoveLogInterface';
+import { useCity } from '../CityContext';
 
 interface ShowLevelDialogData {
   open: boolean;
   index: number;
 }
 
-export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
-  // Move log for undo/redo
-  const [moveLog, setMoveLog] = s.rMoveLog;
+export const RenderCityGrid = () => {
+  const city = useCity();
+  const setMoveLog = city.setMoveLog;
+
   // State for Change Level dialog
   const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
   const [levelInput, setLevelInput] = useState(1);
-  const { GridSize, GridMax, svgRef, menuRef } = s;
-  const [blocks, setBlocks] = s.rBlocks;
-  const [dragIndex, setDragIndex] = s.rDragIndex;
-  const [dragOffset, setDragOffset] = s.rDragOffset;
-  const [searchTerm, setSearchTerm] = s.rSearchTerm;
-  const [menu, setMenu] = s.rMenu;
-  const [maxLevels] = s.rMaxLevels;
+  const { GridSize, GridMax, svgRef, menuRef } = city;
+  const blocks = city.blocks;
+  const setBlocks = city.setBlocks;
+
+  const dragIndex = city.dragIndex;
+  const setDragIndex = city.setDragIndex;
+
+  const dragOffset = city.dragOffset;
+  const setDragOffset = city.setDragOffset;
+
+  const searchTerm = city.searchTerm;
+  const setSearchTerm = city.setSearchTerm;
+
+  const menu = city.menu;
+  const setMenu = city.setMenu;
+
+  const maxLevels = city.maxLevels;
   const setGlobalError = useTabStore((state) => state.setGlobalError);
   const setAccountId = useTabStore((state) => state.setAccountId);
 
@@ -87,7 +97,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
         } else if (event.key === '-') {
           if (newLevel > 1) newLevel--;
         }
-        const originalPos = s.rOriginalPos[0];
+        const originalPos = city.originalPos;
         if (originalPos) {
           // This is the first level change
           if (newLevel !== block.entity.level) {
@@ -128,7 +138,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
                 },
               },
             ]);
-            s.rOriginalPos[1](null);
+            city.setOriginalPos(null);
             setDragIndex(newBlock.id);
           }
         } else {
@@ -208,7 +218,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
       setSaveAsDialog({ open: false, defaultName: '', existingCities: [] });
       const cityEntities = saveBack(Object.values(blocks));
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await saveCurrentCityAs(s.accountId!, name, cityEntities);
+      await saveCurrentCityAs(city.accountId!, name, cityEntities);
       await sendCitySavedMessage(name);
       resetMovedInPlace(Object.values(blocks));
       setAccountId(name);
@@ -228,14 +238,14 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
   function renderDeleteConfirmationDialog() {
     async function handleDelete() {
       setShowDeleteConfirmationDialog({ open: false });
-      if (!s.accountId) {
+      if (!city.accountId) {
         return;
       }
-      await deleteCityById(s.accountId);
+      await deleteCityById(city.accountId);
       const storedAccounts = getAllStoredAccounts();
       if (storedAccounts.length > 0) {
         const [firstAccountId] = storedAccounts[0];
-        setAccountId(firstAccountId);
+        city.setAccountId(firstAccountId);
       } else {
         throw new Error('ElvenAssist: No more saved cities available after deletion.');
       }
@@ -371,19 +381,19 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const isDetached = !!getAccountById(s.accountId!)?.isDetached;
+  const isDetached = !!getAccountById(city.accountId!)?.isDetached;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'KeyS' && !event.altKey && !event.repeat && event.ctrlKey && !event.metaKey) {
         // Ctrl+S
         event.preventDefault();
-        saveCity(s);
+        saveCity();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [s.rBlocks[0]]);
+  }, [city.blocks]);
 
   // Sticky-to-fixed search box logic (fixed: returns to original position when scrolling up)
   const searchBoxRef = useRef<HTMLDivElement>(null);
@@ -448,8 +458,6 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
       const { [index]: _, ...filtered } = prev;
       return { ...filtered, [newBlock.id]: newBlock };
     });
-    // Log the delete for undo/redo
-    const [moveLog, setMoveLog] = s.rMoveLog;
     setMoveLog((prev) => [
       ...prev,
       {
@@ -467,7 +475,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
       x: 10,
       y: 10,
     });
-    s.rOriginalPos[1](null);
+    city.setOriginalPos(null);
     setMenu(null);
   }
 
@@ -598,8 +606,8 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
                 const newBlocks = { ...prev, [newBlock.id]: newBlock };
                 return newBlocks;
               });
-              setDragIndex(newBlock.id);
-              s.rOriginalPos[1](null);
+              city.setDragIndex(newBlock.id);
+              city.setOriginalPos(null);
               setMenu(null);
             }}
           >
@@ -608,11 +616,11 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
           <Divider />
           <ListItemButton
             onClick={() => {
-              const [blocks, setBlocks] = s.rBlocks;
-              const [moveLog, setMoveLog] = s.rMoveLog;
+              const blocks = city.blocks;
+              const setBlocks = city.setBlocks;
               const blockToDelete = blocks[menu.key as number];
               const { [menu.key as number]: _, ...newBlocks } = blocks;
-              setBlocks(newBlocks);
+              city.overwriteBlocks(newBlocks);
               setMoveLog((prev) => [
                 ...prev,
                 {
@@ -631,7 +639,7 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
             <ListItemText primary='Delete' />
           </ListItemButton>
           <Divider />
-          {typeof menu.key === 'number' && blocks[menu.key] && /^[GPRHMO]_/.test(blocks[menu.key].gameId) && (
+          {typeof menu.key === 'number' && blocks[menu.key] && /^[GPRHMOYDBZ]_/.test(blocks[menu.key].gameId) && (
             <ListItemButton
               onClick={() => {
                 if (typeof menu.key !== 'number') return setMenu(null);
@@ -649,17 +657,17 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     );
   }
 
-  function exportCityAsJson(s: CityViewState) {
-    if (!s.accountId) {
+  function exportCityAsJson() {
+    if (!city.accountId) {
       return;
     }
-    const accountData = getAccountById(s.accountId);
+    const accountData = getAccountById(city.accountId);
     if (!accountData?.cityQuery) {
       return;
     }
 
-    const unlocked_areas = s.props.unlockedAreas;
-    const entities = Object.values(blocks).map((b, idx) => ({
+    const unlocked_areas = city.unlockedAreas;
+    const entities = Object.values(city.blocks).map((b, idx) => ({
       id: idx + 1,
       cityentity_id: b.entity.cityentity_id,
       x: b.x,
@@ -686,7 +694,12 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     setExportDialog({ open: true, exportStr: base64Str });
   }
 
-  function importCity(s: CityViewState) {
+  const sellStreets = () => {
+    const setBlocks = city.setBlocks;
+    setBlocks((prev) => Object.fromEntries(Object.entries(prev).filter(([_, b]) => b.type !== 'street')));
+  };
+
+  function importCity() {
     const storedAccounts = getAllStoredAccounts();
     const existingCities = storedAccounts
       .filter(([id, data]) => data.isDetached && id !== 'Visited')
@@ -694,37 +707,40 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     setImportDialog({ open: true, existingCities });
   }
 
-  function saveCityAs(s: CityViewState) {
+  function saveCityAs() {
     const storedAccounts = getAllStoredAccounts();
     const existingCities = storedAccounts
       .filter(([id, data]) => data.isDetached && id !== 'Visited')
       .map(([name, _]) => name);
-    const accountData = getAccountById(s.accountId);
+    if (!city.accountId) {
+      return;
+    }
+    const accountData = getAccountById(city.accountId);
     let defaultName = `${accountData?.cityQuery?.userData.user_name} ${new Date().toISOString().slice(0, 10)}`;
-    if (s.accountId === 'Visited') {
+    if (city.accountId === 'Visited') {
       defaultName = `${accountData?.cityQuery?.userData.user_name}`;
     }
 
     setSaveAsDialog({ open: true, defaultName, existingCities });
   }
 
-  async function saveCity(s: CityViewState) {
-    if (!s.accountId) {
+  async function saveCity() {
+    if (!city.accountId) {
       return;
     }
     const newBlocks = saveBack(Object.values(blocks));
 
-    if (s.accountId === 'Visited' || !isDetached) {
-      saveCityAs(s);
+    if (city.accountId === 'Visited' || !isDetached) {
+      saveCityAs();
       return;
     }
 
-    await saveCityInPlace(s.accountId, newBlocks);
+    await saveCityInPlace(city.accountId, newBlocks);
     resetMovedInPlace(Object.values(blocks));
-    forceUpdate();
+    city.forceUpdate();
   }
 
-  function deleteCity(s: CityViewState) {
+  function deleteCity() {
     setShowDeleteConfirmationDialog({ open: true });
   }
 
@@ -732,17 +748,17 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
     <Stack>
       <Stack direction='row'>
         {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
-        {!isDetached && <Button onClick={() => refreshCity(s.accountId, s.props.forceUpdate)}>Refresh City</Button>}
-        <Button onClick={() => sellStreets(s)}>Sell Streets</Button>
-        <Button onClick={() => importCity(s)}>Import City</Button>
-        <Button onClick={() => exportCityAsJson(s)}>Export City</Button>
-        <Button onClick={() => saveCityAs(s)}>Save City As...</Button>
+        {!isDetached && <Button onClick={() => refreshCity(city.accountId, city.forceUpdate)}>Refresh City</Button>}
+        <Button onClick={() => sellStreets()}>Sell Streets</Button>
+        <Button onClick={() => importCity()}>Import City</Button>
+        <Button onClick={() => exportCityAsJson()}>Export City</Button>
+        <Button onClick={() => saveCityAs()}>Save City As...</Button>
         {isDetached && (
-          <Button onClick={() => deleteCity(s)} sx={{ color: 'red' }}>
+          <Button onClick={() => deleteCity()} sx={{ color: 'red' }}>
             Delete
           </Button>
         )}
-        {isDetached && s.accountId !== 'Visited' && <Button onClick={() => saveCity(s)}>Save</Button>}
+        {isDetached && city.accountId !== 'Visited' && <Button onClick={() => saveCity()}>Save</Button>}
         <Button
           onClick={() => deleteHighlightedBlocks(true)}
           disabled={Object.values(blocks).every((b) => !b.highlighted)}
@@ -784,11 +800,11 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
             style={{ width: '100%' }}
           />
         </div>
-        <div ref={s.mousePositionRef} style={{ marginBottom: 8, fontWeight: 'bold' }}>
+        <div ref={city.mousePositionRef} style={{ marginBottom: 8, fontWeight: 'bold' }}>
           Grid: (-, -)
         </div>
         <svg
-          ref={svgRef}
+          ref={city.svgRef}
           width={GridSize * GridMax}
           height={GridSize * GridMax}
           style={{
@@ -796,13 +812,13 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
             cursor: dragIndex !== null ? 'grabbing' : 'default',
             userSelect: 'none',
           }}
-          onMouseMove={(e) => handleMouseMove(s, e)}
-          onClick={() => handleMouseUp(s)}
-          // onMouseLeave={() => handleMouseUp(s)}
+          onMouseMove={(e) => handleMouseMove(city, e)}
+          onClick={() => handleMouseUp(city)}
+          // onMouseLeave={() => handleMouseUp(city)}
         >
           <rect x={0} y={0} width={GridSize * GridMax} height={GridSize * GridMax} fill='#145214' />
 
-          {s.props.unlockedAreas.map((area, idx) => (
+          {city.unlockedAreas.map((area, idx) => (
             <rect
               key={`unlocked-${idx}`}
               x={area.x * GridSize}
@@ -846,13 +862,13 @@ export const renderCityGrid = (s: CityViewState, forceUpdate: () => void) => {
             const blocksBelow = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.moved && !b.highlighted);
             const blocksHighlighted = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.highlighted);
             const sortedBlocks = [
-              ...blocksBelowUnmoved.map(([index, block]) => blockRect(s, Number(index), block)),
-              ...blocksBelow.map(([index, block]) => blockRect(s, Number(index), block)),
-              ...blocksHighlighted.map(([index, block]) => blockRect(s, Number(index), block)),
+              ...blocksBelowUnmoved.map(([index, block]) => blockRect(Number(index), block)),
+              ...blocksBelow.map(([index, block]) => blockRect(Number(index), block)),
+              ...blocksHighlighted.map(([index, block]) => blockRect(Number(index), block)),
             ];
             if (dragIndex !== null) {
               const draggedBlock = blocks[dragIndex];
-              sortedBlocks.push(blockRect(s, 'dragged', draggedBlock));
+              sortedBlocks.push(blockRect('dragged', draggedBlock));
             }
             return sortedBlocks;
           })()}

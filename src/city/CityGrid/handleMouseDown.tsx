@@ -1,14 +1,15 @@
 import React from 'react';
-import { CityViewState } from '../CityViewState';
 import { getEntityMaxLevel } from './getEntityMaxLevel';
+import { useCity } from '../CityContext';
+import { useHelper } from '../../helper/HelperContext';
 
-export const handleMouseDown = (s: CityViewState, e: React.MouseEvent, index: number) => {
-  const [_1, setDragIndex] = s.rDragIndex;
-  const [_2, setDragOffset] = s.rDragOffset;
-  const [blocks, _3] = s.rBlocks;
-  const [_4, setOriginalPos] = s.rOriginalPos;
-  const { GridSize, svgRef } = s;
-  const [maxLevels] = s.rMaxLevels;
+export const handleMouseDown = (city: ReturnType<typeof useCity>, helperContext: ReturnType<typeof useHelper>, e: React.MouseEvent, index: number) => {
+  const setDragIndex = city.setDragIndex;
+  const setDragOffset = city.setDragOffset;
+  const blocks = city.blocks;
+  const setOriginalPos = city.setOriginalPos;
+  const { GridSize, svgRef } = city;
+  const maxLevels = city.maxLevels;
 
   e.stopPropagation();
   const svg = svgRef.current;
@@ -25,6 +26,6 @@ export const handleMouseDown = (s: CityViewState, e: React.MouseEvent, index: nu
   setOriginalPos({ x: block.x, y: block.y });
   const maxLevel = getEntityMaxLevel(block.entity.cityentity_id, block.type, maxLevels);
   if (maxLevel !== 1) {
-    s.helperContext.showMessage('drag_tip');
+    helperContext.showMessage('drag_tip');
   }
 };

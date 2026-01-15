@@ -1,1 +1,1 @@
-export * from './renderLegend';
+export * from './RenderLegend';

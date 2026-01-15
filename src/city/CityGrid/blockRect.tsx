@@ -1,32 +1,37 @@
 import React from 'react';
 import { CityBlock } from '../CityBlock';
 import { getTypeColor } from '../Legend/getTypeColor';
-import { CityViewState } from '../CityViewState';
 import { handleMouseDown } from './handleMouseDown';
 import { BlockLabel } from './BlockLabel';
+import { useCity } from '../CityContext';
+import { useHelper } from '../../helper/HelperContext';
 
-export const blockRect = (s: CityViewState, key: string | number, block: CityBlock) => {
-  const { GridSize, opacity } = s;
+export const blockRect = (key: string | number, block: CityBlock) => {
+  const city = useCity();
+  const helper = useHelper();
+  const { GridSize, opacity } = city;
 
   // Context menu state
-  const [_1, setMenu] = s.rMenu;
-  const [blocks, _3] = s.rBlocks;
-  const [_2, setDragOffset] = s.rDragOffset;
-  const [dragIndex, _4] = s.rDragIndex;
+  const setMenu = city.setMenu;
+  const blocks = city.blocks;
+  const setDragOffset = city.setDragOffset;
+  const dragIndex = city.dragIndex;
 
   const dragging = typeof key === 'string';
-  const handler = !dragging && dragIndex === null
-    ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(s, e, key)
-    : () => {
-        /* no-op for dragging */
-      };
+  const handler =
+    !dragging && dragIndex === null
+      ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(city, helper, e, key)
+      : () => {
+          /* no-op for dragging */
+        };
   const cursor = dragging ? 'grab' : 'grabbing';
 
   // Context menu handler
   const handleContextMenu = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
     e.preventDefault();
+    if (dragging) return;
     // Position relative to SVG container
-    const svg = s.svgRef.current;
+    const svg = city.svgRef.current;
     let x = e.clientX;
     let y = e.clientY;
     if (svg && typeof key === 'number') {
@@ -61,7 +66,7 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
     return luminance < 0.35 ? '#ffffff' : '#000000';
   }
 
-  const fillColor = getTypeColor(block.type, s.allTypes, block.moved);
+  const fillColor = getTypeColor(block.type, city.allTypes, block.moved);
   const textColor = getContrastColor(fillColor);
 
   return (
@@ -123,7 +128,7 @@ export const blockRect = (s: CityViewState, key: string | number, block: CityBlo
           pointerEvents='none'
         />
       )}
-      <BlockLabel block={block} GridSize={GridSize} textColor={textColor} sprite={s.techSprite} />
+      <BlockLabel block={block} GridSize={GridSize} textColor={textColor} sprite={city.techSprite} />
     </g>
   );
 };
