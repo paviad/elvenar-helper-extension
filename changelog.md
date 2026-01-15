@@ -1,8 +1,16 @@
 # Changelog
 
+## v5.3.0
+- Show stage on evolving buildings
+- Fellowship Adventure: improved badge tracking and export features
+- Added new controls to the Fellowship Adventure timeline
+- Enhanced city data import/export reliability
+- UI improvements for chat and overlay panels
+- Various bug fixes and performance optimizations
+
 ## v5.2.1
-* Fixed drag and drop data corruption bug
-* While dragging, allow keyboard +, - and Del to change level or delete block
+- Fixed drag and drop data corruption bug
+- While dragging, allow keyboard +, - and Del to change level or delete block
 
 ## v5.2.0
 - Store visited cities
