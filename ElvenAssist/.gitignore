@@ -1,0 +1,24 @@
+# --- Xcode ---
+# Build generated
+build/
+DerivedData/
+
+# User specific layout and settings (CRITICAL)
+*.class
+*.openstreetmap
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+
+# Internal state files
+*.xcuserstate
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# CocoaPods (If you ever use them, though you aren't right now)
+Pods/
+
+# --- macOS System ---
+.DS_Store
+

@@ -1,0 +1,762 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B2F8CD802F14013D00B73EC0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8CD7F2F14013D00B73EC0 /* AppDelegate.swift */; };
+		B2F8CD832F14013D00B73EC0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CD812F14013D00B73EC0 /* Main.storyboard */; };
+		B2F8CD952F14013D00B73EC0 /* ElvenAssist Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B2F8CD942F14013D00B73EC0 /* ElvenAssist Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B2F8CD9C2F14013D00B73EC0 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CD5E2F14013B00B73EC0 /* Main.html */; };
+		B2F8CD9E2F14013D00B73EC0 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CD602F14013B00B73EC0 /* Icon.png */; };
+		B2F8CDA02F14013D00B73EC0 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CD612F14013B00B73EC0 /* Style.css */; };
+		B2F8CDA22F14013D00B73EC0 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CD622F14013B00B73EC0 /* Script.js */; };
+		B2F8CDA42F14013D00B73EC0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8CD632F14013B00B73EC0 /* ViewController.swift */; };
+		B2F8CDA62F14013D00B73EC0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CD642F14013D00B73EC0 /* Assets.xcassets */; };
+		B2F8CDA82F14013D00B73EC0 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8CD662F14013D00B73EC0 /* SafariWebExtensionHandler.swift */; };
+		B2F8CDC92F14013D00B73EC0 /* elvenassist-vendors.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBA2F14013D00B73EC0 /* elvenassist-vendors.bundle.js */; };
+		B2F8CDCA2F14013D00B73EC0 /* elvenassist-inject.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBB2F14013D00B73EC0 /* elvenassist-inject.bundle.js */; };
+		B2F8CDCB2F14013D00B73EC0 /* tab.css in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBC2F14013D00B73EC0 /* tab.css */; };
+		B2F8CDCC2F14013D00B73EC0 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBD2F14013D00B73EC0 /* popup.html */; };
+		B2F8CDCD2F14013D00B73EC0 /* elvenarchitect_data.json in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBE2F14013D00B73EC0 /* elvenarchitect_data.json */; };
+		B2F8CDCE2F14013D00B73EC0 /* elvenassist-tab.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBF2F14013D00B73EC0 /* elvenassist-tab.bundle.js */; };
+		B2F8CDCF2F14013D00B73EC0 /* elvenassist-overlay.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC02F14013D00B73EC0 /* elvenassist-overlay.bundle.js */; };
+		B2F8CDD02F14013D00B73EC0 /* sprite.png in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC12F14013D00B73EC0 /* sprite.png */; };
+		B2F8CDD12F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC22F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt */; };
+		B2F8CDD22F14013D00B73EC0 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC32F14013D00B73EC0 /* manifest.json */; };
+		B2F8CDD32F14013D00B73EC0 /* elvenassist-service-worker.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC42F14013D00B73EC0 /* elvenassist-service-worker.bundle.js */; };
+		B2F8CDD42F14013D00B73EC0 /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC52F14013D00B73EC0 /* popup.css */; };
+		B2F8CDD52F14013D00B73EC0 /* tab.html in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC62F14013D00B73EC0 /* tab.html */; };
+		B2F8CDD62F14013D00B73EC0 /* popup.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC72F14013D00B73EC0 /* popup.bundle.js */; };
+		B2F8CDD72F14013D00B73EC0 /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC82F14013D00B73EC0 /* icon32.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B2F8CD962F14013D00B73EC0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2F8CD582F14013B00B73EC0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B2F8CD932F14013D00B73EC0;
+			remoteInfo = "ElvenAssist Extension (macOS)";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B2F8CDB52F14013D00B73EC0 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B2F8CD952F14013D00B73EC0 /* ElvenAssist Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		B2F8CD5F2F14013B00B73EC0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = Base.lproj/Main.html; sourceTree = "<group>"; };
+		B2F8CD602F14013B00B73EC0 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		B2F8CD612F14013B00B73EC0 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		B2F8CD622F14013B00B73EC0 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		B2F8CD632F14013B00B73EC0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		B2F8CD642F14013D00B73EC0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B2F8CD662F14013D00B73EC0 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		B2F8CD6E2F14013D00B73EC0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B2F8CD702F14013D00B73EC0 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		B2F8CD732F14013D00B73EC0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B2F8CD762F14013D00B73EC0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B2F8CD782F14013D00B73EC0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2F8CD7D2F14013D00B73EC0 /* ElvenAssist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ElvenAssist.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2F8CD7F2F14013D00B73EC0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B2F8CD822F14013D00B73EC0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B2F8CD842F14013D00B73EC0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2F8CD852F14013D00B73EC0 /* ElvenAssist.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ElvenAssist.entitlements; sourceTree = "<group>"; };
+		B2F8CD8F2F14013D00B73EC0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2F8CD942F14013D00B73EC0 /* ElvenAssist Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ElvenAssist Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2F8CD992F14013D00B73EC0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2F8CD9A2F14013D00B73EC0 /* ElvenAssist.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ElvenAssist.entitlements; sourceTree = "<group>"; };
+		B2F8CDBA2F14013D00B73EC0 /* elvenassist-vendors.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-vendors.bundle.js"; path = "../../dist/elvenassist-vendors.bundle.js"; sourceTree = "<group>"; };
+		B2F8CDBB2F14013D00B73EC0 /* elvenassist-inject.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-inject.bundle.js"; path = "../../dist/elvenassist-inject.bundle.js"; sourceTree = "<group>"; };
+		B2F8CDBC2F14013D00B73EC0 /* tab.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = tab.css; path = ../../dist/tab.css; sourceTree = "<group>"; };
+		B2F8CDBD2F14013D00B73EC0 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = ../../dist/popup.html; sourceTree = "<group>"; };
+		B2F8CDBE2F14013D00B73EC0 /* elvenarchitect_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = elvenarchitect_data.json; path = ../../dist/elvenarchitect_data.json; sourceTree = "<group>"; };
+		B2F8CDBF2F14013D00B73EC0 /* elvenassist-tab.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-tab.bundle.js"; path = "../../dist/elvenassist-tab.bundle.js"; sourceTree = "<group>"; };
+		B2F8CDC02F14013D00B73EC0 /* elvenassist-overlay.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-overlay.bundle.js"; path = "../../dist/elvenassist-overlay.bundle.js"; sourceTree = "<group>"; };
+		B2F8CDC12F14013D00B73EC0 /* sprite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = sprite.png; path = ../../dist/sprite.png; sourceTree = "<group>"; };
+		B2F8CDC22F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = "elvenassist-vendors.bundle.js.LICENSE.txt"; path = "../../dist/elvenassist-vendors.bundle.js.LICENSE.txt"; sourceTree = "<group>"; };
+		B2F8CDC32F14013D00B73EC0 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../dist/manifest.json; sourceTree = "<group>"; };
+		B2F8CDC42F14013D00B73EC0 /* elvenassist-service-worker.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-service-worker.bundle.js"; path = "../../dist/elvenassist-service-worker.bundle.js"; sourceTree = "<group>"; };
+		B2F8CDC52F14013D00B73EC0 /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = popup.css; path = ../../dist/popup.css; sourceTree = "<group>"; };
+		B2F8CDC62F14013D00B73EC0 /* tab.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = tab.html; path = ../../dist/tab.html; sourceTree = "<group>"; };
+		B2F8CDC72F14013D00B73EC0 /* popup.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.bundle.js; path = ../../dist/popup.bundle.js; sourceTree = "<group>"; };
+		B2F8CDC82F14013D00B73EC0 /* icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon32.png; path = ../../dist/icon32.png; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B2F8CD7A2F14013D00B73EC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2F8CD912F14013D00B73EC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B2F8CD572F14013B00B73EC0 = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD5C2F14013B00B73EC0 /* Shared (App) */,
+				B2F8CD652F14013D00B73EC0 /* Shared (Extension) */,
+				B2F8CD6D2F14013D00B73EC0 /* iOS (App) */,
+				B2F8CD7E2F14013D00B73EC0 /* macOS (App) */,
+				B2F8CD8E2F14013D00B73EC0 /* iOS (Extension) */,
+				B2F8CD982F14013D00B73EC0 /* macOS (Extension) */,
+				B2F8CD6C2F14013D00B73EC0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B2F8CD5C2F14013B00B73EC0 /* Shared (App) */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD632F14013B00B73EC0 /* ViewController.swift */,
+				B2F8CD642F14013D00B73EC0 /* Assets.xcassets */,
+				B2F8CD5D2F14013B00B73EC0 /* Resources */,
+			);
+			path = "Shared (App)";
+			sourceTree = "<group>";
+		};
+		B2F8CD5D2F14013B00B73EC0 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD5E2F14013B00B73EC0 /* Main.html */,
+				B2F8CD602F14013B00B73EC0 /* Icon.png */,
+				B2F8CD612F14013B00B73EC0 /* Style.css */,
+				B2F8CD622F14013B00B73EC0 /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B2F8CD652F14013D00B73EC0 /* Shared (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CDB92F14013D00B73EC0 /* Resources */,
+				B2F8CD662F14013D00B73EC0 /* SafariWebExtensionHandler.swift */,
+			);
+			path = "Shared (Extension)";
+			sourceTree = "<group>";
+		};
+		B2F8CD6C2F14013D00B73EC0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD7D2F14013D00B73EC0 /* ElvenAssist.app */,
+				B2F8CD942F14013D00B73EC0 /* ElvenAssist Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B2F8CD6D2F14013D00B73EC0 /* iOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD6E2F14013D00B73EC0 /* AppDelegate.swift */,
+				B2F8CD702F14013D00B73EC0 /* SceneDelegate.swift */,
+				B2F8CD722F14013D00B73EC0 /* LaunchScreen.storyboard */,
+				B2F8CD752F14013D00B73EC0 /* Main.storyboard */,
+				B2F8CD782F14013D00B73EC0 /* Info.plist */,
+			);
+			path = "iOS (App)";
+			sourceTree = "<group>";
+		};
+		B2F8CD7E2F14013D00B73EC0 /* macOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD7F2F14013D00B73EC0 /* AppDelegate.swift */,
+				B2F8CD812F14013D00B73EC0 /* Main.storyboard */,
+				B2F8CD842F14013D00B73EC0 /* Info.plist */,
+				B2F8CD852F14013D00B73EC0 /* ElvenAssist.entitlements */,
+			);
+			path = "macOS (App)";
+			sourceTree = "<group>";
+		};
+		B2F8CD8E2F14013D00B73EC0 /* iOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD8F2F14013D00B73EC0 /* Info.plist */,
+			);
+			path = "iOS (Extension)";
+			sourceTree = "<group>";
+		};
+		B2F8CD982F14013D00B73EC0 /* macOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CD992F14013D00B73EC0 /* Info.plist */,
+				B2F8CD9A2F14013D00B73EC0 /* ElvenAssist.entitlements */,
+			);
+			path = "macOS (Extension)";
+			sourceTree = "<group>";
+		};
+		B2F8CDB92F14013D00B73EC0 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8CDBA2F14013D00B73EC0 /* elvenassist-vendors.bundle.js */,
+				B2F8CDBB2F14013D00B73EC0 /* elvenassist-inject.bundle.js */,
+				B2F8CDBC2F14013D00B73EC0 /* tab.css */,
+				B2F8CDBD2F14013D00B73EC0 /* popup.html */,
+				B2F8CDBE2F14013D00B73EC0 /* elvenarchitect_data.json */,
+				B2F8CDBF2F14013D00B73EC0 /* elvenassist-tab.bundle.js */,
+				B2F8CDC02F14013D00B73EC0 /* elvenassist-overlay.bundle.js */,
+				B2F8CDC12F14013D00B73EC0 /* sprite.png */,
+				B2F8CDC22F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt */,
+				B2F8CDC32F14013D00B73EC0 /* manifest.json */,
+				B2F8CDC42F14013D00B73EC0 /* elvenassist-service-worker.bundle.js */,
+				B2F8CDC52F14013D00B73EC0 /* popup.css */,
+				B2F8CDC62F14013D00B73EC0 /* tab.html */,
+				B2F8CDC72F14013D00B73EC0 /* popup.bundle.js */,
+				B2F8CDC82F14013D00B73EC0 /* icon32.png */,
+			);
+			name = Resources;
+			path = "Shared (Extension)";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B2F8CD7C2F14013D00B73EC0 /* ElvenAssist (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2F8CDB62F14013D00B73EC0 /* Build configuration list for PBXNativeTarget "ElvenAssist (macOS)" */;
+			buildPhases = (
+				B2F8CD792F14013D00B73EC0 /* Sources */,
+				B2F8CD7A2F14013D00B73EC0 /* Frameworks */,
+				B2F8CD7B2F14013D00B73EC0 /* Resources */,
+				B2F8CDB52F14013D00B73EC0 /* Embed Foundation Extensions */,
+				B23ED43C2F190B9000980AAA /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B2F8CD972F14013D00B73EC0 /* PBXTargetDependency */,
+			);
+			name = "ElvenAssist (macOS)";
+			packageProductDependencies = (
+			);
+			productName = "ElvenAssist (macOS)";
+			productReference = B2F8CD7D2F14013D00B73EC0 /* ElvenAssist.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B2F8CD932F14013D00B73EC0 /* ElvenAssist Extension (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2F8CDB22F14013D00B73EC0 /* Build configuration list for PBXNativeTarget "ElvenAssist Extension (macOS)" */;
+			buildPhases = (
+				B2F8CD902F14013D00B73EC0 /* Sources */,
+				B2F8CD912F14013D00B73EC0 /* Frameworks */,
+				B2F8CD922F14013D00B73EC0 /* Resources */,
+				B23ED43D2F190BE600980AAA /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "ElvenAssist Extension (macOS)";
+			packageProductDependencies = (
+			);
+			productName = "ElvenAssist Extension (macOS)";
+			productReference = B2F8CD942F14013D00B73EC0 /* ElvenAssist Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B2F8CD582F14013B00B73EC0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					B2F8CD7C2F14013D00B73EC0 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					B2F8CD932F14013D00B73EC0 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+				};
+			};
+			buildConfigurationList = B2F8CD5B2F14013B00B73EC0 /* Build configuration list for PBXProject "ElvenAssist" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B2F8CD572F14013B00B73EC0;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = B2F8CD6C2F14013D00B73EC0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B2F8CD7C2F14013D00B73EC0 /* ElvenAssist (macOS) */,
+				B2F8CD932F14013D00B73EC0 /* ElvenAssist Extension (macOS) */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B2F8CD7B2F14013D00B73EC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2F8CD9E2F14013D00B73EC0 /* Icon.png in Resources */,
+				B2F8CDA02F14013D00B73EC0 /* Style.css in Resources */,
+				B2F8CD832F14013D00B73EC0 /* Main.storyboard in Resources */,
+				B2F8CDA22F14013D00B73EC0 /* Script.js in Resources */,
+				B2F8CDA62F14013D00B73EC0 /* Assets.xcassets in Resources */,
+				B2F8CD9C2F14013D00B73EC0 /* Main.html in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2F8CD922F14013D00B73EC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2F8CDCD2F14013D00B73EC0 /* elvenarchitect_data.json in Resources */,
+				B2F8CDCB2F14013D00B73EC0 /* tab.css in Resources */,
+				B2F8CDD62F14013D00B73EC0 /* popup.bundle.js in Resources */,
+				B2F8CDD22F14013D00B73EC0 /* manifest.json in Resources */,
+				B2F8CDD72F14013D00B73EC0 /* icon32.png in Resources */,
+				B2F8CDD32F14013D00B73EC0 /* elvenassist-service-worker.bundle.js in Resources */,
+				B2F8CDCF2F14013D00B73EC0 /* elvenassist-overlay.bundle.js in Resources */,
+				B2F8CDCC2F14013D00B73EC0 /* popup.html in Resources */,
+				B2F8CDD52F14013D00B73EC0 /* tab.html in Resources */,
+				B2F8CDD02F14013D00B73EC0 /* sprite.png in Resources */,
+				B2F8CDCA2F14013D00B73EC0 /* elvenassist-inject.bundle.js in Resources */,
+				B2F8CDD42F14013D00B73EC0 /* popup.css in Resources */,
+				B2F8CDC92F14013D00B73EC0 /* elvenassist-vendors.bundle.js in Resources */,
+				B2F8CDCE2F14013D00B73EC0 /* elvenassist-tab.bundle.js in Resources */,
+				B2F8CDD12F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B23ED43C2F190B9000980AAA /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\n# 1. Define Path\n# Go up one level from the project folder to find 'dist'\nMANIFEST_PATH=\"${PROJECT_DIR}/../dist/manifest.json\"\n\n# Debugging\necho \"Reading version from: $MANIFEST_PATH\"\n\n# Safety Check\nif [ ! -f \"$MANIFEST_PATH\" ]; then\n    echo \"error: manifest.json not found at $MANIFEST_PATH\"\n    echo \"Ensure you have run 'npm run pack:safari' (or 'npm run pack') before building.\"\n    exit 1\nfi\n\n# 2. Extract Version\nAPP_VERSION=$(python3 -c \"import json, sys; print(json.load(sys.stdin)['version'])\" < \"$MANIFEST_PATH\")\n\necho \"Syncing version to: $APP_VERSION\"\n\n# 3. Apply to Info.plist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n";
+		};
+		B23ED43D2F190BE600980AAA /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\n# 1. Define Path\n# Go up one level from the project folder to find 'dist'\nMANIFEST_PATH=\"${PROJECT_DIR}/../dist/manifest.json\"\n\n# Debugging\necho \"Reading version from: $MANIFEST_PATH\"\n\n# Safety Check\nif [ ! -f \"$MANIFEST_PATH\" ]; then\n    echo \"error: manifest.json not found at $MANIFEST_PATH\"\n    echo \"Ensure you have run 'npm run pack:safari' (or 'npm run pack') before building.\"\n    exit 1\nfi\n\n# 2. Extract Version\nAPP_VERSION=$(python3 -c \"import json, sys; print(json.load(sys.stdin)['version'])\" < \"$MANIFEST_PATH\")\n\necho \"Syncing version to: $APP_VERSION\"\n\n# 3. Apply to Info.plist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B2F8CD792F14013D00B73EC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2F8CDA42F14013D00B73EC0 /* ViewController.swift in Sources */,
+				B2F8CD802F14013D00B73EC0 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2F8CD902F14013D00B73EC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2F8CDA82F14013D00B73EC0 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B2F8CD972F14013D00B73EC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B2F8CD932F14013D00B73EC0 /* ElvenAssist Extension (macOS) */;
+			targetProxy = B2F8CD962F14013D00B73EC0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		B2F8CD5E2F14013B00B73EC0 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B2F8CD5F2F14013B00B73EC0 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		B2F8CD722F14013D00B73EC0 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B2F8CD732F14013D00B73EC0 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		B2F8CD752F14013D00B73EC0 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B2F8CD762F14013D00B73EC0 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		B2F8CD812F14013D00B73EC0 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B2F8CD822F14013D00B73EC0 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		B2F8CDA92F14013D00B73EC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B2F8CDAA2F14013D00B73EC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		B2F8CDB32F14013D00B73EC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/ElvenAssist.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = V45JJAU8MY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "ElvenAssist Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.paviad.ElvenAssist.Extension;
+				PRODUCT_NAME = "ElvenAssist Extension";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = ElvenAssistExtensionPP;
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B2F8CDB42F14013D00B73EC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/ElvenAssist.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = V45JJAU8MY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "ElvenAssist Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.paviad.ElvenAssist.Extension;
+				PRODUCT_NAME = "ElvenAssist Extension";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = ElvenAssistExtensionPP;
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B2F8CDB72F14013D00B73EC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/ElvenAssist.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution: Aviad Pineles (V45JJAU8MY)";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = V45JJAU8MY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = ElvenAssist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.paviad.ElvenAssist;
+				PRODUCT_NAME = ElvenAssist;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = ElvenAssistProvisioningProfile3;
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B2F8CDB82F14013D00B73EC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/ElvenAssist.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution: Aviad Pineles (V45JJAU8MY)";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = V45JJAU8MY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = ElvenAssist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.paviad.ElvenAssist;
+				PRODUCT_NAME = ElvenAssist;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = ElvenAssistProvisioningProfile3;
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B2F8CD5B2F14013B00B73EC0 /* Build configuration list for PBXProject "ElvenAssist" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2F8CDA92F14013D00B73EC0 /* Debug */,
+				B2F8CDAA2F14013D00B73EC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B2F8CDB22F14013D00B73EC0 /* Build configuration list for PBXNativeTarget "ElvenAssist Extension (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2F8CDB32F14013D00B73EC0 /* Debug */,
+				B2F8CDB42F14013D00B73EC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B2F8CDB62F14013D00B73EC0 /* Build configuration list for PBXNativeTarget "ElvenAssist (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2F8CDB72F14013D00B73EC0 /* Debug */,
+				B2F8CDB82F14013D00B73EC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B2F8CD582F14013B00B73EC0 /* Project object */;
+}
