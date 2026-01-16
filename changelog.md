@@ -1,5 +1,8 @@
 # Changelog
 
+## v5.4.0
+- Performance optimizations
+
 ## v5.3.0
 - Show stage on evolving buildings
 - Fellowship Adventure: improved badge tracking and export features

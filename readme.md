@@ -1,54 +1,70 @@
-# ElvenAssist Chrome Extension
+# ElvenAssist - Unofficial City Planner for Elvenar
 
 [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/kikdpnpfhakidgkojboebobjlknflilc)](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb)
 [![Firefox Add-On](https://img.shields.io/amo/v/elven-assist)](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/)
-[![Safari Add-On](https://img.shields.io/itunes/v/com.paviad.elven-assist)](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/)
+[![Safari Add-On](https://img.shields.io/itunes/v/com.paviad.elven-assist)](https://apps.apple.com/us/app/elvenassist/id6470343360)
 
+> **⚠️ UNOFFICIAL FAN PROJECT**
+>
+> ElvenAssist is a fan-made tool. It is **not** affiliated with, endorsed by, or supported by InnoGames GmbH.
 
 ## Overview
 
-ElvenAssist is a Chrome extension designed to enhance your experience with the Elvenar browser game. This extension provides a set of tools to help you plan, optimize, and experiment with your city layout, inventory, and trades directly from your browser.
+ElvenAssist is a browser extension designed to modernize your experience with the Elvenar browser game. Whether you are struggling to fit new buildings from Chapter 24 or trying to optimize your Ascended Goods trades, this extension integrates directly with the game to give you the live data you need, right when you need it.
 
+It replaces outdated external planning sites with a seamless, in-browser experience that runs entirely locally on your machine.
 
-### Features
+## 🚀 Key Features
 
-- **City Block Editor**: Experiment with your Elvenar city layout using an interactive editor. Move, add, and remove city blocks to find the most efficient arrangement for your city.
-- **Multiple City Management**: Seamlessly manage and switch between multiple Elvenar cities and accounts within the extension. Keep layouts and inventories organized for each city.
-- **Building Search**: Quickly find buildings in your city using the search function.
-- **Improved Legend**: Easily spot buildings that do not requiring road connections to the Main Hall.
-- **Chapter Display**: Shows chapter numbers on culture and culture/residential blocks for better city planning.
-- **Inventory Management**: View your inventory directly in the extension, includes sorting and filtering.
-- **Trade Helper**: Instantly know if you have good ascended trades offered by other players.
+### 1. Next-Generation City Planner
+Stop relying on manual exports. Our City Block Editor reads your layout directly from the game and presents it on an interactive 2D grid.
+- **Live Data Sync**: No need to manually "export" or "upload" your city. The extension sees what you have built instantly.
+- **Up-to-Date Support**: Fully compatible with **Chapter 23 & 24**. Plan your endgame city with the correct building sizes and assets.
+- **Sandbox Mode**: Experiment safely. Move, add, and remove buildings on the grid to find the perfect fit before you move a single tile in the real game.
+- **Standalone Detector**: Easily spot which buildings have lost their street connection to the Main Hall.
+- **Building Finder**: Lost a culture building in your dense layout? Use the Search feature to locate any structure instantly.
+- **Chapter Overlays**: Automatically overlays Chapter numbers on culture and residential blocks.
 
+### 2. 🗺️ Fellowship Adventure
+Master the FA with real-time data.
+- **Badge Tracking**: Know exactly which badges you have ready and what is currently being produced.
+- **Production Timeline**: Visualizes exactly when your workshops and manufactories will finish their current production cycles, so you can plan your collections perfectly.
+
+### 3. 🎒 Advanced Inventory Management
+The in-game inventory can be difficult to navigate. We provide a powerful alternative:
+- **Search & Filter**: Instantly find that one specific event building or instant you earned months ago.
+- **Smart Sorting**: Organize your inventory by chapter, type, or resale resources to decide what to place next.
+
+### 4. ⚖️ Trade Helper
+Don't miss out on profit. The extension automatically scans the trade window to detect lucrative opportunities—specifically trades offering non-boosted ascended goods in exchange for your boosted ones.
+
+### 5. 💬 Chat History
+A persistent view of your fellowship chat, making it easy to find lost messages or instructions from leadership.
 
 ## Installation
 
-### Chrome/Edge: From Chrome Web Store
+### Chrome / Edge / Brave
 Install the latest stable version directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb).
 
-### Firefox: From Firefox Add-Ons
-The extension is published on the Firefox Add-Ons repository at [Firefox Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/)
+### Firefox
+Install from [Firefox Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/).
 
-### From Release (Chrome)
-1. Download the latest release from this repository, and unpack it into a directory on your computer.
-2. Open Chrome and navigate to `chrome://extensions/`.
-3. Enable "Developer mode" (top right corner).
-4. Click "Load unpacked" and select the directory of the downloaded release.
-5. The ElvenAssist extension should now appear in your extensions list.
+### Safari (macOS)
+Install from the [Mac App Store](https://apps.apple.com/us/app/elvenassist/id6470343360).
 
-### From Release (Firefox)
-1. Download the latest release from this repository, and unpack it into a directory on your computer.
-2. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
-3. Click _Load Temporary Add-On..._
-4. Select the Zip file of the downloaded release (do not extract it).
-5. Refresh the game tab, the extension should be active.
+### Manual Installation (From Release)
+1. Download the latest release `.zip` from this repository and unpack it.
+2. **Chrome:** Go to `chrome://extensions/`, enable "Developer mode", click "Load unpacked", and select the unpacked folder.
+3. **Firefox:** Go to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-On...", and select the release zip file (no need to unpack).
 
 ## Usage
 
-- Refresh the Elvenar tab once to allow the extension to get relevant data.
-- Click the ElvenAssist extension icon in your Chrome toolbar to open the city editor.
-- Use the city editor to experiment with different city layouts.
-- Changes made in the editor are for planning purposes only and do not affect your actual Elvenar city.
+1. Open Elvenar in your browser.
+2. **Refresh the game tab** once to allow the extension to capture the initial city data.
+3. Click the **ElvenAssist icon** in your browser toolbar to open the dashboard.
+4. Navigate between the City Planner, Inventory, and FA tabs to manage your empire.
+
+*Note: Changes made in the editor are for planning purposes only and do not affect your actual Elvenar city.*
 
 ## Contributing
 
@@ -59,6 +75,9 @@ Contributions are welcome! Please open an issue or submit a pull request with yo
 This project is licensed under the MIT License.
 
 ---
+
 **Author:** Aviad Pineles
 
-*Elvenar is a trademark of InnoGames GmbH. This project is not affiliated with or endorsed by InnoGames.*
+**Disclaimer**
+**ElvenAssist is an unofficial fan-made project.**
+Elvenar is a registered trademark of InnoGames GmbH. This project is not affiliated with, endorsed by, or supported by InnoGames GmbH.
