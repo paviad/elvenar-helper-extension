@@ -1,7 +1,7 @@
 {
   "name": "elven-assist",
-  "version": "5.3.0",
-  "description": "Extension to help with Elvenar city planning",
+  "version": "5.4.0",
+  "description": "Unofficial extension to help with Elvenar city planning",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
   "sideEffects": false,

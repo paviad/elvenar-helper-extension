@@ -69,8 +69,6 @@ export function OverlayMain() {
 
     if (!socketMessage) return;
 
-    console.log('Content script received message from injected script', socketMessage);
-
     if (socketMessage?.type === 'ChatHistory') {
       userMap.current =
         socketMessage.body.payload.users.reduce<Record<string, string>>((map, user) => {
@@ -85,7 +83,6 @@ export function OverlayMain() {
 
     if (socketMessage?.type === 'Who') {
       const userNames = socketMessage.body.payload.userIds.map((id) => userMap.current[id] || 'Unknown');
-      console.log('Connected users:', userNames);
     }
 
     if (socketMessage?.type === 'SendMessage') {

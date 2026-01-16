@@ -28,8 +28,6 @@ export function processMaxLevels(responseText: string) {
       {} as Record<string, number>,
     );
 
-  console.log('Processed Max Levels:', maxLevels);
-
   return { maxLevels };
 }
 

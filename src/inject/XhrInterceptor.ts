@@ -31,10 +31,8 @@ export class GlobalHttpInterceptorService {
       this.onreadystatechange = (...cbArgs) => {
         const matchFound = matchers.find((matcher) => this.responseURL.match(matcher.regex));
         if (matchFound) {
-          console.log(`XHR Interceptor: Matched ${matchFound.id} for URL: ${this.responseURL}, readyState: ${this.readyState}`);
           if (this.readyState === 4) {
             // Add your logic here to handle the response if needed
-            // console.log('Intercepted XHR Response URL:', this.responseURL);
 
             const decodedResponse = getDecodedText(this);
             if (decodedResponse) {

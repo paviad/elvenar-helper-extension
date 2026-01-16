@@ -54,8 +54,6 @@ export function processBuildings(decodedResponse: string, all: boolean) {
   const buildingsRaw = JSON.parse(decodedResponse) as BuildingRaw[];
   const processedBuildings = processInterceptedBuildings(buildingsRaw);
 
-  console.log('Processed Intercepted Buildings:', processedBuildings);
-
   return {
     buildings: processedBuildings,
     matcherAll: all,

@@ -6,11 +6,8 @@ export function getDecodedText(request: XMLHttpRequest) {
     try {
       decodedResponse = new TextDecoder().decode(request.response);
     } catch (e) {
-      console.log('Intercepted XHR Response (ArrayBuffer): decode failed');
+      // ignore
     }
-  } else {
-    // console.log('Intercepted XHR Response URL:', this.responseURL);
-    console.log('Intercepted XHR Response Type:', request.responseType);
   }
   return decodedResponse;
 }
