@@ -1,0 +1,42 @@
+{
+  "manifest_version": 2,
+  "name": "ElvenAssist",
+  "version": "5.4.0",
+  "description": "A comprehensive unofficial toolkit for Elvenar featuring a live city planner, inventory manager, and FA tracker.",
+  "permissions": [
+    "storage",
+    "webRequest",
+    "https://*.elvenar.com/*",
+    "https://*.innogamescdn.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "elvenassist-service-worker.bundle.js"
+    ],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_title": "(Click to show tab)",
+    "default_icon": "icon32.png"
+  },
+  "web_accessible_resources": [
+    "icon32.png",
+    "sprite.png",
+    "elvenassist-inject.bundle.js"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.elvenar.com/*"
+      ],
+      "js": [
+        "elvenassist-vendors.bundle.js",
+        "elvenassist-overlay.bundle.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "32": "icon32.png"
+  }
+}

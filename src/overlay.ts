@@ -4,6 +4,12 @@ import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
 import { setupBuldingsProcessedListener } from './overlay/setupBuldingsProcessedListener';
 
+// Polyfill MV3 'action' to MV2 'browserAction'
+if (typeof chrome.action === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chrome.action = (chrome as any).browserAction;
+}
+
 let expandFn: (state: boolean) => void;
 let ensureWidthAndHeightAtLeastFn: (minWidth: number, minHeight: number) => void;
 
