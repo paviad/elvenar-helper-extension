@@ -21,4 +21,5 @@ Pods/
 
 # --- macOS System ---
 .DS_Store
+/env.sh
 
