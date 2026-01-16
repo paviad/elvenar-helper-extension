@@ -3,10 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ElvenAssist - The Modern City Planner</title>
+    <!-- COMPLIANCE: Added "Unofficial" to the page title -->
+    <title>ElvenAssist - Unofficial City Planner</title>
     <meta
       name="description"
-      content="The ultimate free City Planner and Helper for Elvenar. Supports Chapter 23 & 24, live city syncing, and inventory management."
+      content="The ultimate free, unofficial City Planner and Helper for Elvenar. Supports Chapter 23 & 24, live city syncing, and inventory management."
     />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -77,7 +78,6 @@
         border-bottom: 1px solid var(--glass-border);
       }
 
-      /* Wrapper for header content to constrain width */
       header .container {
         display: flex;
         justify-content: space-between;
@@ -101,7 +101,6 @@
         overflow: hidden;
       }
 
-      /* Subtle glow behind hero */
       .hero::before {
         content: '';
         position: absolute;
@@ -134,17 +133,19 @@
         font-weight: 300;
       }
 
-      .hero-tag {
-        background: linear-gradient(90deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
-        color: var(--accent);
-        padding: 0.5rem 1.25rem;
+      /* COMPLIANCE: Disclaimer Badge */
+      .disclaimer-badge {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        padding: 0.4rem 1rem;
         border-radius: 50px;
-        font-size: 0.95rem;
-        font-weight: 600;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         margin-bottom: 1.5rem;
         display: inline-block;
-        border: 1px solid rgba(251, 191, 36, 0.3);
-        box-shadow: 0 0 15px rgba(251, 191, 36, 0.1);
         backdrop-filter: blur(4px);
       }
 
@@ -194,7 +195,6 @@
         position: relative;
       }
 
-      /* Separator gradient */
       .features::before {
         content: '';
         position: absolute;
@@ -273,12 +273,10 @@
         text-align: center;
       }
 
-      /* The Carousel Frame */
       #carousel {
         position: relative;
         max-width: 1200px;
         margin: 0 auto;
-        /* Fixed Aspect Ratio for stability */
         aspect-ratio: 16/9;
         max-height: 650px;
         background: #000;
@@ -291,12 +289,11 @@
       .preview-img {
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Ensures entire image is visible */
+        object-fit: contain;
         display: block;
         transition: opacity 0.4s ease-in-out;
       }
 
-      /* Carousel Controls */
       .carousel-nav-btn {
         position: absolute;
         top: 50%;
@@ -349,7 +346,6 @@
         text-align: center;
       }
 
-      /* Indicators */
       #carousel-indicators {
         position: absolute;
         bottom: 10px;
@@ -357,8 +353,8 @@
         transform: translateX(-50%);
         display: flex;
         gap: 10px;
-        z-index: 5; /* Below caption, generally hidden unless caption is short */
-        opacity: 0; /* Hiding indicators to keep it clean, caption serves as context */
+        z-index: 5;
+        opacity: 0;
         pointer-events: none;
       }
 
@@ -395,7 +391,7 @@
           margin-left: 0;
         }
         #carousel {
-          aspect-ratio: 4/3; /* Taller for mobile */
+          aspect-ratio: 4/3;
           border-radius: 12px;
         }
         .carousel-caption-styled {
@@ -427,11 +423,18 @@
 
     <main>
       <section class="hero container">
-        <span class="hero-tag">Now supporting Chapter 23 & 24!</span>
-        <h1>The Missing Tool<br />for Elvenar</h1>
+        <!-- COMPLIANCE: Prominent Disclaimer Badge -->
+        <div class="disclaimer-badge">Unofficial Fan Project</div>
+
+        <h1>The Missing Tool<br />for Your City</h1>
+
+        <!-- COMPLIANCE: Explicit Disclaimer text -->
         <p>
-          A modern, open-source City Planner and Inventory Manager that runs directly in your browser. No manual
-          exports. No outdated buildings. Just magic.
+          ElvenAssist is an <strong>unofficial, open-source</strong> City Planner and Inventory Manager built by fans.
+          <br />
+          <span style="font-size: 0.9em; opacity: 0.8; display: block; margin-top: 0.5rem">
+            This extension is <strong>not</strong> developed, endorsed, or supported by InnoGames or Elvenar.
+          </span>
         </p>
 
         <div style="margin-top: 2.5rem">
@@ -460,7 +463,6 @@
             <i class="fas fa-chevron-right"></i>
           </button>
 
-          <!-- Hidden indicators logic retained for state, but visual removed for cleanliness -->
           <div id="carousel-indicators"></div>
         </div>
 
@@ -500,11 +502,11 @@
             carouselTimer = setInterval(() => {
               carouselIndex = (carouselIndex + 1) % carouselImages.length;
               updateCarousel(false);
-            }, 6000); // Slowed down slightly for readability
+            }, 6000);
           }
 
           function updateCarousel(resetTimer = true) {
-            imgEl.style.opacity = 0; // Fade out
+            imgEl.style.opacity = 0;
             captionEl.style.opacity = 0;
 
             setTimeout(() => {
@@ -512,13 +514,9 @@
               imgEl.alt = carouselImages[carouselIndex].alt;
               captionEl.textContent = carouselImages[carouselIndex].caption || '';
 
-              imgEl.style.opacity = 1; // Fade in
+              imgEl.style.opacity = 1;
               captionEl.style.opacity = 1;
-
-              Array.from(indicators.children).forEach((dot, i) => {
-                // Logic kept if you ever want to re-enable dots
-              });
-            }, 300); // Matches transition duration roughly
+            }, 300);
 
             if (resetTimer) startCarouselTimer();
           }
@@ -592,8 +590,12 @@
 
     <footer>
       <div class="container">
-        <p>ElvenAssist is a fan-made project.</p>
-        <p>Elvenar is a trademark of InnoGames GmbH. This project is not affiliated with or endorsed by InnoGames.</p>
+        <!-- COMPLIANCE: Bolded Footer Disclaimer -->
+        <p><strong>ElvenAssist is an unofficial fan-made project.</strong></p>
+        <p>
+          Elvenar is a registered trademark of InnoGames GmbH. This project is not affiliated with, endorsed by, or
+          supported by InnoGames GmbH.
+        </p>
         <br />
         <p>&copy; 2025 - <a href="https://github.com/paviad">paviad</a></p>
       </div>
