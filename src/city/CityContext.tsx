@@ -77,7 +77,7 @@ export const CityProvider = ({
   React.useEffect(() => {
     if (dragIndex === null) return;
     if (blocks[dragIndex].id === lastId.current) return;
-    console.log('Dragging block:', blocks[dragIndex], lastId.current);
+    console.log('ElvenAssist: Dragging block:', blocks[dragIndex], lastId.current);
     lastId.current = blocks[dragIndex].id;
   }, [dragIndex, blocks]);
   // end temporary

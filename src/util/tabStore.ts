@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { chromeStorage } from './chromeStorage';
+import { chromeSessionStorage, chromeStorage } from './chromeStorage';
 
 interface TabState {
   accountId: string | undefined;
@@ -31,7 +31,7 @@ export const useTabStore = create<TabState>()(
     }),
     {
       name: 'tab-store',
-      storage: createJSONStorage(() => chromeStorage),
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => {
         const { forceUpdate, otherCityUpdated, ...toPersist } = state;
         return toPersist;

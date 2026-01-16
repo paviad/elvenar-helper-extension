@@ -5,6 +5,12 @@ export const chromeStorage = {
   removeItem: async (name: string): Promise<void> => await chrome.storage.local.remove([name]),
 };
 
+export const chromeSessionStorage = {
+  getItem: async (name: string): Promise<string | null> => (await chrome.storage.session.get(name))[name] ?? null,
+  setItem: async (name: string, value: string): Promise<void> => await chrome.storage.session.set({ [name]: value }),
+  removeItem: async (name: string): Promise<void> => await chrome.storage.session.remove([name]),
+};
+
 export const chromeStorageWithLogging = {
   getItem: async (name: string): Promise<string | null> => {
     const rc = (await chrome.storage.local.get(name))[name] ?? null;

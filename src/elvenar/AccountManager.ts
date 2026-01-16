@@ -59,6 +59,11 @@ export interface AccountData {
 
 let accounts: Record<string, AccountData> = {};
 let accounts_last_saved: number | null = null;
+let saveHook: (() => void) | null = null;
+
+export function setSaveHook(hook: () => void) {
+  saveHook = hook;
+}
 
 export function getAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
@@ -76,9 +81,20 @@ export async function saveAllAccounts() {
       throw new Error('ElvenAssist: Detected newer accounts in storage, aborting save');
     }
   }
+  const numAccounts = +((await getFromStorage('num_accounts')) || 0);
+  const currentNumAccounts = Object.keys(accounts).length;
+  if (numAccounts <= 1 && currentNumAccounts > 1) {
+    await saveToStorage('notifyMultipleAccounts', 'true');
+  }
+  await saveToStorage('num_accounts', currentNumAccounts.toString());
+
   await saveToStorage('accounts', JSON.stringify(accounts));
   accounts_last_saved = Date.now();
   await saveToStorage('accounts_last_saved', accounts_last_saved.toString());
+
+  if (saveHook) {
+    saveHook();
+  }
 }
 
 export function getAccountIdBySessionId(sessionId: string): string | undefined {

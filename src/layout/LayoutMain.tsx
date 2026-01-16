@@ -3,9 +3,9 @@ import { Box, AppBar, Toolbar, IconButton, Typography, Button, Menu, MenuItem, A
 import MenuIcon from '@mui/icons-material/Menu';
 import { NavLink, Outlet } from 'react-router';
 import { useTabStore } from '../util/tabStore';
-import { getAllStoredAccounts } from '../elvenar/AccountManager';
+import { getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
 import { AboutDialog } from './AboutDialog';
-import { getFromStorage } from '../chrome/storage';
+import { getFromStorage, saveToStorage } from '../chrome/storage';
 import HelperAvatar from '../helper/HelperAvatar';
 import { useHelper } from '../helper/HelperContext';
 
@@ -29,6 +29,24 @@ export const LayoutMain = () => {
   const [aboutOpen, setAboutOpen] = React.useState(false);
 
   const setTechSprite = useTabStore((state) => state.setTechSprite);
+  const helper = useHelper();
+
+  const [saved, triggerSaved] = React.useReducer((x) => x + 1, 0);
+
+  setSaveHook(() => {
+    triggerSaved();
+  });
+
+  React.useEffect(() => {
+    async function Do() {
+      const notifyMultipleAccounts = await getFromStorage('notifyMultipleAccounts');
+      if (`${notifyMultipleAccounts}` === 'true') {
+        helper.showMessage('multiple_accounts_notice');
+        await saveToStorage('notifyMultipleAccounts', 'false');
+      }
+    }
+    Do();
+  }, [saved]);
 
   React.useEffect(() => {
     async function getSpriteUrl() {
@@ -56,7 +74,12 @@ export const LayoutMain = () => {
 
   React.useEffect(() => {
     if (!accountId) {
-      setAccountId(accountList[0]?.[0]);
+      const firstNonDetachedAccount = accountList.find(([id, data]) => !data.isDetached);
+      if (firstNonDetachedAccount) {
+        setAccountId(firstNonDetachedAccount[0]);
+      } else {
+        setAccountId(accountList[0]?.[0]);
+      }
     }
     const accountData = accountList.find(([id]) => id === accountId)?.[1];
     const name = accountData?.cityQuery?.accountName || 'Select Account';
@@ -67,7 +90,6 @@ export const LayoutMain = () => {
 
   const otherCityUpdated = useTabStore((state) => state.otherCityUpdated);
   const setOtherCityUpdated = useTabStore((state) => state.setOtherCityUpdated);
-  const helper = useHelper();
   React.useEffect(() => {
     if (otherCityUpdated) {
       // Reset the flag
