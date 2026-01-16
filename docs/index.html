@@ -9,17 +9,23 @@
       content="The ultimate free City Planner and Helper for Elvenar. Supports Chapter 23 & 24, live city syncing, and inventory management."
     />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Outfit:wght@300;400;600&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --primary: #5c2d91; /* Deep Purple */
-        --secondary: #240b36; /* Darker Purple */
-        --accent: #ffd700; /* Gold */
+        --primary: #7c3aed; /* Vibrant Purple */
+        --secondary: #4c1d95; /* Deep Violet */
+        --dark-bg: #0f0518;
+        --accent: #fbbf24; /* Amber Gold */
         --text: #f3f4f6;
-        --text-muted: #d1d5db;
+        --text-muted: #9ca3af;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-shine: rgba(255, 255, 255, 0.1);
       }
 
       * {
@@ -29,10 +35,17 @@
       }
 
       body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, var(--secondary) 0%, #1a1a2e 100%);
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--dark-bg);
+        /* Rich Mesh Gradient Background */
+        background-image: radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+          radial-gradient(at 50% 0%, hsla(265, 83%, 18%, 1) 0, transparent 50%),
+          radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        background-size: cover;
         color: var(--text);
         line-height: 1.6;
+        min-height: 100vh;
       }
 
       h1,
@@ -40,6 +53,7 @@
       h3 {
         font-family: 'Cinzel', serif;
         color: #fff;
+        letter-spacing: 0.02em;
       }
 
       /* Container */
@@ -51,216 +65,376 @@
 
       /* Header */
       header {
-        padding: 2rem 0;
+        padding: 1.5rem 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(12px);
+        background: rgba(15, 5, 24, 0.7);
+        border-bottom: 1px solid var(--glass-border);
       }
+
+      /* Wrapper for header content to constrain width */
+      header .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+
       .logo {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
         font-weight: 700;
         color: var(--accent);
         text-decoration: none;
+        text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
       }
 
       /* Hero Section */
       .hero {
-        padding: 5rem 0;
+        padding: 6rem 0;
         text-align: center;
         position: relative;
+        overflow: hidden;
       }
+
+      /* Subtle glow behind hero */
+      .hero::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: -1;
+      }
+
       .hero h1 {
-        font-size: 3.5rem;
-        margin-bottom: 1rem;
-        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(to right, #fff, #e9d5ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        line-height: 1.1;
       }
+
       .hero p {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
         color: var(--text-muted);
-        max-width: 600px;
-        margin: 0 auto 2rem;
+        max-width: 650px;
+        margin: 0 auto 2.5rem;
+        font-weight: 300;
       }
+
       .hero-tag {
-        background: rgba(255, 215, 0, 0.1);
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
         color: var(--accent);
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.25rem;
         border-radius: 50px;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
         display: inline-block;
-        border: 1px solid var(--accent);
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.1);
+        backdrop-filter: blur(4px);
       }
 
       /* Buttons */
       .btn {
-        display: inline-block;
-        padding: 1rem 2rem;
-        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
         font-weight: 600;
         text-decoration: none;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1.1rem;
       }
+
       .btn-primary {
-        background: var(--accent);
-        color: var(--secondary);
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        background: linear-gradient(135deg, var(--accent) 0%, #f59e0b 100%);
+        color: #1a0b2e;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 25px -5px rgba(251, 191, 36, 0.4);
       }
+
       .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 35px -10px rgba(251, 191, 36, 0.6);
+        filter: brightness(1.1);
       }
+
       .btn-outline {
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        color: var(--text);
-        margin-left: 1rem;
-      }
-      .btn-outline:hover {
-        border-color: var(--text);
         background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        margin-left: 1rem;
+        backdrop-filter: blur(4px);
+      }
+
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #fff;
+        transform: translateY(-3px);
       }
 
       /* Features Grid */
       .features {
-        padding: 4rem 0;
-        background: rgba(0, 0, 0, 0.2);
+        padding: 6rem 0;
+        position: relative;
       }
+
+      /* Separator gradient */
+      .features::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+      }
+
       .features-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-top: 3rem;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2.5rem;
+        margin-top: 4rem;
       }
+
       .feature-card {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 2rem;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: transform 0.2s;
+        background: var(--glass-bg);
+        padding: 2.5rem;
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
       }
+
+      .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(180deg, var(--glass-shine) 0%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.4s;
+      }
+
       .feature-card:hover {
-        transform: translateY(-5px);
-        border-color: var(--accent);
+        transform: translateY(-10px);
+        border-color: rgba(124, 58, 237, 0.5);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        background: rgba(255, 255, 255, 0.05);
       }
+
+      .feature-card:hover::before {
+        opacity: 1;
+      }
+
       .feature-icon {
-        font-size: 2rem;
-        color: var(--accent);
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+      }
+
+      .feature-card h3 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 1.5rem;
         margin-bottom: 1rem;
       }
 
-      /* Screenshot Area */
-      .preview {
-        padding: 4rem 0;
-        text-align: center;
-      }
-      .preview-img {
-        max-width: 100%;
-        border-radius: 12px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 215, 0, 0.1);
+      .feature-card p {
+        color: var(--text-muted);
+        font-size: 1.05rem;
       }
 
-      /* Carousel Navigation Buttons */
+      /* Carousel Section */
+      .preview {
+        padding: 2rem 0 6rem 0;
+        text-align: center;
+      }
+
+      /* The Carousel Frame */
+      #carousel {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+        /* Fixed Aspect Ratio for stability */
+        aspect-ratio: 16/9;
+        max-height: 650px;
+        background: #000;
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8);
+        overflow: hidden;
+      }
+
+      .preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Ensures entire image is visible */
+        display: block;
+        transition: opacity 0.4s ease-in-out;
+      }
+
+      /* Carousel Controls */
       .carousel-nav-btn {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        background: rgba(0, 0, 0, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         color: #fff;
-        font-size: 1.2rem;
+        font-size: 1.5rem;
         border-radius: 50%;
-        width: 48px;
-        height: 48px;
+        width: 56px;
+        height: 56px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
         z-index: 10;
+        backdrop-filter: blur(4px);
       }
+
       .carousel-nav-btn:hover {
-        background: rgba(255, 215, 0, 0.9);
-        color: #240b36;
-        border-color: #ffd700;
+        background: var(--accent);
+        color: #1a0b2e;
+        border-color: var(--accent);
         transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
       }
 
       .carousel-caption-styled {
-        margin-top: 1.5rem;
-        margin-bottom: 2.5rem;
-        font-family: 'Cinzel', serif;
-        font-size: 1.25rem;
-        color: var(--accent);
-        background: rgba(0, 0, 0, 0.7);
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        border-radius: 50px;
-        padding: 0.75rem 2rem;
-        display: inline-block;
-        position: relative;
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: 90%;
+
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #fff;
+
+        background: rgba(15, 5, 24, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 1rem 2rem;
+
         z-index: 2;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-        min-height: 3.5rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        text-align: center;
+      }
+
+      /* Indicators */
+      #carousel-indicators {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 5; /* Below caption, generally hidden unless caption is short */
+        opacity: 0; /* Hiding indicators to keep it clean, caption serves as context */
+        pointer-events: none;
       }
 
       /* Footer */
       footer {
-        padding: 3rem 0;
+        padding: 4rem 0;
         text-align: center;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.2);
+        border-top: 1px solid var(--glass-border);
         color: var(--text-muted);
-        font-size: 0.9rem;
+        font-size: 0.95rem;
       }
       footer a {
         color: var(--accent);
         text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s;
+      }
+      footer a:hover {
+        border-color: var(--accent);
       }
 
       @media (max-width: 768px) {
         .hero h1 {
-          font-size: 2.5rem;
+          font-size: 2.75rem;
         }
         .btn {
-          display: block;
-          margin: 0.5rem 0;
+          display: flex;
+          justify-content: center;
+          margin: 0.75rem 0;
           width: 100%;
-          text-align: center;
         }
         .btn-outline {
           margin-left: 0;
+        }
+        #carousel {
+          aspect-ratio: 4/3; /* Taller for mobile */
+          border-radius: 12px;
+        }
+        .carousel-caption-styled {
+          font-size: 0.9rem;
+          padding: 0.75rem 1rem;
+          bottom: 15px;
+          width: 90%;
         }
       }
     </style>
   </head>
   <body>
-    <header class="container">
-      <a href="#" class="logo">ElvenAssist ✨</a>
-      <nav>
-        <a
-          href="https://github.com/paviad/elvenar-helper-extension"
-          target="_blank"
-          style="color: white; font-size: 1.5rem"
-        >
-          <i class="fab fa-github"></i>
-        </a>
-      </nav>
+    <header>
+      <div class="container">
+        <a href="#" class="logo">ElvenAssist ✨</a>
+        <nav>
+          <a
+            href="https://github.com/paviad/elvenar-helper-extension"
+            target="_blank"
+            style="color: var(--text-muted); font-size: 1.5rem; transition: color 0.2s"
+            onmouseover="this.style.color='#fff'"
+            onmouseout="this.style.color='var(--text-muted)'"
+          >
+            <i class="fab fa-github"></i>
+          </a>
+        </nav>
+      </div>
     </header>
 
     <main>
       <section class="hero container">
         <span class="hero-tag">Now supporting Chapter 23 & 24!</span>
-        <h1>The Missing Tool for Elvenar</h1>
+        <h1>The Missing Tool<br />for Elvenar</h1>
         <p>
-          A modern, open-source City Planner and Inventory Manager that runs directly in your browser. No more manual
-          exports. No more outdated buildings. Instantly detect lucrative trades with our smart trade detection feature.
+          A modern, open-source City Planner and Inventory Manager that runs directly in your browser. No manual
+          exports. No outdated buildings. Just magic.
         </p>
 
-        <div style="margin-top: 2rem">
+        <div style="margin-top: 2.5rem">
           <a
             href="https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb"
             class="btn btn-primary"
@@ -273,52 +447,44 @@
       </section>
 
       <section class="preview container">
-        <div id="carousel" style="position: relative; max-width: 1200px; margin: 0 auto">
-          <img
-            src="ss1.jpg"
-            alt="City Planner Interface"
-            class="preview-img"
-            id="carousel-img"
-            style="
-              width: 1200px;
-              max-width: 100%;
-              min-height: 400px;
-              background: #333;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: #777;
-              transition: opacity 0.3s;
-            "
-          />
+        <div id="carousel">
+          <img src="ss1.jpg" alt="City Planner Interface" class="preview-img" id="carousel-img" />
+
           <div id="carousel-caption" class="carousel-caption-styled"></div>
-          
-          <button id="carousel-prev" class="carousel-nav-btn" style="left: 20px;" aria-label="Previous image">
+
+          <button id="carousel-prev" class="carousel-nav-btn" style="left: 20px" aria-label="Previous image">
             <i class="fas fa-chevron-left"></i>
           </button>
-          
-          <button id="carousel-next" class="carousel-nav-btn" style="right: 20px;" aria-label="Next image">
+
+          <button id="carousel-next" class="carousel-nav-btn" style="right: 20px" aria-label="Next image">
             <i class="fas fa-chevron-right"></i>
           </button>
 
-          <div
-            id="carousel-indicators"
-            style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px"
-          ></div>
+          <!-- Hidden indicators logic retained for state, but visual removed for cleanliness -->
+          <div id="carousel-indicators"></div>
         </div>
-        
+
         <script>
           const carouselImages = [
             {
               src: 'ss1.jpg',
               alt: 'City Planner Interface',
-              caption: 'Plan your city layout with drag-and-drop simplicity.',
+              caption: 'Plan your city layout with drag-and-drop simplicity using live data.',
             },
-            { src: 'ss3.jpg', alt: 'Inventory Management', caption: 'Track and manage your inventory in real time.' },
+            {
+              src: 'ss3.jpg',
+              alt: 'Inventory Management',
+              caption: 'Track, sort, and filter your inventory instantly.',
+            },
             {
               src: 'ss2.jpg',
               alt: 'Trade Overview',
-              caption: 'Detect lucrative trade opportunities (non-boosted for boosted ascended).',
+              caption: 'Smart Trade detection finds lucrative ascended trade opportunities.',
+            },
+            {
+              src: 'ss4.jpg',
+              alt: 'Fellowship Adventure',
+              caption: 'Master the Fellowship Adventure with live badge tracking and production timelines.',
             },
           ];
           let carouselIndex = 0;
@@ -334,20 +500,26 @@
             carouselTimer = setInterval(() => {
               carouselIndex = (carouselIndex + 1) % carouselImages.length;
               updateCarousel(false);
-            }, 5000);
+            }, 6000); // Slowed down slightly for readability
           }
 
           function updateCarousel(resetTimer = true) {
-            imgEl.style.opacity = 0.3;
+            imgEl.style.opacity = 0; // Fade out
+            captionEl.style.opacity = 0;
+
             setTimeout(() => {
               imgEl.src = carouselImages[carouselIndex].src;
               imgEl.alt = carouselImages[carouselIndex].alt;
               captionEl.textContent = carouselImages[carouselIndex].caption || '';
-              imgEl.style.opacity = 1;
+
+              imgEl.style.opacity = 1; // Fade in
+              captionEl.style.opacity = 1;
+
               Array.from(indicators.children).forEach((dot, i) => {
-                dot.style.background = i === carouselIndex ? '#ffd700' : '#fff3';
+                // Logic kept if you ever want to re-enable dots
               });
-            }, 150);
+            }, 300); // Matches transition duration roughly
+
             if (resetTimer) startCarouselTimer();
           }
 
@@ -360,22 +532,8 @@
             updateCarousel();
           };
 
-          // Indicators
-          carouselImages.forEach((_, i) => {
-            const dot = document.createElement('span');
-            dot.style.width = '12px';
-            dot.style.height = '12px';
-            dot.style.borderRadius = '50%';
-            dot.style.display = 'inline-block';
-            dot.style.background = i === 0 ? '#ffd700' : '#fff3';
-            dot.style.cursor = 'pointer';
-            dot.onclick = () => {
-              carouselIndex = i;
-              updateCarousel();
-            };
-            indicators.appendChild(dot);
-          });
-          // Set initial caption and start auto-cycling
+          // Initialize
+          imgEl.src = carouselImages[0].src;
           captionEl.textContent = carouselImages[0].caption || '';
           startCarouselTimer();
         </script>
@@ -383,22 +541,21 @@
 
       <section class="features">
         <div class="container">
-          <h2 style="text-align: center">Why Switch?</h2>
+          <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem">Why Switch?</h2>
           <div class="features-grid">
             <div class="feature-card">
               <i class="fas fa-city feature-icon"></i>
               <h3>Live City Planner</h3>
               <p>
-                Works just like the tools you know, but uses live data. It automatically detects your layout so you can
-                start planning immediately.
+                Works just like the tools you know, but uses live data directly from the game. No manual import
+                required.
               </p>
             </div>
             <div class="feature-card">
               <i class="fas fa-dragon feature-icon"></i>
               <h3>Chapters 23 & 24</h3>
               <p>
-                The only planner updated with the latest chapters. We have the building sizes and assets that others are
-                missing.
+                Fully updated with the latest chapters. We have the building sizes and assets that others are missing.
               </p>
             </div>
             <div class="feature-card">
@@ -410,8 +567,15 @@
               <i class="fas fa-scale-balanced feature-icon"></i>
               <h3>Efficient Trades</h3>
               <p>
-                Automatically detect lucrative opportunities - trades by players offering non-boosted ascended goods in
-                exchange for your boosted ascended goods.
+                Automatically detect lucrative opportunities: non-boosted ascended goods traded for your boosted ones.
+              </p>
+            </div>
+            <div class="feature-card">
+              <i class="fas fa-map-marked-alt feature-icon"></i>
+              <h3>Fellowship Adventure</h3>
+              <p>
+                Track badge progress in real-time. Visualize production timelines to know exactly when your badges will
+                be ready.
               </p>
             </div>
             <div class="feature-card">
