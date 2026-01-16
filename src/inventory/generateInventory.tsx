@@ -1,7 +1,7 @@
 import { BuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
-import { getItemDefinitions } from '../elvenar/sendItemsQuery';
-import { getTomes } from '../elvenar/sendTomesQuery';
+import { getItemDefinitions } from '../elvenar/getItemDefinitions';
+import { getTomes } from '../elvenar/getTomes';
 import { BuildingEx } from '../model/buildingEx';
 import { InventoryItem } from '../model/inventoryItem';
 import { ItemDefinition } from '../model/itemDefinition';
@@ -50,7 +50,7 @@ export async function generateInventory(accountId: string) {
   function getResaleResources(building: BuildingEx): Record<string, number> {
     const resources = { ...building.resale_resources.resources };
 
-    delete resources['__class__'];
+    // delete resources['__class__'];
 
     return resources;
   }

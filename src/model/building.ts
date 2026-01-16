@@ -6,31 +6,41 @@ export interface Building {
   type: string;
   width: number;
   length: number;
-  construction_time: number;
-  resaleable: boolean;
-  resale_resources: Resources;
+  // construction_time: number;
+  // resaleable: boolean;
+  resale_resources: { resources: ResaleResources };
   base_name: string;
   level: number;
-  rarity: number;
-  category: string;
-  premium_cost_factor: number;
-  feature: string;
-  components: Components;
-  productionTimeReduction: number;
-  upgradeRequirements: Requirements;
+  // rarity: number;
+  // category: string;
+  // premium_cost_factor: number;
+  // feature: string;
+  // components: Components;
+  // productionTimeReduction: number;
+  // upgradeRequirements: Requirements;
   requirements: Requirements;
-  provisions: Provisions;
+  provisions?: { resources: { resources: ProvisionResources } };
   spellFragments: number;
 }
 
-export interface Components {
-  is_event_building: Is;
-  is_chapter_based: Is;
-  is_set_building: Is;
+export interface ProvisionResources {
+  culture?: number;
+  population?: number;
+  prestige?: number;
+  prosperity?: number;
 }
 
-export interface Is {
-  id: string;
+export interface ResaleResources {
+  money?: number;
+  supplies?: number;
+  population?: number;
+  royalrestoration?: number;
+  craft_spell_fragments?: number;
+  combiningcatalyst?: number;
+  mana?: number;
+  seeds?: number;
+  orcs?: number;
+  work?: number;
 }
 
 export interface Provisions {
@@ -38,8 +48,8 @@ export interface Provisions {
 }
 
 export interface Requirements {
-  resources: Resources;
-  chapter: number;
+  // resources: Resources;
+  // chapter: number;
   connectionStrategyId: string;
 }
 

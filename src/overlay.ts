@@ -1,11 +1,8 @@
-import {
-  setupCityDataUpdatedListener,
-  setupMessageListener,
-  setupOtherPlayerCityUpdatedListener,
-} from './chrome/messages';
+import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
+import { setupBuldingsProcessedListener } from './overlay/setupBuldingsProcessedListener';
 
 let expandFn: (state: boolean) => void;
 let ensureWidthAndHeightAtLeastFn: (minWidth: number, minHeight: number) => void;
@@ -17,6 +14,8 @@ const initFunc = async () => {
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
   if (existingPanel) {
     existingPanel.remove();
+  } else {
+    setupBuldingsProcessedListener();
   }
 
   // Create the div

@@ -1,3 +1,5 @@
+import { ResaleResources } from './building';
+
 export interface BuildingEx {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export interface BuildingEx {
   length: number;
   width: number;
   connectionStrategy: string;
-  resale_resources: { resources: Record<string, number> };
+  resale_resources: { resources: ResaleResources };
   spellFragments: number;
   chapter?: number;
 }

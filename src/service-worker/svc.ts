@@ -22,14 +22,8 @@ import { sendTradeQuery } from '../elvenar/sendTradeQuery';
 import { sendVisitPlayerQuery } from '../elvenar/sendVisitPlayerQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
-import { matchBuildingsUrl } from './matchBuildingsUrl';
-import { matchEffectsUrl } from './matchEffectsUrl';
-import { matchGoodsUrl } from './matchGoodsUrl';
-import { matchItemsUrl } from './matchItemsUrl';
 import { matchPremiumBuildingHintsUrl } from './matchPremiumBuildingHintsUrl';
-import { matchRenderConfigUrl } from './matchRenderConfigUrl';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
-import { matchTomesUrl } from './matchTomesUrl';
 import { openOrRestoreTab } from './openOrRestoreTab';
 
 console.log('Elvenar Extension: Service Worker Loaded');
@@ -112,20 +106,8 @@ const callbackRequest = (details: {
     tabId: -1,
   };
 
-  matchBuildingsUrl(details, sharedInfo);
-
-  matchRenderConfigUrl(details, sharedInfo);
-
-  matchItemsUrl(details, sharedInfo);
-
-  matchTomesUrl(details, sharedInfo);
 
   matchTechTreeUrl(details, sharedInfo);
-
-  matchEffectsUrl(details, sharedInfo);
-
-  matchGoodsUrl(details, sharedInfo);
-
   matchPremiumBuildingHintsUrl(details, sharedInfo);
 
   const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;

@@ -8,8 +8,8 @@ import Stack from '@mui/material/Stack';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { IconButton } from '@mui/material';
-import { MessageToInjectedScript } from '../inject/MessageFromInjectedScript';
 import { getAccountById } from '../elvenar/AccountManager';
+import { MessageToInjectedScript } from '../inject/injectMessages';
 
 // Extend the Window interface to include forceChatRerender
 declare global {

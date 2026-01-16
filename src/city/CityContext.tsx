@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useReducer, useC
 import { MoveLogInterface } from './MoveLog/MoveLogInterface';
 import { CityBlock } from './CityBlock';
 import { useTabStore } from '../util/tabStore';
-import { getMaxLevels } from '../elvenar/sendRenderConfigQuery';
+import { getMaxLevels } from '../elvenar/getMaxLevels';
 import { UnlockedArea } from '../model/unlockedArea';
 
 interface CityContextType {

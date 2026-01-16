@@ -1,5 +1,5 @@
-import { pl } from 'date-fns/locale';
-import { MessageFromInjectedScript, MessageToInjectedScript } from './MessageFromInjectedScript';
+import { MessageFromInjectedScript, MessageToInjectedScript } from './injectMessages';
+import { GlobalHttpInterceptorService } from './XhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
 
@@ -16,7 +16,6 @@ declare global {
 window.WebSocketUnchanged = window.WebSocket;
 
 let globalSendHook: ((message: string) => void) | null = null;
-let globalTopicId: string | null = null;
 
 class CustomWebSocket extends WebSocket {
   private onmessageListenerCallbackOriginal: (event: MessageEvent) => void = () => {
@@ -64,16 +63,6 @@ class CustomWebSocket extends WebSocket {
 
   override send(...args: Parameters<WebSocket['send']>): void {
     // install a hook to allow sending new messages if needed
-
-    const topicIdRegex = /^X-SocketServer-Topic:guild\.(\w+)$/m;
-    globalTopicId = null;
-    if (typeof args[0] === 'string') {
-      const match = args[0].match(topicIdRegex);
-      if (match) {
-        const topicId = match[1];
-        globalTopicId = topicId;
-      }
-    }
 
     const sendMessageHook = (message: string) => {
       super.send(message);
@@ -142,8 +131,10 @@ content-length:2
 }
 
 window.WebSocket = CustomWebSocket;
-
 console.log('ElvenAssist: Finished adding interceptor to WebSocket');
+
+const xhrInterceptor = new GlobalHttpInterceptorService();
+console.log('ElvenAssist: Finished adding interceptor to XMLHttpRequest');
 
 const messageHandler = (event: MessageEvent<MessageToInjectedScript>) => {
   if (event.source !== window || event.data.type !== 'MY_OUTGOING_MESSAGE') {

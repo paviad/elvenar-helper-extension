@@ -4,7 +4,7 @@ import { useTabStore } from '../util/tabStore';
 import { Box, Stack } from '@mui/material';
 import { ProductionTimeline } from './ProductionTimeline';
 import { generateCity } from '../city/generateCity';
-import { getEffects } from '../elvenar/sendEffectsQuery';
+import { getEffects } from '../elvenar/getEffects';
 import FaProgress from './FaProgress';
 import { Badges } from '../model/badges';
 import FaControlPanel from './FaControlPanel';

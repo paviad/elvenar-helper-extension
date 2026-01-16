@@ -16,6 +16,7 @@ export const knownTypes: Record<string, string> = {
   residential: '#f9c602',
   premium_residential: '#f9c602',
   worker_hut: '#f9c602',
+  worker_hut_y: '#f9c602',
   academy: '#f9c602',
 
   goods: '#fe2ad5',
@@ -25,6 +26,8 @@ export const knownTypes: Record<string, string> = {
 
   ancient_wonder: '#fef7c6',
   ancient_wonder_x: '#fef7c6',
+  ancient_wonder_y: '#fef7c6',
+  guardian_y: '#fef7c6',
 
   portal: '#02e880',
   portal_x: '#02e880',
