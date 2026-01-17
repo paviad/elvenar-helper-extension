@@ -1,7 +1,8 @@
 import { GoodsBuildingRaw, GoodsBuilding } from '../model/goodsBuilding';
 import { getPrefix } from '../util/getPrefix';
+import { saveToStorage } from '../chrome/storage';
 
-export function processMaxLevels(responseText: string) {
+export async function processMaxLevels(responseText: string) {
   const json = JSON.parse(responseText);
 
   const goodsRenderConfig = (json.building_configs as GoodsBuildingRaw[]).map(
@@ -11,7 +12,7 @@ export function processMaxLevels(responseText: string) {
         id: r.id,
         w: r.tile_width,
         l: r.tile_length,
-      } as GoodsBuilding),
+      }) as GoodsBuilding,
   );
 
   const maxLevels = goodsRenderConfig
@@ -28,6 +29,10 @@ export function processMaxLevels(responseText: string) {
       {} as Record<string, number>,
     );
 
-  return { maxLevels };
+  await setMaxLevels(maxLevels);
 }
 
+async function setMaxLevels(maxLevels: Record<string, number>) {
+  const plain = JSON.stringify(maxLevels);
+  await saveToStorage('maxLevels', plain);
+}

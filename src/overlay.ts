@@ -2,7 +2,8 @@ import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/mes
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
-import { setupBuldingsProcessedListener } from './overlay/setupBuldingsProcessedListener';
+import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
+import { setupPlayerSpecificRequestInterceptedListener } from './overlay/setupPlayerSpecificRequestInterceptedListener';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {
@@ -21,7 +22,8 @@ const initFunc = async () => {
   if (existingPanel) {
     existingPanel.remove();
   } else {
-    setupBuldingsProcessedListener();
+    setupNonSpecificRequestInterceptedListener();
+    setupPlayerSpecificRequestInterceptedListener();
   }
 
   // Create the div

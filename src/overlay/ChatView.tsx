@@ -9,7 +9,7 @@ import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { IconButton } from '@mui/material';
 import { getAccountById } from '../elvenar/AccountManager';
-import { MessageToInjectedScript } from '../inject/injectMessages';
+import { SendWebsocketMessage } from '../inject/websocketMessages';
 
 // Extend the Window interface to include forceChatRerender
 declare global {
@@ -41,6 +41,8 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   const prevScrollHeightRef = React.useRef<number | null>(null);
   // Array of refs for each message
   const messageRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+
+  const [firstActivated, setFirstActivated] = React.useState(false);
 
   // Search state
   // searchActive and searchTerm now come from props
@@ -119,6 +121,18 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   React.useEffect(() => {
     if (sortedMessages.length > 0) {
       ensureMinWidthAndHeight(400, 600);
+    }
+  }, [sortedMessages]);
+
+  React.useLayoutEffect(() => {
+    if (!firstActivated) {
+      const el = containerRef.current;
+      setTimeout(() => {
+        if (el) {
+          el.scrollTop = el.scrollHeight;
+        }
+      }, 0);
+      setFirstActivated(true);
     }
   }, [sortedMessages]);
 
@@ -208,13 +222,13 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
 
     window.postMessage(
       {
-        type: 'MY_OUTGOING_MESSAGE',
+        type: 'SEND_WEBSOCKET_MESSAGE',
         payload: {
           type: 'MARK_AS_READ',
           playerId,
           guildId,
         },
-      } satisfies MessageToInjectedScript,
+      } satisfies SendWebsocketMessage,
       '*',
     );
   }

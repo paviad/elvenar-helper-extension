@@ -1,30 +1,23 @@
 import {
-  sendCityDataUpdatedMessage,
   setupMessageListener,
   setupOpenExtensionTabListener,
   setupRefreshCityListener,
   setupCitySavedListener,
-  sendOtherPlayerCityDataUpdatedMessage,
+  setupInterceptedPlayerSpecificRequestListener,
+  setupInterceptedNonSpecificRequestListener,
 } from '../chrome/messages';
 import {
   getAccountById,
-  getAccountBySessionId,
   getAccountByTabId,
-  getAllStoredAccounts,
   loadAccountManagerFromStorage,
   saveAllAccounts,
 } from '../elvenar/AccountManager';
-import { sendCauldronQuery } from '../elvenar/sendCauldronQuery';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
-import { sendInventoryQuery } from '../elvenar/sendInventoryQuery';
-import { sendQuestQuery } from '../elvenar/sendQuestQuery';
-import { sendTradeQuery } from '../elvenar/sendTradeQuery';
-import { sendVisitPlayerQuery } from '../elvenar/sendVisitPlayerQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
-import { matchPremiumBuildingHintsUrl } from './matchPremiumBuildingHintsUrl';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
 import { openOrRestoreTab } from './openOrRestoreTab';
+import { playerSpecificRequestHandler } from './playerSpecificRequestHandler';
+import { nonSpecificRequestHandler } from './nonSpecificRequestHandler';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {
@@ -45,8 +38,6 @@ async function initialize() {
   });
   setupCitySavedListener(async (msg) => {
     await loadAccountManagerFromStorage(true);
-    const allAccounts = getAllStoredAccounts();
-    console.log('ElvenAssist: City saved for account:', msg.accountId, allAccounts);
   });
   setupRefreshCityListener(async (msg) => {
     await loadAccountManagerFromStorage();
@@ -70,6 +61,8 @@ async function initialize() {
       };
     }
   });
+  setupInterceptedNonSpecificRequestListener(nonSpecificRequestHandler);
+  setupInterceptedPlayerSpecificRequestListener(playerSpecificRequestHandler);
   await loadAccountManagerFromStorage();
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }
@@ -110,138 +103,10 @@ const callbackRequest = (details: {
     worldId: '',
     sessionId: '',
     tabId: -1,
+    reqBody: '',
   };
 
-
   matchTechTreeUrl(details, sharedInfo);
-  matchPremiumBuildingHintsUrl(details, sharedInfo);
-
-  const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
-  // Check if the URL matches the pattern and save it in a global variable
-  const urlMatch = details.url.match(urlMatcher);
-
-  if (urlMatch) {
-    const referer = urlMatch[1];
-    const worldId = urlMatch[2];
-    const sessionId = urlMatch[3];
-
-    sharedInfo.reqReferrer = referer;
-    sharedInfo.worldId = worldId;
-    sharedInfo.reqUrl = details.url;
-    sharedInfo.sessionId = sessionId;
-    sharedInfo.tabId = details.tabId;
-
-    const decoder = new TextDecoder('utf-8'); // Specify the encoding, UTF-8 is common
-    const decodedString = decoder.decode(details.requestBody.raw[0].bytes);
-
-    const expectedCity =
-      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\["LoadFeatureManifestsCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"StartupService","requestMethod":"getData","requestId":\d+}]/;
-
-    if (expectedCity.test(decodedString)) {
-      async function Do() {
-        sharedInfo.reqBodyCity = decodedString;
-        try {
-          await loadAccountManagerFromStorage();
-          await sendCityDataQuery(sharedInfo);
-          await saveAllAccounts();
-          sendCityDataUpdatedMessage(details.tabId);
-        } catch (error) {
-          console.error('Error in sendCityDataQuery:', error);
-        }
-      }
-      Do();
-    }
-
-    const expectedInventory =
-      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"InventoryService","requestMethod":"getItems","requestId":\d+}]/;
-
-    if (expectedInventory.test(decodedString)) {
-      async function Do() {
-        sharedInfo.reqBodyInventory = decodedString;
-        try {
-          await loadAccountManagerFromStorage();
-          await sendInventoryQuery(sharedInfo);
-          await saveAllAccounts();
-        } catch (error) {
-          console.error('Error in sendInventoryQuery:', error);
-        }
-      }
-      Do();
-    }
-
-    const expectedTrade =
-      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"TradeService","requestMethod":"getOtherPlayersTrades","requestId":\d+}]/;
-
-    if (expectedTrade.test(decodedString)) {
-      async function Do() {
-        sharedInfo.reqBodyTrade = decodedString;
-        try {
-          await loadAccountManagerFromStorage();
-          await sendTradeQuery(sharedInfo);
-          await saveAllAccounts();
-          const accountData = getAccountBySessionId(sessionId);
-          if (accountData) {
-            await tradeOpenedCallback(accountData);
-          }
-        } catch (error) {
-          console.error('Error in sendTradeQuery:', error);
-        }
-      }
-      Do();
-    }
-
-    const expectedCauldron =
-      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"CauldronService","requestMethod":"getIngredients","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"CauldronService","requestMethod":"getPotionEffects","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureStartupDataCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["FlushUncaughtErrorBuffer"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureWindowCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureTooltipCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureViewBehaviorsCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"TreasureService","requestMethod":"refresh","requestId":\d+},{"__class__":"ServerRequestVO","requestData":\["ConfigureIsoEngineCommand"],"requestClass":"LogService","requestMethod":"trackGameStartup","requestId":\d+}]/;
-
-    if (expectedCauldron.test(decodedString)) {
-      async function Do() {
-        sharedInfo.reqBodyCauldron = decodedString;
-        try {
-          await loadAccountManagerFromStorage();
-          await sendCauldronQuery(sharedInfo);
-          await saveAllAccounts();
-        } catch (error) {
-          console.error('Error in sendTradeQuery:', error);
-        }
-      }
-      Do();
-    }
-
-    const expectedVisitPlayer =
-      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[\d+\],"requestClass":"OtherPlayerService","requestMethod":"visitPlayer","requestId":\d+}]/;
-
-    if (expectedVisitPlayer.test(decodedString)) {
-      async function Do() {
-        sharedInfo.reqBodyVisitPlayer = decodedString;
-        try {
-          await loadAccountManagerFromStorage();
-          await sendVisitPlayerQuery(sharedInfo);
-          await saveAllAccounts();
-          await sendOtherPlayerCityDataUpdatedMessage();
-        } catch (error) {
-          console.error('Error in sendVisitPlayerQuery:', error);
-        }
-      }
-      Do();
-    }
-
-    const expectedQuestUpdates =
-      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[],"requestClass":"QuestService","requestMethod":"getUpdates","requestId":\d+}]/;
-
-    if (expectedQuestUpdates.test(decodedString)) {
-      async function Do() {
-        sharedInfo.reqBodyQuest = decodedString;
-        try {
-          await loadAccountManagerFromStorage();
-          await sendQuestQuery(sharedInfo);
-          await saveAllAccounts();
-        } catch (error) {
-          console.error('Error in sendQuestQuery:', error);
-        }
-      }
-      Do();
-    }
-  }
 
   return;
 };

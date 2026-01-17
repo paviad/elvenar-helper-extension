@@ -1,7 +1,5 @@
-// Define the available message IDs here
 export type HelperMessageId = 'drag_tip' | 'visited_other' | 'multiple_accounts_notice';
 
-// The actual content map
 export const HELPER_MESSAGES: Record<HelperMessageId, string> = {
   drag_tip:
     "While dragging, you can press the '+' and '-' keys to quickly change the building's level. You may also press 'Del' to delete it.",

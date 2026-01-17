@@ -1,18 +1,8 @@
-import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { OtherPlayerClass } from '../model/otherPlayer';
-import { UnlockedArea } from '../model/unlockedArea';
-import { ElvenarUserData } from '../model/userData';
-import {
-  AccountData,
-  getAccountById,
-  getAccountBySessionId,
-  getAccountIdBySessionId,
-  setAccountData,
-} from './AccountManager';
+import { getAccountById, getAccountIdBySessionId, setAccountData } from './AccountManager';
 
 export async function sendQuestQuery(sharedInfo: ExtensionSharedInfo) {
-  const { reqUrl: url, reqReferrer: referrer, reqBodyQuest: reqBody, worldId } = sharedInfo;
+  const { reqUrl: url, reqReferrer: referrer, reqBody } = sharedInfo;
 
   const response = await fetch(url, {
     headers: {

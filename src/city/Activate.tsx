@@ -16,7 +16,6 @@ export function Activate() {
     async function loadData() {
       if (routeAccountId) {
         await loadAccountManagerFromStorage(true);
-        console.log('ElvenAssist: Activating accountId:', routeAccountId);
         setAccountId(routeAccountId);
         setDoNavigate(true);
         nav('/city', { replace: true });

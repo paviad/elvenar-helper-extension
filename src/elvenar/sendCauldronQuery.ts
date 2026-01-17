@@ -1,10 +1,8 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { Ingredient } from '../model/ingredient';
-import { PotionEffect } from '../model/potionEffect';
-import { getAccountBySessionId } from './AccountManager';
+import { processCauldron } from './processCauldron';
 
 export async function sendCauldronQuery(sharedInfo: ExtensionSharedInfo) {
-  const { reqUrl: url, reqReferrer: referrer, reqBodyCauldron: reqBody, worldId } = sharedInfo;
+  const { reqUrl: url, reqReferrer: referrer, reqBody } = sharedInfo;
 
   const response = await fetch(url, {
     headers: {
@@ -34,14 +32,6 @@ export async function sendCauldronQuery(sharedInfo: ExtensionSharedInfo) {
     );
   }
 
-  const json = (await response.json()) as [unknown, { responseData: Ingredient[] }, { responseData: PotionEffect[] }];
-
-  const accountData = getAccountBySessionId(sharedInfo.sessionId);
-
-  if (accountData) {
-    accountData.cauldron = {
-      ingredients: json[1].responseData,
-      potionEffects: json[2].responseData,
-    };
-  }
+  const untypedJson = await response.json();
+  await processCauldron(untypedJson, sharedInfo);
 }

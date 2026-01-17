@@ -1,3 +1,5 @@
+import { NonSpecificMessage } from '../inject/nonSpecificMessages';
+import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { TradeSummary } from '../model/tradeSummary';
 
 export interface TradeOpenedMessage {
@@ -36,13 +38,26 @@ export interface CitySavedMessage {
   accountId: string;
 }
 
+export interface InterceptedPlayerSpecificRequest {
+  type: 'interceptedPlayerSpecificRequest';
+  payload: PlayerSpecificMessage;
+}
+
+export interface InterceptedNonSpecificRequest {
+  type: 'interceptedNonSpecificRequest';
+  payload: NonSpecificMessage;
+}
+
 export type AllMessages =
   | TradeOpenedMessage
   | TradeParsedMessage
   | RefreshCityMessage
   | OpenExtensionTabMessage
   | CityDataUpdatedMessage
-  | CitySavedMessage;
+  | CitySavedMessage
+  | OtherPlayerCityUpdatedMessage
+  | InterceptedPlayerSpecificRequest
+  | InterceptedNonSpecificRequest;
 
 export interface MessageResponse {
   success: boolean;
@@ -110,6 +125,28 @@ export const sendOtherPlayerCityDataUpdatedMessage = async () => {
   }
 };
 
+export const sendInterceptedPlayerSpecificRequest = async (payload: PlayerSpecificMessage) => {
+  try {
+    await chrome.runtime.sendMessage({
+      type: 'interceptedPlayerSpecificRequest',
+      payload,
+    } satisfies InterceptedPlayerSpecificRequest);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending interceptedPlayerSpecificRequest:', e);
+  }
+};
+
+export const sendInterceptedNonSpecificRequest = async (payload: NonSpecificMessage) => {
+  try {
+    await chrome.runtime.sendMessage({
+      type: 'interceptedNonSpecificRequest',
+      payload,
+    } satisfies InterceptedNonSpecificRequest);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending interceptedNonSpecificRequest:', e);
+  }
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const callbackMap: Record<string, (...args: any[]) => any> = {};
 
@@ -154,3 +191,11 @@ export const setupOtherPlayerCityUpdatedListener = (callback: (message: OtherPla
 
 export const setupCitySavedListener = (callback: (message: CitySavedMessage) => void) =>
   (callbackMap['citySaved'] = callback);
+
+export const setupInterceptedPlayerSpecificRequestListener = (
+  callback: (message: InterceptedPlayerSpecificRequest, sender: chrome.runtime.MessageSender) => void,
+) => (callbackMap['interceptedPlayerSpecificRequest'] = callback);
+
+export const setupInterceptedNonSpecificRequestListener = (
+  callback: (message: InterceptedNonSpecificRequest) => void,
+) => (callbackMap['interceptedNonSpecificRequest'] = callback);

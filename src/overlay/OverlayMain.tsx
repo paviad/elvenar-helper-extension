@@ -10,7 +10,7 @@ import { HelpDialog } from './HelpDialog';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { TradeView } from './TradeView';
-import { MessageFromInjectedScript } from '../inject/injectMessages';
+import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -59,9 +59,9 @@ export function OverlayMain() {
     storeSetChatMessages([...storeChatMessages, ...newMessages]);
   }, [chatMessages]);
 
-  const messageHandler = (event: MessageEvent<MessageFromInjectedScript>) => {
+  const messageHandler = (event: MessageEvent<ReceivedWebsocketMessage>) => {
     // We must verify the sender and the message type for security
-    if (event.source !== window || event.data.type !== 'MY_EXTENSION_MESSAGE') {
+    if (event.source !== window || event.data.type !== 'RECEIVED_WEBSOCKET_MESSAGE') {
       return;
     }
 

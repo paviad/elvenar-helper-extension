@@ -1,5 +1,7 @@
+import { saveToStorage } from '../chrome/storage';
 import { Building } from '../model/building';
 import { BuildingRaw } from '../model/BuildingRaw';
+import { smartCompress } from '../util/compression';
 
 const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] => {
   const filtered = uncompressed.map(
@@ -42,7 +44,7 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
         },
         description: r.description,
         spellFragments: r.spellFragments,
-      } satisfies Building),
+      }) satisfies Building,
   );
 
   const filtered2 = JSON.parse(JSON.stringify(filtered)) as typeof filtered; // remove undefined fields
@@ -50,13 +52,25 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
   return filtered2;
 };
 
-export function processBuildings(decodedResponse: string, all: boolean) {
+export async function processBuildings(decodedResponse: string, all: boolean) {
   const buildingsRaw = JSON.parse(decodedResponse) as BuildingRaw[];
   const processedBuildings = processInterceptedBuildings(buildingsRaw);
 
-  return {
-    buildings: processedBuildings,
-    matcherAll: all,
-    matcherFeature: !all,
-  };
+  if (all) {
+    await setBuildingsAll(processedBuildings);
+  } else {
+    await setBuildingsFeature(processedBuildings);
+  }
+}
+
+async function setBuildingsAll(buildings: Building[]) {
+  const plain = JSON.stringify(buildings);
+  const compressed = await smartCompress(plain);
+  await saveToStorage('buildings', compressed);
+}
+
+async function setBuildingsFeature(buildings: Building[]) {
+  const plain = JSON.stringify(buildings);
+  const compressed = await smartCompress(plain);
+  await saveToStorage('buildingsFeature', compressed);
 }

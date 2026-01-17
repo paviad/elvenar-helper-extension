@@ -1,5 +1,5 @@
 import { getBuildings } from '../elvenar/getBuildings';
-import { getPremiumBuildingHints } from '../elvenar/sendPremiumBuildingHintsQuery';
+import { getPremiumBuildingHints } from '../elvenar/getPremiumBuildingHints';
 import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
 import { CityEntityExData } from '../model/cityEntity';

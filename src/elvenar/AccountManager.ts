@@ -125,7 +125,6 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
   if (accountsLastSavedRaw) {
     const accountsLastSaved = parseInt(accountsLastSavedRaw, 10);
     if (accounts_last_saved && accountsLastSaved > accounts_last_saved) {
-      console.log('ElvenAssist: Detected newer accounts in storage, refreshing');
       refresh = true;
     }
   }
@@ -170,6 +169,7 @@ export const saveNewCityAs = async (
       worldId: '',
       sessionId: '',
       tabId: 0,
+      reqBody: '',
     },
     cityQuery: {
       accountId,
@@ -279,6 +279,7 @@ export const saveCurrentCityAs = async (currentAccountId: string, newAccountId: 
     worldId: '',
     sessionId: '',
     tabId: 0,
+    reqBody: '',
   };
   newAccountData.isDetached = true;
   newAccountData.cityQuery.cityEntities = cityEntities;
