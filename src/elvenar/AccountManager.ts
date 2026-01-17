@@ -65,7 +65,7 @@ export function setSaveHook(hook: () => void) {
   saveHook = hook;
 }
 
-export function getAccountId(playerId: number, worldId: string): string {
+export function generateAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
 }
 

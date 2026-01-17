@@ -5,12 +5,9 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Quest } from '../model/quest';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
-import { FaQuest, getAccountId, AccountData, setAccountData } from './AccountManager';
+import { FaQuest, generateAccountId, AccountData, setAccountData, getAccountBySessionId } from './AccountManager';
 
-export async function processCityData(
-  untypedJson: unknown,
-  sharedInfo: ExtensionSharedInfo,
-) {
+export async function processCityData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; responseData: unknown }];
 
   const startupService = json.find((r) => r.requestClass === 'StartupService')?.responseData as {
@@ -105,11 +102,14 @@ export async function processCityData(
     '3': 'Felyndral',
   };
   const worldId = sharedInfo.worldId;
-  const accountId = getAccountId(user_data.player_id, worldId);
+  const accountId = generateAccountId(user_data.player_id, worldId);
   const worldName = worldId === 'zz' ? 'Beta' : worldNames[worldId[worldId.length - 1]] || 'Unknown World';
   const accountName = `${user_data.user_name} (${worldId} ${worldName})`;
 
+  const accountData = getAccountBySessionId(sharedInfo.sessionId) || {};
+
   const data = {
+    ...accountData,
     cityQuery: {
       maxChapter,
       boostedGoods,

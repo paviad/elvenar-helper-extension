@@ -54,7 +54,7 @@ X-Correlation:848933052
   try {
     body = JSON.parse(payloadString);
   } catch (e) {
-    console.log('ElvenAssist: Error parsing socket message payload JSON:', e, { payloadString });
+    // console.log('ElvenAssist: Error parsing socket message payload JSON:', e, { payloadString });
     return null;
   }
 
