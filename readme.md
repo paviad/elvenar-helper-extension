@@ -24,6 +24,7 @@ Stop relying on manual exports. Our City Block Editor reads your layout directly
 - **Standalone Detector**: Easily spot which buildings have lost their street connection to the Main Hall.
 - **Building Finder**: Lost a culture building in your dense layout? Use the Search feature to locate any structure instantly.
 - **Chapter Overlays**: Automatically overlays Chapter numbers on culture and residential blocks.
+- **Build Menu**: Can add any building from the game to your city from the build menu.
 
 ### 2. 🗺️ Fellowship Adventure
 Master the FA with real-time data.

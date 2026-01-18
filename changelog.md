@@ -1,5 +1,8 @@
 # Changelog
 
+## v5.5.0
+- New feature: Build menu (Alt+B)
+
 ## v5.4.0
 - Performance optimizations
 

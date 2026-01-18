@@ -16,6 +16,8 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
         level: r.level,
         base_name: r.base_name,
         requirements: r.requirements && {
+          chapter: r.requirements.chapter,
+          worker: r.requirements.worker,
           connectionStrategyId: r.requirements.connectionStrategyId,
         },
         resale_resources: r.resale_resources && {

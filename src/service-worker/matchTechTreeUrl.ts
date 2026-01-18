@@ -12,7 +12,7 @@ export function matchTechTreeUrl(
   sharedInfo: ExtensionSharedInfo,
 ) {
   const techTreeUrlMatcher =
-    /^https:\/\/oxen\.innogamescdn\.com\/frontend\/.*\/assets\/atlas-techtree\.gui\.chapternavigation-[a-f0-9]+\.png$/;
+    /^https:\/\/ox.*\.innogamescdn\.com\/frontend\/.*\/assets\/atlas-techtree\.gui\.chapternavigation-[a-f0-9]+\.png$/;
   if (techTreeUrlMatcher.test(details.url)) {
     async function Do() {
       await saveToStorage('techTreeSpriteUrl', details.url);

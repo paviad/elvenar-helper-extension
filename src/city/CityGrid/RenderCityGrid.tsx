@@ -34,11 +34,16 @@ import MyConfirmDialog from '../../widgets/MyConfirmDialog';
 import { resetMovedInPlace, saveBack } from '../generateCity';
 import { sendCitySavedMessage } from '../../chrome/messages';
 import ImportDialog from './ImportDialog';
-import { CityEntity } from '../../model/cityEntity';
+import { CityEntity, CityEntityEx } from '../../model/cityEntity';
 import { generateUniqueId } from '../../util/generateUniqueId';
 import { getEntityMaxLevel } from './getEntityMaxLevel';
 import { MoveLogInterface } from '../MoveLog/MoveLogInterface';
 import { useCity } from '../CityContext';
+import { BuildingConfig, NewBuildingSelector } from '../NewBuildingSelector';
+import { BuildingDefinition } from '../CATEGORIES';
+import { getBuildings } from '../../elvenar/getBuildings';
+import { getCityBlockFromCityEntity } from '../getCityBlockFromCityEntity';
+import { useHelper } from '../../helper/HelperContext';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -47,12 +52,17 @@ interface ShowLevelDialogData {
 
 export const RenderCityGrid = () => {
   const city = useCity();
+  const helper = useHelper();
   const setMoveLog = city.setMoveLog;
 
   // State for Change Level dialog
   const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
   const [levelInput, setLevelInput] = useState(1);
   const { GridSize, GridMax, svgRef, menuRef } = city;
+
+  const [showBuildDialog, setShowBuildDialog] = useState(false);
+  const [buildings, setBuildings] = useState([] as BuildingDefinition[]);
+
   const blocks = city.blocks;
   const setBlocks = city.setBlocks;
 
@@ -71,6 +81,16 @@ export const RenderCityGrid = () => {
   const maxLevels = city.maxLevels;
   const setGlobalError = useTabStore((state) => state.setGlobalError);
   const setAccountId = useTabStore((state) => state.setAccountId);
+
+  useEffect(() => {
+    async function Do() {
+      const finder = new BuildingFinder();
+      await finder.ensureInitialized();
+      const buildings = finder.getAllBuildingsByCategory(city.race);
+      setBuildings(buildings);
+    }
+    Do();
+  }, []);
 
   // Key handler for changing level while dragging
   useEffect(() => {
@@ -115,7 +135,7 @@ export const RenderCityGrid = () => {
               level: newLevel,
               label: `${newLevel}`,
               id: generateUniqueId(), // new id for duplication
-            };
+            } satisfies CityBlock;
             setBlocks((prev) => {
               const { [dragIndex]: _, ...updated } = prev;
               updated[newBlock.id] = newBlock;
@@ -190,6 +210,23 @@ export const RenderCityGrid = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [dragIndex, blocks, maxLevels, setBlocks, setDragIndex, setDragOffset, setMoveLog]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === 'KeyB' && event.altKey && !event.repeat && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        setShowBuildDialog(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (showBuildDialog) {
+      helper.showMessage('you_can_press_alt_b_to_build');
+    }
+  }, [showBuildDialog]);
 
   // State for ExportDialog
   const [exportDialog, setExportDialog] = useState({ open: false, exportStr: '' });
@@ -375,7 +412,7 @@ export const RenderCityGrid = () => {
             movedChanged: false,
             type: 'delete',
             deletedBlock: block,
-          } satisfies MoveLogInterface),
+          }) satisfies MoveLogInterface,
       ),
     ]);
   }
@@ -744,12 +781,60 @@ export const RenderCityGrid = () => {
     setShowDeleteConfirmationDialog({ open: true });
   }
 
+  async function onSelectBuilding(building: BuildingDefinition, config: BuildingConfig) {
+    const allBuildings = await getBuildings();
+    const qual = config.level || config.chapter || '';
+    const id1 = `${building.id}_${qual}`.replace(/_$/, '');
+    const id2 = building.id;
+    const blds1 = allBuildings.find((b) => b.id === id1);
+    const blds2 = allBuildings.find((b) => b.id === id2);
+    const blds3 = allBuildings.find((b) => b.base_name === building.id);
+    const newBuilding = blds1 || blds2 || blds3;
+    setShowBuildDialog(false);
+
+    if (!newBuilding) {
+      return;
+    }
+
+    const newLevel = newBuilding.level || 1;
+
+    const newEntity = {
+      id: generateUniqueId(),
+      cityentity_id: newBuilding.id,
+      level: newLevel,
+      player_id: 0,
+      stage: config.stage,
+      type: newBuilding.type,
+      connected: false,
+      connectionStrategy: newBuilding.requirements.connectionStrategyId,
+      x: 0,
+      y: 0,
+      length: newBuilding.length,
+      width: newBuilding.width,
+      description: newBuilding.description,
+      name: newBuilding.name,
+    } satisfies CityEntityEx;
+
+    const newBlock = getCityBlockFromCityEntity(newEntity);
+
+    setBlocks((prev) => {
+      return { ...prev, [newBlock.id]: newBlock };
+    });
+    setDragIndex(newBlock.id);
+    setDragOffset({
+      x: 10,
+      y: 10,
+    });
+    city.setOriginalPos(null);
+  }
+
   return (
     <Stack>
       <Stack direction='row'>
         {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
         {!isDetached && <Button onClick={() => refreshCity(city.accountId, city.forceUpdate)}>Refresh City</Button>}
         <Button onClick={() => sellStreets()}>Sell Streets</Button>
+        <Button onClick={() => setShowBuildDialog(true)}>Build</Button>
         <Button onClick={() => importCity()}>Import City</Button>
         <Button onClick={() => exportCityAsJson()}>Export City</Button>
         <Button onClick={() => saveCityAs()}>Save City As...</Button>
@@ -887,6 +972,17 @@ export const RenderCityGrid = () => {
         {showDeleteConfirmationDialog.open && renderDeleteConfirmationDialog()}
         {/* ImportDialog Modal */}
         {importDialog.open && renderImportDialog()}
+        {/* Build (NewBuildingSelector) Modal */}
+        {showBuildDialog && (
+          <Dialog
+            open={showBuildDialog}
+            onClose={() => setShowBuildDialog(false)}
+            maxWidth={false}
+            slotProps={{ paper: { sx: { width: 800 } } }}
+          >
+            <NewBuildingSelector onSelectBuilding={onSelectBuilding} buildings={buildings} />
+          </Dialog>
+        )}
       </div>
     </Stack>
   );

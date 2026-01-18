@@ -1,4 +1,8 @@
-export type HelperMessageId = 'drag_tip' | 'visited_other' | 'multiple_accounts_notice';
+export type HelperMessageId =
+  | 'drag_tip'
+  | 'visited_other'
+  | 'multiple_accounts_notice'
+  | 'you_can_press_alt_b_to_build';
 
 export const HELPER_MESSAGES: Record<HelperMessageId, string> = {
   drag_tip:
@@ -9,4 +13,6 @@ export const HELPER_MESSAGES: Record<HelperMessageId, string> = {
 
   multiple_accounts_notice:
     'You have multiple cities set up. You can switch between them using the city selector at the top right.',
+
+  you_can_press_alt_b_to_build: 'You can press Alt + B to open the building menu quickly.',
 };

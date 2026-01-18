@@ -49,7 +49,8 @@ export interface Provisions {
 
 export interface Requirements {
   // resources: Resources;
-  // chapter: number;
+  chapter?: number;
+  worker?: number;
   connectionStrategyId: string;
 }
 

@@ -4,6 +4,7 @@ import { CityBlock } from './CityBlock';
 import { useTabStore } from '../util/tabStore';
 import { getMaxLevels } from '../elvenar/getMaxLevels';
 import { UnlockedArea } from '../model/unlockedArea';
+import { getAccountById } from '../elvenar/AccountManager';
 
 interface CityContextType {
   moveLog: MoveLogInterface[];
@@ -40,6 +41,7 @@ interface CityContextType {
   allTypes: string[];
   unlockedAreas: UnlockedArea[];
   forceUpdate: () => void;
+  race: string;
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -71,6 +73,14 @@ export const CityProvider = ({
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
   const techSprite = useTabStore((state) => state.techSprite);
+
+  let race = 'humans';
+  if (accountId) {
+    const accountData = getAccountById(accountId);
+    if (accountData?.cityQuery) {
+      race = accountData.cityQuery.userData.race;
+    }
+  }
 
   // temporary
   const lastId = React.useRef<number>(-1);
@@ -235,6 +245,7 @@ export const CityProvider = ({
     allTypes,
     unlockedAreas,
     forceUpdate,
+    race,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;
