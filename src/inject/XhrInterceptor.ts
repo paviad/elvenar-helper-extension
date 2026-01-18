@@ -55,8 +55,17 @@ export class GlobalHttpInterceptorService {
         reqBody: '',
       };
 
+      let notificationServiceRequest: ElvenarRequestEntry | undefined;
+
       if (urlMatch) {
         const decodedString = decodeRequestBody(body);
+
+        const parsedRequest = parseElvenarRequest(decodedString);
+        notificationServiceRequest = parsedRequest.find(
+          (req) =>
+            req.requestClass === 'NotificationService' &&
+            ['getAllNotifications', 'getPreviewNotifications'].includes(req.requestMethod),
+        );
 
         const referer = urlMatch[1];
         const worldId = urlMatch[2];
@@ -73,6 +82,21 @@ export class GlobalHttpInterceptorService {
 
       this.onreadystatechange = (...cbArgs) => {
         if (this.readyState === 4) {
+          if (notificationServiceRequest) {
+            const decodedResponse = getDecodedText(this);
+            if (decodedResponse) {
+              const message = {
+                type: 'NOTIFICATIONS',
+                specific: true,
+                payload: {
+                  decodedResponse,
+                  sharedInfo,
+                },
+              } satisfies PlayerSpecificMessage;
+              window.postMessage(message, '*');
+            }
+          }
+
           if (nonSpecificMatchFound) {
             const decodedResponse = getDecodedText(this);
             if (decodedResponse) {
@@ -130,4 +154,18 @@ function toAbsoluteUrl(url: string): string {
   } catch {
     return url; // fallback if URL is invalid
   }
+}
+
+interface ElvenarRequestEntry {
+  __class__: string;
+  requestData: unknown;
+  requestClass: string;
+  requestMethod: string;
+  requestId: number;
+}
+
+function parseElvenarRequest(requestBody: string): ElvenarRequestEntry[] {
+  const requestJson = requestBody.substring(10);
+  const parsed = JSON.parse(requestJson) as ElvenarRequestEntry[];
+  return parsed;
 }

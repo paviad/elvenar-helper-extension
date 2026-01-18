@@ -13,6 +13,7 @@ export function setupPlayerSpecificRequestInterceptedListener() {
       case 'TRADE_DATA_PROCESSED':
       case 'CAULDRON_DATA_PROCESSED':
       case 'OTHER_PLAYER_DATA_PROCESSED':
+      case 'NOTIFICATIONS':
         sendInterceptedPlayerSpecificRequest(event.data);
         break;
       default:

@@ -7,6 +7,7 @@ import { loadAccountManagerFromStorage, getAccountBySessionId, saveAllAccounts }
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
 import { processInventory } from '../elvenar/processInventory';
+import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processTradeData } from '../elvenar/processTradeData';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
@@ -24,6 +25,7 @@ export const playerSpecificRequestHandler = async (
     case 'TRADE_DATA_PROCESSED':
     case 'CAULDRON_DATA_PROCESSED':
     case 'OTHER_PLAYER_DATA_PROCESSED':
+    case 'NOTIFICATIONS':
       break;
     default:
       msg.payload satisfies never;
@@ -55,6 +57,9 @@ export const playerSpecificRequestHandler = async (
     case 'OTHER_PLAYER_DATA_PROCESSED':
       await processOtherPlayerData(untypedJson, sharedInfo);
       await sendOtherPlayerCityDataUpdatedMessage();
+      break;
+    case 'NOTIFICATIONS':
+      await processNotifications(untypedJson, sharedInfo);
       break;
     default:
       msg.payload satisfies never;

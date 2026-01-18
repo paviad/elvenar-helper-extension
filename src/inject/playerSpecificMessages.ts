@@ -31,9 +31,14 @@ export interface OtherPlayerDataProcessedMessage extends PlayerSpecificMessageBa
   type: 'OTHER_PLAYER_DATA_PROCESSED';
 }
 
+export interface NotificationsMessage extends PlayerSpecificMessageBase {
+  type: 'NOTIFICATIONS';
+}
+
 export type PlayerSpecificMessage =
   | CityDataProcessedMessage
   | InventoryDataProcessedMessage
   | TradeDataProcessedMessage
   | CauldronDataProcessedMessage
-  | OtherPlayerDataProcessedMessage;
+  | OtherPlayerDataProcessedMessage
+  | NotificationsMessage;
