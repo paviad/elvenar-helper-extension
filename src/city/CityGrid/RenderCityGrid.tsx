@@ -42,7 +42,7 @@ import { useCity } from '../CityContext';
 import { BuildingConfig, NewBuildingSelector } from '../NewBuildingSelector';
 import { BuildingDefinition } from '../CATEGORIES';
 import { getBuildings } from '../../elvenar/getBuildings';
-import { getCityBlockFromCityEntity } from '../getCityBlockFromCityEntity';
+import { getChapterFromEntity, getCityBlockFromCityEntity } from '../getCityBlockFromCityEntity';
 import { useHelper } from '../../helper/HelperContext';
 
 interface ShowLevelDialogData {
@@ -133,6 +133,7 @@ export const RenderCityGrid = () => {
               width: newBuilding.width,
               length: newBuilding.length,
               level: newLevel,
+              chapter: getChapterFromEntity(undefined, block.entity.cityentity_id, block.type, newLevel),
               label: `${newLevel}`,
               id: generateUniqueId(), // new id for duplication
             } satisfies CityBlock;
@@ -175,6 +176,7 @@ export const RenderCityGrid = () => {
                 level: newLevel,
               },
               level: newLevel,
+              chapter: getChapterFromEntity(undefined, block.entity.cityentity_id, block.type, newLevel),
               width: newBuilding.width,
               length: newBuilding.length,
               label: `${newLevel}`,
