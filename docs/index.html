@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -39,7 +39,8 @@
         font-family: 'Outfit', sans-serif;
         background-color: var(--dark-bg);
         /* Rich Mesh Gradient Background */
-        background-image: radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+        background-image:
+          radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
           radial-gradient(at 50% 0%, hsla(265, 83%, 18%, 1) 0, transparent 50%),
           radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
         background-attachment: fixed;
@@ -412,8 +413,8 @@
             href="https://github.com/paviad/elvenar-helper-extension"
             target="_blank"
             style="color: var(--text-muted); font-size: 1.5rem; transition: color 0.2s"
-            onmouseover="this.style.color='#fff'"
-            onmouseout="this.style.color='var(--text-muted)'"
+            onmouseover="this.style.color = '#fff'"
+            onmouseout="this.style.color = 'var(--text-muted)'"
           >
             <i class="fab fa-github"></i>
           </a>
@@ -488,6 +489,11 @@
               alt: 'Fellowship Adventure',
               caption: 'Master the Fellowship Adventure with live badge tracking and production timelines.',
             },
+            {
+              src: 'ss5.jpg',
+              alt: 'Build Menu',
+              caption: 'Browse and place new buildings directly from the catalog.',
+            },
           ];
           let carouselIndex = 0;
           const imgEl = document.getElementById('carousel-img');
@@ -549,6 +555,17 @@
                 required.
               </p>
             </div>
+
+            <!-- NEW FEATURE CARD: Build Menu -->
+            <div class="feature-card">
+              <i class="fas fa-hammer feature-icon"></i>
+              <h3>Build Menu</h3>
+              <p>
+                Add buildings directly to your city plan from a categorized catalog. Plan for future chapters before you
+                even unlock the buildings.
+              </p>
+            </div>
+
             <div class="feature-card">
               <i class="fas fa-dragon feature-icon"></i>
               <h3>Chapters 23 & 24</h3>
