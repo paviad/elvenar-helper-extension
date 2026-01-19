@@ -14,6 +14,7 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
         width: r.width,
         length: r.length,
         level: r.level,
+        // category: r.category,
         base_name: r.base_name,
         requirements: r.requirements && {
           chapter: r.requirements.chapter,
@@ -33,6 +34,19 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
             orcs: r.resale_resources.resources.orcs,
             work: r.resale_resources.resources.work,
           },
+        },
+        production: r.production && {
+          products: r.production.products && [
+            ...r.production.products.map((p) => ({
+              production_time: p.production_time,
+              revenue: p.revenue && {
+                resources: ((z) => {
+                  const { __class__, ...rest } = z;
+                  return rest;
+                })(p.revenue.resources),
+              },
+            })),
+          ],
         },
         provisions: r.provisions && {
           resources: r.provisions.resources && {

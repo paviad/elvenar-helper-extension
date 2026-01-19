@@ -799,6 +799,7 @@ export const RenderCityGrid = () => {
     }
 
     const newLevel = newBuilding.level || 1;
+    const chapter = newBuilding.requirements.worker && newBuilding.requirements.chapter;
 
     const newEntity = {
       id: generateUniqueId(),
@@ -811,6 +812,7 @@ export const RenderCityGrid = () => {
       connectionStrategy: newBuilding.requirements.connectionStrategyId,
       x: 0,
       y: 0,
+      chapter,
       length: newBuilding.length,
       width: newBuilding.width,
       description: newBuilding.description,

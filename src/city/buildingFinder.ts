@@ -147,6 +147,9 @@ export class BuildingFinder {
       if (/_evt_evo/.test(baseName)) {
         return ['Stage', 'Chapter'];
       }
+      if (buildings[0].requirements.worker) {
+        return [];
+      }
       return ['Chapter'];
     };
 

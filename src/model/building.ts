@@ -12,15 +12,39 @@ export interface Building {
   base_name: string;
   level: number;
   // rarity: number;
-  // category: string;
+  // category: Category;
   // premium_cost_factor: number;
   // feature: string;
   // components: Components;
   // productionTimeReduction: number;
   // upgradeRequirements: Requirements;
+  production?: Production;
   requirements: Requirements;
   provisions?: { resources: { resources: ProvisionResources } };
   spellFragments: number;
+}
+
+type Category =
+  | 'ancient_wonders'
+  | 'basics'
+  | 'manufactories'
+  | 'military'
+  | 'non_purchasable'
+  | 'races'
+  | 'void'
+  | 'wealth';
+
+export interface Production {
+  products: Product[];
+}
+
+export interface Product {
+  production_time?: number;
+  revenue: Revenue;
+}
+
+export interface Revenue {
+  resources: Record<string, number>;
 }
 
 export interface ProvisionResources {
