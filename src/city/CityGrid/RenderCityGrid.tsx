@@ -817,7 +817,10 @@ export const RenderCityGrid = () => {
       name: newBuilding.name,
     } satisfies CityEntityEx;
 
-    const newBlock = getCityBlockFromCityEntity(newEntity);
+    const newBlock = {
+      ...getCityBlockFromCityEntity(newEntity),
+      id: newEntity.id,
+    };
 
     setBlocks((prev) => {
       return { ...prev, [newBlock.id]: newBlock };
