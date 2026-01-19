@@ -18,6 +18,8 @@ interface OverlayState {
   setOverlayExpanded: (expanded: boolean) => void;
   lastSeenChat?: number;
   setLastSeenChat: (timestamp: number) => void;
+  autoOpenTrade?: boolean;
+  setAutoOpenTrade: (autoOpen: boolean) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -42,6 +44,8 @@ export const generateOverlayStore = (accountId: string) => {
         setOverlayExpanded: (expanded) => set({ overlayExpanded: expanded }),
         lastSeenChat: undefined,
         setLastSeenChat: (timestamp) => set({ lastSeenChat: timestamp }),
+        autoOpenTrade: true,
+        setAutoOpenTrade: (autoOpen) => set({ autoOpenTrade: autoOpen }),
       }),
       {
         name: `overlay-store-${accountId}`,

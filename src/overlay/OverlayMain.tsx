@@ -23,6 +23,7 @@ export function OverlayMain() {
   const tabRef = React.useRef<number>(tab);
 
   const useOverlayStore = getOverlayStore();
+  const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
 
   const chapter = useOverlayStore((state) => state.chapter);
 
@@ -105,11 +106,13 @@ export function OverlayMain() {
     }
     const offeredGoods = Array.from(new Set(tradesMsg.trades.map((trade) => trade.offer)));
     setOfferedGoods(offeredGoods);
-    expandPanel(offeredGoods.length > 0);
-    if (offeredGoods.length > 0) {
-      setTab(1);
+    if (autoOpen) {
+      expandPanel(offeredGoods.length > 0);
+      if (offeredGoods.length > 0) {
+        setTab(1);
+      }
     }
-  }, [tradesMsg, chapter]);
+  }, [tradesMsg, chapter, autoOpen]);
 
   React.useEffect(() => {
     window.addEventListener('message', messageHandler);
