@@ -24,21 +24,23 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       owner: string;
       remainingTime: number;
     }[];
-    seasonal_events: { type: string }[];
+    seasonal_events?: { type: string }[];
   };
 
   const questService = json.find((r) => r.requestClass === 'QuestService')?.responseData as Quest[];
 
   const faRequirements = Object.fromEntries(
-    questService.map((r, idx) => [
-      r.rewards[0].iconType,
-      {
-        id: idx,
-        badge: r.rewards[0].iconType,
-        maxProgress: r.successConditions[0].maxProgress,
-        currentProgress: r.successConditions[0].currentProgress || 0,
-      } satisfies FaQuest,
-    ]),
+    questService
+      .filter((r) => r.rewards?.length > 0)
+      .map((r, idx) => [
+        r.rewards[0].iconType,
+        {
+          id: idx,
+          badge: r.rewards[0].iconType,
+          maxProgress: r.successConditions[0].maxProgress,
+          currentProgress: r.successConditions[0].currentProgress || 0,
+        } satisfies FaQuest,
+      ]),
   );
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
@@ -92,7 +94,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     ),
   ) as Record<keyof Relics, number>;
 
-  const seasonPass = startupService.seasonal_events.find((r) => r.type === 'seasonPass') as {
+  const seasonPass = startupService.seasonal_events?.find((r) => r.type === 'seasonPass') as {
     type: string;
   };
 
@@ -103,8 +105,9 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
   };
   const worldId = sharedInfo.worldId;
   const accountId = generateAccountId(user_data.player_id, worldId);
-  const worldName = worldId === 'zz' ? 'Beta' : worldNames[worldId[worldId.length - 1]] || 'Unknown World';
-  const accountName = `${user_data.user_name} (${worldId} ${worldName})`;
+  const worldName = worldId === 'zz' ? 'Beta' : worldNames[worldId[worldId.length - 1]] || '';
+  const worldIdAndName = `${worldId} ${worldName}`.trim();
+  const accountName = `${user_data.user_name} (${worldIdAndName})`.trim();
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId) || {};
 
