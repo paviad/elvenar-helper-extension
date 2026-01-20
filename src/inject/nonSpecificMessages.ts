@@ -28,10 +28,15 @@ export interface PremiumBuildingHintsMessage extends NonSpecificMessageBase {
   type: 'PREMIUM_BUILDING_HINTS';
 }
 
+export interface GoodsNamesMessage extends NonSpecificMessageBase {
+  type: 'GOODS_NAMES';
+}
+
 export type NonSpecificMessage =
   | MaxLevelsMessage
   | BuildingsMessage
   | ItemsMessage
   | EffectsMessage
   | TomesMessage
-  | PremiumBuildingHintsMessage;
+  | PremiumBuildingHintsMessage
+  | GoodsNamesMessage;

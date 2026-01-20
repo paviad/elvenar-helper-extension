@@ -7,7 +7,7 @@ export const processTomes = async (responseText: string) => {
   await setTomes(tomes);
 };
 
-export async function setTomes(items: Tome[]) {
+async function setTomes(items: Tome[]) {
   const plain = JSON.stringify(items);
   await saveToStorage('tomes', plain);
 }

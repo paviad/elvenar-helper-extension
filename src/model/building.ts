@@ -72,7 +72,7 @@ export interface Provisions {
 }
 
 export interface Requirements {
-  // resources: Resources;
+  resources: RequirementsResources;
   chapter?: number;
   worker?: number;
   connectionStrategyId: string;
@@ -80,4 +80,11 @@ export interface Requirements {
 
 export interface Resources {
   resources: Record<string, number>;
+}
+
+export interface RequirementsResources {
+  prosperity?: number;
+  work?: number;
+  population?: number;
+  culture?: number;
 }

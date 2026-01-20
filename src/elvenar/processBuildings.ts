@@ -17,6 +17,12 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
         // category: r.category,
         base_name: r.base_name,
         requirements: r.requirements && {
+          resources:
+            r.requirements.resources?.resources &&
+            ((z) => {
+              const { prosperity, work, population, culture, __class__, ...rest } = z;
+              return { prosperity, work, population, culture };
+            })(r.requirements.resources.resources),
           chapter: r.requirements.chapter,
           worker: r.requirements.worker,
           connectionStrategyId: r.requirements.connectionStrategyId,

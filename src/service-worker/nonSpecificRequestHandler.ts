@@ -1,6 +1,7 @@
 import { InterceptedNonSpecificRequest } from '../chrome/messages';
 import { processBuildings } from '../elvenar/processBuildings';
 import { processEffects } from '../elvenar/processEffects';
+import { processGoodsNames } from '../elvenar/processGoodsNames';
 import { processItems } from '../elvenar/processItems';
 import { processMaxLevels } from '../elvenar/processMaxLevels';
 import { processPremiumBuildingHints } from '../elvenar/processPremiumBuildingHints';
@@ -28,6 +29,9 @@ export const nonSpecificRequestHandler = async (msg: InterceptedNonSpecificReque
       break;
     case 'PREMIUM_BUILDING_HINTS':
       await processPremiumBuildingHints(msg.payload.payload.decodedResponse);
+      break;
+    case 'GOODS_NAMES':
+      await processGoodsNames(msg.payload.payload.decodedResponse);
       break;
     default:
       msg.payload satisfies never;

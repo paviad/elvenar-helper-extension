@@ -8,7 +8,7 @@ export const processPremiumBuildingHints = async (responseText: string) => {
   await setPremiumBuildingHints(premiumBuildingHints);
 };
 
-export async function setPremiumBuildingHints(hints: { id: string; section: string }[]) {
+async function setPremiumBuildingHints(hints: { id: string; section: string }[]) {
   const plain = JSON.stringify(hints);
   await saveToStorage('premiumBuildingHints', plain);
 }

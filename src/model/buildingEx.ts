@@ -1,4 +1,4 @@
-import { ResaleResources } from './building';
+import { Building, ResaleResources } from './building';
 
 export interface BuildingEx {
   id: string;
@@ -11,4 +11,6 @@ export interface BuildingEx {
   resale_resources: { resources: ResaleResources };
   spellFragments: number;
   chapter?: number;
+
+  sourceBuilding: Building;
 }

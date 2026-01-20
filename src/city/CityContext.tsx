@@ -5,6 +5,8 @@ import { useTabStore } from '../util/tabStore';
 import { getMaxLevels } from '../elvenar/getMaxLevels';
 import { UnlockedArea } from '../model/unlockedArea';
 import { getAccountById } from '../elvenar/AccountManager';
+import { BuildingFinder } from './buildingFinder';
+import { getGoodsNames } from '../elvenar/getGoodsNames';
 
 interface CityContextType {
   moveLog: MoveLogInterface[];
@@ -42,6 +44,8 @@ interface CityContextType {
   unlockedAreas: UnlockedArea[];
   forceUpdate: () => void;
   race: string;
+  buildingFinder: BuildingFinder;
+  goodsNames: Record<string, string>;
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -69,6 +73,8 @@ export const CityProvider = ({
   const menuRef = React.useRef<HTMLDivElement | null>(null);
   const svgRef = React.useRef<SVGSVGElement | null>(null);
   const mousePositionRef = React.useRef<HTMLDivElement | null>(null);
+  const [buildingFinder, setBuildingFinder] = useState<BuildingFinder>(new BuildingFinder());
+  const [goodsNames, setGoodsNames] = useState<Record<string, string>>({});
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
@@ -91,6 +97,21 @@ export const CityProvider = ({
     lastId.current = blocks[dragIndex].id;
   }, [dragIndex, blocks]);
   // end temporary
+
+  React.useEffect(() => {
+    async function Do() {
+      await buildingFinder?.ensureInitialized();
+    }
+    Do();
+  }, [buildingFinder]);
+
+  React.useEffect(() => {
+    async function Do() {
+      const goodsNames = await getGoodsNames();
+      setGoodsNames(goodsNames);
+    }
+    Do();
+  }, []);
 
   React.useEffect(() => {
     setBlocks(sourceBlocks);
@@ -246,6 +267,8 @@ export const CityProvider = ({
     unlockedAreas,
     forceUpdate,
     race,
+    buildingFinder,
+    goodsNames,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

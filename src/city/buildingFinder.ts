@@ -83,6 +83,7 @@ export class BuildingFinder {
         resale_resources: bldg.resale_resources,
         spellFragments: bldg.spellFragments,
         chapter: (hint && parseInt(hint)) || undefined,
+        sourceBuilding: bldg,
       } satisfies BuildingEx;
     }
   }

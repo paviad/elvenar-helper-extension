@@ -1,10 +1,13 @@
 import React from 'react';
+import { Tooltip } from '@mui/material';
 import { CityBlock } from '../CityBlock';
 import { getTypeColor } from '../Legend/getTypeColor';
 import { handleMouseDown } from './handleMouseDown';
 import { BlockLabel } from './BlockLabel';
 import { useCity } from '../CityContext';
 import { useHelper } from '../../helper/HelperContext';
+import { getContrastColor } from '../../util/getContrastColor';
+import { BuildingTooltip } from './BuildingTooltip';
 
 export const blockRect = (key: string | number, block: CityBlock) => {
   const city = useCity();
@@ -16,6 +19,9 @@ export const blockRect = (key: string | number, block: CityBlock) => {
   const blocks = city.blocks;
   const setDragOffset = city.setDragOffset;
   const dragIndex = city.dragIndex;
+  const buildingFinder = city.buildingFinder;
+
+  const building = buildingFinder.getBuilding(block.gameId, block.level);
 
   const dragging = typeof key === 'string';
   const handler =
@@ -52,20 +58,6 @@ export const blockRect = (key: string | number, block: CityBlock) => {
   const patternId = `block-crosshatch-${key}`;
   const isHighlighted = !!block.highlighted;
 
-  // Utility to determine contrast color
-  function getContrastColor(hex: string) {
-    // Remove # if present
-    hex = hex.replace('#', '');
-    // Parse r, g, b
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    // Calculate luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    // Return white for dark backgrounds, black for light
-    return luminance < 0.35 ? '#ffffff' : '#000000';
-  }
-
   const fillColor = getTypeColor(block.type, city.allTypes, block.moved);
   const textColor = getContrastColor(fillColor);
 
@@ -79,21 +71,23 @@ export const blockRect = (key: string | number, block: CityBlock) => {
           </pattern>
         </defs>
       )}
-      <rect
-        opacity={opacity}
-        x={block.x * GridSize}
-        y={block.y * GridSize}
-        width={block.width * GridSize}
-        height={block.length * GridSize}
-        fill={fillColor}
-        stroke={block.moved ? 'black' : '#000'}
-        strokeWidth={block.moved ? 2 : 1}
-        style={{ cursor }}
-        onClick={handler}
-        onContextMenu={handleContextMenu}
-      >
-        <title>{block.name}</title>
-      </rect>
+      {building && (
+        <Tooltip title={<BuildingTooltip building={building} />} disableHoverListener={dragging} arrow followCursor>
+          <rect
+            opacity={opacity}
+            x={block.x * GridSize}
+            y={block.y * GridSize}
+            width={block.width * GridSize}
+            height={block.length * GridSize}
+            fill={fillColor}
+            stroke={block.moved ? 'black' : '#000'}
+            strokeWidth={block.moved ? 2 : 1}
+            style={{ cursor }}
+            onClick={handler}
+            onContextMenu={handleContextMenu}
+          />
+        </Tooltip>
+      )}
       {isHighlighted && (
         <>
           <rect
