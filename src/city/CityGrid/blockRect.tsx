@@ -12,7 +12,7 @@ import { BuildingTooltip } from './BuildingTooltip';
 export const blockRect = (key: string | number, block: CityBlock) => {
   const city = useCity();
   const helper = useHelper();
-  const { GridSize, opacity } = city;
+  const { GridSize, opacity, chapter } = city;
 
   // Context menu state
   const setMenu = city.setMenu;
@@ -22,6 +22,7 @@ export const blockRect = (key: string | number, block: CityBlock) => {
   const buildingFinder = city.buildingFinder;
 
   const building = buildingFinder.getBuilding(block.gameId, block.level);
+  const nextLevelBuilding = buildingFinder.getBuilding(block.gameId, block.level + 1);
 
   const dragging = typeof key === 'string';
   const handler =
@@ -61,6 +62,16 @@ export const blockRect = (key: string | number, block: CityBlock) => {
   const fillColor = getTypeColor(block.type, city.allTypes, block.moved);
   const textColor = getContrastColor(fillColor);
 
+  // Check if building requires a higher chapter than the city's current chapter
+  const levelingBuilding = /^[GPRHMOY]_/.test(block.gameId);
+  const chapterRequirement = building?.sourceBuilding.upgradeRequirements?.chapter;
+  const nextLevelBuildingChapterRequirement = nextLevelBuilding?.sourceBuilding.upgradeRequirements?.chapter;
+  const isChapterExcessive = chapterRequirement !== undefined && chapterRequirement > chapter;
+  const isMaxLevelForChapter =
+    levelingBuilding &&
+    !isChapterExcessive &&
+    (!nextLevelBuildingChapterRequirement || nextLevelBuildingChapterRequirement > chapter);
+
   return (
     <g key={key}>
       {isHighlighted && (
@@ -73,7 +84,7 @@ export const blockRect = (key: string | number, block: CityBlock) => {
       )}
       {building && (
         <Tooltip
-          title={<BuildingTooltip building={building} />}
+          title={<BuildingTooltip building={building} isMaxLevel={isMaxLevelForChapter} />}
           disableHoverListener={dragging}
           arrow
           followCursor
@@ -129,7 +140,14 @@ export const blockRect = (key: string | number, block: CityBlock) => {
           pointerEvents='none'
         />
       )}
-      <BlockLabel block={block} GridSize={GridSize} textColor={textColor} sprite={city.techSprite} />
+      <BlockLabel
+        block={block}
+        GridSize={GridSize}
+        textColor={textColor}
+        sprite={city.techSprite}
+        showWarning={isChapterExcessive}
+        showMaxLevel={isMaxLevelForChapter}
+      />
     </g>
   );
 };

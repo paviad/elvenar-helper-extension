@@ -53,6 +53,8 @@ interface CityContextType {
   evolvingBuildings: StageProvision[];
   effects: Effect[];
   boostedGoods: string[];
+  chapter: number;
+  setChapter: (chapter: number) => void;
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -89,6 +91,7 @@ export const CityProvider = ({
   const setAccountId = useTabStore((state) => state.setAccountId);
   const techSprite = useTabStore((state) => state.techSprite);
 
+  const [chapter, setChapter] = useState<number>(100);
   let boostedGoods: string[] = [];
 
   let race = 'humans';
@@ -100,12 +103,28 @@ export const CityProvider = ({
     }
   }
 
+  React.useEffect(() => {
+    if (!accountId) return;
+    const accountData = getAccountById(accountId);
+    if (accountData?.cityQuery) {
+      setChapter(accountData.cityQuery.chapter);
+    }
+  }, [accountId]);
+
+  React.useEffect(() => {
+    if (!accountId) return;
+    const accountData = getAccountById(accountId);
+    if (accountData?.cityQuery) {
+      accountData.cityQuery.chapter = chapter;
+    }
+  }, [chapter]);
+
   // temporary
   const lastId = React.useRef<number>(-1);
   React.useEffect(() => {
     if (dragIndex === null) return;
     if (blocks[dragIndex].id === lastId.current) return;
-    console.log('ElvenAssist: Dragging block:', blocks[dragIndex], lastId.current);
+    // console.log('ElvenAssist: Dragging block:', blocks[dragIndex], lastId.current);
     lastId.current = blocks[dragIndex].id;
   }, [dragIndex, blocks]);
   // end temporary
@@ -288,6 +307,8 @@ export const CityProvider = ({
     evolvingBuildings,
     effects,
     boostedGoods,
+    chapter,
+    setChapter,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

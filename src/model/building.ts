@@ -17,7 +17,7 @@ export interface Building {
   // feature: string;
   // components: Components;
   // productionTimeReduction: number;
-  // upgradeRequirements: Requirements;
+  upgradeRequirements?: { chapter?: number };
   production?: Production;
   requirements: Requirements;
   provisions?: { resources: { resources: ProvisionResources } };

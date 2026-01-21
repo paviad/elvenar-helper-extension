@@ -6,13 +6,26 @@ import { RenderCityGrid } from './CityGrid';
 import { RenderLegend } from './Legend';
 import { CityProvider } from './CityContext';
 import { CityResourceSummary } from './CityResourceSummary';
+import { CitySettings } from './CitySettings';
 
 export function CityView(props: { blocks: CityBlock[]; unlockedAreas: UnlockedArea[]; forceUpdate: () => void }) {
   return (
     <CityProvider sourceBlocks={props.blocks} unlockedAreas={props.unlockedAreas} forceUpdate={props.forceUpdate}>
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
-        {/* Left / Log */}
-        <RenderMoveLog />
+        {/* Left Column: Settings & Move Log */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginRight: 16,
+            position: 'sticky',
+            top: 0,
+            overflowY: 'auto',
+          }}
+        >
+          <CitySettings />
+          <RenderMoveLog />
+        </div>
 
         {/* Center / Grid - Flex grow to fill space */}
         <div style={{ flexGrow: 1 }}>

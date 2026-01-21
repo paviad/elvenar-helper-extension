@@ -1,5 +1,8 @@
 # Changelog
 
+## v5.7.0
+- Indicate max building level for city chapter
+
 ## v5.6.0
 - Show city provided vs required resources (culture, population, prosperity)
 

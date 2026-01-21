@@ -41,6 +41,7 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
             work: r.resale_resources.resources.work,
           },
         },
+        upgradeRequirements: r.upgradeRequirements && { chapter: r.upgradeRequirements.chapter },
         production: r.production && {
           products: r.production.products && [
             ...r.production.products.map((p) => ({
