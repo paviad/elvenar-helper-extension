@@ -7,6 +7,10 @@ import { UnlockedArea } from '../model/unlockedArea';
 import { getAccountById } from '../elvenar/AccountManager';
 import { BuildingFinder } from './buildingFinder';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
+import { StageProvision } from '../model/stageProvision';
+import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
+import { getEffects } from '../elvenar/getEffects';
+import { Effect } from '../model/effect';
 
 interface CityContextType {
   moveLog: MoveLogInterface[];
@@ -46,6 +50,9 @@ interface CityContextType {
   race: string;
   buildingFinder: BuildingFinder;
   goodsNames: Record<string, string>;
+  evolvingBuildings: StageProvision[];
+  effects: Effect[];
+  boostedGoods: string[];
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -75,16 +82,21 @@ export const CityProvider = ({
   const mousePositionRef = React.useRef<HTMLDivElement | null>(null);
   const [buildingFinder, setBuildingFinder] = useState<BuildingFinder>(new BuildingFinder());
   const [goodsNames, setGoodsNames] = useState<Record<string, string>>({});
+  const [evolvingBuildings, setEvolvingBuildings] = useState<StageProvision[]>([]);
+  const [effects, setEffects] = useState<Effect[]>([]);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
   const techSprite = useTabStore((state) => state.techSprite);
+
+  let boostedGoods: string[] = [];
 
   let race = 'humans';
   if (accountId) {
     const accountData = getAccountById(accountId);
     if (accountData?.cityQuery) {
       race = accountData.cityQuery.userData.race;
+      boostedGoods = accountData.cityQuery.boostedGoods;
     }
   }
 
@@ -109,6 +121,10 @@ export const CityProvider = ({
     async function Do() {
       const goodsNames = await getGoodsNames();
       setGoodsNames(goodsNames);
+      const evolvingBuildings = await getEvolvingBuildings();
+      setEvolvingBuildings(evolvingBuildings);
+      const effects = await getEffects();
+      setEffects(effects);
     }
     Do();
   }, []);
@@ -269,6 +285,9 @@ export const CityProvider = ({
     race,
     buildingFinder,
     goodsNames,
+    evolvingBuildings,
+    effects,
+    boostedGoods,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

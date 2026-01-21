@@ -4,7 +4,13 @@ import { Effect } from '../model/effect';
 export const processEffects = async (responseText: string) => {
   const effectsRaw = JSON.parse(responseText) as Effect[];
 
-  const effects = effectsRaw.filter((r) => r.action === 'manufactories_production_boost');
+  const captureEffects = [
+    'manufactories_production_boost',
+    'residential_population_boost',
+    'available_population_bonus',
+  ];
+
+  const effects = effectsRaw.filter((r) => captureEffects.includes(r.action));
 
   await setEffects(effects);
 };

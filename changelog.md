@@ -1,5 +1,8 @@
 # Changelog
 
+## v5.6.0
+- Show city provided vs required resources (culture, population, prosperity)
+
 ## v5.5.0
 - New feature: Build menu (Alt+B)
 

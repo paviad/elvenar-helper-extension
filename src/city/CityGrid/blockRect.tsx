@@ -72,7 +72,14 @@ export const blockRect = (key: string | number, block: CityBlock) => {
         </defs>
       )}
       {building && (
-        <Tooltip title={<BuildingTooltip building={building} />} disableHoverListener={dragging} arrow followCursor>
+        <Tooltip
+          title={<BuildingTooltip building={building} />}
+          disableHoverListener={dragging}
+          arrow
+          followCursor
+          enterDelay={700}
+          enterNextDelay={700}
+        >
           <rect
             opacity={opacity}
             x={block.x * GridSize}

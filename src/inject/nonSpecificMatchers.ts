@@ -48,6 +48,12 @@ export const nonSpecificMatchers = [
     regex:
       /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.Goods_[a-f0-9]{32}\.json$/,
   },
+  {
+    id: 'evolvingBuildings',
+    messageType: 'EVOLVING_BUILDINGS',
+    regex:
+      /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.city\.EvolvingBuildings_[a-f0-9]{32}\.json$/,
+  },
 ] satisfies {
   id: string;
   messageType: NonSpecificMessage['type'];

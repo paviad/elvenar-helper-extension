@@ -32,6 +32,10 @@ export interface GoodsNamesMessage extends NonSpecificMessageBase {
   type: 'GOODS_NAMES';
 }
 
+export interface EvolvingBuildingsMessage extends NonSpecificMessageBase {
+  type: 'EVOLVING_BUILDINGS';
+}
+
 export type NonSpecificMessage =
   | MaxLevelsMessage
   | BuildingsMessage
@@ -39,4 +43,5 @@ export type NonSpecificMessage =
   | EffectsMessage
   | TomesMessage
   | PremiumBuildingHintsMessage
-  | GoodsNamesMessage;
+  | GoodsNamesMessage
+  | EvolvingBuildingsMessage;
