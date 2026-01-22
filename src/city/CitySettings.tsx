@@ -3,9 +3,10 @@ import { Card, CardContent, Typography, Slider, Input, Grid } from '@mui/materia
 import { useCity } from './CityContext';
 
 export const CitySettings: React.FC = () => {
-  const { chapter, setChapter, squadSize, setSquadSize } = useCity();
+  const { chapter, setChapter, squadSize, setSquadSize, rankingPoints, setRankingPoints } = useCity();
   const value = chapter || 1;
   const currentSquadSize = squadSize || 0;
+  const currentRankingPoints = rankingPoints || 0;
 
   const handleSliderChange = (event: Event, newValue: number | number[]) => {
     setChapter(newValue as number);
@@ -21,6 +22,10 @@ export const CitySettings: React.FC = () => {
 
   const handleSquadSizeInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSquadSize(event.target.value === '' ? 0 : Number(event.target.value));
+  };
+
+  const handleRankingPointsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRankingPoints(event.target.value === '' ? 0 : Number(event.target.value));
   };
 
   const handleBlur = () => {
@@ -118,6 +123,34 @@ export const CitySettings: React.FC = () => {
                 style: { textAlign: 'center' },
               }}
               sx={{ width: 70 }}
+            />
+          </Grid>
+        </Grid>
+
+        {/* Ranking Points Control */}
+        <Typography
+          id='ranking-points-label'
+          gutterBottom
+          variant='caption'
+          color='text.secondary'
+          sx={{ mt: 2, display: 'block' }}
+        >
+          Ranking Points
+        </Typography>
+        <Grid container spacing={2} alignItems='center'>
+          <Grid sx={{ flexGrow: 1 }} />
+          <Grid>
+            <Input
+              value={currentRankingPoints}
+              size='small'
+              onChange={handleRankingPointsChange}
+              inputProps={{
+                min: 0,
+                type: 'number',
+                'aria-labelledby': 'ranking-points-label',
+                style: { textAlign: 'center' },
+              }}
+              sx={{ width: 100 }}
             />
           </Grid>
         </Grid>

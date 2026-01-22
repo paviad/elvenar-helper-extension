@@ -21,6 +21,7 @@ const splitChunks = {
 
 const commonConfig = (env) => ({
   mode: 'production',
+  node: false,
   optimization: commonOptimization,
   performance: {
     hints: false,
@@ -57,6 +58,9 @@ const commonConfig = (env) => ({
       hashDigest: 'hex',
       hashDigestLength: 20,
     }),
+    // new webpack.optimize.LimitChunkCountPlugin({
+    //   maxChunks: 1,
+    // }),
   ],
 });
 

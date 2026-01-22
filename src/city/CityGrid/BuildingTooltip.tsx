@@ -18,10 +18,13 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   const squadSize = city.squadSize;
   const popRequired = city.popRequired;
   const residentialPop = city.residentialPop;
+  const awLevels = city.awLevels;
+  const mhRankingPoints = city.mhRankingPoints;
 
   const effectsResidentialPopulationBoost = city.effects.filter((r) => r.action === 'residential_population_boost');
   const effectsAvailablePopulationBonus = city.effects.filter((r) => r.action === 'available_population_bonus');
   const effectsAvailableCultureBonus = city.effects.filter((r) => r.action === 'available_culture_bonus');
+  const effectsCultureByRankingPoints = city.effects.filter((r) => r.action === 'culture_by_ranking_points');
 
   const residentialBonus = effectsResidentialPopulationBoost
     .map((r) => {
@@ -53,19 +56,33 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
     })
     .reduce((sum, effect) => sum + (effect || 0), 0);
 
+  const cultureByRankingPoints = effectsCultureByRankingPoints
+    .map((r) => {
+      const match = r.origins?.some((origin) => building.sourceBuilding.id.startsWith(origin));
+      if (!match) return 0;
+      const level = building.sourceBuilding.level;
+      const factor = r.values?.[level] || 0;
+      return factor;
+    })
+    .reduce((sum, effect) => sum + (effect || 0), 0);
+
   const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
   const extraAvailablePopulation = Math.round(popRequired * availablePopulationBonus);
   const extraAvailableCulture = Math.round(squadSize * availableCultureBonus);
+  const extraCultureFromRanking = Math.round(cultureByRankingPoints * mhRankingPoints * awLevels);
 
   // Extract Provisions (Population, Culture, etc.)
   let provisions = source?.provisions?.resources?.resources && { ...source?.provisions?.resources?.resources };
 
-  if (extraAvailableCulture || extraAvailablePopulation || extraResidential) {
+  if (extraAvailableCulture || extraAvailablePopulation || extraResidential || extraCultureFromRanking) {
     if (!provisions) {
       provisions = {};
     }
     if (extraAvailableCulture) {
       provisions['culture'] = (provisions?.['culture'] || 0) + extraAvailableCulture;
+    }
+    if (extraCultureFromRanking) {
+      provisions['culture'] = (provisions?.['culture'] || 0) + extraCultureFromRanking;
     }
     if (extraAvailablePopulation) {
       provisions['population'] = (provisions?.['population'] || 0) + extraAvailablePopulation;

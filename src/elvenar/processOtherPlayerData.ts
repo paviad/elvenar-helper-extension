@@ -1,3 +1,4 @@
+import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { OtherPlayerClass } from '../model/otherPlayer';
@@ -58,6 +59,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
   } satisfies ElvenarUserData;
 
   const squadSize = guessSquadSizeFromChapter(chapter);
+  const rankingPoints = guessRankingPointsFromChapter(chapter);
 
   const data = {
     cityQuery: {
@@ -116,6 +118,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
         relic_steel: 0,
       },
       squadSize,
+      rankingPoints,
     },
     sharedInfo,
     isDetached: true,

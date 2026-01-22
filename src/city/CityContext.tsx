@@ -62,6 +62,12 @@ interface CityContextType {
   setPopRequired: (num: number) => void;
   residentialPop: number;
   setResidentialPop: (num: number) => void;
+  rankingPoints: number;
+  setRankingPoints: (num: number) => void;
+  awLevels: number;
+  setAwLevels: (num: number) => void;
+  mhRankingPoints: number;
+  setMhRankingPoints: (num: number) => void;
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -97,6 +103,10 @@ export const CityProvider = ({
   const [effects, setEffects] = useState<Effect[]>([]);
   const [popRequired, setPopRequired] = useState<number>(0);
   const [residentialPop, setResidentialPop] = useState<number>(0);
+  const [rankingPoints, setRankingPoints] = useState<number>(0);
+
+  const [awLevels, setAwLevels] = useState<number>(0);
+  const [mhRankingPoints, setMhRankingPoints] = useState<number>(0);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
@@ -122,6 +132,7 @@ export const CityProvider = ({
     if (accountData?.cityQuery) {
       setChapter(accountData.cityQuery.chapter);
       setSquadSize(accountData.cityQuery.squadSize || 0);
+      setRankingPoints(accountData.cityQuery.rankingPoints || 0);
     }
   }, [accountId, forceUpdate]);
 
@@ -330,6 +341,12 @@ export const CityProvider = ({
     setPopRequired,
     residentialPop,
     setResidentialPop,
+    rankingPoints,
+    setRankingPoints,
+    awLevels,
+    setAwLevels,
+    mhRankingPoints,
+    setMhRankingPoints,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

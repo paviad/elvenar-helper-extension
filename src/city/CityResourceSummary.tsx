@@ -14,6 +14,7 @@ export const CityResourceSummary = () => {
   const effectsResidentialPopulationBoost = city.effects.filter((r) => r.action === 'residential_population_boost');
   const effectsAvailablePopulationBonus = city.effects.filter((r) => r.action === 'available_population_bonus');
   const effectsAvailableCultureBonus = city.effects.filter((r) => r.action === 'available_culture_bonus');
+  const effectsCultureByRankingPoints = city.effects.filter((r) => r.action === 'culture_by_ranking_points');
   const squadSize = city.squadSize;
 
   const residentialBonus = effectsResidentialPopulationBoost
@@ -46,6 +47,16 @@ export const CityResourceSummary = () => {
     })
     .reduce((sum, effect) => sum + (effect || 0), 0);
 
+  const cultureByRankingPoints = effectsCultureByRankingPoints
+    .map((r) => {
+      const block = r.origins?.map((origin) => blocks.find((b) => b.gameId.startsWith(origin))).filter((r) => !!r)[0];
+      if (!block) return 0;
+      const level = block.level;
+      const factor = r.values?.[level] || 0;
+      return factor;
+    })
+    .reduce((sum, effect) => sum + (effect || 0), 0);
+
   const extraAvailableCulture = Math.round(squadSize * availableCultureBonus);
 
   const summary = useMemo(() => {
@@ -57,6 +68,8 @@ export const CityResourceSummary = () => {
     let prosperityRequired = 0;
 
     let residentialPop = 0;
+    let awLevels = 0;
+    let mhRankingPoints = 0;
 
     blocks.forEach((block) => {
       const building = buildingFinder.getBuilding(block.gameId, block.level);
@@ -66,6 +79,14 @@ export const CityResourceSummary = () => {
 
       if (!building) return;
       const source: Building = building.sourceBuilding;
+
+      if (building.sourceBuilding.type === 'ancient_wonder') {
+        awLevels += block.level;
+      }
+
+      if (building.sourceBuilding.type === 'main_building') {
+        mhRankingPoints = building.sourceBuilding.rankingPoints || 0;
+      }
 
       // Provisions (Benefits)
       const provisions = source.provisions?.resources?.resources;
@@ -93,12 +114,15 @@ export const CityResourceSummary = () => {
 
     city.setPopRequired(popRequired);
     city.setResidentialPop(residentialPop);
+    city.setAwLevels(awLevels);
+    city.setMhRankingPoints(mhRankingPoints);
 
     const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
     const extraAvailablePopulation = Math.round(popRequired * availablePopulationBonus);
+    const extraCultureFromRanking = Math.round(cultureByRankingPoints * mhRankingPoints * awLevels);
 
     const totalPopulationProvided = popProvided + extraResidential + extraAvailablePopulation;
-    const totalCultureProvided = cultureProvided + extraAvailableCulture;
+    const totalCultureProvided = cultureProvided + extraAvailableCulture + extraCultureFromRanking;
 
     return {
       population: {

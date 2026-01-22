@@ -9,6 +9,7 @@ export const processEffects = async (responseText: string) => {
     'residential_population_boost',
     'available_population_bonus',
     'available_culture_bonus',
+    'culture_by_ranking_points',
   ];
 
   const effects = effectsRaw.filter((r) => captureEffects.includes(r.action));

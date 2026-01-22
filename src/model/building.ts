@@ -22,6 +22,7 @@ export interface Building {
   requirements: Requirements;
   provisions?: { resources: { resources: ProvisionResources } };
   spellFragments: number;
+  rankingPoints?: number;
 }
 
 type Category =

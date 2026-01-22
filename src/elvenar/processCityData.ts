@@ -51,6 +51,14 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   const squadSize = effectsService.find((r) => r.name === 'squadSize')?.value || 0;
 
+  const rankingService = json.find((r) => r.requestClass === 'RankingService' && r.requestMethod === 'newRank')
+    ?.responseData as {
+    rank: number;
+    points: number;
+  };
+
+  const rankingPoints = rankingService?.points || 0;
+
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
   const maxChapter = Number(
@@ -140,6 +148,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       faRequirements,
       relicBoosts,
       squadSize,
+      rankingPoints,
     },
     sharedInfo,
     isDetached: false,

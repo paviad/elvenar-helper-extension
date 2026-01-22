@@ -44,6 +44,7 @@ import { BuildingDefinition } from '../CATEGORIES';
 import { getBuildings } from '../../elvenar/getBuildings';
 import { getChapterFromEntity, getCityBlockFromCityEntity } from '../getCityBlockFromCityEntity';
 import { useHelper } from '../../helper/HelperContext';
+import { guessRankingPointsFromChapter } from '../../util/guessRankingPointsFromChapter';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -360,12 +361,15 @@ export const RenderCityGrid = () => {
           } satisfies CityEntity;
         });
 
+        const rankingPoints = guessRankingPointsFromChapter(minChapter);
+
         await saveNewCityAs(
           name,
           cityEntities,
           importData.user_data.race,
           importData.city_map.unlocked_areas,
           minChapter,
+          rankingPoints,
         );
         await sendCitySavedMessage('imported_' + name);
         setAccountId(name);
