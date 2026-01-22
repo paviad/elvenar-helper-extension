@@ -1,3 +1,4 @@
+import { colorDescriptions } from './colorDescriptions';
 import { knownTypes } from './knownTypes';
 import { TYPE_COLORS } from './TYPE_COLORS';
 
@@ -16,4 +17,9 @@ export function getTypeColor(type: string, allTypes: string[], moved?: boolean):
     color = color + 'AA'; // Add alpha for transparency
   }
   return color;
+}
+
+export function getTypeName(type: string, allTypes: string[], moved?: boolean): string {
+  const color = getTypeColor(type, allTypes, moved);
+  return colorDescriptions[color] || 'Unknown Type';
 }

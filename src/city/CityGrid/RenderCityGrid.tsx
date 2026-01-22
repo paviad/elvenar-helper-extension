@@ -14,7 +14,7 @@ import {
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { blockRect } from './blockRect';
-import { handleMouseMove } from './handleMouseMove';
+import { handleMouseMove, subscribeToMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
 import { BuildingFinder } from '../buildingFinder';
 import { CityBlock } from '../CityBlock';
@@ -90,6 +90,11 @@ export const RenderCityGrid = () => {
       setBuildings(buildings);
     }
     Do();
+  }, []);
+
+  useEffect(() => {
+    const subscription = subscribeToMouseMove();
+    return () => subscription.unsubscribe();
   }, []);
 
   // Key handler for changing level while dragging
@@ -329,10 +334,17 @@ export const RenderCityGrid = () => {
         const buildingFinder = new BuildingFinder();
         await buildingFinder.ensureInitialized();
 
+        let minChapter = 0;
+
         const cityEntities = importData.city_map.entities.map((e: (typeof importData.city_map.entities)[0]) => {
           const levelMatch = /_(\d+)$/.exec(e.cityentity_id);
           const level = e.level || (levelMatch ? parseInt(levelMatch[1]) : 1);
           const building = buildingFinder.getBuilding(e.cityentity_id, level);
+
+          const reqChapter = building?.sourceBuilding.requirements.chapter || 0;
+          if (reqChapter > minChapter) {
+            minChapter = reqChapter;
+          }
 
           return {
             id: e.id,
@@ -347,7 +359,14 @@ export const RenderCityGrid = () => {
             connectionStrategy: building?.connectionStrategy || 'unknown',
           } satisfies CityEntity;
         });
-        await saveNewCityAs(name, cityEntities, importData.user_data.race, importData.city_map.unlocked_areas);
+
+        await saveNewCityAs(
+          name,
+          cityEntities,
+          importData.user_data.race,
+          importData.city_map.unlocked_areas,
+          minChapter,
+        );
         await sendCitySavedMessage('imported_' + name);
         setAccountId(name);
       } catch (e) {
@@ -776,7 +795,7 @@ export const RenderCityGrid = () => {
 
     await saveCityInPlace(city.accountId, newBlocks);
     resetMovedInPlace(Object.values(blocks));
-    city.forceUpdate();
+    city.triggerForceUpdate();
   }
 
   function deleteCity() {
@@ -839,7 +858,9 @@ export const RenderCityGrid = () => {
     <Stack>
       <Stack direction='row'>
         {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
-        {!isDetached && <Button onClick={() => refreshCity(city.accountId, city.forceUpdate)}>Refresh City</Button>}
+        {!isDetached && (
+          <Button onClick={() => refreshCity(city.accountId, city.triggerForceUpdate)}>Refresh City</Button>
+        )}
         <Button onClick={() => sellStreets()}>Sell Streets</Button>
         <Button onClick={() => setShowBuildDialog(true)}>Build</Button>
         <Button onClick={() => importCity()}>Import City</Button>

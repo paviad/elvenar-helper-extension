@@ -3,8 +3,9 @@ import { Card, CardContent, Typography, Slider, Input, Grid } from '@mui/materia
 import { useCity } from './CityContext';
 
 export const CitySettings: React.FC = () => {
-  const { chapter, setChapter } = useCity();
+  const { chapter, setChapter, squadSize, setSquadSize } = useCity();
   const value = chapter || 1;
+  const currentSquadSize = squadSize || 0;
 
   const handleSliderChange = (event: Event, newValue: number | number[]) => {
     setChapter(newValue as number);
@@ -12,6 +13,14 @@ export const CitySettings: React.FC = () => {
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChapter(event.target.value === '' ? 0 : Number(event.target.value));
+  };
+
+  const handleSquadSizeSliderChange = (event: Event, newValue: number | number[]) => {
+    setSquadSize(newValue as number);
+  };
+
+  const handleSquadSizeInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSquadSize(event.target.value === '' ? 0 : Number(event.target.value));
   };
 
   const handleBlur = () => {
@@ -22,12 +31,22 @@ export const CitySettings: React.FC = () => {
     }
   };
 
+  const handleSquadSizeBlur = () => {
+    if (currentSquadSize < 0) {
+      setSquadSize(0);
+    } else if (currentSquadSize > 30000) {
+      setSquadSize(30000);
+    }
+  };
+
   return (
     <Card elevation={3} sx={{ mb: 2, minWidth: 250 }}>
       <CardContent>
         <Typography variant='h6' sx={{ mb: 2, fontWeight: 'bold' }}>
           City Settings
         </Typography>
+
+        {/* Chapter Control */}
         <Typography id='input-slider' gutterBottom variant='caption' color='text.secondary'>
           Current Chapter
         </Typography>
@@ -58,6 +77,47 @@ export const CitySettings: React.FC = () => {
                 style: { textAlign: 'center' },
               }}
               sx={{ width: 50 }}
+            />
+          </Grid>
+        </Grid>
+
+        {/* Squad Size Control */}
+        <Typography
+          id='squad-size-slider'
+          gutterBottom
+          variant='caption'
+          color='text.secondary'
+          sx={{ mt: 2, display: 'block' }}
+        >
+          Squad Size
+        </Typography>
+        <Grid container spacing={2} alignItems='center'>
+          <Grid sx={{ flexGrow: 1 }}>
+            <Slider
+              value={typeof currentSquadSize === 'number' ? currentSquadSize : 0}
+              onChange={handleSquadSizeSliderChange}
+              aria-labelledby='squad-size-slider'
+              step={10}
+              min={0}
+              max={30000}
+              valueLabelDisplay='auto'
+            />
+          </Grid>
+          <Grid>
+            <Input
+              value={currentSquadSize}
+              size='small'
+              onChange={handleSquadSizeInputChange}
+              onBlur={handleSquadSizeBlur}
+              inputProps={{
+                step: 10,
+                min: 0,
+                max: 30000,
+                type: 'number',
+                'aria-labelledby': 'squad-size-slider',
+                style: { textAlign: 'center' },
+              }}
+              sx={{ width: 70 }}
             />
           </Grid>
         </Grid>

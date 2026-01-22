@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Typography, Divider, Stack } from '@mui/material';
+import { Box, Typography, Divider } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { BuildingEx } from '../../model/buildingEx';
 import { useCity } from '../CityContext';
+import { knownTypeNames } from '../Legend/knownTypes';
 
 interface BuildingTooltipProps {
   building: BuildingEx;
@@ -14,9 +15,66 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   const goodsNames = city.goodsNames;
   const currentChapter = city.chapter;
   const source = building.sourceBuilding;
+  const squadSize = city.squadSize;
+  const popRequired = city.popRequired;
+  const residentialPop = city.residentialPop;
+
+  const effectsResidentialPopulationBoost = city.effects.filter((r) => r.action === 'residential_population_boost');
+  const effectsAvailablePopulationBonus = city.effects.filter((r) => r.action === 'available_population_bonus');
+  const effectsAvailableCultureBonus = city.effects.filter((r) => r.action === 'available_culture_bonus');
+
+  const residentialBonus = effectsResidentialPopulationBoost
+    .map((r) => {
+      const match = r.origins?.some((origin) => building.sourceBuilding.id.startsWith(origin));
+      if (!match) return 0;
+      const level = building.sourceBuilding.level;
+      const factor = r.values?.[level] || 1;
+      return factor;
+    })
+    .reduce((sum, effect) => sum * (effect || 1), 1);
+
+  const availableCultureBonus = effectsAvailableCultureBonus
+    .map((r) => {
+      const match = r.origins?.some((origin) => building.sourceBuilding.id.startsWith(origin));
+      if (!match) return 0;
+      const level = building.sourceBuilding.level;
+      const factor = r.values?.[level] || 0;
+      return factor;
+    })
+    .reduce((sum, effect) => sum + (effect || 0), 0);
+
+  const availablePopulationBonus = effectsAvailablePopulationBonus
+    .map((r) => {
+      const match = r.origins?.some((origin) => building.sourceBuilding.id.startsWith(origin));
+      if (!match) return 0;
+      const level = building.sourceBuilding.level;
+      const factor = r.values?.[level] || 0;
+      return factor;
+    })
+    .reduce((sum, effect) => sum + (effect || 0), 0);
+
+  const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
+  const extraAvailablePopulation = Math.round(popRequired * availablePopulationBonus);
+  const extraAvailableCulture = Math.round(squadSize * availableCultureBonus);
 
   // Extract Provisions (Population, Culture, etc.)
-  const provisions = source?.provisions?.resources?.resources;
+  let provisions = source?.provisions?.resources?.resources && { ...source?.provisions?.resources?.resources };
+
+  if (extraAvailableCulture || extraAvailablePopulation || extraResidential) {
+    if (!provisions) {
+      provisions = {};
+    }
+    if (extraAvailableCulture) {
+      provisions['culture'] = (provisions?.['culture'] || 0) + extraAvailableCulture;
+    }
+    if (extraAvailablePopulation) {
+      provisions['population'] = (provisions?.['population'] || 0) + extraAvailablePopulation;
+    }
+    if (extraResidential) {
+      provisions['population'] = (provisions?.['population'] || 0) + extraResidential;
+    }
+  }
+
   const hasProvisions = provisions && Object.keys(provisions).length > 0;
 
   // Extract Requirements (Population, Culture cost, etc.)
@@ -61,6 +119,10 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
     return goodsNames[name] || name;
   };
 
+  const formatBuildingType = (type: string) => {
+    return knownTypeNames[type] || type;
+  };
+
   return (
     <Box sx={{ p: 0.5, maxWidth: 280 }}>
       {/* Header */}
@@ -81,7 +143,7 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
       <Typography variant='caption' display='block' sx={{ mb: 0.5, color: 'rgba(255, 255, 255, 0.7)' }}>
         {building.width}x{building.length}
         {building.chapter ? ` • Chapter ${building.chapter}` : ''}
-        {source?.type ? ` • ${formatResourceName(source.type)}` : ''}
+        {source?.type ? ` • ${formatBuildingType(source.type)}` : ''}
       </Typography>
 
       {/* Description */}

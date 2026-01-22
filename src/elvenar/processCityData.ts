@@ -8,7 +8,7 @@ import { ElvenarUserData } from '../model/userData';
 import { FaQuest, generateAccountId, AccountData, setAccountData, getAccountBySessionId } from './AccountManager';
 
 export async function processCityData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
-  const json = untypedJson as [{ requestClass: string; responseData: unknown }];
+  const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];
 
   const startupService = json.find((r) => r.requestClass === 'StartupService')?.responseData as {
     user_data: ElvenarUserData;
@@ -42,6 +42,14 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
         } satisfies FaQuest,
       ]),
   );
+
+  const effectsService = json.find((r) => r.requestClass === 'EffectsService' && r.requestMethod === 'getAllSources')
+    ?.responseData as {
+    name: string;
+    value: number;
+  }[];
+
+  const squadSize = effectsService.find((r) => r.name === 'squadSize')?.value || 0;
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
@@ -131,6 +139,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       timestamp: Date.now(),
       faRequirements,
       relicBoosts,
+      squadSize,
     },
     sharedInfo,
     isDetached: false,

@@ -40,3 +40,46 @@ export const knownTypes: Record<string, string> = {
   street: '#d7d7d7',
   street_x: '#d7d7d7',
 };
+
+export const knownTypeNames: Record<string, string> = {
+  culture_residential: 'Culture Residential',
+  culture: 'Culture',
+  expiring: 'Expiring',
+  expiring_x: 'Expiring',
+
+  culture_residential_x: 'Culture Residential',
+  culture_x: 'Culture',
+
+  culture_y: 'Culture',
+  culture_residential_y: 'Culture Residential',
+  expiring_y: 'Expiring',
+
+  main_building_y: 'Main Building',
+  trader: 'Trader',
+  residential: 'Residential',
+  premium_residential: 'Premium Residential',
+  worker_hut: 'Worker Hut',
+  worker_hut_y: 'Worker Hut',
+  academy: 'Academy',
+
+  goods: 'Goods',
+
+  production: 'Production',
+  premium_production: 'Premium Production',
+
+  ancient_wonder: 'Ancient Wonder',
+  ancient_wonder_x: 'Ancient Wonder',
+  ancient_wonder_y: 'Ancient Wonder',
+  guardian_y: 'Guardian',
+
+  portal: 'Portal',
+  portal_x: 'Portal',
+  goods_x: 'Goods',
+  guardian: 'Guardian',
+
+  military: 'Military',
+  armory: 'Armory',
+
+  street: 'Street',
+  street_x: 'Street',
+};

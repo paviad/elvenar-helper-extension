@@ -11,15 +11,14 @@ export const CityResourceSummary = () => {
   const blocks = Object.values(city.blocks);
   const buildingFinder = city.buildingFinder;
   const evolvingBuildings = city.evolvingBuildings;
-  const effects = city.effects.filter((r) => r.action.includes('population'));
-  const effects1 = effects.filter((r) => r.action === 'residential_population_boost');
-  const effects2 = effects.filter((r) => r.action === 'available_population_bonus');
+  const effectsResidentialPopulationBoost = city.effects.filter((r) => r.action === 'residential_population_boost');
+  const effectsAvailablePopulationBonus = city.effects.filter((r) => r.action === 'available_population_bonus');
+  const effectsAvailableCultureBonus = city.effects.filter((r) => r.action === 'available_culture_bonus');
+  const squadSize = city.squadSize;
 
-  const residentialBonus = effects1
+  const residentialBonus = effectsResidentialPopulationBoost
     .map((r) => {
-      const origin = r.origins?.[0];
-      if (!origin) return 0;
-      const block = blocks.find((b) => b.gameId.startsWith(origin));
+      const block = r.origins?.map((origin) => blocks.find((b) => b.gameId.startsWith(origin))).filter((r) => !!r)[0];
       if (!block) return 0;
       const level = block.level;
       const factor = r.values?.[level] || 1;
@@ -27,17 +26,27 @@ export const CityResourceSummary = () => {
     })
     .reduce((sum, effect) => sum * (effect || 1), 1);
 
-  const availableBonus = effects2
+  const availablePopulationBonus = effectsAvailablePopulationBonus
     .map((r) => {
-      const origin = r.origins?.[0];
-      if (!origin) return 0;
-      const block = blocks.find((b) => b.gameId.startsWith(origin));
+      const block = r.origins?.map((origin) => blocks.find((b) => b.gameId.startsWith(origin))).filter((r) => !!r)[0];
       if (!block) return 0;
       const level = block.level;
       const factor = r.values?.[level] || 0;
       return factor;
     })
     .reduce((sum, effect) => sum + (effect || 0), 0);
+
+  const availableCultureBonus = effectsAvailableCultureBonus
+    .map((r) => {
+      const block = r.origins?.map((origin) => blocks.find((b) => b.gameId.startsWith(origin))).filter((r) => !!r)[0];
+      if (!block) return 0;
+      const level = block.level;
+      const factor = r.values?.[level] || 0;
+      return factor;
+    })
+    .reduce((sum, effect) => sum + (effect || 0), 0);
+
+  const extraAvailableCulture = Math.round(squadSize * availableCultureBonus);
 
   const summary = useMemo(() => {
     let popProvided = 0;
@@ -68,7 +77,8 @@ export const CityResourceSummary = () => {
           residentialPop += popProvidedByThisBuilding;
         }
 
-        cultureProvided += (provisions.culture || 0) * cultureFactor;
+        const cultureProvidedByThisBuilding = (provisions.culture || 0) * cultureFactor;
+        cultureProvided += cultureProvidedByThisBuilding;
         prosperityProvided += provisions.prosperity || 0;
       }
 
@@ -81,14 +91,26 @@ export const CityResourceSummary = () => {
       }
     });
 
-    const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
-    const extraAvailable = Math.round(popRequired * availableBonus);
+    city.setPopRequired(popRequired);
+    city.setResidentialPop(residentialPop);
 
-    const totalProvided = popProvided + extraResidential + extraAvailable;
+    const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
+    const extraAvailablePopulation = Math.round(popRequired * availablePopulationBonus);
+
+    const totalPopulationProvided = popProvided + extraResidential + extraAvailablePopulation;
+    const totalCultureProvided = cultureProvided + extraAvailableCulture;
 
     return {
-      population: { provided: totalProvided, required: popRequired, net: totalProvided - popRequired },
-      culture: { provided: cultureProvided, required: cultureRequired, net: cultureProvided - cultureRequired },
+      population: {
+        provided: totalPopulationProvided,
+        required: popRequired,
+        net: totalPopulationProvided - popRequired,
+      },
+      culture: {
+        provided: totalCultureProvided,
+        required: cultureRequired,
+        net: totalCultureProvided - cultureRequired,
+      },
       prosperity: {
         provided: prosperityProvided,
         required: prosperityRequired,

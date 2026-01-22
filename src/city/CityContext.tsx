@@ -46,7 +46,8 @@ interface CityContextType {
   opacity: number;
   allTypes: string[];
   unlockedAreas: UnlockedArea[];
-  forceUpdate: () => void;
+  triggerForceUpdate: () => void;
+  forceUpdate: number;
   race: string;
   buildingFinder: BuildingFinder;
   goodsNames: Record<string, string>;
@@ -55,6 +56,12 @@ interface CityContextType {
   boostedGoods: string[];
   chapter: number;
   setChapter: (chapter: number) => void;
+  squadSize: number;
+  setSquadSize: (size: number) => void;
+  popRequired: number;
+  setPopRequired: (num: number) => void;
+  residentialPop: number;
+  setResidentialPop: (num: number) => void;
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -62,12 +69,14 @@ const CityContext = createContext<CityContextType | undefined>(undefined);
 export const CityProvider = ({
   sourceBlocks,
   unlockedAreas,
+  triggerForceUpdate,
   forceUpdate,
   children,
 }: {
   sourceBlocks: CityBlock[];
   unlockedAreas: UnlockedArea[];
-  forceUpdate: () => void;
+  triggerForceUpdate: () => void;
+  forceUpdate: number;
   children: ReactNode;
 }) => {
   const [moveLog, setMoveLog] = useState<MoveLogInterface[]>([]);
@@ -86,12 +95,16 @@ export const CityProvider = ({
   const [goodsNames, setGoodsNames] = useState<Record<string, string>>({});
   const [evolvingBuildings, setEvolvingBuildings] = useState<StageProvision[]>([]);
   const [effects, setEffects] = useState<Effect[]>([]);
+  const [popRequired, setPopRequired] = useState<number>(0);
+  const [residentialPop, setResidentialPop] = useState<number>(0);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
   const techSprite = useTabStore((state) => state.techSprite);
 
   const [chapter, setChapter] = useState<number>(100);
+  const [squadSize, setSquadSize] = useState<number>(0);
+
   let boostedGoods: string[] = [];
 
   let race = 'humans';
@@ -108,8 +121,9 @@ export const CityProvider = ({
     const accountData = getAccountById(accountId);
     if (accountData?.cityQuery) {
       setChapter(accountData.cityQuery.chapter);
+      setSquadSize(accountData.cityQuery.squadSize || 0);
     }
-  }, [accountId]);
+  }, [accountId, forceUpdate]);
 
   React.useEffect(() => {
     if (!accountId) return;
@@ -300,6 +314,7 @@ export const CityProvider = ({
     opacity,
     allTypes,
     unlockedAreas,
+    triggerForceUpdate,
     forceUpdate,
     race,
     buildingFinder,
@@ -309,6 +324,12 @@ export const CityProvider = ({
     boostedGoods,
     chapter,
     setChapter,
+    squadSize,
+    setSquadSize,
+    popRequired,
+    setPopRequired,
+    residentialPop,
+    setResidentialPop,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

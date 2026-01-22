@@ -27,6 +27,7 @@ interface CityQuery {
   timestamp: number;
   faRequirements: Record<string, FaQuest>;
   relicBoosts: Record<keyof Relics, number>;
+  squadSize: number;
 }
 
 export interface FaQuest {
@@ -160,6 +161,7 @@ export const saveNewCityAs = async (
   cityEntities: CityEntity[],
   race: string,
   unlockedAreas: UnlockedArea[],
+  squadSize: number,
 ) => {
   const accountData: AccountData = {
     isDetached: true,
@@ -249,6 +251,7 @@ export const saveNewCityAs = async (
         relic_silk: 0,
         relic_steel: 0,
       },
+      squadSize,
     },
   };
   accounts[accountId] = accountData;

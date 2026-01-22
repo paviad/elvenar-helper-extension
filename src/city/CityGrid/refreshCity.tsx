@@ -2,7 +2,7 @@ import { sendRefreshCityMessage } from '../../chrome/messages';
 import { loadAccountManagerFromStorage } from '../../elvenar/AccountManager';
 import { useTabStore } from '../../util/tabStore';
 
-export async function refreshCity(accountId: string | undefined, forceUpdate: () => void) {
+export async function refreshCity(accountId: string | undefined, triggerForceUpdate: () => void) {
   const setGlobalError = useTabStore.getState().setGlobalError;
 
   if (!accountId) {
@@ -17,6 +17,6 @@ export async function refreshCity(accountId: string | undefined, forceUpdate: ()
   }
   setGlobalError(undefined);
   await loadAccountManagerFromStorage(true);
-  forceUpdate();
+  triggerForceUpdate();
   // window.location.reload();
 }
