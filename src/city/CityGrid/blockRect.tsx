@@ -65,12 +65,13 @@ export const blockRect = (key: string | number, block: CityBlock) => {
   // Check if building requires a higher chapter than the city's current chapter
   const levelingBuilding = /^[GPRHMOY]_/.test(block.gameId);
   const chapterRequirement = building?.sourceBuilding.upgradeRequirements?.chapter;
-  const nextLevelBuildingChapterRequirement = nextLevelBuilding?.sourceBuilding.upgradeRequirements?.chapter;
+  const nextLevelBuildingChapterRequirement = nextLevelBuilding?.sourceBuilding.upgradeRequirements?.chapter || 0;
   const isChapterExcessive = chapterRequirement !== undefined && chapterRequirement > chapter;
+
   const isMaxLevelForChapter =
     levelingBuilding &&
     !isChapterExcessive &&
-    (!nextLevelBuildingChapterRequirement || nextLevelBuildingChapterRequirement > chapter);
+    (!nextLevelBuilding || nextLevelBuildingChapterRequirement > chapter);
 
   return (
     <g key={key}>
