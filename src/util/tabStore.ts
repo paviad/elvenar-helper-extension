@@ -13,6 +13,8 @@ interface TabState {
   triggerForceUpdate: () => void;
   otherCityUpdated: boolean;
   setOtherCityUpdated: (updated: boolean) => void;
+  legendCollapsed: boolean;
+  setLegendCollapsed: (collapsed: boolean) => void;
 }
 
 export const useTabStore = create<TabState>()(
@@ -28,6 +30,8 @@ export const useTabStore = create<TabState>()(
       triggerForceUpdate: () => set((state) => ({ forceUpdate: state.forceUpdate + 1 })),
       otherCityUpdated: false,
       setOtherCityUpdated: (updated: boolean) => set({ otherCityUpdated: updated }),
+      legendCollapsed: false,
+      setLegendCollapsed: (collapsed: boolean) => set({ legendCollapsed: collapsed }),
     }),
     {
       name: 'tab-store',

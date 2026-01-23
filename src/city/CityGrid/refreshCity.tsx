@@ -1,8 +1,10 @@
 import { sendRefreshCityMessage } from '../../chrome/messages';
 import { loadAccountManagerFromStorage } from '../../elvenar/AccountManager';
 import { useTabStore } from '../../util/tabStore';
+import { CityContextType } from '../CityContext';
 
-export async function refreshCity(accountId: string | undefined, triggerForceUpdate: () => void) {
+export async function refreshCity(city: CityContextType) {
+  const { accountId, triggerForceUpdate, searchTerm } = city;
   const setGlobalError = useTabStore.getState().setGlobalError;
 
   if (!accountId) {

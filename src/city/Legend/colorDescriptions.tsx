@@ -1,7 +1,7 @@
 export const colorDescriptions: Record<string, string> = {
   '#9452fe': 'Culture(/Residential)',
   '#110cff': 'Culture(/Residential) Standalone',
-  '#f9c602': 'Residential/Main/Trader/Academy/Worker Hut',
+  '#f9c602': 'Residential/ Main/ Trader/ Academy/ Worker Hut',
   '#fe2ad5': 'Goods Buildings',
   '#13b7f4': 'Production Buildings',
   '#fef7c6': 'Ancient Wonders',

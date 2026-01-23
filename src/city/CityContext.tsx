@@ -12,7 +12,7 @@ import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getEffects } from '../elvenar/getEffects';
 import { Effect } from '../model/effect';
 
-interface CityContextType {
+export interface CityContextType {
   moveLog: MoveLogInterface[];
   setMoveLog: (fn: (prev: MoveLogInterface[]) => MoveLogInterface[]) => void;
   redoStack: MoveLogInterface[];
@@ -68,6 +68,8 @@ interface CityContextType {
   setAwLevels: (num: number) => void;
   mhRankingPoints: number;
   setMhRankingPoints: (num: number) => void;
+  mouseGridPosition: { x: number; y: number } | null;
+  setMouseGridPosition: (pos: { x: number; y: number } | null) => void;
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -104,6 +106,7 @@ export const CityProvider = ({
   const [popRequired, setPopRequired] = useState<number>(0);
   const [residentialPop, setResidentialPop] = useState<number>(0);
   const [rankingPoints, setRankingPoints] = useState<number>(0);
+  const [mouseGridPosition, setMouseGridPosition] = useState<{ x: number; y: number } | null>(null);
 
   const [awLevels, setAwLevels] = useState<number>(0);
   const [mhRankingPoints, setMhRankingPoints] = useState<number>(0);
@@ -134,6 +137,7 @@ export const CityProvider = ({
       setSquadSize(accountData.cityQuery.squadSize || 0);
       setRankingPoints(accountData.cityQuery.rankingPoints || 0);
     }
+    setSearchTerm('');
   }, [accountId, forceUpdate]);
 
   React.useEffect(() => {
@@ -347,6 +351,8 @@ export const CityProvider = ({
     setAwLevels,
     mhRankingPoints,
     setMhRankingPoints,
+    mouseGridPosition,
+    setMouseGridPosition,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

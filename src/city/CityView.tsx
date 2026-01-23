@@ -13,6 +13,7 @@ import { generateCity } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { CityEntityEx } from '../model/cityEntity';
+import { WorkingState } from './WorkingState';
 
 export function CityView() {
   const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntityEx[], UnlockedArea[]]);
@@ -103,6 +104,18 @@ export function CityView() {
             }}
           >
             <RenderLegend />
+          </div>
+
+          {/* Working State */}
+          <div
+            style={{
+              padding: '8px',
+              borderTop: '1px solid rgba(0,0,0,0.12)',
+              backgroundColor: '#f5f5f5',
+              boxShadow: '0 -2px 5px rgba(0,0,0,0.05)',
+            }}
+          >
+            <WorkingState />
           </div>
 
           {/* Resource Summary - Fixed/Sticky at Bottom */}

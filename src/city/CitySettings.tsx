@@ -135,7 +135,7 @@ export const CitySettings: React.FC = () => {
           color='text.secondary'
           sx={{ mt: 2, display: 'block' }}
         >
-          Ranking Points
+          Ranking Points (static)
         </Typography>
         <Grid container spacing={2} alignItems='center'>
           <Grid sx={{ flexGrow: 1 }} />

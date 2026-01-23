@@ -410,7 +410,7 @@ export const RenderCityGrid = () => {
           {
             ...b,
             highlighted: Boolean(!!matcher && ((b.name && matcher(b.name)) || (b.type && matcher(b.type)))),
-          },
+          } satisfies CityBlock,
         ]),
       ),
     );
@@ -863,7 +863,7 @@ export const RenderCityGrid = () => {
       <Stack direction='row'>
         {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
         {!isDetached && (
-          <Button onClick={() => refreshCity(city.accountId, city.triggerForceUpdate)}>Refresh City</Button>
+          <Button onClick={() => refreshCity(city)}>Refresh City</Button>
         )}
         <Button onClick={() => sellStreets()}>Sell Streets</Button>
         <Button onClick={() => setShowBuildDialog(true)}>Build</Button>

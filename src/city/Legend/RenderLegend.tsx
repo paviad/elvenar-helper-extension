@@ -1,79 +1,96 @@
 import React from 'react';
+import { Accordion, AccordionSummary, AccordionDetails, Typography, Box } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { getTypeColor } from './getTypeColor';
 import { colorDescriptions } from './colorDescriptions';
 import { useCity } from '../CityContext';
-import { Stack } from '@mui/material';
+import { useTabStore } from '../../util/tabStore';
 
 export function RenderLegend() {
   const s = useCity();
   const { allTypes } = s;
-  return (
-    <Stack>
-      <div style={{ width: 300, marginLeft: 16 }}>
-        <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Color Legend</div>
-        <ul style={{ listStyle: 'none', padding: 0, fontSize: 13 }}>
-          {Object.entries(colorDescriptions).map(([color, desc]) => (
-            <li
-              key={color}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: 6,
-              }}
-            >
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: 18,
-                  height: 18,
-                  background: color,
-                  border: '1px solid #888',
-                  borderRadius: 4,
-                  marginRight: 8,
-                }}
-              />
-              <span>{desc}</span>
-            </li>
-          ))}
-        </ul>
+  const legendCollapsed = useTabStore((state) => state.legendCollapsed);
+  const setLegendCollapsed = useTabStore((state) => state.setLegendCollapsed);
 
-        {(() => {
-          const unknownTypes = allTypes.filter(
-            (type) => !Object.keys(colorDescriptions).includes(getTypeColor(type, allTypes, false)),
-          );
-          if (unknownTypes.length === 0) return null;
-          return (
-            <>
-              <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Unknown Type Legend</div>
-              <ul style={{ listStyle: 'none', padding: 0, fontSize: 13 }}>
-                {unknownTypes.map((type) => (
-                  <li
-                    key={type}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: 6,
-                    }}
-                  >
-                    <span
+  return (
+    <Box>
+      <Accordion
+        expanded={!legendCollapsed}
+        onChange={(_, expanded) => setLegendCollapsed(!expanded)}
+        elevation={3}
+        disableGutters
+        sx={{ borderRadius: 2 }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='legend-content' id='legend-header'>
+          <Typography fontWeight='bold'>Color Legend</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul style={{ listStyle: 'none', padding: 0, fontSize: 13, margin: 0 }}>
+            {Object.entries(colorDescriptions).map(([color, desc]) => (
+              <li
+                key={color}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: 6,
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: 18,
+                    height: 18,
+                    background: color,
+                    border: '1px solid #888',
+                    borderRadius: 4,
+                    marginRight: 8,
+                    flexShrink: 0,
+                  }}
+                />
+                <span>{desc}</span>
+              </li>
+            ))}
+          </ul>
+
+          {(() => {
+            const unknownTypes = allTypes.filter(
+              (type) => !Object.keys(colorDescriptions).includes(getTypeColor(type, allTypes, false)),
+            );
+            if (unknownTypes.length === 0) return null;
+            return (
+              <>
+                <Box sx={{ mt: 2, mb: 1, fontWeight: 'bold', fontSize: 14 }}>Unknown Types</Box>
+                <ul style={{ listStyle: 'none', padding: 0, fontSize: 13, margin: 0 }}>
+                  {unknownTypes.map((type) => (
+                    <li
+                      key={type}
                       style={{
-                        display: 'inline-block',
-                        width: 18,
-                        height: 18,
-                        background: getTypeColor(type, allTypes, false),
-                        border: '1px solid #888',
-                        borderRadius: 4,
-                        marginRight: 8,
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: 6,
                       }}
-                    />
-                    <span>{type}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          );
-        })()}
-      </div>
-    </Stack>
+                    >
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          width: 18,
+                          height: 18,
+                          background: getTypeColor(type, allTypes, false),
+                          border: '1px solid #888',
+                          borderRadius: 4,
+                          marginRight: 8,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span>{type}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            );
+          })()}
+        </AccordionDetails>
+      </Accordion>
+    </Box>
   );
 }

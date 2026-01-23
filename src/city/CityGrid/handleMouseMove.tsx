@@ -67,12 +67,14 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent)
 
     if (mouseGrid) {
       mouseGrid.innerText = `Grid: (${newX}, ${newY})`;
+      city.setMouseGridPosition({ x: newX, y: newY });
     }
   } else {
     const gridX = Math.floor(mouseX / GridSize);
     const gridY = Math.floor(mouseY / GridSize);
     if (mouseGrid) {
       mouseGrid.innerText = `Grid: (${gridX}, ${gridY})`;
+      city.setMouseGridPosition({ x: gridX, y: gridY });
     }
   }
 };
