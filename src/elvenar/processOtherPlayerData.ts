@@ -46,7 +46,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
       fontColor: 0,
     },
     playerType: { value: '' },
-    guild_info: {
+    guild_info: other_player.guild_info && {
       id: other_player.guild_info.id,
       name: '',
       banner: {
@@ -128,7 +128,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
 }
 
 const maxUpgradeIndexByChapter = [
-  3, 6, 9, 12, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67, 71, 75, 79, 83, 87, 91,
+  0, 3, 6, 9, 12, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67, 71, 75, 79, 83, 87, 91,
 ];
 
 const squadSizeIncrementByUpgrade = [

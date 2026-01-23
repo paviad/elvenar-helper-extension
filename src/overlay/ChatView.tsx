@@ -215,7 +215,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
       return;
     }
 
-    const guildId = accountData.cityQuery?.userData.guild_info.id;
+    const guildId = accountData.cityQuery?.userData.guild_info?.id;
     if (!guildId) {
       return;
     }

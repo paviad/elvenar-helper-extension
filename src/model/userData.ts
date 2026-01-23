@@ -5,7 +5,7 @@ export interface ElvenarUserData {
   race:              string;
   portrait_id:       string;
   playerType:        PlayerType;
-  guild_info:        GuildInfo;
+  guild_info?:        GuildInfo;
   technologySection: TechnologySection;
 }
 

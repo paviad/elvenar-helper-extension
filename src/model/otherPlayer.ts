@@ -23,7 +23,7 @@ export interface OtherPlayerClass {
   race:       string;
   rank:       number;
   city_name:  string;
-  guild_info: GuildInfo;
+  guild_info?: GuildInfo;
   location:   Location;
 }
 
