@@ -862,19 +862,16 @@ export const RenderCityGrid = () => {
     <Stack>
       <Stack direction='row'>
         {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
-        {!isDetached && (
-          <Button onClick={() => refreshCity(city)}>Refresh City</Button>
-        )}
+        {!isDetached && <Button onClick={() => refreshCity(city)}>Refresh City</Button>}
         <Button onClick={() => sellStreets()}>Sell Streets</Button>
         <Button onClick={() => setShowBuildDialog(true)}>Build</Button>
         <Button onClick={() => importCity()}>Import City</Button>
         <Button onClick={() => exportCityAsJson()}>Export City</Button>
         <Button onClick={() => saveCityAs()}>Save City As...</Button>
-        {isDetached && (
-          <Button onClick={() => deleteCity()} sx={{ color: 'red' }}>
-            Delete
-          </Button>
-        )}
+        <Button onClick={() => deleteCity()} sx={{ color: 'red' }}>
+          Delete
+        </Button>
+
         {isDetached && city.accountId !== 'Visited' && <Button onClick={() => saveCity()}>Save</Button>}
         <Button
           onClick={() => deleteHighlightedBlocks(true)}

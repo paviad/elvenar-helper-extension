@@ -19,6 +19,7 @@ export async function refreshCity(city: CityContextType) {
   }
   setGlobalError(undefined);
   await loadAccountManagerFromStorage(true);
+  city.setSearchTerm(''); // Re-apply search term
   triggerForceUpdate();
   // window.location.reload();
 }
