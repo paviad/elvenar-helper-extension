@@ -69,9 +69,7 @@ export const blockRect = (key: string | number, block: CityBlock) => {
   const isChapterExcessive = chapterRequirement !== undefined && chapterRequirement > chapter;
 
   const isMaxLevelForChapter =
-    levelingBuilding &&
-    !isChapterExcessive &&
-    (!nextLevelBuilding || nextLevelBuildingChapterRequirement > chapter);
+    levelingBuilding && !isChapterExcessive && (!nextLevelBuilding || nextLevelBuildingChapterRequirement > chapter);
 
   return (
     <g key={key}>
@@ -85,7 +83,7 @@ export const blockRect = (key: string | number, block: CityBlock) => {
       )}
       {building && (
         <Tooltip
-          title={<BuildingTooltip building={building} isMaxLevel={isMaxLevelForChapter} />}
+          title={<BuildingTooltip building={building} stage={block.stage} isMaxLevel={isMaxLevelForChapter} />}
           disableHoverListener={dragging}
           arrow
           followCursor

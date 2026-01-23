@@ -8,9 +8,10 @@ import { knownTypeNames } from '../Legend/knownTypes';
 interface BuildingTooltipProps {
   building: BuildingEx;
   isMaxLevel?: boolean;
+  stage?: number;
 }
 
-export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMaxLevel }) => {
+export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMaxLevel, stage }) => {
   const city = useCity();
   const goodsNames = city.goodsNames;
   const currentChapter = city.chapter;
@@ -20,6 +21,7 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   const residentialPop = city.residentialPop;
   const awLevels = city.awLevels;
   const mhRankingPoints = city.mhRankingPoints;
+  const evolvingBuildings = city.evolvingBuildings;
 
   const effectsResidentialPopulationBoost = city.effects.filter((r) => r.action === 'residential_population_boost');
   const effectsAvailablePopulationBonus = city.effects.filter((r) => r.action === 'available_population_bonus');
@@ -66,6 +68,10 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
     })
     .reduce((sum, effect) => sum + (effect || 0), 0);
 
+  const evolvingBuilding = evolvingBuildings.find((eb) => eb.baseName === building?.sourceBuilding.base_name);
+  const cultureFactor = evolvingBuilding?.stages.find((s) => s.id === stage)?.culture || 1;
+  const populationFactor = evolvingBuilding?.stages.find((s) => s.id === stage)?.population || 1;
+
   const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
   const extraAvailablePopulation = Math.round(popRequired * availablePopulationBonus);
   const extraAvailableCulture = Math.round(squadSize * availableCultureBonus);
@@ -74,22 +80,32 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   // Extract Provisions (Population, Culture, etc.)
   let provisions = source?.provisions?.resources?.resources && { ...source?.provisions?.resources?.resources };
 
-  if (extraAvailableCulture || extraAvailablePopulation || extraResidential || extraCultureFromRanking) {
+  if (extraAvailableCulture || extraCultureFromRanking || cultureFactor !== 1) {
     if (!provisions) {
       provisions = {};
     }
+    let culture = (provisions?.['culture'] || 0) * cultureFactor;
     if (extraAvailableCulture) {
-      provisions['culture'] = (provisions?.['culture'] || 0) + extraAvailableCulture;
+      culture += extraAvailableCulture;
     }
     if (extraCultureFromRanking) {
-      provisions['culture'] = (provisions?.['culture'] || 0) + extraCultureFromRanking;
+      culture += extraCultureFromRanking;
     }
+    provisions['culture'] = culture;
+  }
+
+  if (extraAvailablePopulation || extraResidential || populationFactor !== 1) {
+    if (!provisions) {
+      provisions = {};
+    }
+    let population = (provisions?.['population'] || 0) * populationFactor;
     if (extraAvailablePopulation) {
-      provisions['population'] = (provisions?.['population'] || 0) + extraAvailablePopulation;
+      population += extraAvailablePopulation;
     }
     if (extraResidential) {
-      provisions['population'] = (provisions?.['population'] || 0) + extraResidential;
+      population += extraResidential;
     }
+    provisions['population'] = population;
   }
 
   const hasProvisions = provisions && Object.keys(provisions).length > 0;
