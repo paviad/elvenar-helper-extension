@@ -1,10 +1,10 @@
 import React from 'react';
-import { useCity } from '../../CityContext';
 import { sampleTime, Subject } from 'rxjs';
+import { useCity } from '../../CityContext';
 
 // Updated Subject to include zoom
 const isoSubject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent; zoom: number }>();
-const isoThrottled = isoSubject.pipe(sampleTime(100));
+const isoThrottled = isoSubject.pipe(sampleTime(50));
 
 export const handleIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   isoSubject.next({ city, e, zoom });

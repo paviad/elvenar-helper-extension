@@ -1,9 +1,9 @@
-import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { OtherPlayerClass } from '../model/otherPlayer';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
+import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { AccountData, setAccountData } from './AccountManager';
 
 export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {

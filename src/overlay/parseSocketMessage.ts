@@ -1,8 +1,8 @@
 import {
-  SocketMessageChatHistory,
   SocketMessage,
-  SocketMessageWho,
+  SocketMessageChatHistory,
   SocketMessageSend,
+  SocketMessageWho,
 } from '../model/socketMessages/socketMessage';
 
 export const parseSocketMessage = (data: string): SocketMessage | null => {

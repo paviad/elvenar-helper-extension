@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { Box, Container, Stack } from '@mui/material';
+import React from 'react';
 import { CityView } from './CityView';
 
 export function CityMain() {

@@ -1,7 +1,7 @@
-import { CustomWebSocket } from './CustomWebSocket';
+import { CustomWebSocket } from './customWebSocket';
 import { sendMarkAsReadMessage } from './sendMarkAsReadMessage';
 import { SendWebsocketMessage } from './websocketMessages';
-import { GlobalHttpInterceptorService } from './XhrInterceptor';
+import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 
 // --- Types ---
 interface SaveCityDialogProps {
@@ -16,11 +16,11 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
   defaultName = 'My City Layout',
   existingCities = [],
 }) => {
-  const [name, setName] = useState(defaultName);
-  const [isConfirming, setIsConfirming] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = React.useState(defaultName);
+  const [isConfirming, setIsConfirming] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
       setName(defaultName);
       setIsConfirming(false);

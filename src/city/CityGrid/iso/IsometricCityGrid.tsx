@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import React from 'react';
 import { useCity } from '../../CityContext';
 import { IsometricBlockRect } from './IsometricBlockRect';
 import { handleIsoMouseMove } from './handleIsoMouseMove';
@@ -21,14 +21,14 @@ const PADDING_TILES = 10;
 export function IsometricCityGrid() {
   const city = useCity();
   const { GridSize, GridMax, blocks, unlockedAreas, setMouseGridPosition } = city;
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const [zoom, setZoom] = useState(1);
-  const zoomRef = useRef(1);
-  const pendingScrollUpdate = useRef<{ left: number; top: number } | null>(null);
-  const isPanning = useRef(false);
-  const hasPanned = useRef(false);
-  const startPan = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
+  const [zoom, setZoom] = React.useState(1);
+  const zoomRef = React.useRef(1);
+  const pendingScrollUpdate = React.useRef<{ left: number; top: number } | null>(null);
+  const isPanning = React.useRef(false);
+  const hasPanned = React.useRef(false);
+  const startPan = React.useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // --- Isometric Configuration ---
   const tileWidth = GridSize * 1.8 * zoom;
@@ -108,7 +108,7 @@ export function IsometricCityGrid() {
     });
   }, [blocks]);
 
-  useLayoutEffect(() => {
+  React.useLayoutEffect(() => {
     if (pendingScrollUpdate.current && containerRef.current) {
       containerRef.current.scrollLeft = pendingScrollUpdate.current.left;
       containerRef.current.scrollTop = pendingScrollUpdate.current.top;
@@ -116,7 +116,7 @@ export function IsometricCityGrid() {
     }
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -218,8 +218,8 @@ export function IsometricCityGrid() {
     }
   };
 
-  const hasCentered = useRef(false);
-  useEffect(() => {
+  const hasCentered = React.useRef(false);
+  React.useEffect(() => {
     if (!hasCentered.current && containerRef.current && totalWidth > 100) {
       containerRef.current.scrollLeft = (totalWidth - containerRef.current.clientWidth) / 2;
       hasCentered.current = true;

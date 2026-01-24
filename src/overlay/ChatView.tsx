@@ -1,15 +1,15 @@
-import React from 'react';
-import { getAccountId, getOverlayStore } from './overlayStore';
+import { IconButton } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
-import { ChatMessage } from '../model/socketMessages/chatPayload';
-import { IconButton } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import React from 'react';
 import { getAccountById } from '../elvenar/AccountManager';
 import { SendWebsocketMessage } from '../inject/websocketMessages';
+import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
+import { getAccountId, getOverlayStore } from './overlayStore';
 
 // Extend the Window interface to include forceChatRerender
 declare global {

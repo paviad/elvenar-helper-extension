@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useState, useMemo, useLayoutEffect } from 'react';
-import { blockRect } from './blockRect';
+import React from 'react';
+import { useCity } from '../../CityContext';
+import { BlockRect } from './BlockRect';
 import { handleMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
-import { useCity } from '../../CityContext';
 
 const ZOOM_LEVELS = [0.75, 1, 1.25, 1.5, 2];
 const PADDING_TILES = 10; // Must match handleMouseMove.ts
@@ -10,20 +10,20 @@ const PADDING_TILES = 10; // Must match handleMouseMove.ts
 export function CityGrid() {
   const city = useCity();
   const { GridSize: baseGridSize, GridMax, dragIndex, blocks } = city;
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   // --- Zoom State ---
-  const [zoom, setZoom] = useState(1);
-  const zoomRef = useRef(1);
-  const pendingScrollUpdate = useRef<{ left: number; top: number } | null>(null);
+  const [zoom, setZoom] = React.useState(1);
+  const zoomRef = React.useRef(1);
+  const pendingScrollUpdate = React.useRef<{ left: number; top: number } | null>(null);
 
   // --- Drag-to-Scroll State ---
-  const isPanning = useRef(false);
-  const hasPanned = useRef(false);
-  const startPan = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
+  const isPanning = React.useRef(false);
+  const hasPanned = React.useRef(false);
+  const startPan = React.useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // --- Initial Centering State ---
-  const hasCentered = useRef(false);
+  const hasCentered = React.useRef(false);
 
   // Create a proxy city object with the scaled GridSize.
   // Dimension Calculation
@@ -33,7 +33,7 @@ export function CityGrid() {
   const totalDimension = gridDimension + paddingPx * 2;
 
   // --- Scroll Restoration after Zoom ---
-  useLayoutEffect(() => {
+  React.useLayoutEffect(() => {
     if (pendingScrollUpdate.current && containerRef.current) {
       containerRef.current.scrollLeft = pendingScrollUpdate.current.left;
       containerRef.current.scrollTop = pendingScrollUpdate.current.top;
@@ -42,7 +42,7 @@ export function CityGrid() {
   });
 
   // Center the view on mount (only once)
-  useEffect(() => {
+  React.useEffect(() => {
     if (!hasCentered.current && containerRef.current && totalDimension > 0) {
       const clientW = containerRef.current.clientWidth;
       if (totalDimension > clientW) {
@@ -54,7 +54,7 @@ export function CityGrid() {
 
   // --- Handlers ---
 
-  useEffect(() => {
+  React.useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -167,7 +167,7 @@ export function CityGrid() {
     }
   };
 
-  const blockRects = useMemo(() => {
+  const blockRects = React.useMemo(() => {
     // If dragging, render dragged block last (on top)
     const withIndex = Object.entries(blocks);
     const blocksBelowUnmoved = withIndex.filter(([i, b]) => Number(i) !== dragIndex && !b.moved && !b.highlighted);
@@ -178,7 +178,7 @@ export function CityGrid() {
       const draggedBlock = blocks[dragIndex];
       sortedBlocks.push(['dragged', draggedBlock]);
     }
-    return sortedBlocks.map(([index, block]) => blockRect(index, block, zoom));
+    return sortedBlocks.map(([index, block]) => BlockRect(index, block, zoom));
   }, [blocks, dragIndex, zoom]);
 
   return (

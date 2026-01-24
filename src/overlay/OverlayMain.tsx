@@ -2,15 +2,15 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import { Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
 import React from 'react';
-import { expandPanel } from '../overlay';
 import { clearTradeParsedListener, setupTradeParsedListener, TradeParsedMessage } from '../chrome/messages';
+import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { expandPanel } from '../overlay';
 import { ChatView } from './ChatView';
 import { HelpDialog } from './HelpDialog';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { TradeView } from './TradeView';
-import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);

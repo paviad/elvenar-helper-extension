@@ -1,5 +1,5 @@
+import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import React from 'react';
-import { Card, CardContent, Typography, Box, Stack } from '@mui/material';
 import { useCity } from './CityContext';
 
 export const WorkingState: React.FC = () => {

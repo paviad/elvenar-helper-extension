@@ -1,24 +1,24 @@
-import * as React from 'react';
-import { InventoryItem } from '../model/inventoryItem';
-import { generateInventory } from './generateInventory';
 import {
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
   Box,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  FormControlLabel,
-  Switch,
+  TextField,
 } from '@mui/material';
+import React from 'react';
+import { InventoryItem } from '../model/inventoryItem';
 import { useTabStore } from '../util/tabStore';
+import { generateInventory } from './generateInventory';
 
 export const InventoryMain = () => {
   const [inventory, setInventory] = React.useState<InventoryItem[] | undefined>([]);

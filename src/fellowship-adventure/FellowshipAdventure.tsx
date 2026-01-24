@@ -1,13 +1,13 @@
-import React from 'react';
-import { AccountData, FaQuest, getAccountById } from '../elvenar/AccountManager';
-import { useTabStore } from '../util/tabStore';
 import { Box, Stack } from '@mui/material';
-import { ProductionTimeline } from './ProductionTimeline';
+import React from 'react';
 import { generateCity } from '../city/generateCity';
+import { AccountData, FaQuest, getAccountById } from '../elvenar/AccountManager';
 import { getEffects } from '../elvenar/getEffects';
-import FaProgress from './FaProgress';
 import { Badges } from '../model/badges';
+import { useTabStore } from '../util/tabStore';
 import FaControlPanel from './FaControlPanel';
+import FaProgress from './FaProgress';
+import { ProductionTimeline } from './ProductionTimeline';
 import { badgeSpriteInfo } from './badgeSpriteInfo';
 import { extractBadgesInProduction } from './extractBadgesInProduction';
 

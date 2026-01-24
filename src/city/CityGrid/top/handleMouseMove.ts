@@ -1,9 +1,9 @@
 import React from 'react';
-import { useCity } from '../../CityContext';
 import { sampleTime, Subject } from 'rxjs';
+import { useCity } from '../../CityContext';
 
 const subject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent; zoom: number }>();
-const throttled = subject.pipe(sampleTime(100));
+const throttled = subject.pipe(sampleTime(50));
 
 export const handleMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   subject.next({ city, e, zoom });

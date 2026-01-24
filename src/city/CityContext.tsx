@@ -1,16 +1,16 @@
-import React, { createContext, useContext, useState, ReactNode, useReducer, useCallback } from 'react';
-import { MoveLogInterface } from './MoveLog/MoveLogInterface';
-import { CityBlock } from './CityBlock';
-import { useTabStore } from '../util/tabStore';
-import { getMaxLevels } from '../elvenar/getMaxLevels';
-import { UnlockedArea } from '../model/unlockedArea';
+import React from 'react';
 import { getAccountById } from '../elvenar/AccountManager';
-import { BuildingFinder } from './buildingFinder';
-import { getGoodsNames } from '../elvenar/getGoodsNames';
-import { StageProvision } from '../model/stageProvision';
-import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getEffects } from '../elvenar/getEffects';
+import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
+import { getGoodsNames } from '../elvenar/getGoodsNames';
+import { getMaxLevels } from '../elvenar/getMaxLevels';
 import { Effect } from '../model/effect';
+import { StageProvision } from '../model/stageProvision';
+import { UnlockedArea } from '../model/unlockedArea';
+import { useTabStore } from '../util/tabStore';
+import { BuildingFinder } from './buildingFinder';
+import { CityBlock } from './CityBlock';
+import { MoveLogInterface } from './MoveLog/moveLogInterface';
 
 export interface CityContextType {
   moveLog: MoveLogInterface[];
@@ -72,7 +72,7 @@ export interface CityContextType {
   setMouseGridPosition: (pos: { x: number; y: number } | null) => void;
 }
 
-const CityContext = createContext<CityContextType | undefined>(undefined);
+const CityContext = React.createContext<CityContextType | undefined>(undefined);
 
 export const CityProvider = ({
   sourceBlocks,
@@ -85,38 +85,38 @@ export const CityProvider = ({
   unlockedAreas: UnlockedArea[];
   triggerForceUpdate: () => void;
   forceUpdate: number;
-  children: ReactNode;
+  children: React.ReactNode;
 }) => {
-  const [moveLog, setMoveLog] = useState<MoveLogInterface[]>([]);
-  const [redoStack, setRedoStack] = useState<MoveLogInterface[]>([]);
-  const [blocks, setBlocks] = useState<Record<number, CityBlock>>({});
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [originalPos, setOriginalPos] = useState<{ x: number; y: number } | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [menu, setMenu] = useState<{ key: string | number; x: number; y: number } | null>(null);
-  const [maxLevels, setMaxLevels] = useState<Record<string, number>>({});
+  const [moveLog, setMoveLog] = React.useState<MoveLogInterface[]>([]);
+  const [redoStack, setRedoStack] = React.useState<MoveLogInterface[]>([]);
+  const [blocks, setBlocks] = React.useState<Record<number, CityBlock>>({});
+  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
+  const [dragOffset, setDragOffset] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [originalPos, setOriginalPos] = React.useState<{ x: number; y: number } | null>(null);
+  const [searchTerm, setSearchTerm] = React.useState<string>('');
+  const [menu, setMenu] = React.useState<{ key: string | number; x: number; y: number } | null>(null);
+  const [maxLevels, setMaxLevels] = React.useState<Record<string, number>>({});
   const menuRef = React.useRef<HTMLDivElement | null>(null);
   const svgRef = React.useRef<SVGSVGElement | null>(null);
   const mousePositionRef = React.useRef<HTMLDivElement | null>(null);
-  const [buildingFinder, setBuildingFinder] = useState<BuildingFinder>(new BuildingFinder());
-  const [goodsNames, setGoodsNames] = useState<Record<string, string>>({});
-  const [evolvingBuildings, setEvolvingBuildings] = useState<StageProvision[]>([]);
-  const [effects, setEffects] = useState<Effect[]>([]);
-  const [popRequired, setPopRequired] = useState<number>(0);
-  const [residentialPop, setResidentialPop] = useState<number>(0);
-  const [rankingPoints, setRankingPoints] = useState<number>(0);
-  const [mouseGridPosition, setMouseGridPosition] = useState<{ x: number; y: number } | null>(null);
+  const [buildingFinder, setBuildingFinder] = React.useState<BuildingFinder>(new BuildingFinder());
+  const [goodsNames, setGoodsNames] = React.useState<Record<string, string>>({});
+  const [evolvingBuildings, setEvolvingBuildings] = React.useState<StageProvision[]>([]);
+  const [effects, setEffects] = React.useState<Effect[]>([]);
+  const [popRequired, setPopRequired] = React.useState<number>(0);
+  const [residentialPop, setResidentialPop] = React.useState<number>(0);
+  const [rankingPoints, setRankingPoints] = React.useState<number>(0);
+  const [mouseGridPosition, setMouseGridPosition] = React.useState<{ x: number; y: number } | null>(null);
 
-  const [awLevels, setAwLevels] = useState<number>(0);
-  const [mhRankingPoints, setMhRankingPoints] = useState<number>(0);
+  const [awLevels, setAwLevels] = React.useState<number>(0);
+  const [mhRankingPoints, setMhRankingPoints] = React.useState<number>(0);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
   const techSprite = useTabStore((state) => state.techSprite);
 
-  const [chapter, setChapter] = useState<number>(100);
-  const [squadSize, setSquadSize] = useState<number>(0);
+  const [chapter, setChapter] = React.useState<number>(100);
+  const [squadSize, setSquadSize] = React.useState<number>(0);
 
   let boostedGoods: string[] = [];
 
@@ -359,7 +359,7 @@ export const CityProvider = ({
 };
 
 export const useCity = () => {
-  const context = useContext(CityContext);
+  const context = React.useContext(CityContext);
   if (!context) {
     throw new Error('useCity must be used within a CityProvider');
   }

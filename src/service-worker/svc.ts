@@ -1,10 +1,10 @@
 import {
+  setupCitySavedListener,
+  setupInterceptedNonSpecificRequestListener,
+  setupInterceptedPlayerSpecificRequestListener,
   setupMessageListener,
   setupOpenExtensionTabListener,
   setupRefreshCityListener,
-  setupCitySavedListener,
-  setupInterceptedPlayerSpecificRequestListener,
-  setupInterceptedNonSpecificRequestListener,
 } from '../chrome/messages';
 import {
   getAccountById,
@@ -15,9 +15,9 @@ import {
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
+import { nonSpecificRequestHandler } from './nonSpecificRequestHandler';
 import { openOrRestoreTab } from './openOrRestoreTab';
 import { playerSpecificRequestHandler } from './playerSpecificRequestHandler';
-import { nonSpecificRequestHandler } from './nonSpecificRequestHandler';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {

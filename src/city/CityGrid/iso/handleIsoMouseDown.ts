@@ -1,7 +1,7 @@
 import React from 'react';
-import { getEntityMaxLevel } from '../getEntityMaxLevel';
-import { useCity } from '../../CityContext';
 import { useHelper } from '../../../helper/HelperContext';
+import { useCity } from '../../CityContext';
+import { getEntityMaxLevel } from '../getEntityMaxLevel';
 
 const PADDING_TILES = 10;
 

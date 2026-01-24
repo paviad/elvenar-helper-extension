@@ -1,27 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import BusinessIcon from '@mui/icons-material/Business'; // Fallback icon
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 import {
+  Avatar,
   Box,
-  TextField,
-  Tabs,
-  Tab,
+  Button,
+  IconButton,
+  InputAdornment,
   List,
   ListItem,
-  ListItemButton,
   ListItemAvatar,
-  Avatar,
+  ListItemButton,
   ListItemText,
-  Typography,
   Paper,
-  InputAdornment,
-  IconButton,
-  Button,
   Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
-import BusinessIcon from '@mui/icons-material/Business'; // Fallback icon
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { BuildingCategory, BuildingDefinition, CATEGORIES } from './CATEGORIES';
+import React from 'react';
+import { BuildingDefinition, CATEGORIES } from './CATEGORIES';
 import { knownTypes } from './Legend/knownTypes';
 
 // --- Types ---
@@ -42,12 +42,12 @@ const getTypeColor = (type: string) => {
 };
 
 export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({ onSelectBuilding, buildings }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState(0);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [activeTab, setActiveTab] = React.useState(0);
 
   // Selection & Configuration State
-  const [selectedBuilding, setSelectedBuilding] = useState<BuildingDefinition | null>(null);
-  const [configValues, setConfigValues] = useState<{ level: string; chapter: string; stage: string }>({
+  const [selectedBuilding, setSelectedBuilding] = React.useState<BuildingDefinition | null>(null);
+  const [configValues, setConfigValues] = React.useState<{ level: string; chapter: string; stage: string }>({
     level: '1',
     chapter: '1',
     stage: '1',
@@ -121,7 +121,7 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({ onSele
 
   // --- Filtering Logic ---
 
-  const displayList = useMemo(() => {
+  const displayList = React.useMemo(() => {
     const normalizedQuery = searchQuery.toLowerCase().trim();
 
     if (normalizedQuery) {

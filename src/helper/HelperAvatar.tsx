@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useHelper } from './HelperContext';
 
 interface HelperAvatarProps {
@@ -9,9 +9,9 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
   const avatarUrl = chrome.runtime.getURL('helper.png');
   // Destructure the new function from context
   const { message, hideMessage, showThrottledMessages } = useHelper();
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (message) {
       setIsVisible(true);
     } else {

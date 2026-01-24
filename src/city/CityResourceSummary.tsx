@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
-import { Card, CardContent, Typography, Box, Divider, Stack, LinearProgress } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import WorkIcon from '@mui/icons-material/Work';
+import { Box, Card, CardContent, Divider, LinearProgress, Stack, Typography } from '@mui/material';
+import React from 'react';
 import { Building } from '../model/building';
 import { useCity } from './CityContext';
 
 export const CityResourceSummary = () => {
   const city = useCity();
-  const blocks = useMemo(() => Object.values(city.blocks), [city.blocks]);
+  const blocks = React.useMemo(() => Object.values(city.blocks), [city.blocks]);
   const buildingFinder = city.buildingFinder;
   const evolvingBuildings = city.evolvingBuildings;
   const effectsResidentialPopulationBoost = city.effects.filter((r) => r.action === 'residential_population_boost');
@@ -59,7 +59,7 @@ export const CityResourceSummary = () => {
 
   const extraAvailableCulture = Math.round(squadSize * availableCultureBonus);
 
-  const summary = useMemo(() => {
+  const summary = React.useMemo(() => {
     let popProvided = 0;
     let popRequired = 0;
     let cultureProvided = 0;

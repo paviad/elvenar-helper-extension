@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 // --- Types ---
 type Severity = 'info' | 'success' | 'warning' | 'error';
@@ -25,7 +25,7 @@ const MyConfirmDialog: React.FC<MyConfirmDialogProps> = ({
   cancelLabel = 'Cancel',
 }) => {
   // Close on Escape key
-  useEffect(() => {
+  React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isOpen && e.key === 'Escape') {
         onClose();

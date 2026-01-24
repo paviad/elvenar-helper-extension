@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
+import React from 'react';
 import { HELPER_MESSAGES, HelperMessageId } from './helperMessages';
 
 // Options interface
@@ -14,13 +14,13 @@ interface HistoryEntry {
 }
 
 interface HelperContextType {
-  message: ReactNode | null;
+  message: React.ReactNode | null;
   showMessage: (id: HelperMessageId, options?: ShowMessageOptions) => void;
   hideMessage: () => void;
   showThrottledMessages: () => void;
 }
 
-const HelperContext = createContext<HelperContextType | undefined>(undefined);
+const HelperContext = React.createContext<HelperContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'helper_msg_history';
 const THROTTLE_LIMIT = 60 * 60 * 1000;
@@ -33,14 +33,14 @@ const formatString = (template: string, args?: string[]) => {
   });
 };
 
-export const HelperProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [message, setMessage] = useState<ReactNode | null>(null);
+export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [message, setMessage] = React.useState<React.ReactNode | null>(null);
 
   // Updated State Type
-  const [history, setHistory] = useState<Record<string, HistoryEntry>>({});
+  const [history, setHistory] = React.useState<Record<string, HistoryEntry>>({});
 
   // 1. Load History (with migration support)
-  useEffect(() => {
+  React.useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get([STORAGE_KEY], (result) => {
         const rawData = result[STORAGE_KEY];
@@ -66,7 +66,7 @@ export const HelperProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, []);
 
   // 2. Show Message
-  const showMessage = useCallback(
+  const showMessage = React.useCallback(
     (id: HelperMessageId, options: ShowMessageOptions = {}) => {
       const rawText = HELPER_MESSAGES[id];
       if (!rawText) return;
@@ -100,7 +100,7 @@ export const HelperProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   );
 
   // 3. Show History (Updated to use stored params)
-  const showThrottledMessages = useCallback(() => {
+  const showThrottledMessages = React.useCallback(() => {
     const now = Date.now();
 
     // Filter active IDs
@@ -140,7 +140,7 @@ export const HelperProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setMessage(listContent);
   }, [history]);
 
-  const hideMessage = useCallback(() => {
+  const hideMessage = React.useCallback(() => {
     setMessage(null);
   }, []);
 
@@ -152,7 +152,7 @@ export const HelperProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 };
 
 export const useHelper = () => {
-  const context = useContext(HelperContext);
+  const context = React.useContext(HelperContext);
   if (!context) throw new Error('useHelper must be used within a HelperProvider');
   return context;
 };

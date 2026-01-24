@@ -1,5 +1,4 @@
 import { getFromStorage } from '../chrome/storage';
-import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Tome } from '../model/tome';
 
 export async function getTomes() {

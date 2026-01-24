@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 
 // --- Types ---
 interface ImportDialogProps {
@@ -9,13 +9,13 @@ interface ImportDialogProps {
 }
 
 const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, existingCities = [] }) => {
-  const [dataString, setDataString] = useState('');
-  const [name, setName] = useState('');
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [isValid, setIsValid] = useState(false);
+  const [dataString, setDataString] = React.useState('');
+  const [name, setName] = React.useState('');
+  const [isConfirming, setIsConfirming] = React.useState(false);
+  const [isValid, setIsValid] = React.useState(false);
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
 
   // --- Validation Logic ---
   const validateInput = (str: string): boolean => {
@@ -32,12 +32,12 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
   };
 
   // Re-validate whenever dataString changes
-  useEffect(() => {
+  React.useEffect(() => {
     setIsValid(validateInput(dataString));
   }, [dataString]);
 
   // Reset state & Check Clipboard when dialog opens
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
       // 1. Reset State
       setDataString('');

@@ -3,7 +3,7 @@ import {
   sendCityDataUpdatedMessage,
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
-import { loadAccountManagerFromStorage, getAccountBySessionId, saveAllAccounts } from '../elvenar/AccountManager';
+import { getAccountBySessionId, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
 import { processInventory } from '../elvenar/processInventory';

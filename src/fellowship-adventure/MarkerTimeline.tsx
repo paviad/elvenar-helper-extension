@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React from 'react';
 
 // --- Types & Interfaces ---
 
@@ -125,17 +125,17 @@ const calculateLayout = (markers: MarkerData[], startTime: Date, totalDuration: 
 };
 
 export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, spriteUrl, endTime }) => {
-  const [now, setNow] = useState(() => (startTime ? new Date(startTime).getTime() : Date.now()));
+  const [now, setNow] = React.useState(() => (startTime ? new Date(startTime).getTime() : Date.now()));
 
-  const start = useMemo(() => new Date(now), [now]);
+  const start = React.useMemo(() => new Date(now), [now]);
   const totalDuration = HOURS_SPAN * 60 * 60 * 1000;
 
-  const allCalculatedMarkers = useMemo(() => {
+  const allCalculatedMarkers = React.useMemo(() => {
     return calculateLayout(markers, start, totalDuration);
   }, [markers, start, totalDuration]);
 
   // Calculate Shade Overlay Position based on endTime
-  const shadeStartPercent = useMemo(() => {
+  const shadeStartPercent = React.useMemo(() => {
     if (!endTime) return null;
 
     const endMs = new Date(endTime).getTime();
@@ -154,7 +154,7 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
     return (msUntilEnd / totalDuration) * 100;
   }, [endTime, start, totalDuration]);
 
-  const { pastDueMarkers, upcomingMarkers, hasPastDue } = useMemo(() => {
+  const { pastDueMarkers, upcomingMarkers, hasPastDue } = React.useMemo(() => {
     const past: LayoutMarker[] = [];
     const future: LayoutMarker[] = [];
 
@@ -176,14 +176,14 @@ export const MarkerTimeline: React.FC<TimelineProps> = ({ startTime, markers, sp
   }, [allCalculatedMarkers]);
 
   // Next Finish Logic
-  const nextFinishMarker = useMemo(() => {
+  const nextFinishMarker = React.useMemo(() => {
     if (upcomingMarkers.length > 0) {
       return upcomingMarkers[0];
     }
     return null;
   }, [upcomingMarkers]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const updateTime = () => setNow(Date.now());
 
     const handleVisibilityChange = () => {

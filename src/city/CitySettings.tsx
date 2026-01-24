@@ -1,5 +1,5 @@
+import { Card, CardContent, Grid, Input, Slider, Typography } from '@mui/material';
 import React from 'react';
-import { Card, CardContent, Typography, Slider, Input, Grid } from '@mui/material';
 import { useCity } from './CityContext';
 
 export const CitySettings: React.FC = () => {

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { chromeSessionStorage, chromeStorage } from './chromeStorage';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface TabState {
   accountId: string | undefined;

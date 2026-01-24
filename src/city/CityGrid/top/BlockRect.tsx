@@ -1,15 +1,15 @@
-import React from 'react';
 import { Tooltip } from '@mui/material';
-import { handleMouseDown } from './handleMouseDown';
-import { BlockLabel } from './BlockLabel';
+import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { getContrastColor } from '../../../util/getContrastColor';
 import { CityBlock } from '../../CityBlock';
 import { useCity } from '../../CityContext';
 import { getTypeColor } from '../../Legend/getTypeColor';
 import { BuildingTooltip } from '../BuildingTooltip';
+import { BlockLabel } from './BlockLabel';
+import { handleMouseDown } from './handleMouseDown';
 
-export const blockRect = (key: string | number, block: CityBlock, zoom: number) => {
+export const BlockRect = (key: string | number, block: CityBlock, zoom: number) => {
   const city = useCity();
   const helper = useHelper();
   const { GridSize, opacity, chapter } = city;

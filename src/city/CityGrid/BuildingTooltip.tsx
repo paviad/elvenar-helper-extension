@@ -1,6 +1,6 @@
-import React from 'react';
-import { Box, Typography, Divider } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Box, Divider, Typography } from '@mui/material';
+import React from 'react';
 import { BuildingEx } from '../../model/buildingEx';
 import { useCity } from '../CityContext';
 import { knownTypeNames } from '../Legend/knownTypes';

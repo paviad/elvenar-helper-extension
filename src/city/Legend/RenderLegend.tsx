@@ -1,10 +1,10 @@
-import React from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Typography, Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { getTypeColor } from './getTypeColor';
-import { colorDescriptions } from './colorDescriptions';
-import { useCity } from '../CityContext';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material';
+import React from 'react';
 import { useTabStore } from '../../util/tabStore';
+import { useCity } from '../CityContext';
+import { colorDescriptions } from './colorDescriptions';
+import { getTypeColor } from './getTypeColor';
 
 export function RenderLegend() {
   const s = useCity();

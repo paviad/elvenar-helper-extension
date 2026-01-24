@@ -1,18 +1,18 @@
 import React from 'react';
+import { getAccountById } from '../elvenar/AccountManager';
+import { CityEntityEx } from '../model/cityEntity';
 import { UnlockedArea } from '../model/unlockedArea';
+import { useTabStore } from '../util/tabStore';
 import { CityBlock } from './CityBlock';
-import { RenderMoveLog } from './MoveLog';
-import { RenderCityGrid } from './CityGrid';
-import { RenderLegend } from './Legend';
 import { CityProvider } from './CityContext';
+import { RenderCityGrid } from './CityGrid/RenderCityGrid';
 import { CityResourceSummary } from './CityResourceSummary';
 import { CitySettings } from './CitySettings';
-import { getAccountById } from '../elvenar/AccountManager';
-import { useTabStore } from '../util/tabStore';
 import { generateCity } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
-import { CityEntityEx } from '../model/cityEntity';
+import { RenderLegend } from './Legend/RenderLegend';
+import { RenderMoveLog } from './MoveLog/RenderMoveLog';
 import { WorkingState } from './WorkingState';
 
 export function CityView() {

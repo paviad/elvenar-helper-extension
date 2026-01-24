@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const commonOptimization = {
-  minimize: false,
+  // minimize: false,
   usedExports: true,
 };
 

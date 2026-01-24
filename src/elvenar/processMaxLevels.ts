@@ -1,6 +1,6 @@
-import { GoodsBuildingRaw, GoodsBuilding } from '../model/goodsBuilding';
-import { getPrefix } from '../util/getPrefix';
 import { saveToStorage } from '../chrome/storage';
+import { GoodsBuilding, GoodsBuildingRaw } from '../model/goodsBuilding';
+import { getPrefix } from '../util/getPrefix';
 
 export async function processMaxLevels(responseText: string) {
   const json = JSON.parse(responseText);

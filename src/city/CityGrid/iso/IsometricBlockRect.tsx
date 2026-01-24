@@ -1,10 +1,10 @@
-import React from 'react';
 import { Tooltip } from '@mui/material';
-import { CityBlock } from '../../CityBlock';
-import { getTypeColor } from '../../Legend/getTypeColor';
-import { useCity } from '../../CityContext';
+import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { getContrastColor } from '../../../util/getContrastColor';
+import { CityBlock } from '../../CityBlock';
+import { useCity } from '../../CityContext';
+import { getTypeColor } from '../../Legend/getTypeColor';
 import { BuildingTooltip } from '../BuildingTooltip';
 import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown'; // Updated import
 import { IsoBlockLabel } from './IsoBlockLabel';

@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSearchParams, Navigate, useNavigate, Link } from 'react-router';
-import { useTabStore } from '../util/tabStore';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { loadAccountManagerFromStorage } from '../elvenar/AccountManager';
+import { useTabStore } from '../util/tabStore';
 
 export function Activate() {
   const [doNavigate, setDoNavigate] = React.useState(false);

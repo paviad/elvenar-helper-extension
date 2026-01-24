@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { MarkerTimeline, MarkerData } from './MarkerTimeline';
+import React from 'react';
+import { MarkerData, MarkerTimeline } from './MarkerTimeline';
 import { badgeSpriteInfo } from './badgeSpriteInfo';
 
 export function ProductionTimeline(props: {

@@ -1,4 +1,4 @@
-import { getWebSocketSendHook } from './CustomWebSocket';
+import { getWebSocketSendHook } from './customWebSocket';
 
 /*
 implement sending a "mark as read message" that looks like this:

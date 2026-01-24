@@ -1,28 +1,24 @@
+import GridViewIcon from '@mui/icons-material/GridView';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import {
-  Stack,
+  Box,
   Button,
-  TextField,
   Dialog,
-  Slider,
-  Typography,
   Divider,
   List,
   ListItemButton,
   ListItemText,
   Paper,
-  Box,
+  Slider,
+  Stack,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
+  Typography,
 } from '@mui/material';
-import GridViewIcon from '@mui/icons-material/GridView';
-import ViewInArIcon from '@mui/icons-material/ViewInAr';
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import { subscribeToMouseMove } from './top/handleMouseMove';
-import { BuildingFinder } from '../buildingFinder';
-import { CityBlock } from '../CityBlock';
-import { useTabStore } from '../../util/tabStore';
-import { refreshCity } from './refreshCity';
+import { sendCitySavedMessage } from '../../chrome/messages';
 import {
   deleteCityById,
   getAccountById,
@@ -31,27 +27,31 @@ import {
   saveCurrentCityAs,
   saveNewCityAs,
 } from '../../elvenar/AccountManager';
-import ExportDialog from './ExportDialog';
-import SaveCityDialog from './SaveCityDialog';
-import MyConfirmDialog from '../../widgets/MyConfirmDialog';
-import { resetMovedInPlace, saveBack } from '../generateCity';
-import { sendCitySavedMessage } from '../../chrome/messages';
-import ImportDialog from './ImportDialog';
+import { getBuildings } from '../../elvenar/getBuildings';
+import { useHelper } from '../../helper/HelperContext';
 import { CityEntity, CityEntityEx } from '../../model/cityEntity';
 import { generateUniqueId } from '../../util/generateUniqueId';
-import { getEntityMaxLevel } from './getEntityMaxLevel';
-import { MoveLogInterface } from '../MoveLog/MoveLogInterface';
-import { useCity } from '../CityContext';
-import { BuildingConfig, NewBuildingSelector } from '../NewBuildingSelector';
-import { BuildingDefinition } from '../CATEGORIES';
-import { getBuildings } from '../../elvenar/getBuildings';
-import { getChapterFromEntity, getCityBlockFromCityEntity } from '../getCityBlockFromCityEntity';
-import { useHelper } from '../../helper/HelperContext';
-import { guessRankingPointsFromChapter } from '../../util/guessRankingPointsFromChapter';
 import { getPrefix } from '../../util/getPrefix';
-import { IsometricCityGrid } from './iso/IsometricCityGrid';
+import { guessRankingPointsFromChapter } from '../../util/guessRankingPointsFromChapter';
+import { useTabStore } from '../../util/tabStore';
+import MyConfirmDialog from '../../widgets/MyConfirmDialog';
+import { BuildingFinder } from '../buildingFinder';
+import { BuildingDefinition } from '../CATEGORIES';
+import { CityBlock } from '../CityBlock';
+import { useCity } from '../CityContext';
+import { resetMovedInPlace, saveBack } from '../generateCity';
+import { getChapterFromEntity, getCityBlockFromCityEntity } from '../getCityBlockFromCityEntity';
+import { MoveLogInterface } from '../MoveLog/moveLogInterface';
+import { BuildingConfig, NewBuildingSelector } from '../NewBuildingSelector';
+import ExportDialog from './ExportDialog';
+import { getEntityMaxLevel } from './getEntityMaxLevel';
+import ImportDialog from './ImportDialog';
 import { subscribeToIsoMouseMove } from './iso/handleIsoMouseMove';
+import { IsometricCityGrid } from './iso/IsometricCityGrid';
+import { refreshCity } from './refreshCity';
+import SaveCityDialog from './SaveCityDialog';
 import { CityGrid } from './top/CityGrid';
+import { subscribeToMouseMove } from './top/handleMouseMove';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -67,12 +67,12 @@ export const RenderCityGrid = () => {
   const setViewMode = useTabStore((state) => state.setViewMode);
 
   // State for Change Level dialog
-  const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
-  const [levelInput, setLevelInput] = useState(1);
+  const [showLevelDialog, setShowLevelDialog] = React.useState({ open: false, index: -1 } as ShowLevelDialogData);
+  const [levelInput, setLevelInput] = React.useState(1);
   const { svgRef, menuRef } = city;
 
-  const [showBuildDialog, setShowBuildDialog] = useState(false);
-  const [buildings, setBuildings] = useState([] as BuildingDefinition[]);
+  const [showBuildDialog, setShowBuildDialog] = React.useState(false);
+  const [buildings, setBuildings] = React.useState([] as BuildingDefinition[]);
 
   const blocks = city.blocks;
   const setBlocks = city.setBlocks;
@@ -92,7 +92,7 @@ export const RenderCityGrid = () => {
   const setGlobalError = useTabStore((state) => state.setGlobalError);
   const setAccountId = useTabStore((state) => state.setAccountId);
 
-  useEffect(() => {
+  React.useEffect(() => {
     async function Do() {
       const finder = new BuildingFinder();
       await finder.ensureInitialized();
@@ -102,7 +102,7 @@ export const RenderCityGrid = () => {
     Do();
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const subscription = subscribeToMouseMove();
     const subscription2 = subscribeToIsoMouseMove();
     return () => {
@@ -112,7 +112,7 @@ export const RenderCityGrid = () => {
   }, []);
 
   // Key handler for changing level while dragging
-  useEffect(() => {
+  React.useEffect(() => {
     if (dragIndex === null) {
       return;
     }
@@ -232,7 +232,7 @@ export const RenderCityGrid = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [dragIndex, blocks, maxLevels, setBlocks, setDragIndex, setDragOffset, setMoveLog]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'KeyB' && event.altKey && !event.repeat && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
@@ -243,7 +243,7 @@ export const RenderCityGrid = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (showBuildDialog) {
       helper.showMessage('you_can_press_alt_b_to_build');
     }
@@ -256,16 +256,16 @@ export const RenderCityGrid = () => {
   };
 
   // State for ExportDialog
-  const [exportDialog, setExportDialog] = useState({ open: false, exportStr: '' });
+  const [exportDialog, setExportDialog] = React.useState({ open: false, exportStr: '' });
 
   // State for SaveCityDialog
-  const [saveAsDialog, setSaveAsDialog] = useState({ open: false, defaultName: '', existingCities: [] as string[] });
+  const [saveAsDialog, setSaveAsDialog] = React.useState({ open: false, defaultName: '', existingCities: [] as string[] });
 
   // State for Delete Confirmation Dialog
-  const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] = useState({ open: false });
+  const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] = React.useState({ open: false });
 
   // State for ImportDialog
-  const [importDialog, setImportDialog] = useState({ open: false, existingCities: [] as string[] });
+  const [importDialog, setImportDialog] = React.useState({ open: false, existingCities: [] as string[] });
 
   function renderExportDialog() {
     return (
@@ -464,7 +464,7 @@ export const RenderCityGrid = () => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const isDetached = !!getAccountById(city.accountId!)?.isDetached;
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'KeyS' && !event.altKey && !event.repeat && event.ctrlKey && !event.metaKey) {
         // Ctrl+S
@@ -477,10 +477,10 @@ export const RenderCityGrid = () => {
   }, [city.blocks]);
 
   // Sticky-to-fixed search box logic (fixed: returns to original position when scrolling up)
-  const searchBoxRef = useRef<HTMLDivElement>(null);
-  const searchBoxOffset = useRef<number | null>(null);
-  const [isFixed, setIsFixed] = useState(false);
-  useEffect(() => {
+  const searchBoxRef = React.useRef<HTMLDivElement>(null);
+  const searchBoxOffset = React.useRef<number | null>(null);
+  const [isFixed, setIsFixed] = React.useState(false);
+  React.useEffect(() => {
     const updateOffset = () => {
       if (searchBoxRef.current) {
         searchBoxOffset.current = searchBoxRef.current.getBoundingClientRect().top + window.scrollY;
@@ -491,7 +491,7 @@ export const RenderCityGrid = () => {
     return () => window.removeEventListener('resize', updateOffset);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleScroll = () => {
       if (searchBoxOffset.current === null) return;
       if (window.scrollY >= searchBoxOffset.current) {
