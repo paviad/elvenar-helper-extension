@@ -2,15 +2,13 @@ import React from 'react';
 import { Tooltip } from '@mui/material';
 import { CityBlock } from '../../CityBlock';
 import { getTypeColor } from '../../Legend/getTypeColor';
-import { handleMouseDown } from '../top/handleMouseDown';
 import { useCity } from '../../CityContext';
 import { useHelper } from '../../../helper/HelperContext';
 import { getContrastColor } from '../../../util/getContrastColor';
 import { BuildingTooltip } from '../BuildingTooltip';
-import { handleIsoMouseDown } from './handleIsoMouseDown';
+import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown'; // Updated import
 import { IsoBlockLabel } from './IsoBlockLabel';
 
-// Helper for isometric projection (Grid -> Screen)
 const toIso = (x: number, y: number, tileWidth: number, tileHeight: number, originX: number, originY: number) => {
   return {
     x: originX + (x - y) * (tileWidth / 2),
@@ -18,19 +16,21 @@ const toIso = (x: number, y: number, tileWidth: number, tileHeight: number, orig
   };
 };
 
-// Updated signature to accept zoom
 export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom: number) => {
   const city = useCity();
   const helper = useHelper();
   const { GridSize, GridMax, opacity, chapter } = city;
 
-  // Iso Configuration with Zoom
+  // --- Iso Configuration ---
+  const PADDING_TILES = 10;
   const tileWidth = GridSize * 1.8 * zoom;
   const tileHeight = GridSize * 0.9 * zoom;
-  const originX = (GridMax * tileWidth) / 2;
-  const originY = 50;
 
-  // Context menu state
+  // Center calculation with Padding
+  const paddedGridMax = GridMax + PADDING_TILES * 2;
+  const originX = (paddedGridMax * tileWidth) / 2;
+  const originY = 50 + PADDING_TILES * tileHeight;
+
   const setMenu = city.setMenu;
   const blocks = city.blocks;
   const setDragOffset = city.setDragOffset;
@@ -43,7 +43,7 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
   const dragging = typeof key === 'string';
   const handler =
     !dragging && dragIndex === null
-      ? (e: React.MouseEvent<SVGElement, MouseEvent>) => handleIsoMouseDown(city, helper, e, key, zoom)
+      ? (e: React.MouseEvent<SVGElement, MouseEvent>) => handleIsoMouseDownWithZoom(city, helper, e, key, zoom)
       : () => {
           /* no-op for dragging */
         };
@@ -63,6 +63,8 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
+      // Note: Context menu drag offset calculation might need ISO adjustment if we want precise menu drag,
+      // but standard behavior usually snaps center, so we leave as is or update if needed.
       setDragOffset({
         x: mouseX - blocks[key].x * GridSize,
         y: mouseY - blocks[key].y * GridSize,
@@ -72,25 +74,21 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
   };
 
   const fillColor = getTypeColor(block.type, city.allTypes, block.moved);
-
   const levelingBuilding = /^[GPRHMOY]_/.test(block.gameId);
   const chapterRequirement = building?.sourceBuilding.upgradeRequirements?.chapter;
   const nextLevelBuildingChapterRequirement = nextLevelBuilding?.sourceBuilding.upgradeRequirements?.chapter || 0;
   const isChapterExcessive = chapterRequirement !== undefined && chapterRequirement > chapter;
-
   const isMaxLevelForChapter =
     levelingBuilding && !isChapterExcessive && (!nextLevelBuilding || nextLevelBuildingChapterRequirement > chapter);
 
   // --- Render Calculation ---
-
-  const p1 = toIso(block.x, block.y, tileWidth, tileHeight, originX, originY); // Top
-  const p2 = toIso(block.x + block.width, block.y, tileWidth, tileHeight, originX, originY); // Right
-  const p3 = toIso(block.x + block.width, block.y + block.length, tileWidth, tileHeight, originX, originY); // Bottom
-  const p4 = toIso(block.x, block.y + block.length, tileWidth, tileHeight, originX, originY); // Left
+  const p1 = toIso(block.x, block.y, tileWidth, tileHeight, originX, originY);
+  const p2 = toIso(block.x + block.width, block.y, tileWidth, tileHeight, originX, originY);
+  const p3 = toIso(block.x + block.width, block.y + block.length, tileWidth, tileHeight, originX, originY);
+  const p4 = toIso(block.x, block.y + block.length, tileWidth, tileHeight, originX, originY);
 
   const pathData = `M${p1.x},${p1.y} L${p2.x},${p2.y} L${p3.x},${p3.y} L${p4.x},${p4.y} Z`;
 
-  // Calculate Label Position
   const isoCenter = toIso(
     block.x + block.width / 2,
     block.y + block.length / 2,
@@ -99,7 +97,7 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
     originX,
     originY,
   );
-  
+
   const labelTransform = `translate(${isoCenter.x}, ${isoCenter.y})`;
 
   const patternId = `iso-block-crosshatch-${key}`;
@@ -156,12 +154,8 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
         </>
       )}
 
-      {dragging && (
-        <path d={pathData} fill='none' stroke='orange' strokeWidth={2} pointerEvents='none' />
-      )}
+      {dragging && <path d={pathData} fill='none' stroke='orange' strokeWidth={2} pointerEvents='none' />}
 
-      {/* Label Group - We apply Zoom scale here as well to keep text relative size consistent if desired, 
-          or keep it fixed for readability. Let's scale it slightly so it doesn't get tiny/huge. */}
       <g transform={`${labelTransform} scale(${zoom})`}>
         <IsoBlockLabel
           block={block}

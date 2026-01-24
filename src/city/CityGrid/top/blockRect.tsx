@@ -27,10 +27,10 @@ export const blockRect = (key: string | number, block: CityBlock, zoom: number) 
   const building = buildingFinder.getBuilding(block.gameId, block.level);
   const nextLevelBuilding = buildingFinder.getBuilding(block.gameId, block.level + 1);
 
-  const dragging = typeof key === 'string';
+  const dragging = key === 'dragged';
   const handler =
     !dragging && dragIndex === null
-      ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(city, helper, e, key, zoom)
+      ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(city, helper, e, Number(key), zoom)
       : () => {
           /* no-op for dragging */
         };

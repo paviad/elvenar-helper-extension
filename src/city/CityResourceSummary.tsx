@@ -8,7 +8,7 @@ import { useCity } from './CityContext';
 
 export const CityResourceSummary = () => {
   const city = useCity();
-  const blocks = Object.values(city.blocks);
+  const blocks = useMemo(() => Object.values(city.blocks), [city.blocks]);
   const buildingFinder = city.buildingFinder;
   const evolvingBuildings = city.evolvingBuildings;
   const effectsResidentialPopulationBoost = city.effects.filter((r) => r.action === 'residential_population_boost');

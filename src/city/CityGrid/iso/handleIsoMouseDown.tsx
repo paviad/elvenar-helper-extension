@@ -3,7 +3,9 @@ import { getEntityMaxLevel } from '../getEntityMaxLevel';
 import { useCity } from '../../CityContext';
 import { useHelper } from '../../../helper/HelperContext';
 
-export const handleIsoMouseDown = (
+const PADDING_TILES = 10;
+
+export const handleIsoMouseDownWithZoom = (
   city: ReturnType<typeof useCity>,
   helperContext: ReturnType<typeof useHelper>,
   e: React.MouseEvent,
@@ -23,13 +25,14 @@ export const handleIsoMouseDown = (
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
-  // --- Isometric Configuration (Must match IsometricCityGrid) ---
   const tileWidth = GridSize * 1.8 * zoom;
   const tileHeight = GridSize * 0.9 * zoom;
-  const originX = (GridMax * tileWidth) / 2;
-  const originY = 50;
 
-  // Grid (x,y) -> Screen (x,y)
+  // Updated Origins with Padding
+  const paddedGridMax = GridMax + PADDING_TILES * 2;
+  const originX = (paddedGridMax * tileWidth) / 2;
+  const originY = 50 + PADDING_TILES * tileHeight;
+
   const toIso = (x: number, y: number) => {
     return {
       x: originX + (x - y) * (tileWidth / 2),
@@ -40,10 +43,8 @@ export const handleIsoMouseDown = (
   setDragIndex(index);
   const block = blocks[index];
 
-  // Calculate where the block starts on screen in Iso view
   const blockScreenPos = toIso(block.x, block.y);
 
-  // Set offset relative to that screen position
   setDragOffset({
     x: mouseX - blockScreenPos.x,
     y: mouseY - blockScreenPos.y,
@@ -51,7 +52,6 @@ export const handleIsoMouseDown = (
 
   setOriginalPos({ x: block.x, y: block.y });
 
-  // Helper Tip Logic
   const maxLevel = getEntityMaxLevel(block.entity.cityentity_id, block.type, maxLevels);
   if (maxLevel !== 1) {
     helperContext.showMessage('drag_tip');

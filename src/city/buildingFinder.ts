@@ -3,7 +3,6 @@ import { getPremiumBuildingHints } from '../elvenar/getPremiumBuildingHints';
 import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
 import { CityEntityExData } from '../model/cityEntity';
-import { normalizeString } from '../util/normalizeString';
 import { BuildingCategory, BuildingDefinition, BuildingField, CATEGORIES } from './CATEGORIES';
 import { getTypeFromEntity } from './getCityBlockFromCityEntity';
 
@@ -23,9 +22,9 @@ export class BuildingFinder {
     if (match) {
       const baseName = match[1];
       const chapter = match[2] ? parseInt(match[2].substring(1)) : undefined;
-      return { baseName: normalizeString(baseName), chapter };
+      return { baseName, chapter };
     } else {
-      return { baseName: normalizeString(goodsId) };
+      return { baseName: goodsId };
     }
   }
 
@@ -47,12 +46,12 @@ export class BuildingFinder {
     const premiumHints = await getPremiumBuildingHints();
 
     this.hintsDictionary = Object.fromEntries(
-      premiumHints.map((h) => [normalizeString(h.id.replace(/_\d+$/, '')), h.section]),
+      premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]),
     );
 
     this.buildingsDictionary = buildings.reduce(
       (acc, building) => {
-        const normalizedBaseName = normalizeString(building.base_name);
+        const normalizedBaseName = building.base_name;
         acc[normalizedBaseName] = acc[normalizedBaseName] || [];
         acc[normalizedBaseName].push(building);
         return acc;
@@ -63,11 +62,11 @@ export class BuildingFinder {
 
   public getBuilding(id: string, level = 1): BuildingEx | undefined {
     const { baseName: baseName1 } = this.getBaseName(id);
-    const baseName = normalizeString(baseName1);
+    const baseName = baseName1;
 
     const building = this.buildingsDictionary[baseName]?.find((b) => b.level === level);
 
-    const hint = (!/^[gprhmoydbz]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
+    const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
 
     if (building) {
       const bldg = building;
@@ -109,29 +108,29 @@ export class BuildingFinder {
     const categories = CATEGORIES;
 
     const getCategory = (building: Building): BuildingCategory => {
-      const baseName = normalizeString(building.base_name);
+      const baseName = building.base_name;
       if (building.type === 'ancient_wonder') {
         return 'Wonders';
       }
-      if (/^a_evt_/.test(baseName)) {
+      if (/^A_Evt_/.test(baseName)) {
         return 'Other';
       }
-      if (/^[mo]_/.test(baseName)) {
+      if (/^[MO]_/.test(baseName)) {
         return 'Military';
       }
-      if (/^[g]_/.test(baseName)) {
+      if (/^[G]_/.test(baseName)) {
         return 'Goods';
       }
-      if (/^[b]_/.test(baseName)) {
+      if (/^[B]_/.test(baseName)) {
         return 'Settlements';
       }
-      if (/^[a]_/.test(baseName)) {
+      if (/^[A]_/.test(baseName)) {
         if (building.requirements.worker || /_(Ch|Gr)(\d+)(_|$)/.test(building.id)) {
           return 'Culture';
         }
         return 'Other';
       }
-      if (/^[prhydzs]_/.test(baseName)) {
+      if (/^[PRHYDZS]_/.test(baseName)) {
         if (!['townhall', 'standalone'].includes(building.requirements.connectionStrategyId)) {
           return 'Settlements';
         }
@@ -141,11 +140,11 @@ export class BuildingFinder {
     };
 
     const getSupportedFields = (buildings: Building[]): BuildingField[] => {
-      const baseName = normalizeString(buildings[0].base_name);
-      if (/^[gprhmoydbz]_/.test(baseName)) {
+      const baseName = buildings[0].base_name;
+      if (/^[GPRHMOYDBZ]_/.test(baseName)) {
         return ['Level'];
       }
-      if (/_evt_evo/.test(baseName)) {
+      if (/_Evt_Evo/.test(baseName)) {
         return ['Stage', 'Chapter'];
       }
       if (buildings[0].requirements.worker) {
@@ -157,9 +156,9 @@ export class BuildingFinder {
     const getGetSizeAtLevelFunction = (
       buildings: Building[],
     ): ((level: number) => { width: number; length: number }) | undefined => {
-      const baseName = normalizeString(buildings[0].base_name);
+      const baseName = buildings[0].base_name;
       if (buildings[0].type === 'ancient_wonder') return;
-      if (/^[gprhmoby]_/.test(baseName)) {
+      if (/^[GPRHMOBY]_/.test(baseName)) {
         return (level: number) => {
           const buildingAtLevel = buildings.find((b) => b.level === level);
           if (buildingAtLevel) {
@@ -177,7 +176,7 @@ export class BuildingFinder {
     };
 
     const getChapter = (building: Building): number | undefined => {
-      if (/^([gprhmody]_|a_evt_)/.test(normalizeString(building.base_name)) || building.type === 'expiring') {
+      if (/^([GPRHMODY]_|A_Evt_)/.test(building.base_name) || building.type === 'expiring') {
         return;
       }
       if (building.requirements.chapter) {

@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState, useMemo, useLayoutEffect } from 'react';
-import { useCity } from '../../CityContext';
 import { blockRect } from './blockRect';
 import { handleMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
+import { useCity } from '../../CityContext';
 
 const ZOOM_LEVELS = [0.75, 1, 1.25, 1.5, 2];
+const PADDING_TILES = 10; // Must match handleMouseMove.ts
 
 export function CityGrid() {
   const city = useCity();
@@ -24,7 +25,12 @@ export function CityGrid() {
   // --- Initial Centering State ---
   const hasCentered = useRef(false);
 
-  const totalDimension = baseGridSize * zoom * GridMax;
+  // Create a proxy city object with the scaled GridSize.
+  // Dimension Calculation
+  const gridSizePx = baseGridSize * zoom;
+  const gridDimension = gridSizePx * GridMax;
+  const paddingPx = PADDING_TILES * gridSizePx;
+  const totalDimension = gridDimension + paddingPx * 2;
 
   // --- Scroll Restoration after Zoom ---
   useLayoutEffect(() => {
@@ -35,25 +41,16 @@ export function CityGrid() {
     }
   });
 
-  // Sync ref
-  useEffect(() => {
-    zoomRef.current = zoom;
-  }, [zoom]);
-
   // Center the view on mount (only once)
   useEffect(() => {
     if (!hasCentered.current && containerRef.current && totalDimension > 0) {
       const clientW = containerRef.current.clientWidth;
-      const clientH = containerRef.current.clientHeight;
       if (totalDimension > clientW) {
         containerRef.current.scrollLeft = (totalDimension - clientW) / 2;
       }
-      if (totalDimension > clientH) {
-        containerRef.current.scrollTop = (totalDimension - clientH) / 2;
-      }
       hasCentered.current = true;
     }
-  }, [totalDimension]); // Depend on dimension to retry if it starts at 0
+  }, [totalDimension]);
 
   // --- Handlers ---
 
@@ -79,7 +76,6 @@ export function CityGrid() {
       // Find current index
       let currentIndex = ZOOM_LEVELS.findIndex((z) => Math.abs(z - currentZoom) < 0.001);
       if (currentIndex === -1) {
-        // Fallback closest
         let minDiff = Infinity;
         ZOOM_LEVELS.forEach((z, i) => {
           const diff = Math.abs(z - currentZoom);
@@ -171,7 +167,7 @@ export function CityGrid() {
     }
   };
 
-  const sortedBlocks = useMemo(() => {
+  const blockRects = useMemo(() => {
     // If dragging, render dragged block last (on top)
     const withIndex = Object.entries(blocks);
     const blocksBelowUnmoved = withIndex.filter(([i, b]) => Number(i) !== dragIndex && !b.moved && !b.highlighted);
@@ -182,8 +178,8 @@ export function CityGrid() {
       const draggedBlock = blocks[dragIndex];
       sortedBlocks.push(['dragged', draggedBlock]);
     }
-    return sortedBlocks;
-  }, [blocks, dragIndex]);
+    return sortedBlocks.map(([index, block]) => blockRect(index, block, zoom));
+  }, [blocks, dragIndex, zoom]);
 
   return (
     <div
@@ -210,47 +206,52 @@ export function CityGrid() {
           cursor: dragIndex !== null ? 'grabbing' : 'default',
           userSelect: 'none',
           display: 'block',
+          backgroundColor: '#1a1a2e',
         }}
         onClick={() => handleMouseUp(city)}
       >
-        <rect x={0} y={0} width={totalDimension} height={totalDimension} fill='#145214' />
+        {/* Shift visual grid by Padding */}
+        <g transform={`translate(${paddingPx}, ${paddingPx})`}>
+          {/* Main Playable Background (Optional visual aid) */}
+          <rect x={0} y={0} width={gridDimension} height={gridDimension} fill='#145214' />
 
-        {city.unlockedAreas.map((area, idx) => (
-          <rect
-            key={`unlocked-${idx}`}
-            x={area.x * baseGridSize * zoom}
-            y={area.y * baseGridSize * zoom}
-            width={area.width * baseGridSize * zoom}
-            height={area.length * baseGridSize * zoom}
-            fill='rgba(255, 255, 255, 0.3)'
-            stroke='green'
-            strokeWidth={1}
-            pointerEvents='none'
-          />
-        ))}
-
-        {Array.from({ length: GridMax }).map((_, i) => (
-          <g key={'grid-' + i} style={{ pointerEvents: 'none' }}>
-            <line
-              x1='0'
-              y1={i * baseGridSize * zoom}
-              x2={totalDimension}
-              y2={i * baseGridSize * zoom}
-              stroke='#ffffff80'
-              strokeWidth={i % 5 === 0 ? 2 : 1}
+          {city.unlockedAreas.map((area, idx) => (
+            <rect
+              key={`unlocked-${idx}`}
+              x={area.x * gridSizePx}
+              y={area.y * gridSizePx}
+              width={area.width * gridSizePx}
+              height={area.length * gridSizePx}
+              fill='rgba(255, 255, 255, 0.3)'
+              stroke='green'
+              strokeWidth={1}
+              pointerEvents='none'
             />
-            <line
-              x1={i * baseGridSize * zoom}
-              y1='0'
-              x2={i * baseGridSize * zoom}
-              y2={totalDimension}
-              stroke='#ffffff80'
-              strokeWidth={i % 5 === 0 ? 2 : 1}
-            />
-          </g>
-        ))}
+          ))}
 
-        {sortedBlocks.map(([index, block]) => blockRect(Number(index), block, zoom))}
+          {Array.from({ length: GridMax + 1 }).map((_, i) => (
+            <g key={'grid-' + i} style={{ pointerEvents: 'none', opacity: 0.2 }}>
+              <line
+                x1='0'
+                y1={i * gridSizePx}
+                x2={gridDimension}
+                y2={i * gridSizePx}
+                stroke='white'
+                strokeWidth={i % 5 === 0 ? 2 : 1}
+              />
+              <line
+                x1={i * gridSizePx}
+                y1='0'
+                x2={i * gridSizePx}
+                y2={gridDimension}
+                stroke='white'
+                strokeWidth={i % 5 === 0 ? 2 : 1}
+              />
+            </g>
+          ))}
+
+          {blockRects}
+        </g>
       </svg>
     </div>
   );

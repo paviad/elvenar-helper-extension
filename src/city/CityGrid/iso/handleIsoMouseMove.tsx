@@ -1,23 +1,24 @@
 import React from 'react';
 import { useCity } from '../../CityContext';
-import { bufferTime, Subject } from 'rxjs';
+import { sampleTime, Subject } from 'rxjs';
 
 // Updated Subject to include zoom
 const isoSubject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent; zoom: number }>();
-const isoThrottled = isoSubject.pipe(bufferTime(30));
+const isoThrottled = isoSubject.pipe(sampleTime(100));
 
-// Updated signature to accept zoom
 export const handleIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   isoSubject.next({ city, e, zoom });
 };
 
 export const subscribeToIsoMouseMove = () => {
   return isoThrottled.subscribe((r) => {
-    if (r.length === 0) return;
-    const { city, e, zoom } = r[r.length - 1];
+    if (!r) return;
+    const { city, e, zoom } = r;
     processIsoMouseMove(city, e, zoom);
   });
 };
+
+const PADDING_TILES = 10;
 
 const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   const blocks = city.blocks;
@@ -32,24 +33,22 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
   if (!svg) return;
   const mouseGrid = mousePositionRef.current;
   const rect = svg.getBoundingClientRect();
-  
-  // Raw screen coordinates relative to SVG
+
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
-  // --- Isometric Constants (Must match IsometricCityGrid) ---
-  // Apply zoom to tile dimensions
+  // --- Isometric Constants ---
   const tileWidth = GridSize * 1.8 * zoom;
   const tileHeight = GridSize * 0.9 * zoom;
-  const originX = (GridMax * tileWidth) / 2;
-  const originY = 50;
+  const paddedGridMax = GridMax + PADDING_TILES * 2;
+  const originX = (paddedGridMax * tileWidth) / 2;
+  const originY = 50 + PADDING_TILES * tileHeight;
 
   // --- Coordinate Transformation Helper ---
   const fromIso = (screenX: number, screenY: number) => {
     const adjX = screenX - originX;
     const adjY = screenY - originY;
-    
-    // Reverse the projection math
+
     const gy = (adjY / (tileHeight / 2) - adjX / (tileWidth / 2)) / 2;
     const gx = (adjY / (tileHeight / 2) + adjX / (tileWidth / 2)) / 2;
 
@@ -61,22 +60,12 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
       return;
     }
 
-    // Calculate the target screen position for the block's origin
     const targetScreenX = mouseX - dragOffset.x;
     const targetScreenY = mouseY - dragOffset.y;
-
-    // Convert that target screen position back to grid coordinates
     const gridPos = fromIso(targetScreenX, targetScreenY);
 
-    // Clamp to grid bounds
-    const newX = Math.max(
-      0,
-      Math.min(GridMax - blocks[dragIndex].width, gridPos.x)
-    );
-    const newY = Math.max(
-      0,
-      Math.min(GridMax - blocks[dragIndex].length, gridPos.y)
-    );
+    const newX = Math.max(-PADDING_TILES, Math.min(GridMax - blocks[dragIndex].width + PADDING_TILES, gridPos.x));
+    const newY = Math.max(-PADDING_TILES, Math.min(GridMax - blocks[dragIndex].length + PADDING_TILES, gridPos.y));
 
     if (blocks[dragIndex].x === newX && blocks[dragIndex].y === newY) {
       return;
@@ -101,11 +90,16 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
       city.setMouseGridPosition({ x: newX, y: newY });
     }
   } else {
-    // Standard Hover Logic
     const { x: gridX, y: gridY } = fromIso(mouseX, mouseY);
-    
+
     if (mouseGrid) {
-      if (gridX >= 0 && gridX < GridMax && gridY >= 0 && gridY < GridMax) {
+      if (
+        gridX >= -PADDING_TILES &&
+        gridX < GridMax + PADDING_TILES &&
+        gridY >= -PADDING_TILES &&
+        gridY < GridMax + PADDING_TILES
+      ) {
+        // Show coordinate even if negative
         mouseGrid.innerText = `Grid: (${gridX}, ${gridY})`;
         city.setMouseGridPosition({ x: gridX, y: gridY });
       } else {
