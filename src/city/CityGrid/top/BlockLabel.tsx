@@ -1,5 +1,5 @@
 import React from 'react';
-import { CityBlock } from '../CityBlock';
+import { CityBlock } from '../../CityBlock';
 
 interface BlockLabelProps {
   block: CityBlock;

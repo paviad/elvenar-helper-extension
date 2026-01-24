@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCity } from '../CityContext';
+import { useCity } from '../../CityContext';
 import { bufferTime, Subject } from 'rxjs';
 
 const subject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent }>();

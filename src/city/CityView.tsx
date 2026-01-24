@@ -67,7 +67,6 @@ export function CityView() {
             marginRight: 16,
             position: 'sticky',
             top: 0,
-            overflowY: 'auto',
           }}
         >
           <CitySettings />
@@ -75,7 +74,7 @@ export function CityView() {
         </div>
 
         {/* Center / Grid - Flex grow to fill space */}
-        <div style={{ flexGrow: 1 }}>
+        <div style={{ flexGrow: 1, overflow: 'hidden' }}>
           <RenderCityGrid />
         </div>
 

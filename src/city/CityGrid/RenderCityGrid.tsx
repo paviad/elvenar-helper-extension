@@ -10,12 +10,11 @@ import {
   ListItemButton,
   ListItemText,
   Paper,
+  Box,
 } from '@mui/material';
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { blockRect } from './blockRect';
-import { handleMouseMove, subscribeToMouseMove } from './handleMouseMove';
-import { handleMouseUp } from './handleMouseUp';
+import { subscribeToMouseMove } from './top/handleMouseMove';
 import { BuildingFinder } from '../buildingFinder';
 import { CityBlock } from '../CityBlock';
 import { useTabStore } from '../../util/tabStore';
@@ -45,6 +44,9 @@ import { getBuildings } from '../../elvenar/getBuildings';
 import { getChapterFromEntity, getCityBlockFromCityEntity } from '../getCityBlockFromCityEntity';
 import { useHelper } from '../../helper/HelperContext';
 import { guessRankingPointsFromChapter } from '../../util/guessRankingPointsFromChapter';
+import { getPrefix } from '../../util/getPrefix';
+import { IsometricCityGrid } from './iso/IsometricCityGrid';
+import { subscribeToIsoMouseMove } from './iso/handleIsoMouseMove';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -59,7 +61,7 @@ export const RenderCityGrid = () => {
   // State for Change Level dialog
   const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
   const [levelInput, setLevelInput] = useState(1);
-  const { GridSize, GridMax, svgRef, menuRef } = city;
+  const { svgRef, menuRef } = city;
 
   const [showBuildDialog, setShowBuildDialog] = useState(false);
   const [buildings, setBuildings] = useState([] as BuildingDefinition[]);
@@ -70,7 +72,6 @@ export const RenderCityGrid = () => {
   const dragIndex = city.dragIndex;
   const setDragIndex = city.setDragIndex;
 
-  const dragOffset = city.dragOffset;
   const setDragOffset = city.setDragOffset;
 
   const searchTerm = city.searchTerm;
@@ -95,7 +96,11 @@ export const RenderCityGrid = () => {
 
   useEffect(() => {
     const subscription = subscribeToMouseMove();
-    return () => subscription.unsubscribe();
+    const subscription2 = subscribeToIsoMouseMove();
+    return () => {
+      subscription.unsubscribe();
+      subscription2.unsubscribe();
+    };
   }, []);
 
   // Key handler for changing level while dragging
@@ -541,17 +546,11 @@ export const RenderCityGrid = () => {
     setMenu(null);
   }
 
-  function getPrefix(r: CityBlock) {
-    const c = r.entity.cityentity_id[0];
-    if (r.type.includes('premium')) return `X${c}`;
-    if (c === 'M') return `M${r.entity.cityentity_id[2]}`;
-    return c;
-  }
-
   function renderLevelDialog() {
     const block = blocks[showLevelDialog.index];
-    const prefix = getPrefix(block);
+    const prefix = getPrefix(block.entity.cityentity_id, block.entity.type);
     const maxLevel = maxLevels[prefix];
+
     return (
       <Dialog open={showLevelDialog.open} onClose={() => setShowLevelDialog({ open: false, index: -1 })}>
         <Stack spacing={2} sx={{ p: 3, minWidth: 300, alignItems: 'center' }}>
@@ -679,7 +678,6 @@ export const RenderCityGrid = () => {
           <ListItemButton
             onClick={() => {
               const blocks = city.blocks;
-              const setBlocks = city.setBlocks;
               const blockToDelete = blocks[menu.key as number];
               const { [menu.key as number]: _, ...newBlocks } = blocks;
               city.overwriteBlocks(newBlocks);
@@ -889,21 +887,18 @@ export const RenderCityGrid = () => {
       <div>
         <div
           ref={searchBoxRef}
-          style={
-            isFixed
-              ? {
-                  position: 'fixed',
-                  top: 0,
-                  left: '20%',
-                  width: '60%',
-                  zIndex: 9999,
-                  background: 'rgba(255,255,255,0.95)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  padding: 8,
-                  transition: 'box-shadow 0.2s',
-                }
-              : { marginBottom: 8, background: 'inherit', transition: 'box-shadow 0.2s' }
-          }
+          style={{
+            marginBottom: 8,
+            background: isFixed ? 'rgba(255,255,255,0.95)' : 'inherit',
+            transition: 'box-shadow 0.2s',
+            position: isFixed ? 'fixed' : 'static',
+            top: isFixed ? 0 : 'auto',
+            left: isFixed ? '20%' : 'auto',
+            width: isFixed ? '60%' : '100%',
+            zIndex: isFixed ? 9999 : 'auto',
+            boxShadow: isFixed ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+            padding: isFixed ? 8 : 0,
+          }}
         >
           <TextField
             label='Search buildings (string or /regexp/)'
@@ -917,82 +912,27 @@ export const RenderCityGrid = () => {
         <div ref={city.mousePositionRef} style={{ marginBottom: 8, fontWeight: 'bold' }}>
           Grid: (-, -)
         </div>
-        <svg
-          ref={city.svgRef}
-          width={GridSize * GridMax}
-          height={GridSize * GridMax}
-          style={{
-            border: '1px solid black',
-            cursor: dragIndex !== null ? 'grabbing' : 'default',
-            userSelect: 'none',
+
+        {/* Viewport for City Grid */}
+        <Box
+          sx={{
+            width: '100%',
+            height: 'calc(100vh - 220px)', // Adjust for header/toolbar height
+            border: '1px solid #444',
+            borderRadius: 1,
+            overflow: 'hidden', // IsometricCityGrid handles internal scrolling
+            display: 'flex',
+            bgcolor: '#1a1a2e', // Optional: Dark background to match isometric theme
           }}
-          onMouseMove={(e) => handleMouseMove(city, e)}
-          onClick={() => handleMouseUp(city)}
-          // onMouseLeave={() => handleMouseUp(city)}
         >
-          <rect x={0} y={0} width={GridSize * GridMax} height={GridSize * GridMax} fill='#145214' />
+          {/* <CityGrid /> */}
+          <IsometricCityGrid />
+        </Box>
 
-          {city.unlockedAreas.map((area, idx) => (
-            <rect
-              key={`unlocked-${idx}`}
-              x={area.x * GridSize}
-              y={area.y * GridSize}
-              width={area.width * GridSize}
-              height={area.length * GridSize}
-              fill='rgba(255, 255, 255, 0.3)'
-              stroke='green'
-              strokeWidth={1}
-              pointerEvents='none'
-            />
-          ))}
-
-          {Array.from({ length: GridMax }).map((_, i) => (
-            <g key={'grid-' + i} style={{ pointerEvents: 'none' }}>
-              <line
-                x1='0'
-                y1={i * GridSize}
-                x2={GridSize * GridMax}
-                y2={i * GridSize}
-                stroke='#ffffff80'
-                strokeWidth={i % 5 === 0 ? 2 : 1}
-              />
-              <line
-                x1={i * GridSize}
-                y1='0'
-                x2={i * GridSize}
-                y2={GridSize * GridMax}
-                stroke='#ffffff80'
-                strokeWidth={i % 5 === 0 ? 2 : 1}
-              />
-            </g>
-          ))}
-
-          {(() => {
-            // If dragging, render dragged block last (on top)
-            const withIndex = Object.entries(blocks);
-            const blocksBelowUnmoved = withIndex.filter(
-              ([i, b]) => Number(i) !== dragIndex && !b.moved && !b.highlighted,
-            );
-            const blocksBelow = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.moved && !b.highlighted);
-            const blocksHighlighted = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.highlighted);
-            const sortedBlocks = [
-              ...blocksBelowUnmoved.map(([index, block]) => blockRect(Number(index), block)),
-              ...blocksBelow.map(([index, block]) => blockRect(Number(index), block)),
-              ...blocksHighlighted.map(([index, block]) => blockRect(Number(index), block)),
-            ];
-            if (dragIndex !== null) {
-              const draggedBlock = blocks[dragIndex];
-              sortedBlocks.push(blockRect('dragged', draggedBlock));
-            }
-            return sortedBlocks;
-          })()}
-
-          {/* Modal Numeric Input Dialog */}
-          {showLevelDialog.open && renderLevelDialog()}
-
-          {/* Context Menu (now rendered as portal) */}
-          {menu && renderContextMenu()}
-        </svg>
+        {/* Modal Numeric Input Dialog */}
+        {showLevelDialog.open && renderLevelDialog()}
+        {/* Context Menu (now rendered as portal) */}
+        {menu && renderContextMenu()}
         {/* ExportDialog Modal */}
         {exportDialog.open && renderExportDialog()}
         {/* SaveCityDialog Modal */}
@@ -1007,7 +947,7 @@ export const RenderCityGrid = () => {
             open={showBuildDialog}
             onClose={() => setShowBuildDialog(false)}
             maxWidth={false}
-            slotProps={{ paper: { sx: { width: 800 } } }}
+            slotProps={{ paper: { sx: { width: 'auto', maxWidth: 'none', backgroundColor: 'transparent', boxShadow: 'none' } } }} // Let the component handle its own styling/width
           >
             <NewBuildingSelector onSelectBuilding={onSelectBuilding} buildings={buildings} />
           </Dialog>

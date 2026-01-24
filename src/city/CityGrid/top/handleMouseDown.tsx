@@ -1,7 +1,7 @@
 import React from 'react';
-import { getEntityMaxLevel } from './getEntityMaxLevel';
-import { useCity } from '../CityContext';
-import { useHelper } from '../../helper/HelperContext';
+import { getEntityMaxLevel } from '../getEntityMaxLevel';
+import { useCity } from '../../CityContext';
+import { useHelper } from '../../../helper/HelperContext';
 
 export const handleMouseDown = (city: ReturnType<typeof useCity>, helperContext: ReturnType<typeof useHelper>, e: React.MouseEvent, index: number) => {
   const setDragIndex = city.setDragIndex;

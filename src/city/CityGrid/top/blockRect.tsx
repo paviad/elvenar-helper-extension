@@ -1,13 +1,13 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
-import { CityBlock } from '../CityBlock';
-import { getTypeColor } from '../Legend/getTypeColor';
+import { CityBlock } from '../../CityBlock';
+import { getTypeColor } from '../../Legend/getTypeColor';
 import { handleMouseDown } from './handleMouseDown';
 import { BlockLabel } from './BlockLabel';
-import { useCity } from '../CityContext';
-import { useHelper } from '../../helper/HelperContext';
-import { getContrastColor } from '../../util/getContrastColor';
-import { BuildingTooltip } from './BuildingTooltip';
+import { useCity } from '../../CityContext';
+import { useHelper } from '../../../helper/HelperContext';
+import { getContrastColor } from '../../../util/getContrastColor';
+import { BuildingTooltip } from '../BuildingTooltip';
 
 export const blockRect = (key: string | number, block: CityBlock) => {
   const city = useCity();
