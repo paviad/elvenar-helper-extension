@@ -1,18 +1,21 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
-import { CityBlock } from '../../CityBlock';
-import { getTypeColor } from '../../Legend/getTypeColor';
 import { handleMouseDown } from './handleMouseDown';
 import { BlockLabel } from './BlockLabel';
-import { useCity } from '../../CityContext';
 import { useHelper } from '../../../helper/HelperContext';
 import { getContrastColor } from '../../../util/getContrastColor';
+import { CityBlock } from '../../CityBlock';
+import { useCity } from '../../CityContext';
+import { getTypeColor } from '../../Legend/getTypeColor';
 import { BuildingTooltip } from '../BuildingTooltip';
 
-export const blockRect = (key: string | number, block: CityBlock) => {
+export const blockRect = (key: string | number, block: CityBlock, zoom: number) => {
   const city = useCity();
   const helper = useHelper();
   const { GridSize, opacity, chapter } = city;
+
+  // Calculate scaled grid size based on zoom
+  const sGridSize = GridSize * zoom;
 
   // Context menu state
   const setMenu = city.setMenu;
@@ -27,7 +30,7 @@ export const blockRect = (key: string | number, block: CityBlock) => {
   const dragging = typeof key === 'string';
   const handler =
     !dragging && dragIndex === null
-      ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(city, helper, e, key)
+      ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(city, helper, e, key, zoom)
       : () => {
           /* no-op for dragging */
         };
@@ -48,8 +51,8 @@ export const blockRect = (key: string | number, block: CityBlock) => {
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
       setDragOffset({
-        x: mouseX - blocks[key].x * GridSize,
-        y: mouseY - blocks[key].y * GridSize,
+        x: mouseX - blocks[key].x * sGridSize, // Use scaled grid size for offset
+        y: mouseY - blocks[key].y * sGridSize,
       });
     }
     setMenu({ x, y, key });
@@ -92,10 +95,10 @@ export const blockRect = (key: string | number, block: CityBlock) => {
         >
           <rect
             opacity={opacity}
-            x={block.x * GridSize}
-            y={block.y * GridSize}
-            width={block.width * GridSize}
-            height={block.length * GridSize}
+            x={block.x * sGridSize}
+            y={block.y * sGridSize}
+            width={block.width * sGridSize}
+            height={block.length * sGridSize}
             fill={fillColor}
             stroke={block.moved ? 'black' : '#000'}
             strokeWidth={block.moved ? 2 : 1}
@@ -108,18 +111,18 @@ export const blockRect = (key: string | number, block: CityBlock) => {
       {isHighlighted && (
         <>
           <rect
-            x={block.x * GridSize}
-            y={block.y * GridSize}
-            width={block.width * GridSize}
-            height={block.length * GridSize}
+            x={block.x * sGridSize}
+            y={block.y * sGridSize}
+            width={block.width * sGridSize}
+            height={block.length * sGridSize}
             fill={`url(#${patternId})`}
             pointerEvents='none'
           />
           <rect
-            x={block.x * GridSize}
-            y={block.y * GridSize}
-            width={block.width * GridSize}
-            height={block.length * GridSize}
+            x={block.x * sGridSize}
+            y={block.y * sGridSize}
+            width={block.width * sGridSize}
+            height={block.length * sGridSize}
             fill='none'
             stroke='#ff0000'
             strokeWidth={3}
@@ -129,10 +132,10 @@ export const blockRect = (key: string | number, block: CityBlock) => {
       )}
       {dragging && (
         <rect
-          x={block.x * GridSize - 2}
-          y={block.y * GridSize - 2}
-          width={block.width * GridSize + 4}
-          height={block.length * GridSize + 4}
+          x={block.x * sGridSize - 2}
+          y={block.y * sGridSize - 2}
+          width={block.width * sGridSize + 4}
+          height={block.length * sGridSize + 4}
           fill='none'
           stroke='orange'
           strokeWidth={2}
@@ -141,7 +144,7 @@ export const blockRect = (key: string | number, block: CityBlock) => {
       )}
       <BlockLabel
         block={block}
-        GridSize={GridSize}
+        GridSize={sGridSize}
         textColor={textColor}
         sprite={city.techSprite}
         showWarning={isChapterExcessive}

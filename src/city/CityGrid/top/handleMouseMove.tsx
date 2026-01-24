@@ -1,23 +1,25 @@
 import React from 'react';
-import { useCity } from '../../CityContext';
 import { bufferTime, Subject } from 'rxjs';
+import { useCity } from '../../CityContext';
 
-const subject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent }>();
+// Updated Subject to include zoom
+const subject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent; zoom: number }>();
 const throttled = subject.pipe(bufferTime(30));
 
-export const handleMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent) => {
-  subject.next({ city, e });
+// Updated signature to accept zoom (defaults to 1)
+export const handleMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
+  subject.next({ city, e, zoom });
 };
 
 export const subscribeToMouseMove = () => {
   return throttled.subscribe((r) => {
     if (r.length === 0) return;
-    const { city, e } = r[r.length - 1];
-    processMouseMove(city, e);
+    const { city, e, zoom } = r[r.length - 1];
+    processMouseMove(city, e, zoom);
   });
 };
 
-const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent) => {
+const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   const blocks = city.blocks;
   const setBlocks = city.setBlocks;
 
@@ -26,20 +28,26 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent)
 
   const { GridSize, svgRef, GridMax, mousePositionRef } = city;
 
+  // Calculate scaled grid size
+  const sGridSize = GridSize * zoom;
+
   const svg = svgRef.current;
   if (!svg) return;
   const mouseGrid = mousePositionRef.current;
   const rect = svg.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
+  const gridX = Math.floor(mouseX / sGridSize);
+  const gridY = Math.floor(mouseY / sGridSize);
+
   if (dragIndex !== null) {
     const newX = Math.max(
       0,
-      Math.min(GridMax - blocks[dragIndex].width, Math.round((mouseX - dragOffset.x) / GridSize)),
+      Math.min(GridMax - blocks[dragIndex].width, Math.round((mouseX - dragOffset.x) / sGridSize)),
     );
     const newY = Math.max(
       0,
-      Math.min(GridMax - blocks[dragIndex].length, Math.round((mouseY - dragOffset.y) / GridSize)),
+      Math.min(GridMax - blocks[dragIndex].length, Math.round((mouseY - dragOffset.y) / sGridSize)),
     );
 
     if (!blocks[dragIndex]) {
@@ -66,12 +74,10 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent)
     });
 
     if (mouseGrid) {
-      mouseGrid.innerText = `Grid: (${newX}, ${newY})`;
-      city.setMouseGridPosition({ x: newX, y: newY });
+      mouseGrid.innerText = `Grid: (${gridX}, ${gridY})`;
+      city.setMouseGridPosition({ x: gridX, y: gridY });
     }
   } else {
-    const gridX = Math.floor(mouseX / GridSize);
-    const gridY = Math.floor(mouseY / GridSize);
     if (mouseGrid) {
       mouseGrid.innerText = `Grid: (${gridX}, ${gridY})`;
       city.setMouseGridPosition({ x: gridX, y: gridY });

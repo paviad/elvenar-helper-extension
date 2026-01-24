@@ -10,7 +10,6 @@ export const handleIsoMouseDown = (
   index: number,
   zoom: number,
 ) => {
-  console.log('Iso Mouse Down');
   const setDragIndex = city.setDragIndex;
   const setDragOffset = city.setDragOffset;
   const blocks = city.blocks;

@@ -47,6 +47,7 @@ import { guessRankingPointsFromChapter } from '../../util/guessRankingPointsFrom
 import { getPrefix } from '../../util/getPrefix';
 import { IsometricCityGrid } from './iso/IsometricCityGrid';
 import { subscribeToIsoMouseMove } from './iso/handleIsoMouseMove';
+import { CityGrid } from './top/CityGrid';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -925,8 +926,8 @@ export const RenderCityGrid = () => {
             bgcolor: '#1a1a2e', // Optional: Dark background to match isometric theme
           }}
         >
-          {/* <CityGrid /> */}
-          <IsometricCityGrid />
+          <CityGrid />
+          {/* <IsometricCityGrid /> */}
         </Box>
 
         {/* Modal Numeric Input Dialog */}

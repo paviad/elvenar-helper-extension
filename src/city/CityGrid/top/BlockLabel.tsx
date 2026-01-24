@@ -23,7 +23,11 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
   // Center point for label
   const centerX = (block.x + block.width / 2) * GridSize;
   const centerY = (block.y + block.length / 2) * GridSize;
-  const fontSize = Math.max(GridSize * 0.6, 10);
+
+  // Font size scales linearly with GridSize (Zoom).
+  // Removed Math.max(..., 10) clamp to allow text to shrink properly when zoomed out.
+  const fontSize = GridSize * 0.6;
+  
   const isSufficientSpace = block.width >= 3 && block.length >= 2;
 
   // Render Warning Overlay (Centered, Large, Translucent)
@@ -49,7 +53,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
   // Render Max Level Indicator (Top Right, Green Checkmark)
   const renderMaxLevel = () => {
     if (!showMaxLevel) return null;
-    // Don't show if block is too small
+    // Don't show if block is too small (visual clutter)
     if (block.width * GridSize <= 20 || block.length * GridSize <= 20) return null;
 
     // Position at top right corner inside the block
@@ -91,6 +95,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
             alignmentBaseline={block.stage ? 'baseline' : 'middle'}
             fontSize={fontSize}
             fill={textColor}
+            style={{ userSelect: 'none' }}
           >
             {block.label}
           </text>
@@ -104,6 +109,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
               fontSize={fontSize * 0.6}
               fill={textColor}
               opacity={0.8}
+              style={{ userSelect: 'none' }}
             >
               Stage {block.stage}
             </text>
@@ -130,6 +136,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
   const groupWidth = iconSize + labelWidth;
   const groupStartX = centerX - groupWidth / 2;
 
+  // Scale the group slightly to fit content nicely
   const scale = 0.75;
   const groupTransform = `translate(${centerX},${centerY}) scale(${scale}) translate(${-centerX},${-centerY})`;
 
@@ -155,6 +162,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
             alignmentBaseline='middle'
             fontSize={fontSize * 2}
             fill={textColor}
+            style={{ userSelect: 'none' }}
           >
             {block.label}
           </text>
@@ -169,6 +177,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
             fontSize={fontSize}
             fill={textColor}
             opacity={0.8}
+            style={{ userSelect: 'none' }}
           >
             Stage {block.stage}
           </text>

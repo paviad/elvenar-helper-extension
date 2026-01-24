@@ -7,7 +7,7 @@ const isoSubject = new Subject<{ city: ReturnType<typeof useCity>; e: React.Mous
 const isoThrottled = isoSubject.pipe(bufferTime(30));
 
 // Updated signature to accept zoom
-export const handleIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom = 1) => {
+export const handleIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   isoSubject.next({ city, e, zoom });
 };
 
