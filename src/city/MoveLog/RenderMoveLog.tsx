@@ -79,4 +79,4 @@ export const RenderMoveLog = () => {
       <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>Most recent at bottom</div>
     </div>
   );
-}
+};

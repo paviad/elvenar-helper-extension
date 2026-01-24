@@ -186,7 +186,7 @@ function guessSquadSizeFromChapter(chapter: number): number {
   let squadSize = 0;
 
   // guessing final tech wasn't researched, so taking all but final increment.
-  for (let i = 0; i <= maxUpgradeIndex - 1 ; i++) {
+  for (let i = 0; i <= maxUpgradeIndex - 1; i++) {
     squadSize += squadSizeIncrementByUpgrade[i] || 0;
   }
   return squadSize;

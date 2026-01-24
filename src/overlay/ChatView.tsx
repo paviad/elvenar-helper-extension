@@ -402,10 +402,10 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                     isCurrent
                       ? { background: '#ffe082' }
                       : isMatch
-                      ? { background: '#fffde7' }
-                      : isUnread
-                      ? { background: '#39d53646' }
-                      : {}
+                        ? { background: '#fffde7' }
+                        : isUnread
+                          ? { background: '#39d53646' }
+                          : {}
                   }
                 >
                   <Avatar

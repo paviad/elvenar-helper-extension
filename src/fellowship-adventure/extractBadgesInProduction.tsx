@@ -8,17 +8,20 @@ export function extractBadgesInProduction(
   boostedGoods: Record<string, number>,
   faRequirements: Record<string, FaQuest>,
   mmEnchantmentEnabled: boolean,
-  enchantmentBonus: number): Record<string, Record<number, number>> {
-  const fltr = (s: string | RegExp) => (r: CityEntity) => s instanceof RegExp
-    ? s.test(r.state?.current_product?.asset_name || '')
-    : r.state?.current_product?.asset_name === s;
-  const mapr = (r: CityEntity) => ({
-    id: r.id,
-    name: r.state!.current_product!.name!,
-    asset_name: r.state!.current_product!.asset_name!,
-    next_state_transition_in: r.state!.next_state_transition_in,
-    productionAmount: r.state!.current_product?.productionAmount,
-  } satisfies ProductionBadgeInfo);
+  enchantmentBonus: number,
+): Record<string, Record<number, number>> {
+  const fltr = (s: string | RegExp) => (r: CityEntity) =>
+    s instanceof RegExp
+      ? s.test(r.state?.current_product?.asset_name || '')
+      : r.state?.current_product?.asset_name === s;
+  const mapr = (r: CityEntity) =>
+    ({
+      id: r.id,
+      name: r.state!.current_product!.name!,
+      asset_name: r.state!.current_product!.asset_name!,
+      next_state_transition_in: r.state!.next_state_transition_in,
+      productionAmount: r.state!.current_product?.productionAmount,
+    }) satisfies ProductionBadgeInfo;
 
   const mapr2 = (r: CityEntity) => {
     const boostFactor = boostedGoods[r.state?.current_product?.asset_name?.replace(/_\d+$/, '') || ''] || 1;
@@ -27,14 +30,17 @@ export function extractBadgesInProduction(
       name: r.state!.current_product!.name!,
       asset_name: r.state!.current_product!.asset_name!,
       next_state_transition_in: r.state!.next_state_transition_in,
-      productionAmount: ((Object.entries(r.state!.current_product?.revenue.resources).find(([k, v]) => /marble|steel|planks/.test(k)
-      )?.[1] as number) || 0) * boostFactor,
+      productionAmount:
+        ((Object.entries(r.state!.current_product?.revenue.resources).find(([k, v]) =>
+          /marble|steel|planks/.test(k),
+        )?.[1] as number) || 0) * boostFactor,
     } satisfies ProductionBadgeInfo;
   };
 
   const grpr = (prodPerBadge: number) => (acc: Record<number, number>, curr: ProductionBadgeInfo) => ({
     ...acc,
-    [curr.next_state_transition_in]: (acc[curr.next_state_transition_in] || 0) + (curr.productionAmount * 100) / prodPerBadge,
+    [curr.next_state_transition_in]:
+      (acc[curr.next_state_transition_in] || 0) + (curr.productionAmount * 100) / prodPerBadge,
   });
 
   const grpr2 = (badge: string) => {
@@ -43,12 +49,12 @@ export function extractBadgesInProduction(
     return (acc: Record<number, number>, curr: ProductionBadgeInfo) => ({
       ...acc,
       [curr.next_state_transition_in]: Math.trunc(
-        (acc[curr.next_state_transition_in] || 0) + (curr.productionAmount * 100 * mmBonusFactor) / prodPerBadge
+        (acc[curr.next_state_transition_in] || 0) + (curr.productionAmount * 100 * mmBonusFactor) / prodPerBadge,
       ),
     });
   };
 
-  const grpi = () => ({} as Record<number, number>);
+  const grpi = () => ({}) as Record<number, number>;
 
   const goldenBracelets1 = entities
     .filter((r) => r.level > 1 && faRequirements['golden_bracelet'])

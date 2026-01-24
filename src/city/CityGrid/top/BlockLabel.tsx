@@ -27,7 +27,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
   // Font size scales linearly with GridSize (Zoom).
   // Removed Math.max(..., 10) clamp to allow text to shrink properly when zoomed out.
   const fontSize = GridSize * 0.6;
-  
+
   const isSufficientSpace = block.width >= 3 && block.length >= 2;
 
   // Render Warning Overlay (Centered, Large, Translucent)

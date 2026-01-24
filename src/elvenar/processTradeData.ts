@@ -3,7 +3,7 @@ import { Trade } from '../model/trade';
 import { getAccountBySessionId } from './AccountManager';
 
 export async function processTradeData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
-  const json = untypedJson as [{ responseData: Trade[]; }];
+  const json = untypedJson as [{ responseData: Trade[] }];
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 

@@ -8,17 +8,12 @@ interface ImportDialogProps {
   existingCities?: string[];
 }
 
-const ImportDialog: React.FC<ImportDialogProps> = ({ 
-  isOpen, 
-  onClose, 
-  onImport, 
-  existingCities = []
-}) => {
+const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, existingCities = [] }) => {
   const [dataString, setDataString] = useState('');
   const [name, setName] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
-  const [isValid, setIsValid] = useState(false); 
-  
+  const [isValid, setIsValid] = useState(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,10 +57,10 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
         } catch (err) {
           // Silent fail: Browser denied permission or clipboard is empty/inaccessible
           // We don't want to annoy the user with an alert here.
-          console.debug("Clipboard auto-read failed or denied", err);
+          console.debug('Clipboard auto-read failed or denied', err);
         }
       };
-      
+
       checkClipboard();
 
       // 3. Focus Textarea
@@ -115,13 +110,12 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
   return (
     <div style={styles.overlay} onClick={handleBackdropClick}>
       <div style={styles.dialog}>
-        
         {/* Header */}
         <div style={styles.header}>
-          <h3 style={styles.title}>
-            {isConfirming ? 'Confirm Import Overwrite' : 'Import City Data'}
-          </h3>
-          <button onClick={onClose} style={styles.closeButton}>×</button>
+          <h3 style={styles.title}>{isConfirming ? 'Confirm Import Overwrite' : 'Import City Data'}</h3>
+          <button onClick={onClose} style={styles.closeButton}>
+            ×
+          </button>
         </div>
 
         {/* Content Switcher */}
@@ -129,11 +123,10 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
           // --- STANDARD IMPORT VIEW ---
           <>
             <div style={styles.body}>
-              
               {/* 1. Data Input */}
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
-                  Paste Data String 
+                  Paste Data String
                   {showValidationError && <span style={styles.errorLabel}> (Invalid Format)</span>}
                 </label>
                 <textarea
@@ -143,25 +136,25 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
                   style={{
                     ...styles.textarea,
                     borderColor: showValidationError ? '#ef4444' : '#cbd5e1',
-                    backgroundColor: showValidationError ? '#fef2f2' : '#fff'
+                    backgroundColor: showValidationError ? '#fef2f2' : '#fff',
                   }}
-                  placeholder="Paste your base64 string here..."
+                  placeholder='Paste your base64 string here...'
                 />
               </div>
 
               {/* 2. Name Input */}
               <div style={styles.inputGroup}>
                 <label style={styles.label}>Save As</label>
-                <input 
+                <input
                   ref={nameInputRef}
-                  type="text" 
-                  value={name} 
+                  type='text'
+                  value={name}
                   onChange={(e) => setName(e.target.value)}
                   style={styles.input}
-                  placeholder="Enter a name for this city..."
-                  autoComplete="off"
+                  placeholder='Enter a name for this city...'
+                  autoComplete='off'
                 />
-                
+
                 {/* Existing Cities List */}
                 {existingCities.length > 0 && (
                   <div style={styles.suggestionsContainer}>
@@ -170,8 +163,8 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
                       {existingCities.map((city) => {
                         const isSelected = city === name;
                         return (
-                          <button 
-                            key={city} 
+                          <button
+                            key={city}
                             style={{
                               ...styles.suggestionItem,
                               backgroundColor: isSelected ? '#e0f2fe' : 'transparent',
@@ -192,15 +185,17 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
 
             {/* Footer */}
             <div style={styles.footer}>
-              <button onClick={onClose} style={styles.secondaryButton}>Cancel</button>
-              <button 
-                onClick={handleInitialSubmit} 
+              <button onClick={onClose} style={styles.secondaryButton}>
+                Cancel
+              </button>
+              <button
+                onClick={handleInitialSubmit}
                 // Disable if name is empty OR data is invalid
                 disabled={!name.trim() || !isValid}
                 style={{
                   ...styles.primaryButton,
-                  backgroundColor: (name.trim() && isValid) ? '#1976d2' : '#94a3b8',
-                  cursor: (name.trim() && isValid) ? 'pointer' : 'not-allowed',
+                  backgroundColor: name.trim() && isValid ? '#1976d2' : '#94a3b8',
+                  cursor: name.trim() && isValid ? 'pointer' : 'not-allowed',
                 }}
               >
                 Import
@@ -218,8 +213,7 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
                 </p>
               </div>
               <p style={styles.confirmText}>
-                Importing this data will overwrite the existing city layout. 
-                Are you sure?
+                Importing this data will overwrite the existing city layout. Are you sure?
               </p>
             </div>
 
@@ -227,8 +221,8 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
               <button onClick={handleCancelConfirmation} style={styles.secondaryButton}>
                 Back
               </button>
-              <button 
-                onClick={handleConfirmOverwrite} 
+              <button
+                onClick={handleConfirmOverwrite}
                 style={{
                   ...styles.primaryButton,
                   backgroundColor: '#d32f2f', // Red for danger
@@ -239,7 +233,6 @@ const ImportDialog: React.FC<ImportDialogProps> = ({
             </div>
           </>
         )}
-
       </div>
     </div>
   );
@@ -266,7 +259,7 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
     width: '500px',
     maxWidth: '90vw',
-    maxHeight: '85vh', 
+    maxHeight: '85vh',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     overflow: 'hidden',
     animation: 'fadeIn 0.2s ease-out',
@@ -344,7 +337,7 @@ const styles: Record<string, React.CSSProperties> = {
     boxSizing: 'border-box',
     transition: 'border-color 0.2s, box-shadow 0.2s',
   },
-  
+
   // --- List Styles ---
   suggestionsContainer: {
     marginTop: '4px',
@@ -410,7 +403,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'flex-end',
     gap: '12px',
     backgroundColor: '#fff',
-    marginTop: 'auto', 
+    marginTop: 'auto',
   },
   secondaryButton: {
     padding: '8px 16px',

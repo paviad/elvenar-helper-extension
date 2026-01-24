@@ -28,7 +28,7 @@ export function saveBack(cityBlocks: CityBlock[]) {
         x: block.x,
         y: block.y,
         level: block.level,
-      } satisfies CityEntity),
+      }) satisfies CityEntity,
   );
 
   return updatedCityEntities;

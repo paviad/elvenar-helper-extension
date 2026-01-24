@@ -14,7 +14,6 @@ const FaControlPanel: React.FC<FaControlPanelProps> = ({
   enchantmentBonus,
   onEnchantmentBonusChange,
 }) => {
-  
   // Handlers
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onEnchantmentBonusChange(Number(e.target.value));
@@ -42,23 +41,27 @@ const FaControlPanel: React.FC<FaControlPanelProps> = ({
             {/* UPDATED HINT HERE */}
             <span style={styles.helperText}>Apply Magical Manufacturing</span>
           </div>
-          
+
           {/* Custom Toggle Switch */}
           <label style={styles.switchContainer}>
-            <input 
-              type="checkbox" 
+            <input
+              type='checkbox'
               checked={mmEnchantmentEnabled}
               onChange={(e) => onToggleMmEnchantment(e.target.checked)}
               style={styles.switchInput}
             />
-            <span style={{
-              ...styles.switchTrack,
-              backgroundColor: mmEnchantmentEnabled ? '#1976d2' : '#b0b0b0'
-            }}>
-              <span style={{
-                ...styles.switchThumb,
-                transform: mmEnchantmentEnabled ? 'translateX(20px)' : 'translateX(0px)'
-              }} />
+            <span
+              style={{
+                ...styles.switchTrack,
+                backgroundColor: mmEnchantmentEnabled ? '#1976d2' : '#b0b0b0',
+              }}
+            >
+              <span
+                style={{
+                  ...styles.switchThumb,
+                  transform: mmEnchantmentEnabled ? 'translateX(20px)' : 'translateX(0px)',
+                }}
+              />
             </span>
           </label>
         </div>
@@ -75,20 +78,20 @@ const FaControlPanel: React.FC<FaControlPanelProps> = ({
           <div style={styles.controlsContainer}>
             {/* Range Slider */}
             <input
-              type="range"
-              min="0"
-              max="100"
+              type='range'
+              min='0'
+              max='100'
               value={enchantmentBonus}
               onChange={handleSliderChange}
               style={styles.slider}
             />
-            
+
             {/* Numeric Input */}
             <div style={styles.inputWrapper}>
-              <input 
-                type="number" 
-                min="0" 
-                max="100" 
+              <input
+                type='number'
+                min='0'
+                max='100'
                 value={enchantmentBonus}
                 onChange={handleInputChange}
                 style={styles.numberInput}
@@ -156,7 +159,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#e2e8f0',
     width: '100%',
   },
-  
+
   // --- Custom Switch Styles ---
   switchContainer: {
     position: 'relative',

@@ -1,4 +1,4 @@
-export const badgeSpriteInfo: Record<string, { name: string; x: number; y: number; }> = {
+export const badgeSpriteInfo: Record<string, { name: string; x: number; y: number }> = {
   badge_brewery: { name: 'Breweries', x: 5, y: 3 },
   badge_carpenters: { name: 'Carpenters', x: 5, y: 4 },
   badge_farmers: { name: 'Farmers', x: 5, y: 5 },

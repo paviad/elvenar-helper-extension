@@ -125,23 +125,23 @@ export const InventoryMain = () => {
         aVal = a.name || '';
         bVal = b.name || '';
       } else if (sortBy === 'chapter') {
-        aVal = isAggregatedRowDisplay(a) ? a.chapters : a.chapter ?? '';
-        bVal = isAggregatedRowDisplay(b) ? b.chapters : b.chapter ?? '';
+        aVal = isAggregatedRowDisplay(a) ? a.chapters : (a.chapter ?? '');
+        bVal = isAggregatedRowDisplay(b) ? b.chapters : (b.chapter ?? '');
       } else if (sortBy === 'amount') {
         aVal = a.amount;
         bVal = b.amount;
       } else if (sortBy === 'changedAt') {
-        aVal = isAggregatedRowDisplay(a) ? '' : a.changedAt ?? '';
-        bVal = isAggregatedRowDisplay(b) ? '' : b.changedAt ?? '';
+        aVal = isAggregatedRowDisplay(a) ? '' : (a.changedAt ?? '');
+        bVal = isAggregatedRowDisplay(b) ? '' : (b.changedAt ?? '');
       } else if (sortBy === 'cc') {
-        aVal = isAggregatedRowDisplay(a) ? a.cc : a.resaleResources?.combiningcatalyst ?? 0;
-        bVal = isAggregatedRowDisplay(b) ? b.cc : b.resaleResources?.combiningcatalyst ?? 0;
+        aVal = isAggregatedRowDisplay(a) ? a.cc : (a.resaleResources?.combiningcatalyst ?? 0);
+        bVal = isAggregatedRowDisplay(b) ? b.cc : (b.resaleResources?.combiningcatalyst ?? 0);
       } else if (sortBy === 'rr') {
-        aVal = isAggregatedRowDisplay(a) ? a.rr : a.resaleResources?.royalrestoration ?? 0;
-        bVal = isAggregatedRowDisplay(b) ? b.rr : b.resaleResources?.royalrestoration ?? 0;
+        aVal = isAggregatedRowDisplay(a) ? a.rr : (a.resaleResources?.royalrestoration ?? 0);
+        bVal = isAggregatedRowDisplay(b) ? b.rr : (b.resaleResources?.royalrestoration ?? 0);
       } else if (sortBy === 'spellFragments') {
-        aVal = isAggregatedRowDisplay(a) ? a.spellFragments : a.spellFragments ?? 0;
-        bVal = isAggregatedRowDisplay(b) ? b.spellFragments : b.spellFragments ?? 0;
+        aVal = isAggregatedRowDisplay(a) ? a.spellFragments : (a.spellFragments ?? 0);
+        bVal = isAggregatedRowDisplay(b) ? b.spellFragments : (b.spellFragments ?? 0);
       } else if (sortBy === 'size') {
         aVal = (a as InventoryItem).size || '';
         bVal = (b as InventoryItem).size || '';
@@ -189,7 +189,7 @@ export const InventoryMain = () => {
       <Box mb={1} fontWeight='bold'>
         Showing {displayRows.length} of {totalTypeFiltered} items
       </Box>
-      {((inventory !== undefined) && (
+      {(inventory !== undefined && (
         <TableContainer component={Paper}>
           <Table size='small'>
             <TableHead>
@@ -273,25 +273,25 @@ export const InventoryMain = () => {
               {displayRows.map((item, idx) => (
                 <TableRow key={('id' in item ? item.id : item.name) ?? idx}>
                   <TableCell>{item.name || ''}</TableCell>
-                  <TableCell>{isAggregatedRowDisplay(item) ? item.chapters : item.chapter ?? ''}</TableCell>
+                  <TableCell>{isAggregatedRowDisplay(item) ? item.chapters : (item.chapter ?? '')}</TableCell>
                   <TableCell>{item.type}</TableCell>
                   <TableCell>{item.amount}</TableCell>
                   <TableCell>{(item as InventoryItem).size || ''}</TableCell>
                   <TableCell>
-                    {isAggregatedRowDisplay(item) ? item.cc : item.resaleResources?.combiningcatalyst ?? ''}
+                    {isAggregatedRowDisplay(item) ? item.cc : (item.resaleResources?.combiningcatalyst ?? '')}
                   </TableCell>
                   <TableCell>
-                    {isAggregatedRowDisplay(item) ? item.rr : item.resaleResources?.royalrestoration ?? ''}
+                    {isAggregatedRowDisplay(item) ? item.rr : (item.resaleResources?.royalrestoration ?? '')}
                   </TableCell>
                   <TableCell>
-                    {isAggregatedRowDisplay(item) ? item.spellFragments : item.spellFragments ?? ''}
+                    {isAggregatedRowDisplay(item) ? item.spellFragments : (item.spellFragments ?? '')}
                   </TableCell>
                   <TableCell>
                     {isAggregatedRowDisplay(item)
                       ? '<n/a>'
                       : item.changedAt
-                      ? new Date(item.changedAt * 1000).toLocaleString()
-                      : ''}
+                        ? new Date(item.changedAt * 1000).toLocaleString()
+                        : ''}
                   </TableCell>
                 </TableRow>
               ))}
@@ -299,13 +299,14 @@ export const InventoryMain = () => {
           </Table>
         </TableContainer>
       )) || (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-          <Box textAlign="center">
-            <Box fontSize={28} fontWeight="bold" color="text.secondary" mb={1}>
+        <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
+          <Box textAlign='center'>
+            <Box fontSize={28} fontWeight='bold' color='text.secondary' mb={1}>
               Inventory not found
             </Box>
-            <Box fontSize={20} color="text.secondary">
-              Please open your inventory in Elvenar and switch to the "Summons" tab to load the data.<br />
+            <Box fontSize={20} color='text.secondary'>
+              Please open your inventory in Elvenar and switch to the "Summons" tab to load the data.
+              <br />
               Then refresh this page.
             </Box>
           </Box>

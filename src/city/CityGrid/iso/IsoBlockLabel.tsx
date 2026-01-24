@@ -31,12 +31,12 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
 
     // Size fits the smaller dimension of the block
     const size = Math.min(block.width, block.length) * GridSize;
-    
+
     return (
       <g transform={`translate(-${size / 2}, -${size / 2})`}>
-        <svg width={size} height={size} viewBox="0 0 24 24" style={{ overflow: 'visible', opacity: 0.6 }}>
-          <circle cx="12" cy="12" r="10" fill="#d32f2f" stroke="white" strokeWidth="2" />
-          <rect x="5" y="10" width="14" height="4" fill="white" rx="1" />
+        <svg width={size} height={size} viewBox='0 0 24 24' style={{ overflow: 'visible', opacity: 0.6 }}>
+          <circle cx='12' cy='12' r='10' fill='#d32f2f' stroke='white' strokeWidth='2' />
+          <rect x='5' y='10' width='14' height='4' fill='white' rx='1' />
         </svg>
       </g>
     );
@@ -52,9 +52,16 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
     if (block.width * GridSize <= 20 || block.length * GridSize <= 20) return null;
 
     return (
-      <g transform={`translate(12, -12)`}> 
-        <circle cx="7" cy="7" r="6" fill="#4caf50" stroke="#fff" strokeWidth="1" />
-        <path d="M4 7 l2 2 4 -4" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <g transform={`translate(12, -12)`}>
+        <circle cx='7' cy='7' r='6' fill='#4caf50' stroke='#fff' strokeWidth='1' />
+        <path
+          d='M4 7 l2 2 4 -4'
+          stroke='#fff'
+          strokeWidth='1.5'
+          fill='none'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        />
       </g>
     );
   };
@@ -62,12 +69,12 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
   // 1. Simple Text Label (No Sprite or insufficient space)
   if (typeof block.chapter === 'undefined' || !isSufficientSpace || !sprite) {
     return (
-      <g pointerEvents="none">
+      <g pointerEvents='none'>
         {/* Main Label */}
         <text
           x={0}
           y={0}
-          textAnchor="middle"
+          textAnchor='middle'
           alignmentBaseline={block.stage ? 'baseline' : 'middle'}
           fontSize={fontSize}
           fill={textColor}
@@ -81,8 +88,8 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
           <text
             x={0}
             y={fontSize * 0.8}
-            textAnchor="middle"
-            alignmentBaseline="hanging"
+            textAnchor='middle'
+            alignmentBaseline='hanging'
             fontSize={fontSize * 0.6}
             fill={textColor}
             opacity={0.9}
@@ -95,7 +102,7 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
         {/* Overlays */}
         {renderWarning()}
         {/* We might skip MaxLevel here or adjust its position to avoid overlap if text is long */}
-        {renderMaxLevel()} 
+        {renderMaxLevel()}
       </g>
     );
   }
@@ -115,10 +122,10 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
   const groupStartX = -groupWidth / 2;
 
   // Scale down slightly to fit better in iso cells
-  const scale = 0.75; 
+  const scale = 0.75;
 
   return (
-    <g pointerEvents="none" transform={`scale(${scale})`}>
+    <g pointerEvents='none' transform={`scale(${scale})`}>
       {/* Label Content Group */}
       <g transform={block.stage ? `translate(0, -${fontSize * 0.5})` : undefined}>
         <svg
@@ -134,8 +141,8 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
         <text
           x={groupStartX + iconSize + 2 + labelWidth / 2}
           y={0}
-          textAnchor="middle"
-          alignmentBaseline="middle"
+          textAnchor='middle'
+          alignmentBaseline='middle'
           fontSize={fontSize * 2}
           fill={textColor}
           style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
@@ -148,8 +155,8 @@ export const IsoBlockLabel: React.FC<IsoBlockLabelProps> = ({
         <text
           x={0}
           y={fontSize * 0.8}
-          textAnchor="middle"
-          alignmentBaseline="hanging"
+          textAnchor='middle'
+          alignmentBaseline='hanging'
           fontSize={fontSize}
           fill={textColor}
           opacity={0.9}

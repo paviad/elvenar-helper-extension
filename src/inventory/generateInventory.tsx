@@ -21,15 +21,21 @@ export async function generateInventory(accountId: string) {
   const items = await getItemDefinitions();
   const tomes = await getTomes();
 
-  const itemsDictionary = items.reduce((acc, item) => {
-    acc[item.id] = item;
-    return acc;
-  }, {} as Record<string, ItemDefinition>);
+  const itemsDictionary = items.reduce(
+    (acc, item) => {
+      acc[item.id] = item;
+      return acc;
+    },
+    {} as Record<string, ItemDefinition>,
+  );
 
-  const tomesDictionary = tomes.reduce((acc, tome) => {
-    acc[tome.id] = tome;
-    return acc;
-  }, {} as Record<string, Tome>);
+  const tomesDictionary = tomes.reduce(
+    (acc, tome) => {
+      acc[tome.id] = tome;
+      return acc;
+    },
+    {} as Record<string, Tome>,
+  );
 
   function getTome(item: InventoryItem): Tome | undefined {
     return tomesDictionary[item.subtype];

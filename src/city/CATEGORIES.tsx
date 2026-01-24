@@ -1,7 +1,15 @@
 export type BuildingCategory = 'Basics' | 'Military' | 'Goods' | 'Culture' | 'Settlements' | 'Wonders' | 'Other';
 
 // --- Constants ---
-export const CATEGORIES: BuildingCategory[] = ['Basics', 'Military', 'Goods', 'Culture', 'Settlements', 'Wonders', 'Other'];
+export const CATEGORIES: BuildingCategory[] = [
+  'Basics',
+  'Military',
+  'Goods',
+  'Culture',
+  'Settlements',
+  'Wonders',
+  'Other',
+];
 
 export type BuildingField = 'Level' | 'Chapter' | 'Stage';
 

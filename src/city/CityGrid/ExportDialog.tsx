@@ -4,14 +4,10 @@ import React, { useState, useEffect } from 'react';
 interface ExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  exportString: string; 
+  exportString: string;
 }
 
-const ExportDialog: React.FC<ExportDialogProps> = ({ 
-  isOpen, 
-  onClose, 
-  exportString 
-}) => {
+const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose, exportString }) => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -39,52 +35,44 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
   return (
     <div style={styles.overlay} onClick={handleBackdropClick}>
       <div style={styles.dialog}>
-        
         {/* Header */}
         <div style={styles.header}>
           {/* UPDATED HEADING */}
           <h3 style={styles.title}>Export City Data</h3>
-          <button onClick={onClose} style={styles.closeButton}>×</button>
+          <button onClick={onClose} style={styles.closeButton}>
+            ×
+          </button>
         </div>
 
         {/* Body */}
         <div style={styles.body}>
           {/* UPDATED HINT */}
           <p style={styles.hint}>
-            Copy the code below to export your city configuration. <br/>
+            Copy the code below to export your city configuration. <br />
             This data format is compatible with <strong>ElvenArchitect.com</strong>.
           </p>
-          
+
           <div style={styles.codeContainer}>
-            <textarea 
-              readOnly 
-              value={exportString} 
-              style={styles.textarea}
-              onClick={(e) => e.currentTarget.select()} 
-            />
+            <textarea readOnly value={exportString} style={styles.textarea} onClick={(e) => e.currentTarget.select()} />
           </div>
         </div>
 
         {/* Footer */}
         <div style={styles.footer}>
-          <button 
-            onClick={onClose} 
-            style={styles.secondaryButton}
-          >
+          <button onClick={onClose} style={styles.secondaryButton}>
             Close
           </button>
-          
-          <button 
-            onClick={handleCopy} 
+
+          <button
+            onClick={handleCopy}
             style={{
               ...styles.primaryButton,
-              backgroundColor: copied ? '#10b981' : '#1976d2', 
+              backgroundColor: copied ? '#10b981' : '#1976d2',
             }}
           >
             {copied ? 'Copied!' : 'Copy to Clipboard'}
           </button>
         </div>
-
       </div>
     </div>
   );
@@ -112,10 +100,10 @@ const styles: Record<string, React.CSSProperties> = {
     // Fixed Dimensions & Flex Layout
     width: '600px',
     height: '400px',
-    maxWidth: '90vw', 
+    maxWidth: '90vw',
     maxHeight: '90vh',
     display: 'flex',
-    flexDirection: 'column', 
+    flexDirection: 'column',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     overflow: 'hidden',
     animation: 'fadeIn 0.2s ease-out',
@@ -127,7 +115,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#f8fafc',
-    flexShrink: 0, 
+    flexShrink: 0,
   },
   title: {
     margin: 0,
@@ -148,8 +136,8 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '24px',
     display: 'flex',
     flexDirection: 'column',
-    flexGrow: 1, 
-    overflow: 'hidden', 
+    flexGrow: 1,
+    overflow: 'hidden',
   },
   hint: {
     margin: '0 0 16px 0',
@@ -159,25 +147,25 @@ const styles: Record<string, React.CSSProperties> = {
     flexShrink: 0,
   },
   codeContainer: {
-    flexGrow: 1, 
+    flexGrow: 1,
     display: 'flex',
     flexDirection: 'column',
   },
   textarea: {
     width: '100%',
-    height: '100%', 
+    height: '100%',
     padding: '12px',
     borderRadius: '6px',
     border: '1px solid #cbd5e1',
     backgroundColor: '#f1f5f9',
-    color: '#64748b', 
+    color: '#64748b',
     fontFamily: 'monospace',
     fontSize: '12px',
-    resize: 'none', 
+    resize: 'none',
     boxSizing: 'border-box',
     outline: 'none',
     wordBreak: 'break-all',
-    overflowY: 'auto', 
+    overflowY: 'auto',
   },
   footer: {
     padding: '16px 24px',
@@ -186,7 +174,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'flex-end',
     gap: '12px',
     backgroundColor: '#fff',
-    flexShrink: 0, 
+    flexShrink: 0,
   },
   secondaryButton: {
     padding: '8px 16px',

@@ -68,11 +68,12 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
                     marginRight: 6,
                     marginTop: -2,
                     display: 'inline-block',
-                  }} />
+                  }}
+                />
                 <b>Open the City Planner:</b>
                 <br />
-                Click the <span style={{ fontWeight: 600 }}>icon image</span> in the helper window title bar to launch the
-                city planner tool.
+                Click the <span style={{ fontWeight: 600 }}>icon image</span> in the helper window title bar to launch
+                the city planner tool.
               </li>
               <li style={{ marginBottom: 16 }}>
                 <span role='img' aria-label='trade'>

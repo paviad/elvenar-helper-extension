@@ -24,7 +24,6 @@ const MyConfirmDialog: React.FC<MyConfirmDialogProps> = ({
   confirmLabel = 'OK',
   cancelLabel = 'Cancel',
 }) => {
-
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -73,21 +72,24 @@ const MyConfirmDialog: React.FC<MyConfirmDialogProps> = ({
   return (
     <div style={styles.overlay} onClick={handleBackdropClick}>
       <div style={styles.dialog}>
-        
         {/* Header */}
         <div style={styles.header}>
           <div style={styles.titleGroup}>
             {/* Severity Icon Wrapper */}
-            <div style={{
-              ...styles.iconWrapper,
-              backgroundColor: theme.bg,
-              color: theme.color,
-            }}>
+            <div
+              style={{
+                ...styles.iconWrapper,
+                backgroundColor: theme.bg,
+                color: theme.color,
+              }}
+            >
               {theme.icon}
             </div>
             <h3 style={styles.title}>{title}</h3>
           </div>
-          <button onClick={onClose} style={styles.closeButton}>×</button>
+          <button onClick={onClose} style={styles.closeButton}>
+            ×
+          </button>
         </div>
 
         {/* Body */}
@@ -97,14 +99,11 @@ const MyConfirmDialog: React.FC<MyConfirmDialogProps> = ({
 
         {/* Footer */}
         <div style={styles.footer}>
-          <button 
-            onClick={onClose} 
-            style={styles.secondaryButton}
-          >
+          <button onClick={onClose} style={styles.secondaryButton}>
             {cancelLabel}
           </button>
-          
-          <button 
+
+          <button
             onClick={() => {
               onConfirm();
               onClose();
@@ -117,7 +116,6 @@ const MyConfirmDialog: React.FC<MyConfirmDialogProps> = ({
             {confirmLabel}
           </button>
         </div>
-
       </div>
     </div>
   );

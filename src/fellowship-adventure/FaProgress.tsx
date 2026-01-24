@@ -5,14 +5,14 @@ import React from 'react';
 export interface ProgressItem {
   id: string;
   name: string;
-  value: number; 
+  value: number;
   displayValue?: string;
-  
+
   futureValue?: number;
   displayFutureValue?: string;
-  
-  spriteX: number; 
-  spriteY: number; 
+
+  spriteX: number;
+  spriteY: number;
 }
 
 interface FaProgressProps {
@@ -21,16 +21,16 @@ interface FaProgressProps {
   badge?: string | number; // New: To match Timeline badge
   items: ProgressItem[];
   spriteUrl: string;
-  iconSize?: number; 
+  iconSize?: number;
 }
 
-const FaProgress: React.FC<FaProgressProps> = ({ 
-  title = "Production Progress", 
+const FaProgress: React.FC<FaProgressProps> = ({
+  title = 'Production Progress',
   subtitle,
   badge,
-  items, 
+  items,
   spriteUrl,
-  iconSize = 24 
+  iconSize = 24,
 }) => {
   return (
     <div style={styles.card}>
@@ -38,13 +38,9 @@ const FaProgress: React.FC<FaProgressProps> = ({
       <div style={styles.header}>
         <div style={styles.headerTitleGroup}>
           <h3 style={styles.headerTitle}>{title}</h3>
-          {badge !== undefined && (
-            <span style={styles.headerBadge}>{badge}</span>
-          )}
+          {badge !== undefined && <span style={styles.headerBadge}>{badge}</span>}
         </div>
-        {subtitle && (
-          <div style={styles.headerSubtitle}>{subtitle}</div>
-        )}
+        {subtitle && <div style={styles.headerSubtitle}>{subtitle}</div>}
       </div>
 
       {/* List */}
@@ -52,25 +48,25 @@ const FaProgress: React.FC<FaProgressProps> = ({
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           const hasFuture = item.futureValue !== undefined;
-          
+
           return (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               style={{
                 ...styles.listItem,
-                borderBottom: isLast ? 'none' : '1px solid #f0f0f0'
+                borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
               }}
             >
               {/* Sprite Image */}
               <div style={{ ...styles.avatarContainer, width: iconSize, height: iconSize }}>
-                <div 
+                <div
                   style={{
                     ...styles.spriteImage,
                     width: iconSize,
                     height: iconSize,
                     backgroundImage: `url(${spriteUrl})`,
                     backgroundPosition: `-${item.spriteX}px -${item.spriteY}px`,
-                  }} 
+                  }}
                 />
               </div>
 
@@ -80,33 +76,29 @@ const FaProgress: React.FC<FaProgressProps> = ({
                   <span style={styles.itemName} title={item.name}>
                     {item.name}
                   </span>
-                  
+
                   {/* Values Group */}
                   <div style={styles.valuesContainer}>
                     {/* Current Value (Secondary) */}
-                    <span style={styles.itemValue}>
-                      {item.displayValue || `${item.value}%`}
-                    </span>
-                    
+                    <span style={styles.itemValue}>{item.displayValue || `${item.value}%`}</span>
+
                     {hasFuture && (
                       <span style={styles.futureValueWrapper}>
                         <span style={styles.arrow}>→</span>
                         {/* Future Value (Primary) */}
-                        <span style={styles.futureValue}>
-                          {item.displayFutureValue || `${item.futureValue}%`}
-                        </span>
+                        <span style={styles.futureValue}>{item.displayFutureValue || `${item.futureValue}%`}</span>
                       </span>
                     )}
                   </div>
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div style={styles.progressTrack}>
-                  <div 
-                    style={{ 
-                      ...styles.progressBar, 
-                      width: `${Math.min(100, Math.max(0, item.value))}%` 
-                    }} 
+                  <div
+                    style={{
+                      ...styles.progressBar,
+                      width: `${Math.min(100, Math.max(0, item.value))}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -128,10 +120,10 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #e2e8f0', // Added border to match Timeline
     overflow: 'hidden',
     width: '100%',
-    maxWidth: '400px', 
+    maxWidth: '400px',
     margin: '0 auto',
   },
-  
+
   // --- Header Styles (Matched to Timeline) ---
   header: {
     padding: '20px 24px',
@@ -233,7 +225,7 @@ const styles: Record<string, React.CSSProperties> = {
   arrow: {
     marginRight: '4px',
     fontSize: '0.9em',
-    color: '#94a3b8', 
+    color: '#94a3b8',
   },
   progressTrack: {
     height: '4px',

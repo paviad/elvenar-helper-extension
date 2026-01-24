@@ -9,12 +9,12 @@ interface SaveCityDialogProps {
   existingCities?: string[];
 }
 
-const SaveCityDialog: React.FC<SaveCityDialogProps> = ({ 
-  isOpen, 
-  onClose, 
-  onSave, 
-  defaultName = "My City Layout",
-  existingCities = []
+const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  defaultName = 'My City Layout',
+  existingCities = [],
 }) => {
   const [name, setName] = useState(defaultName);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -74,13 +74,12 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
   return (
     <div style={styles.overlay} onClick={handleBackdropClick}>
       <div style={styles.dialog}>
-        
         {/* Header */}
         <div style={styles.header}>
-          <h3 style={styles.title}>
-            {isConfirming ? 'Confirm Overwrite' : 'Save City Layout'}
-          </h3>
-          <button onClick={onClose} style={styles.closeButton}>×</button>
+          <h3 style={styles.title}>{isConfirming ? 'Confirm Overwrite' : 'Save City Layout'}</h3>
+          <button onClick={onClose} style={styles.closeButton}>
+            ×
+          </button>
         </div>
 
         {/* Content Switcher */}
@@ -90,17 +89,17 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
             <div style={styles.body}>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>Layout Name</label>
-                <input 
+                <input
                   ref={inputRef}
-                  type="text" 
-                  value={name} 
+                  type='text'
+                  value={name}
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={handleKeyDown}
                   style={styles.input}
-                  placeholder="Enter a name..."
-                  autoComplete="off"
+                  placeholder='Enter a name...'
+                  autoComplete='off'
                 />
-                
+
                 {/* Full Unfiltered List */}
                 {existingCities.length > 0 && (
                   <div style={styles.suggestionsContainer}>
@@ -110,8 +109,8 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
                         // Highlight if current input matches this city
                         const isSelected = city === name;
                         return (
-                          <button 
-                            key={city} 
+                          <button
+                            key={city}
                             style={{
                               ...styles.suggestionItem,
                               backgroundColor: isSelected ? '#e0f2fe' : 'transparent',
@@ -131,9 +130,11 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
             </div>
 
             <div style={styles.footer}>
-              <button onClick={onClose} style={styles.secondaryButton}>Cancel</button>
-              <button 
-                onClick={handleInitialSubmit} 
+              <button onClick={onClose} style={styles.secondaryButton}>
+                Cancel
+              </button>
+              <button
+                onClick={handleInitialSubmit}
                 disabled={!name.trim()}
                 style={{
                   ...styles.primaryButton,
@@ -155,17 +156,15 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
                   A city layout named <strong>"{name}"</strong> already exists.
                 </p>
               </div>
-              <p style={styles.confirmText}>
-                Do you want to overwrite it? This action cannot be undone.
-              </p>
+              <p style={styles.confirmText}>Do you want to overwrite it? This action cannot be undone.</p>
             </div>
 
             <div style={styles.footer}>
               <button onClick={handleCancelConfirmation} style={styles.secondaryButton}>
                 Back
               </button>
-              <button 
-                onClick={handleConfirmOverwrite} 
+              <button
+                onClick={handleConfirmOverwrite}
                 style={{
                   ...styles.primaryButton,
                   backgroundColor: '#d32f2f', // Red for danger
@@ -176,7 +175,6 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
             </div>
           </>
         )}
-
       </div>
     </div>
   );
@@ -260,7 +258,7 @@ const styles: Record<string, React.CSSProperties> = {
     boxSizing: 'border-box',
     transition: 'border-color 0.2s, box-shadow 0.2s',
   },
-  
+
   // --- List Styles ---
   suggestionsContainer: {
     marginTop: '12px',
@@ -292,7 +290,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '14px',
     transition: 'all 0.1s',
   },
-  
+
   // --- Confirmation Styles ---
   warningBox: {
     backgroundColor: '#fef2f2',

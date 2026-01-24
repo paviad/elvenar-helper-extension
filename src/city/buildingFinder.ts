@@ -45,9 +45,7 @@ export class BuildingFinder {
     const buildings = await getBuildings();
     const premiumHints = await getPremiumBuildingHints();
 
-    this.hintsDictionary = Object.fromEntries(
-      premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]),
-    );
+    this.hintsDictionary = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]));
 
     this.buildingsDictionary = buildings.reduce(
       (acc, building) => {

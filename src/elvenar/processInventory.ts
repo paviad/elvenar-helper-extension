@@ -3,7 +3,7 @@ import { InventoryItem } from '../model/inventoryItem';
 import { getAccountBySessionId } from './AccountManager';
 
 export async function processInventory(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
-  const json = untypedJson as [unknown, { responseData: InventoryItem[]; }];
+  const json = untypedJson as [unknown, { responseData: InventoryItem[] }];
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 

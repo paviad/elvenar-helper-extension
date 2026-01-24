@@ -25,7 +25,7 @@ export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => v
         </DialogContentText>
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-        <Button onClick={onClose} autoFocus variant="contained" color="primary">
+        <Button onClick={onClose} autoFocus variant='contained' color='primary'>
           Close
         </Button>
       </DialogActions>
