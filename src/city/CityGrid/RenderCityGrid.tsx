@@ -11,7 +11,11 @@ import {
   ListItemText,
   Paper,
   Box,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
+import GridViewIcon from '@mui/icons-material/GridView';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { subscribeToMouseMove } from './top/handleMouseMove';
@@ -58,6 +62,9 @@ export const RenderCityGrid = () => {
   const city = useCity();
   const helper = useHelper();
   const setMoveLog = city.setMoveLog;
+
+  const viewMode = useTabStore((state) => state.viewMode);
+  const setViewMode = useTabStore((state) => state.setViewMode);
 
   // State for Change Level dialog
   const [showLevelDialog, setShowLevelDialog] = useState({ open: false, index: -1 } as ShowLevelDialogData);
@@ -241,6 +248,12 @@ export const RenderCityGrid = () => {
       helper.showMessage('you_can_press_alt_b_to_build');
     }
   }, [showBuildDialog]);
+
+  const handleViewModeChange = (event: React.MouseEvent<HTMLElement>, newMode: 'top' | 'iso' | null) => {
+    if (newMode !== null) {
+      setViewMode(newMode);
+    }
+  };
 
   // State for ExportDialog
   const [exportDialog, setExportDialog] = useState({ open: false, exportStr: '' });
@@ -886,6 +899,7 @@ export const RenderCityGrid = () => {
         </Button>
       </Stack>
       <div>
+        {/* Toolbar Line: Search + Grid Position + View Toggle */}
         <div
           ref={searchBoxRef}
           style={{
@@ -899,6 +913,9 @@ export const RenderCityGrid = () => {
             zIndex: isFixed ? 9999 : 'auto',
             boxShadow: isFixed ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
             padding: isFixed ? 8 : 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
           }}
         >
           <TextField
@@ -907,11 +924,29 @@ export const RenderCityGrid = () => {
             size='small'
             value={searchTerm}
             onChange={handleSearchChange}
-            style={{ width: '100%' }}
+            style={{ flexGrow: 1 }}
           />
-        </div>
-        <div ref={city.mousePositionRef} style={{ marginBottom: 8, fontWeight: 'bold' }}>
-          Grid: (-, -)
+
+          {/* Grid Position & View Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', whiteSpace: 'nowrap' }}>
+            <div ref={city.mousePositionRef} style={{ fontWeight: 'bold' }}>
+              Grid: (-, -)
+            </div>
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(e, newMode) => newMode && setViewMode(newMode)}
+              size='small'
+              aria-label='view mode'
+            >
+              <ToggleButton value='top' aria-label='top view'>
+                <GridViewIcon fontSize='small' />
+              </ToggleButton>
+              <ToggleButton value='iso' aria-label='isometric view'>
+                <ViewInArIcon fontSize='small' />
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </div>
         </div>
 
         {/* Viewport for City Grid */}
@@ -921,13 +956,12 @@ export const RenderCityGrid = () => {
             height: 'calc(100vh - 220px)', // Adjust for header/toolbar height
             border: '1px solid #444',
             borderRadius: 1,
-            overflow: 'hidden', // IsometricCityGrid handles internal scrolling
+            overflow: 'hidden', // Viewport handles overflow, scrollbars managed internally by components
             display: 'flex',
-            bgcolor: '#1a1a2e', // Optional: Dark background to match isometric theme
+            bgcolor: '#1a1a2e',
           }}
         >
-          <CityGrid />
-          {/* <IsometricCityGrid /> */}
+          {viewMode === 'top' ? <CityGrid /> : <IsometricCityGrid />}
         </Box>
 
         {/* Modal Numeric Input Dialog */}
@@ -948,7 +982,9 @@ export const RenderCityGrid = () => {
             open={showBuildDialog}
             onClose={() => setShowBuildDialog(false)}
             maxWidth={false}
-            slotProps={{ paper: { sx: { width: 'auto', maxWidth: 'none', backgroundColor: 'transparent', boxShadow: 'none' } } }} // Let the component handle its own styling/width
+            slotProps={{
+              paper: { sx: { width: 'auto', maxWidth: 'none', backgroundColor: 'transparent', boxShadow: 'none' } },
+            }} // Let the component handle its own styling/width
           >
             <NewBuildingSelector onSelectBuilding={onSelectBuilding} buildings={buildings} />
           </Dialog>

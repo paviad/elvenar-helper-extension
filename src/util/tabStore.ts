@@ -15,6 +15,8 @@ interface TabState {
   setOtherCityUpdated: (updated: boolean) => void;
   legendCollapsed: boolean;
   setLegendCollapsed: (collapsed: boolean) => void;
+  viewMode: 'top' | 'iso';
+  setViewMode: (mode: 'top' | 'iso') => void;
 }
 
 export const useTabStore = create<TabState>()(
@@ -32,6 +34,8 @@ export const useTabStore = create<TabState>()(
       setOtherCityUpdated: (updated: boolean) => set({ otherCityUpdated: updated }),
       legendCollapsed: false,
       setLegendCollapsed: (collapsed: boolean) => set({ legendCollapsed: collapsed }),
+      viewMode: 'top',
+      setViewMode: (mode) => set({ viewMode: mode }),
     }),
     {
       name: 'tab-store',
