@@ -20,12 +20,14 @@
     "prettify": "prettier --write src",
     "bump": "node util/set-version.js",
     "release": "node util/create-release.js",
-    "deploy:chrome": "node util/deploy-chrome.js"
+    "deploy:chrome": "node util/deploy-chrome.js",
+    "deploy:firefox": "node util/deploy-firefox.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "adm-zip": "^0.5.16",
     "chrome-types": "^0.1.358",
     "chrome-webstore-upload-cli": "^3.5.0",
     "copy-webpack-plugin": "^13.0.0",
@@ -35,6 +37,7 @@
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.1",
+    "web-ext": "^9.2.0",
     "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1"
   },
