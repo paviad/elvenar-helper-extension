@@ -1,6 +1,6 @@
 {
   "name": "elven-assist",
-  "version": "5.8.0",
+  "version": "5.8.1",
   "description": "Unofficial extension to help with Elvenar city planning",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
@@ -13,9 +13,9 @@
     "webpack:firefox": "copy /y manifest\\manifest-firefox.json assets\\manifest.json && webpack --env=firefox",
     "start": "ts-node index.ts",
     "pack": "npm run pack:chrome",
-    "pack:chrome": "copy /y manifest\\manifest-chrome.json assets\\manifest.json && webpack && node util/create-store-package.js",
-    "pack:safari": "cp manifest/manifest-safari.json assets/manifest.json && webpack && node util/create-store-package.js",
-    "pack:firefox": "copy /y manifest\\manifest-firefox.json assets\\manifest.json && webpack --env=firefox && node util/create-store-package.js firefox",
+    "pack:chrome": "copy /y manifest\\manifest-chrome.json assets\\manifest.json && webpack --env=production && node util/create-store-package.js",
+    "pack:safari": "cp manifest/manifest-safari.json assets/manifest.json && webpack --env=production && node util/create-store-package.js",
+    "pack:firefox": "copy /y manifest\\manifest-firefox.json assets\\manifest.json && webpack --env=firefox --env=production && node util/create-store-package.js firefox",
     "lint": "eslint src",
     "prettify": "prettier --write src"
   },

@@ -2,10 +2,10 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-const commonOptimization = {
-  // minimize: false,
+const commonOptimization = (env)=>({
+  minimize: !!env.production,
   usedExports: true,
-};
+});
 
 const splitChunks = {
   chunks: 'all',
@@ -22,7 +22,7 @@ const splitChunks = {
 const commonConfig = (env) => ({
   mode: 'production',
   node: false,
-  optimization: commonOptimization,
+  optimization: commonOptimization(env),
   performance: {
     hints: false,
   },
@@ -74,7 +74,7 @@ module.exports = (env) => [
     },
     ...commonConfig(env),
     optimization: {
-      ...commonOptimization,
+      ...commonOptimization(env),
       splitChunks,
     },
   },
@@ -84,7 +84,7 @@ module.exports = (env) => [
     },
     ...commonConfig(env),
     optimization: {
-      ...commonOptimization,
+      ...commonOptimization(env),
     },
   },
 ];

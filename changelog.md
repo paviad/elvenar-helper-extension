@@ -1,5 +1,15 @@
 # Changelog
 
+## v5.8.0
+- **Main Feature:** Added padding around the city grid, allowing players to place buildings in a "temporary area" for easier relocation and city planning.
+- **Secondary Feature:** Improved grid visualization and introduced an isometric view option for enhanced city layout clarity.
+- Standardized code style: unified quote usage and improved formatting across TypeScript files.
+- Refactored and reordered imports for better maintainability.
+- Overlay store: added `viewMode` and `setViewMode` for grid visualization control.
+- Made `guild_info` optional in user and player data models to prevent errors.
+- UI/UX: Improved dialog and button rendering, and fixed background color logic in chat messages.
+- Removed unused utility: `normalizeString.ts`.
+
 ## v5.7.0
 - Indicate max building level for city chapter
 
