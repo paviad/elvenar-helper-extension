@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal, Paper, Typography } from '@mui/material';
 import React from 'react';
-import { EXTENSION_NAME, EXTENSION_VERSION } from '../layout/ExtensionAboutInfo';
+import { EXTENSION_NAME, EXTENSION_VERSION } from '../layout/extensionAboutInfo';
 
 interface HelpDialogProps {
   open: boolean;
