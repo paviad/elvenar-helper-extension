@@ -14,11 +14,6 @@ export const nonSpecificMatchers = [
       /^https:\/\/ox.*?\.innogamescdn.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.city\.Buildings_[a-f0-9]+\.json$/,
   },
   {
-    id: 'maxLevels',
-    messageType: 'MAX_LEVELS',
-    regex: /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/assets\/renderconfigdata-[a-f0-9]{32}\.json$/,
-  },
-  {
     id: 'items',
     messageType: 'ITEMS',
     regex:

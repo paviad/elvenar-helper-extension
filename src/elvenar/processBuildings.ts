@@ -2,6 +2,7 @@ import { saveToStorage } from '../chrome/storage';
 import { Building } from '../model/building';
 import { BuildingRaw } from '../model/BuildingRaw';
 import { smartCompress } from '../util/compression';
+import { getPrefix } from '../util/getPrefix';
 
 const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] => {
   const filtered = uncompressed.map(
@@ -79,10 +80,13 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
 export async function processBuildings(decodedResponse: string, all: boolean) {
   const buildingsRaw = JSON.parse(decodedResponse) as BuildingRaw[];
   const processedBuildings = processInterceptedBuildings(buildingsRaw);
+  const maxLevels = processMaxLevelsFromBuildings(processedBuildings);
 
   if (all) {
+    await setMaxLevelsAll(maxLevels);
     await setBuildingsAll(processedBuildings);
   } else {
+    await setMaxLevelsFeature(maxLevels);
     await setBuildingsFeature(processedBuildings);
   }
 }
@@ -97,4 +101,34 @@ async function setBuildingsFeature(buildings: Building[]) {
   const plain = JSON.stringify(buildings);
   const compressed = await smartCompress(plain);
   await saveToStorage('buildingsFeature', compressed);
+}
+
+function processMaxLevelsFromBuildings(processedBuildings: Building[]) {
+  const maxLevels = processedBuildings
+    .filter((r) => /^[GPRHMOYDBZ]_/.test(r.id))
+    .map((r) => ({
+      prefix: getPrefix(r.id, r.type),
+      level: Number(/_(\d+)$/.exec(r.id)?.[1]),
+    }))
+    .reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr.prefix]: Math.max(acc[curr.prefix] || 0, curr.level),
+      }),
+      {} as Record<string, number>,
+    );
+
+  console.log('Processed max levels from buildings:', maxLevels);
+
+  return maxLevels;
+}
+
+async function setMaxLevelsFeature(maxLevels: Record<string, number>) {
+  const plain = JSON.stringify(maxLevels);
+  await saveToStorage('maxLevelsFeature', plain);
+}
+
+async function setMaxLevelsAll(maxLevels: Record<string, number>) {
+  const plain = JSON.stringify(maxLevels);
+  await saveToStorage('maxLevelsAll', plain);
 }

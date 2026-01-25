@@ -10,7 +10,6 @@ export function setupNonSpecificRequestInterceptedListener() {
     switch (event.data.type) {
       case 'BUILDINGS_ALL':
       case 'BUILDINGS_FEATURE':
-      case 'MAX_LEVELS':
       case 'ITEMS':
       case 'EFFECTS':
       case 'TOMES':

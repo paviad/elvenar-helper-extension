@@ -4,7 +4,6 @@ import { processEffects } from '../elvenar/processEffects';
 import { processEvolvingBuildings } from '../elvenar/processEvolvingBuildings';
 import { processGoodsNames } from '../elvenar/processGoodsNames';
 import { processItems } from '../elvenar/processItems';
-import { processMaxLevels } from '../elvenar/processMaxLevels';
 import { processPremiumBuildingHints } from '../elvenar/processPremiumBuildingHints';
 import { processTomes } from '../elvenar/processTomes';
 
@@ -15,9 +14,6 @@ export const nonSpecificRequestHandler = async (msg: InterceptedNonSpecificReque
       break;
     case 'BUILDINGS_FEATURE':
       await processBuildings(msg.payload.payload.decodedResponse, false);
-      break;
-    case 'MAX_LEVELS':
-      await processMaxLevels(msg.payload.payload.decodedResponse);
       break;
     case 'ITEMS':
       await processItems(msg.payload.payload.decodedResponse);

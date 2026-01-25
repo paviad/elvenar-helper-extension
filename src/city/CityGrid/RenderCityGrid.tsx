@@ -1,10 +1,13 @@
+import AddIcon from '@mui/icons-material/Add';
 import GridViewIcon from '@mui/icons-material/GridView';
+import RemoveIcon from '@mui/icons-material/Remove';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import {
   Box,
   Button,
   Dialog,
   Divider,
+  IconButton,
   List,
   ListItemButton,
   ListItemText,
@@ -259,7 +262,11 @@ export const RenderCityGrid = () => {
   const [exportDialog, setExportDialog] = React.useState({ open: false, exportStr: '' });
 
   // State for SaveCityDialog
-  const [saveAsDialog, setSaveAsDialog] = React.useState({ open: false, defaultName: '', existingCities: [] as string[] });
+  const [saveAsDialog, setSaveAsDialog] = React.useState({
+    open: false,
+    defaultName: '',
+    existingCities: [] as string[],
+  });
 
   // State for Delete Confirmation Dialog
   const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] = React.useState({ open: false });
@@ -562,26 +569,38 @@ export const RenderCityGrid = () => {
 
   function renderLevelDialog() {
     const block = blocks[showLevelDialog.index];
+    if (!block) return null;
+
     const prefix = getPrefix(block.entity.cityentity_id, block.entity.type);
-    const maxLevel = maxLevels[prefix];
+    const maxLevel = maxLevels[prefix] || 99;
 
     return (
-      <Dialog open={showLevelDialog.open} onClose={() => setShowLevelDialog({ open: false, index: -1 })}>
-        <Stack spacing={2} sx={{ p: 3, minWidth: 300, alignItems: 'center' }}>
-          <Typography variant='h6'>Select Building Level</Typography>
-          <Stack direction='row' alignItems='center' spacing={1} sx={{ mb: 1 }}>
-            <Button
-              variant='outlined'
-              size='small'
+      <Dialog
+        open={showLevelDialog.open}
+        onClose={() => setShowLevelDialog({ open: false, index: -1 })}
+        PaperProps={{ sx: { borderRadius: 2, p: 1 } }}
+      >
+        <Stack spacing={3} sx={{ p: 2, minWidth: 320, alignItems: 'center' }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant='h6' fontWeight='bold'>
+              Change Level
+            </Typography>
+            <Typography variant='body2' color='text.secondary'>
+              Max Level: {maxLevel}
+            </Typography>
+          </Box>
+
+          <Stack direction='row' alignItems='center' spacing={2}>
+            <IconButton
               onClick={() => setLevelInput((prev) => Math.max(1, prev - 1))}
-              sx={{ minWidth: 32, px: 0 }}
+              disabled={levelInput <= 1}
+              color='primary'
+              sx={{ border: '1px solid', borderColor: 'divider' }}
             >
-              -
-            </Button>
+              <RemoveIcon />
+            </IconButton>
+
             <TextField
-              label='Level'
-              type='number'
-              slotProps={{ htmlInput: { min: 1, max: maxLevel } }}
               value={levelInput}
               onChange={(e) => {
                 let v = Number(e.target.value);
@@ -590,28 +609,39 @@ export const RenderCityGrid = () => {
                 if (v > maxLevel) v = maxLevel;
                 setLevelInput(v);
               }}
-              size='small'
-              sx={{ width: 80 }}
-            />
-            <Button
+              type='number'
               variant='outlined'
               size='small'
+              sx={{ width: 80, '& input': { textAlign: 'center', fontWeight: 'bold' } }}
+              slotProps={{ htmlInput: { min: 1, max: maxLevel } }}
+            />
+
+            <IconButton
               onClick={() => setLevelInput((prev) => Math.min(maxLevel, prev + 1))}
-              sx={{ minWidth: 32, px: 0 }}
+              disabled={levelInput >= maxLevel}
+              color='primary'
+              sx={{ border: '1px solid', borderColor: 'divider' }}
             >
-              +
-            </Button>
+              <AddIcon />
+            </IconButton>
           </Stack>
-          <Slider
-            min={1}
-            max={maxLevel}
-            value={levelInput}
-            onChange={(_, v) => setLevelInput(Number(v))}
-            valueLabelDisplay='auto'
-            sx={{ width: 250 }}
-          />
-          <Stack direction='row' spacing={2} sx={{ mt: 2 }}>
+
+          <Box sx={{ width: '100%', px: 2 }}>
+            <Slider
+              min={1}
+              max={maxLevel}
+              value={levelInput}
+              onChange={(_, v) => setLevelInput(Number(v))}
+              valueLabelDisplay='auto'
+            />
+          </Box>
+
+          <Stack direction='row' spacing={2} width='100%'>
+            <Button fullWidth variant='outlined' onClick={() => setShowLevelDialog({ open: false, index: -1 })}>
+              Cancel
+            </Button>
             <Button
+              fullWidth
               variant='contained'
               onClick={() => {
                 setShowLevelDialog({ open: false, index: -1 });
@@ -619,10 +649,7 @@ export const RenderCityGrid = () => {
                 setMenu(null);
               }}
             >
-              OK
-            </Button>
-            <Button variant='outlined' onClick={() => setShowLevelDialog({ open: false, index: -1 })}>
-              Cancel
+              Update
             </Button>
           </Stack>
         </Stack>

@@ -4,10 +4,6 @@ interface NonSpecificMessageBase extends InterceptedRequestMessageBase {
   specific: false;
 }
 
-export interface MaxLevelsMessage extends NonSpecificMessageBase {
-  type: 'MAX_LEVELS';
-}
-
 export interface BuildingsMessage extends NonSpecificMessageBase {
   type: 'BUILDINGS_FEATURE' | 'BUILDINGS_ALL';
 }
@@ -37,7 +33,6 @@ export interface EvolvingBuildingsMessage extends NonSpecificMessageBase {
 }
 
 export type NonSpecificMessage =
-  | MaxLevelsMessage
   | BuildingsMessage
   | ItemsMessage
   | EffectsMessage
