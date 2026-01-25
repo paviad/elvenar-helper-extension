@@ -10,7 +10,7 @@ async function createZipFile(filesToZip, outputZipName) {
   for (const filePath of filesToZip) {
     const fileContent = fs.readFileSync(filePath);
     const fileName = path.basename(filePath);
-    zip.file(fileName, fileContent, { compression: "DEFLATE", compressionOptions: { level: 9 } });
+    zip.file(fileName, fileContent, { compression: 'DEFLATE', compressionOptions: { level: 9 } });
   }
 
   const content = await zip.generateAsync({ type: 'nodebuffer' });
@@ -46,7 +46,9 @@ const storeDistDir = isFirefox ? './store-dist-firefox' : './store-dist';
 
 const files = getAllFilesInDirectory(distDir).filter((r) => !r.endsWith('.zip'));
 
-createZipFile(files, `${storeDistDir}/elven-assist-v${packageVersion}${isFirefox ? '-firefox' : ''}`);
+const fileName = isFirefox ? `FIREFOX-v${packageVersion}` : `elven-assist-v${packageVersion}`;
+
+createZipFile(files, `${storeDistDir}/${fileName}`);
 const git = simpleGit();
 
 async function createSourceZip() {
@@ -57,7 +59,7 @@ async function createSourceZip() {
   const zip = new JSZip();
   for (const filePath of fileList) {
     const fileContent = fs.readFileSync(filePath);
-    zip.file(filePath, fileContent, { compression: "DEFLATE", compressionOptions: { level: 9 } }); // preserve directory structure and compress
+    zip.file(filePath, fileContent, { compression: 'DEFLATE', compressionOptions: { level: 9 } }); // preserve directory structure and compress
   }
 
   const content = await zip.generateAsync({ type: 'nodebuffer' });

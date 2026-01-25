@@ -1,6 +1,6 @@
 {
   "name": "elven-assist",
-  "version": "5.8.2",
+  "version": "5.8.5",
   "description": "Unofficial extension to help with Elvenar city planning",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
@@ -24,6 +24,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "chrome-types": "^0.1.358",
+    "chrome-webstore-upload-cli": "^3.5.0",
     "copy-webpack-plugin": "^13.0.0",
     "eslint": "^9.30.1",
     "jszip": "^3.10.1",
