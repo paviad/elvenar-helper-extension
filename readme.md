@@ -67,6 +67,54 @@ Install from the [Mac App Store](https://apps.apple.com/us/app/elvenassist/id647
 
 *Note: Changes made in the editor are for planning purposes only and do not affect your actual Elvenar city.*
 
+## Release Process
+
+To release a new version (e.g., `5.8.6`):
+
+1.  **Code Freeze:**
+    Ensure all changes are committed to `master` and tests pass.
+
+2.  **Bump Version:**
+    Update version numbers in `package.json`, manifests, and TypeScript files.
+    ```bash
+    npm run bump 5.8.6
+    ```
+
+3.  **Commit the Bump:**
+    ```bash
+    git add .
+    git commit -m "chore: release v5.8.6"
+    git push origin master
+    ```
+
+4.  **Tag the Release:**
+    Create and push the git tag.
+    ```bash
+    git tag v5.8.6
+    git push origin v5.8.6
+    ```
+
+5.  **Build & Pack:**
+    Generate the distribution zip files for both browsers.
+    * *Chrome:* Creates `./store-dist/elven-assist-v5.8.6.zip`
+    * *Firefox:* Creates `./store-dist-firefox/FIREFOX-v5.8.6.zip`
+    ```bash
+    npm run pack
+    npm run pack:firefox
+    ```
+
+6.  **Deploy to Chrome Web Store:**
+    Uploads the Chrome artifact to the store.
+    ```bash
+    npm run deploy:chrome 5.8.6
+    ```
+
+7.  **Create GitHub Release:**
+    Generates release notes and uploads both zip artifacts to the existing GitHub tag.
+    ```bash
+    npm run create-release 5.8.6
+    ```
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request with your suggestions or improvements.
