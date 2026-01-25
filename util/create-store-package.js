@@ -2,7 +2,6 @@ const JSZip = require('jszip');
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
-const simpleGit = require('simple-git');
 
 async function createZipFile(filesToZip, outputZipName) {
   const zip = new JSZip();
@@ -49,24 +48,3 @@ const files = getAllFilesInDirectory(distDir).filter((r) => !r.endsWith('.zip'))
 const fileName = isFirefox ? `FIREFOX-v${packageVersion}` : `elven-assist-v${packageVersion}`;
 
 createZipFile(files, `${storeDistDir}/${fileName}`);
-const git = simpleGit();
-
-async function createSourceZip() {
-  // Get all tracked and unignored files
-  const files = await git.raw(['ls-files']);
-  const fileList = files.split('\n').filter(Boolean);
-
-  const zip = new JSZip();
-  for (const filePath of fileList) {
-    const fileContent = fs.readFileSync(filePath);
-    zip.file(filePath, fileContent, { compression: 'DEFLATE', compressionOptions: { level: 9 } }); // preserve directory structure and compress
-  }
-
-  const content = await zip.generateAsync({ type: 'nodebuffer' });
-  fs.writeFileSync(`${storeDistDir}/source.zip`, content);
-  console.log(`Source zip created: ${storeDistDir}/source.zip`);
-}
-
-if (isFirefox) {
-  createSourceZip();
-}

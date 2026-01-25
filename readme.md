@@ -103,10 +103,11 @@ To release a new version (e.g., `5.8.6`):
     npm run pack:firefox
     ```
 
-6.  **Deploy to Chrome Web Store:**
-    Uploads the Chrome artifact to the store.
+6.  **Deploy to Stores:**
+    Uploads the artifacts to Chrome Web Store and Firefox Add-ons (AMO).
     ```bash
     npm run deploy:chrome 5.8.6
+    npm run deploy:firefox 5.8.6
     ```
 
 7.  **Create GitHub Release:**
