@@ -1,6 +1,4 @@
 import { CustomWebSocket } from './customWebSocket';
-import { sendMarkAsReadMessage } from './sendMarkAsReadMessage';
-import { SendWebsocketMessage } from './websocketMessages';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
@@ -22,18 +20,3 @@ console.log('ElvenAssist: Finished adding interceptor to WebSocket');
 
 const xhrInterceptor = new GlobalHttpInterceptorService();
 console.log('ElvenAssist: Finished adding interceptor to XMLHttpRequest');
-
-const messageHandler = (event: MessageEvent<SendWebsocketMessage>) => {
-  if (event.source !== window || event.data.type !== 'SEND_WEBSOCKET_MESSAGE') {
-    return;
-  }
-
-  const playerId = event.data.payload.playerId;
-  const guildId = event.data.payload.guildId;
-
-  if (event.data.payload.type === 'MARK_AS_READ') {
-    sendMarkAsReadMessage(playerId, guildId);
-  }
-};
-
-window.addEventListener('message', messageHandler);

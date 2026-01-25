@@ -5,11 +5,9 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { getAccountById } from '../elvenar/AccountManager';
-import { SendWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
-import { getAccountId, getOverlayStore } from './overlayStore';
+import { getOverlayStore } from './overlayStore';
 
 // Extend the Window interface to include forceChatRerender
 declare global {
@@ -199,40 +197,6 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     }
   }
 
-  function sendMarkAsReadMessage() {
-    const accountId = getAccountId();
-    if (!accountId) {
-      return;
-    }
-
-    const accountData = getAccountById(accountId);
-    if (!accountData) {
-      return;
-    }
-
-    const playerId = accountData.cityQuery?.userData.player_id;
-    if (!playerId) {
-      return;
-    }
-
-    const guildId = accountData.cityQuery?.userData.guild_info?.id;
-    if (!guildId) {
-      return;
-    }
-
-    window.postMessage(
-      {
-        type: 'SEND_WEBSOCKET_MESSAGE',
-        payload: {
-          type: 'MARK_AS_READ',
-          playerId,
-          guildId,
-        },
-      } satisfies SendWebsocketMessage,
-      '*',
-    );
-  }
-
   return (
     <Paper
       elevation={2}
@@ -382,7 +346,6 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                           const lastMsg = sortedMessages[sortedMessages.length - 1];
                           setLastSeenChat(parseInt(lastMsg.timestamp, 10));
                           expandPanel(false);
-                          sendMarkAsReadMessage();
                         }
                       }}
                     >
