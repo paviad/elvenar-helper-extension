@@ -18,6 +18,7 @@ To address common concerns regarding open-source browser extensions, we maintain
 * **Automated Builds:** Releases for Chrome and Firefox are generated using automated scripts to minimize human error and ensure the code in the repository matches the code in the store.
 * **Dependency Transparency:** All third-party libraries used in this project are publicly listed in our `package.json`. We do not use obfuscated or hidden dependencies.
 * **Developer Hygiene:** The maintainer utilizes Two-Factor Authentication (2FA) on all critical infrastructure accounts, including GitHub (source code), Google (Chrome Web Store), and Mozilla (Firefox Add-ons).
+* **Vulnerability Scanning:** The repository utilizes GitHub Dependabot to automatically scan for known vulnerabilities in dependencies and generate immediate patch requests.
 
 ## Data Privacy & Integrity
 
