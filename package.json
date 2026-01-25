@@ -18,7 +18,8 @@
     "pack:firefox": "copy /y manifest\\manifest-firefox.json assets\\manifest.json && webpack --env=firefox --env=production && node util/create-store-package.js firefox",
     "lint": "eslint src",
     "prettify": "prettier --write src",
-    "bump": "node util/set-version.js"
+    "bump": "node util/set-version.js",
+    "release": "node util/create-release.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
