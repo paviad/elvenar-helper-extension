@@ -63,11 +63,13 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
+      const blockScreenPos = toIso(blocks[key].x, blocks[key].y, tileWidth, tileHeight, originX, originY);
+
       // Note: Context menu drag offset calculation might need ISO adjustment if we want precise menu drag,
       // but standard behavior usually snaps center, so we leave as is or update if needed.
       setDragOffset({
-        x: mouseX - blocks[key].x * GridSize,
-        y: mouseY - blocks[key].y * GridSize,
+        x: mouseX - blockScreenPos.x,
+        y: mouseY - blockScreenPos.y,
       });
     }
     setMenu({ x, y, key });

@@ -38,6 +38,8 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
 
   // Context menu handler
   const handleContextMenu = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
+    const PADDING_TILES = 10;
+
     e.preventDefault();
     if (dragging) return;
     // Position relative to SVG container
@@ -48,8 +50,10 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
       const rect = svg.getBoundingClientRect();
       x = e.clientX - rect.left;
       y = e.clientY - rect.top;
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+      const sGridSize = GridSize * zoom;
+      const paddingPx = PADDING_TILES * sGridSize;
+      const mouseX = e.clientX - rect.left - paddingPx;
+      const mouseY = e.clientY - rect.top - paddingPx;
       setDragOffset({
         x: mouseX - blocks[key].x * sGridSize, // Use scaled grid size for offset
         y: mouseY - blocks[key].y * sGridSize,
