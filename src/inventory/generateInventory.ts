@@ -18,6 +18,18 @@ export async function generateInventory(accountId: string) {
   const finder = new BuildingFinder();
   await finder.ensureInitialized();
 
+  let academyLevel = 1;
+
+  if (accountData.cityQuery) {
+    const cityMap = accountData.cityQuery.cityEntities;
+    const magicAcademy = cityMap.find((entity) => entity.type === 'academy');
+    if (magicAcademy) {
+      academyLevel = magicAcademy.level;
+    }
+  }
+
+  const spellFragmentsFactor = (academyLevel - 1) * 0.25 + 1;
+
   const items = await getItemDefinitions();
   const tomes = await getTomes();
 
@@ -50,7 +62,7 @@ export async function generateInventory(accountId: string) {
       return;
     }
 
-    return finder.getBuilding(item.subtype);
+    return finder.getBuildingExact(item.subtype);
   }
 
   function getResaleResources(building: BuildingEx): Record<string, number> {
@@ -61,12 +73,18 @@ export async function generateInventory(accountId: string) {
     return resources;
   }
 
-  function getChapter(item: InventoryItem): number | undefined {
-    const match = /_(\d+)$/.exec(item.subtype);
-    if (match) {
-      return parseInt(match[1], 10);
+  function getChapter(item: InventoryItem, building: BuildingEx | undefined): number | undefined {
+    if (item.type === 'reward_selection_kit') {
+      return item.properties.find((r) => r.__class__ === 'ChapterBasedInventoryItemPropertyVO')?.chapter;
     }
-    return undefined;
+
+    if (item.type === 'city_entity') {
+      const match = /_(\d+)$/.exec(item.subtype);
+      if (match) {
+        return parseInt(match[1], 10);
+      }
+      return undefined;
+    }
   }
 
   const prettyTypes: Record<string, string> = {
@@ -83,13 +101,14 @@ export async function generateInventory(accountId: string) {
     const building = getBuilding(r);
     const item = getItem(r);
     const tome = getTome(r);
+    const fragments = building?.spellFragments || Number(item?.spellFragments) || tome?.spellFragments || 0;
     return {
       ...r,
       type: getPrettyType(r.type),
       name: building?.name || item?.name || tome?.name || r.subtype,
       resaleResources: (building && getResaleResources(building)) || {},
-      chapter: getChapter(r),
-      spellFragments: building?.spellFragments || Number(item?.spellFragments) || undefined,
+      chapter: getChapter(r, building),
+      spellFragments: Math.round(fragments * spellFragmentsFactor) || undefined,
       size: (building && `${building.width}x${building.length}`) || undefined,
     } satisfies InventoryItem;
   });

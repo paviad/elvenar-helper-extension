@@ -20,13 +20,13 @@ if (!fs.existsSync(envPath)) {
 
 const envContent = fs.readFileSync(envPath, 'utf8');
 const secrets = {};
-envContent.split(/\r?\n/).forEach(line => {
+envContent.split(/\r?\n/).forEach((line) => {
   const match = line.match(/^\s*set\s+([A-Z_0-9]+)=(.*)$/i);
   if (match) secrets[match[1]] = match[2].trim();
 });
 
 const requiredKeys = ['MOZ_API_KEY', 'MOZ_API_SECRET'];
-const missingKeys = requiredKeys.filter(key => !secrets[key]);
+const missingKeys = requiredKeys.filter((key) => !secrets[key]);
 if (missingKeys.length > 0) {
   console.error('❌ Error: Missing keys in env.bat:', missingKeys.join(', '));
   process.exit(1);
@@ -78,8 +78,9 @@ try {
 // 6. Execute Upload
 console.log(`🚀 Uploading Extension & Source Code...`);
 try {
-  const command = `npx web-ext sign ` +
-    `--source-dir "${tempSignDir}" ` + 
+  const command =
+    `npx web-ext sign ` +
+    `--source-dir "${tempSignDir}" ` +
     `--upload-source-code "${sourceZipFile}" ` +
     `--channel "listed" ` +
     `--api-key "${secrets.MOZ_API_KEY}" ` +

@@ -58,6 +58,21 @@ export class BuildingFinder {
     );
   }
 
+  public getBuildingExact(id: string): BuildingEx | undefined {
+    const { baseName: baseName1 } = this.getBaseName(id);
+    const baseName = baseName1;
+
+    const building = this.buildingsDictionary[baseName]?.find((b) => b.id === id);
+
+    const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
+
+    if (building) {
+      const bldg = building;
+
+      return this.getBuildingEx(bldg, hint);
+    }
+  }
+
   public getBuilding(id: string, level = 1): BuildingEx | undefined {
     const { baseName: baseName1 } = this.getBaseName(id);
     const baseName = baseName1;
@@ -69,20 +84,24 @@ export class BuildingFinder {
     if (building) {
       const bldg = building;
 
-      return {
-        id: bldg.id,
-        name: bldg.name,
-        description: bldg.description,
-        type: bldg.type,
-        length: bldg.length,
-        width: bldg.width,
-        connectionStrategy: bldg.requirements.connectionStrategyId,
-        resale_resources: bldg.resale_resources,
-        spellFragments: bldg.spellFragments,
-        chapter: (hint && parseInt(hint)) || undefined,
-        sourceBuilding: bldg,
-      } satisfies BuildingEx;
+      return this.getBuildingEx(bldg, hint);
     }
+  }
+
+  private getBuildingEx(bldg: Building, hint: string | undefined): BuildingEx | undefined {
+    return {
+      id: bldg.id,
+      name: bldg.name,
+      description: bldg.description,
+      type: bldg.type,
+      length: bldg.length,
+      width: bldg.width,
+      connectionStrategy: bldg.requirements.connectionStrategyId,
+      resale_resources: bldg.resale_resources,
+      spellFragments: bldg.spellFragments,
+      chapter: (hint && parseInt(hint)) || undefined,
+      sourceBuilding: bldg,
+    } satisfies BuildingEx;
   }
 
   public getCityEntityExtraData(id: string, level = 1): CityEntityExData {

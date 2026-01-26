@@ -118,8 +118,6 @@ function processMaxLevelsFromBuildings(processedBuildings: Building[]) {
       {} as Record<string, number>,
     );
 
-  console.log('Processed max levels from buildings:', maxLevels);
-
   return maxLevels;
 }
 

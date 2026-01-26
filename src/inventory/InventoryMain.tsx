@@ -1,11 +1,13 @@
 import {
   Box,
+  Button,
   FormControl,
   FormControlLabel,
   InputLabel,
   MenuItem,
   Paper,
   Select,
+  Snackbar,
   Switch,
   Table,
   TableBody,
@@ -15,6 +17,7 @@ import {
   TableRow,
   TextField,
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import React from 'react';
 import { InventoryItem } from '../model/inventoryItem';
 import { useTabStore } from '../util/tabStore';
@@ -29,6 +32,7 @@ export const InventoryMain = () => {
   >('');
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
   const [aggregate, setAggregate] = React.useState(false);
+  const [toastOpen, setToastOpen] = React.useState(false);
 
   const accountId = useTabStore((state) => state.accountId);
 
@@ -161,6 +165,58 @@ export const InventoryMain = () => {
     return matchesType;
   }).length;
 
+  const handleCopyToClipboard = () => {
+    // 1. Prepare Headers
+    const headers = [
+      'Name',
+      aggregate ? 'Chapters/Levels' : 'Chapter/Level',
+      'Type',
+      'Amount',
+      'Size',
+      'CC',
+      'RR',
+      'Spell Fragments',
+      'Changed At',
+    ];
+
+    // 2. Prepare Rows
+    const rows = displayRows.map((row) => {
+      const name = row.name || '';
+      const chapter = isAggregatedRowDisplay(row) ? row.chapters : (row.chapter ?? '');
+      const type = row.type || '';
+      const amount = row.amount || 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const size = (row as any).size || ''; // Cast to any because AggregatedRowDisplay might define size optionally
+      const cc = isAggregatedRowDisplay(row) ? row.cc : (row.resaleResources?.combiningcatalyst ?? '');
+      const rr = isAggregatedRowDisplay(row) ? row.rr : (row.resaleResources?.royalrestoration ?? '');
+      const sf = isAggregatedRowDisplay(row) ? row.spellFragments : (row.spellFragments ?? '');
+      const date = isAggregatedRowDisplay(row)
+        ? ''
+        : row.changedAt
+          ? new Date(row.changedAt * 1000).toLocaleString()
+          : '';
+
+      // Tab separated columns
+      return [name, chapter, type, amount, size, cc, rr, sf, date].join('\t');
+    });
+
+    // 3. Combine
+    const textData = [headers.join('\t'), ...rows].join('\n');
+
+    // 4. Copy to Clipboard
+    const textArea = document.createElement('textarea');
+    textArea.value = textData;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setToastOpen(true);
+    } catch (err) {
+      console.error('Unable to copy to clipboard', err);
+    }
+    document.body.removeChild(textArea);
+  };
+
   return (
     <Box p={2}>
       <Box display='flex' gap={2} mb={2} alignItems='center'>
@@ -185,6 +241,15 @@ export const InventoryMain = () => {
           control={<Switch checked={aggregate} onChange={(e) => setAggregate(e.target.checked)} />}
           label='Aggregate by Name'
         />
+        <Button
+          variant='outlined'
+          startIcon={<ContentCopyIcon />}
+          onClick={handleCopyToClipboard}
+          size='small'
+          sx={{ ml: 'auto' }} // Push button to the right
+        >
+          Copy Table
+        </Button>
       </Box>
       <Box mb={1} fontWeight='bold'>
         Showing {displayRows.length} of {totalTypeFiltered} items
@@ -210,7 +275,8 @@ export const InventoryMain = () => {
                     setSortDir(sortBy === 'chapter' && sortDir === 'asc' ? 'desc' : 'asc');
                   }}
                 >
-                  Chapter{aggregate ? 's' : ''} {sortBy === 'chapter' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                  {aggregate ? 'Chapters/Levels' : 'Chapter/Level'}
+                  {sortBy === 'chapter' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell
@@ -312,6 +378,15 @@ export const InventoryMain = () => {
           </Box>
         </Box>
       )}
+
+      {/* Copied Feedback Toast */}
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        message='Table copied to clipboard'
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 };
