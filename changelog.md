@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.9.0
+- **Inventory:** Added "Copy Table" button to export inventory as tab-separated values (TSV) for easy spreadsheet use.
+- **Inventory:** Spell Fragments now scale with Magic Academy level; improved chapter/level detection for reward kits.
+
 ## v5.8.0
 - **Main Feature:** Added padding around the city grid, allowing players to place buildings in a "temporary area" for easier relocation and city planning.
 - **Secondary Feature:** Improved grid visualization and introduced an isometric view option for enhanced city layout clarity.
