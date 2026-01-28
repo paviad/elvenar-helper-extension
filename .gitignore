@@ -49,3 +49,4 @@ bin/
 secrets/
 setvars.cmd
 temp_firefox_sign/
+crx/
