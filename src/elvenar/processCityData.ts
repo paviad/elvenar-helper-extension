@@ -1,3 +1,4 @@
+import { saveToStorage } from '../chrome/storage';
 import { Badges, Relics } from '../model/badges';
 import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
@@ -155,4 +156,9 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
   } satisfies AccountData;
 
   await setAccountData(accountId, data);
+  await setMaxChapter(maxChapter);
+}
+
+async function setMaxChapter(maxChapter: number) {
+  await saveToStorage('maxChapter', maxChapter.toString());
 }

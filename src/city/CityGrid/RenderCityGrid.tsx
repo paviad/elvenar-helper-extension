@@ -19,7 +19,7 @@ import { subscribeToMouseMove as subscribeToTopMouseMove } from './top/handleMou
 
 export const RenderCityGrid = () => {
   const city = useCity();
-  const { blocks, setMenu, menu, menuRef, svgRef, maxLevels } = city;
+  const { blocks, setMenu, menu, menuRef, svgRef, maxLevels, chapter } = city;
 
   // Use Custom Hook for Logic & State
   const state = useCityGridState();
@@ -150,7 +150,11 @@ export const RenderCityGrid = () => {
             paper: { sx: { width: 'auto', maxWidth: 'none', backgroundColor: 'transparent', boxShadow: 'none' } },
           }}
         >
-          <NewBuildingSelector onSelectBuilding={state.onSelectBuilding} buildings={state.buildings} />
+          <NewBuildingSelector
+            onSelectBuilding={state.onSelectBuilding}
+            buildings={state.buildings}
+            currentCityChapter={chapter}
+          />
         </Dialog>
       </div>
     </Stack>

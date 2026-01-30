@@ -28,6 +28,7 @@ import { formatResourceName } from '../util/formatResourceName';
 import { getBuildingProvisionsAndProduction as getBuildingProvisionsAndProduction } from '../util/getBuildingProvisionsAndProduction';
 import { useTabStore } from '../util/tabStore';
 import { generateInventory } from './generateInventory';
+import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 
 interface InventoryItemWithStats extends InventoryItem {
   provisions: Record<string, number>;
@@ -107,6 +108,8 @@ export const InventoryMain = () => {
       const enrichedInventory: InventoryItemWithStats[] = [];
       const resourceKeys = new Set<string>();
 
+      const evolvingBuildings = await getEvolvingBuildings();
+
       for (const item of rawInventory) {
         const enrichedItem: InventoryItemWithStats = {
           ...item,
@@ -116,15 +119,15 @@ export const InventoryMain = () => {
 
         if (item.building) {
           // Calculate stats for this item using the helper
-          const { provisions, production } = getBuildingProvisionsAndProduction(item.building, new Set());
+          const { provisions, production } = item.building;
 
-          Object.entries(provisions).forEach(([k, v]) => {
+          Object.entries(provisions || {}).forEach(([k, v]) => {
             if (v > 0) {
               enrichedItem.provisions[k] = v;
               resourceKeys.add(k);
             }
           });
-          Object.entries(production).forEach(([k, v]) => {
+          Object.entries(production || {}).forEach(([k, v]) => {
             // Only specific resources
             if (['mana', 'orcs', 'seeds', 'unurium'].includes(k) && v > 0) {
               // If there are multiple production options, we generally take the max for display?

@@ -1,8 +1,10 @@
 import { getBuildings } from '../elvenar/getBuildings';
+import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getPremiumBuildingHints } from '../elvenar/getPremiumBuildingHints';
 import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
 import { CityEntityExData } from '../model/cityEntity';
+import { StageProvision } from '../model/stageProvision';
 import { BuildingCategory, BuildingDefinition, BuildingField, CATEGORIES } from './CATEGORIES';
 import { getTypeFromEntity } from './getCityBlockFromCityEntity';
 
@@ -15,6 +17,7 @@ export class BuildingFinder {
   private buildingsDictionary!: Record<string, Building[]>;
 
   private hintsDictionary!: Record<string, string>;
+  private evolvingBuildingsDictionary!: Record<string, StageProvision>;
 
   private getBaseName(goodsId: string): bAndC {
     const baseNameRex = /(.*?)(_\d+)?$/;
@@ -44,6 +47,7 @@ export class BuildingFinder {
   private async initInternal() {
     const buildings = await getBuildings();
     const premiumHints = await getPremiumBuildingHints();
+    const evolvingBuildings = await getEvolvingBuildings();
 
     this.hintsDictionary = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]));
 
@@ -55,6 +59,14 @@ export class BuildingFinder {
         return acc;
       },
       {} as Record<string, Building[]>,
+    );
+
+    this.evolvingBuildingsDictionary = evolvingBuildings.reduce(
+      (acc, eb) => {
+        acc[eb.baseName] = eb;
+        return acc;
+      },
+      {} as Record<string, StageProvision>,
     );
   }
 
@@ -192,6 +204,14 @@ export class BuildingFinder {
       return rc;
     };
 
+    const getMaxStage = (buildings: Building[]): number | undefined => {
+      const baseName = buildings[0].base_name;
+      const evolvingBuilding = this.evolvingBuildingsDictionary[baseName];
+      if (evolvingBuilding) {
+        return evolvingBuilding.stages.reduce((max, stage) => (stage.id > max ? stage.id : max), 0);
+      }
+    };
+
     const getChapter = (building: Building): number | undefined => {
       if (/^([GPRHMODY]_|A_Evt_)/.test(building.base_name) || building.type === 'expiring') {
         return;
@@ -217,6 +237,7 @@ export class BuildingFinder {
           supportedFields: getSupportedFields(r),
           getSizeAtLevel: getGetSizeAtLevelFunction(r),
           maxLevel: getMaxLevelsLocal(r),
+          maxStage: getMaxStage(r),
           type: getTypeFromEntity(r[0].requirements.connectionStrategyId, r[0].id, r[0].type),
         } satisfies BuildingDefinition;
       });

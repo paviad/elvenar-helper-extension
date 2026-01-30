@@ -16,14 +16,13 @@ import { generateUniqueId } from '../util/generateUniqueId';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { useTabStore } from '../util/tabStore';
 import { BuildingFinder } from './buildingFinder';
-import { BuildingDefinition } from './CATEGORIES';
+import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { CityBlock } from './CityBlock';
 import { useCity } from './CityContext';
 import { getEntityMaxLevel } from './CityGrid/getEntityMaxLevel';
 import { resetMovedInPlace, saveBack } from './generateCity';
 import { getChapterFromEntity, getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
-import { BuildingConfig } from './NewBuildingSelector';
 
 interface ShowLevelDialogData {
   open: boolean;

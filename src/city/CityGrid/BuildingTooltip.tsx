@@ -15,7 +15,6 @@ interface BuildingTooltipProps {
 
 export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMaxLevel, stage }) => {
   const city = useCity();
-  const goodsNames = city.goodsNames;
   const currentChapter = city.chapter;
   const source = building.sourceBuilding;
   const popRequired = city.popRequired;

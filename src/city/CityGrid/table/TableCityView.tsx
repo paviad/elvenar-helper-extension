@@ -81,7 +81,12 @@ export const TableCityView = () => {
 
         if (building) {
           // A. Provisions (Static)
-          const { provisions, production } = getBuildingProvisionsAndProduction(building, keysSet);
+          const { provisions, production } = getBuildingProvisionsAndProduction(
+            building,
+            keysSet,
+            city.evolvingBuildings,
+            block.stage,
+          );
           row.provisions = provisions;
           row.production = production;
         }

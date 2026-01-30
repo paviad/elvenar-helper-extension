@@ -1,5 +1,6 @@
 import { BuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
+import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getItemDefinitions } from '../elvenar/getItemDefinitions';
 import { getTomes } from '../elvenar/getTomes';
 import { BuildingEx } from '../model/buildingEx';
@@ -100,13 +101,20 @@ export async function generateInventory(accountId: string) {
 
   const keysSet = new Set<string>();
 
+  const evolvingBuildings = await getEvolvingBuildings();
+
   const inventory = inventoryItems.map((r) => {
     const building = getBuilding(r);
     const item = getItem(r);
     const tome = getTome(r);
     const fragments = building?.spellFragments || Number(item?.spellFragments) || tome?.spellFragments || 0;
     if (building) {
-      const { provisions, production } = getBuildingProvisionsAndProduction(building, keysSet);
+      const { provisions, production } = getBuildingProvisionsAndProduction(
+        building,
+        keysSet,
+        evolvingBuildings,
+        r.properties?.find((p) => p.__class__ === 'InventoryItemEvoBuildingPropertyVO')?.stage,
+      );
       building.provisions = provisions;
       building.production = production;
     }
