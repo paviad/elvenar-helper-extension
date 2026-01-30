@@ -1,3 +1,5 @@
+import { BuildingEx } from './buildingEx';
+
 export interface InventoryItem {
   id: number;
   amount: number;
@@ -11,6 +13,8 @@ export interface InventoryItem {
   chapter?: number;
   spellFragments?: number;
   size?: string;
+  stage?: number;
+  building?: BuildingEx;
 }
 
 export type Property = Chapter | Stage;

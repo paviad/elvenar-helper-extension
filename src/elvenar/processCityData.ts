@@ -31,7 +31,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   const faRequirements = Object.fromEntries(
     questService
-      .filter((r) => r.rewards?.length > 0)
+      .filter((r) => r.rewards?.length > 0 && r.successConditions?.length > 0)
       .map((r, idx) => [
         r.rewards[0].iconType,
         {

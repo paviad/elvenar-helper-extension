@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 // --- Types ---
 interface ExportDialogProps {
@@ -8,9 +8,9 @@ interface ExportDialogProps {
 }
 
 const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose, exportString }) => {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) setCopied(false);
   }, [isOpen]);
 

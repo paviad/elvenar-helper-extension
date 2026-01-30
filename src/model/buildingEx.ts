@@ -12,5 +12,8 @@ export interface BuildingEx {
   spellFragments: number;
   chapter?: number;
 
+  provisions?: Record<string, number>;
+  production?: Record<string, number>;
+
   sourceBuilding: Building;
 }

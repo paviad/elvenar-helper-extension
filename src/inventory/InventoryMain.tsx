@@ -1,3 +1,4 @@
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
   Box,
   Button,
@@ -15,34 +16,144 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   TextField,
 } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import React from 'react';
+import { BuildingFinder } from '../city/buildingFinder';
+import { getAccountById } from '../elvenar/AccountManager';
+import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { InventoryItem } from '../model/inventoryItem';
+import { formatResourceName } from '../util/formatResourceName';
+import { getBuildingProvisionsAndProduction as getBuildingProvisionsAndProduction } from '../util/getBuildingProvisionsAndProduction';
 import { useTabStore } from '../util/tabStore';
 import { generateInventory } from './generateInventory';
 
+interface InventoryItemWithStats extends InventoryItem {
+  provisions: Record<string, number>;
+  production: Record<string, number>;
+}
+
+interface AggregatedRow {
+  name: string;
+  chapters: Set<number>;
+  type: string;
+  amount: number;
+  cc: number;
+  rr: number;
+  spellFragments: number;
+  size?: string;
+  provisions: Record<string, number>;
+  production: Record<string, number>;
+  totalArea: number;
+}
+
+type AggregatedRowDisplay = Omit<AggregatedRow, 'chapters'> & { chapters: string };
+
+function isAggregatedRowDisplay(row: InventoryItemWithStats | AggregatedRowDisplay): row is AggregatedRowDisplay {
+  return (
+    typeof (row as AggregatedRowDisplay).cc === 'number' && typeof (row as AggregatedRowDisplay).chapters === 'string'
+  );
+}
+
 export const InventoryMain = () => {
-  const [inventory, setInventory] = React.useState<InventoryItem[] | undefined>([]);
+  const [inventory, setInventory] = React.useState<InventoryItemWithStats[] | undefined>([]);
   const [search, setSearch] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState('');
-  const [sortBy, setSortBy] = React.useState<
-    'name' | 'chapter' | 'amount' | 'changedAt' | 'cc' | 'rr' | 'spellFragments' | 'size' | ''
-  >('');
+  const [sortBy, setSortBy] = React.useState<string>('');
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
   const [aggregate, setAggregate] = React.useState(false);
   const [toastOpen, setToastOpen] = React.useState(false);
+  const [allResourceKeys, setAllResourceKeys] = React.useState<string[]>([]);
+  const [goodsNames, setGoodsNames] = React.useState<Record<string, string>>({});
+  const [boostedGoods, setBoostedGoods] = React.useState<string[]>([]);
+  const [showPerSquare, setShowPerSquare] = React.useState(false);
+  const [finder, setFinder] = React.useState<BuildingFinder | null>(null);
 
   const accountId = useTabStore((state) => state.accountId);
+
+  React.useEffect(() => {
+    async function initializeFinder() {
+      const finder = new BuildingFinder();
+      await finder.ensureInitialized();
+      setFinder(new BuildingFinder());
+    }
+    initializeFinder();
+  }, []);
 
   React.useEffect(() => {
     async function fetchInventory() {
       if (!accountId) {
         return;
       }
-      const inventory = await generateInventory(accountId);
-      setInventory(inventory);
+      const accountData = getAccountById(accountId);
+      if (!accountData?.cityQuery) {
+        return;
+      }
+
+      const inventoryData = await generateInventory(accountId);
+      if (!inventoryData) {
+        return;
+      }
+      // Assuming generateInventory returns basic items, we enrich them here
+      // But the previous code block suggests generateInventory might have been updated or we do it here.
+      // Based on the provided context, the enriching logic was inside the useEffect in previous steps.
+      // I will restore the enriching logic here to ensure `inventory` has stats.
+      const { inventory: rawInventory } = inventoryData; // Assuming standard structure
+
+      const finder = new BuildingFinder();
+      await finder.ensureInitialized();
+
+      const enrichedInventory: InventoryItemWithStats[] = [];
+      const resourceKeys = new Set<string>();
+
+      for (const item of rawInventory) {
+        const enrichedItem: InventoryItemWithStats = {
+          ...item,
+          provisions: {},
+          production: {},
+        };
+
+        if (item.building) {
+          // Calculate stats for this item using the helper
+          const { provisions, production } = getBuildingProvisionsAndProduction(item.building, new Set());
+
+          Object.entries(provisions).forEach(([k, v]) => {
+            if (v > 0) {
+              enrichedItem.provisions[k] = v;
+              resourceKeys.add(k);
+            }
+          });
+          Object.entries(production).forEach(([k, v]) => {
+            // Only specific resources
+            if (['mana', 'orcs', 'seeds', 'unurium'].includes(k) && v > 0) {
+              // If there are multiple production options, we generally take the max for display?
+              // The helper likely returns a merged map.
+              enrichedItem.production[k] = v;
+              resourceKeys.add(k);
+            }
+          });
+        }
+        enrichedInventory.push(enrichedItem);
+      }
+
+      const sortedKeys = Array.from(resourceKeys).sort((a, b) => {
+        const priority = ['population', 'culture', 'mana', 'seeds', 'orcs', 'unurium'];
+        const idxA = priority.indexOf(a);
+        const idxB = priority.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+
+      setAllResourceKeys(sortedKeys);
+      setInventory(enrichedInventory);
+
+      const goodsNames = await getGoodsNames();
+      const boostedGoods = accountData.cityQuery.boostedGoods;
+      setGoodsNames(goodsNames);
+      setBoostedGoods(boostedGoods);
     }
     fetchInventory();
   }, [accountId]);
@@ -69,24 +180,7 @@ export const InventoryMain = () => {
     return matchesSearch && matchesType;
   });
 
-  // Aggregate by name if toggle is on
-  interface AggregatedRow {
-    name: string;
-    chapters: Set<number>;
-    type: string;
-    amount: number;
-    cc: number;
-    rr: number;
-    spellFragments: number;
-    size?: string;
-  }
-  type AggregatedRowDisplay = Omit<AggregatedRow, 'chapters'> & { chapters: string };
-  function isAggregatedRowDisplay(row: InventoryItem | AggregatedRowDisplay): row is AggregatedRowDisplay {
-    return (
-      typeof (row as AggregatedRowDisplay).cc === 'number' && typeof (row as AggregatedRowDisplay).chapters === 'string'
-    );
-  }
-  let displayRows: (InventoryItem | AggregatedRowDisplay)[] = filtered;
+  let displayRows: (InventoryItemWithStats | AggregatedRowDisplay)[] = filtered;
   if (aggregate) {
     const map = new Map<string, AggregatedRow>();
     for (const item of filtered) {
@@ -101,15 +195,34 @@ export const InventoryMain = () => {
           rr: 0,
           spellFragments: 0,
           size: item.size,
+          provisions: {},
+          production: {},
+          totalArea: 0,
         });
       }
       const agg = map.get(key);
       if (agg) {
+        const qty = item.amount || 0;
         if (item.chapter !== undefined && item.chapter !== null) agg.chapters.add(item.chapter);
-        agg.amount += item.amount || 0;
-        agg.cc += (item.resaleResources?.combiningcatalyst || 0) * (item.amount || 0);
-        agg.rr += (item.resaleResources?.royalrestoration || 0) * (item.amount || 0);
-        agg.spellFragments += (item.spellFragments || 0) * (item.amount || 0);
+        agg.amount += qty;
+        agg.cc += (item.resaleResources?.combiningcatalyst || 0) * qty;
+        agg.rr += (item.resaleResources?.royalrestoration || 0) * qty;
+        agg.spellFragments += (item.spellFragments || 0) * qty;
+
+        // Area calc
+        let itemArea = 0;
+        if (item.size) {
+          const [w, h] = item.size.split('x').map(Number);
+          if (!isNaN(w) && !isNaN(h)) itemArea = w * h;
+        }
+        agg.totalArea += itemArea * qty;
+
+        Object.entries(item.provisions).forEach(([k, v]) => {
+          agg.provisions[k] = (agg.provisions[k] || 0) + v * qty;
+        });
+        Object.entries(item.production).forEach(([k, v]) => {
+          agg.production[k] = (agg.production[k] || 0) + v * qty;
+        });
       }
     }
     displayRows = Array.from(map.values()).map((row) => ({
@@ -120,11 +233,29 @@ export const InventoryMain = () => {
     }));
   }
 
+  const handleSortRequest = (property: string) => {
+    const isAsc = sortBy === property && sortDir === 'asc';
+    setSortBy(property);
+    // If clicking a new column (especially resource columns), default to descending (high value first)
+    // If clicking the same column, toggle.
+    if (sortBy !== property) {
+      if (['name'].includes(property)) {
+        setSortDir('asc');
+      } else {
+        setSortDir('desc');
+      }
+    } else {
+      setSortDir(isAsc ? 'desc' : 'asc');
+    }
+  };
+
   // Sorting
   if (sortBy) {
     displayRows = [...displayRows].sort((a, b) => {
       let aVal: string | number = '';
       let bVal: string | number = '';
+
+      // Standard Columns
       if (sortBy === 'name') {
         aVal = a.name || '';
         bVal = b.name || '';
@@ -150,6 +281,28 @@ export const InventoryMain = () => {
         aVal = (a as InventoryItem).size || '';
         bVal = (b as InventoryItem).size || '';
       }
+      // Dynamic Resource Columns
+      else if (allResourceKeys.includes(sortBy)) {
+        const getResVal = (row: typeof a) => {
+          const val = (row.provisions[sortBy] || 0) + (row.production[sortBy] || 0);
+          if (showPerSquare) {
+            let area = 0;
+            if (isAggregatedRowDisplay(row)) {
+              area = row.totalArea;
+            } else {
+              if (row.size) {
+                const [w, h] = row.size.split('x').map(Number);
+                if (!isNaN(w) && !isNaN(h)) area = w * h;
+              }
+            }
+            return area > 0 ? val / area : 0;
+          }
+          return val;
+        };
+        aVal = getResVal(a);
+        bVal = getResVal(b);
+      }
+
       if (aVal === bVal) return 0;
       if (sortDir === 'asc') {
         return aVal > bVal ? 1 : -1;
@@ -177,6 +330,7 @@ export const InventoryMain = () => {
       'RR',
       'Spell Fragments',
       'Changed At',
+      ...allResourceKeys.map((k) => `${formatResourceName(goodsNames, boostedGoods, k)}${showPerSquare ? '/sq' : ''}`),
     ];
 
     // 2. Prepare Rows
@@ -185,8 +339,7 @@ export const InventoryMain = () => {
       const chapter = isAggregatedRowDisplay(row) ? row.chapters : (row.chapter ?? '');
       const type = row.type || '';
       const amount = row.amount || 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const size = (row as any).size || ''; // Cast to any because AggregatedRowDisplay might define size optionally
+      const size = row.size || '';
       const cc = isAggregatedRowDisplay(row) ? row.cc : (row.resaleResources?.combiningcatalyst ?? '');
       const rr = isAggregatedRowDisplay(row) ? row.rr : (row.resaleResources?.royalrestoration ?? '');
       const sf = isAggregatedRowDisplay(row) ? row.spellFragments : (row.spellFragments ?? '');
@@ -196,8 +349,23 @@ export const InventoryMain = () => {
           ? new Date(row.changedAt * 1000).toLocaleString()
           : '';
 
+      const resCols = allResourceKeys.map((k) => {
+        const val = (row.provisions[k] || 0) + (row.production[k] || 0);
+        if (val <= 0) return '';
+        if (showPerSquare) {
+          let area = 0;
+          if (isAggregatedRowDisplay(row)) area = row.totalArea;
+          else if (row.size) {
+            const [w, h] = row.size.split('x').map(Number);
+            area = w * h;
+          }
+          return area > 0 ? (val / area).toFixed(1) : '0';
+        }
+        return val;
+      });
+
       // Tab separated columns
-      return [name, chapter, type, amount, size, cc, rr, sf, date].join('\t');
+      return [name, chapter, type, amount, size, cc, rr, sf, date, ...resCols].join('\t');
     });
 
     // 3. Combine
@@ -241,6 +409,10 @@ export const InventoryMain = () => {
           control={<Switch checked={aggregate} onChange={(e) => setAggregate(e.target.checked)} />}
           label='Aggregate by Name'
         />
+        <FormControlLabel
+          control={<Switch checked={showPerSquare} onChange={(e) => setShowPerSquare(e.target.checked)} />}
+          label='Per Square'
+        />
         <Button
           variant='outlined'
           startIcon={<ContentCopyIcon />}
@@ -259,80 +431,91 @@ export const InventoryMain = () => {
           <Table size='small'>
             <TableHead>
               <TableRow>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('name');
-                    setSortDir(sortBy === 'name' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  Name {sortBy === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'name'}
+                    direction={sortBy === 'name' ? sortDir : 'asc'}
+                    onClick={() => handleSortRequest('name')}
+                  >
+                    Name
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('chapter');
-                    setSortDir(sortBy === 'chapter' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  {aggregate ? 'Chapters/Levels' : 'Chapter/Level'}
-                  {sortBy === 'chapter' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'chapter'}
+                    direction={sortBy === 'chapter' ? sortDir : 'desc'}
+                    onClick={() => handleSortRequest('chapter')}
+                  >
+                    Ch/Lev
+                  </TableSortLabel>
                 </TableCell>
                 <TableCell>Type</TableCell>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('amount');
-                    setSortDir(sortBy === 'amount' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  Amount {sortBy === 'amount' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'amount'}
+                    direction={sortBy === 'amount' ? sortDir : 'desc'}
+                    onClick={() => handleSortRequest('amount')}
+                  >
+                    #
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('size');
-                    setSortDir(sortBy === 'size' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  Size {sortBy === 'size' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'size'}
+                    direction={sortBy === 'size' ? sortDir : 'asc'}
+                    onClick={() => handleSortRequest('size')}
+                  >
+                    Size
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('cc');
-                    setSortDir(sortBy === 'cc' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  CC {sortBy === 'cc' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'cc'}
+                    direction={sortBy === 'cc' ? sortDir : 'desc'}
+                    onClick={() => handleSortRequest('cc')}
+                  >
+                    CC
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('rr');
-                    setSortDir(sortBy === 'rr' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  RR {sortBy === 'rr' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'rr'}
+                    direction={sortBy === 'rr' ? sortDir : 'desc'}
+                    onClick={() => handleSortRequest('rr')}
+                  >
+                    RR
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('spellFragments');
-                    setSortDir(sortBy === 'spellFragments' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  Spell Fragments {sortBy === 'spellFragments' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'spellFragments'}
+                    direction={sortBy === 'spellFragments' ? sortDir : 'desc'}
+                    onClick={() => handleSortRequest('spellFragments')}
+                  >
+                    Spell Fragments
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSortBy('changedAt');
-                    setSortDir(sortBy === 'changedAt' && sortDir === 'asc' ? 'desc' : 'asc');
-                  }}
-                >
-                  Changed At {sortBy === 'changedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                <TableCell>
+                  <TableSortLabel
+                    active={sortBy === 'changedAt'}
+                    direction={sortBy === 'changedAt' ? sortDir : 'desc'}
+                    onClick={() => handleSortRequest('changedAt')}
+                  >
+                    Changed At
+                  </TableSortLabel>
                 </TableCell>
+                {allResourceKeys.map((key) => (
+                  <TableCell key={key}>
+                    <TableSortLabel
+                      active={sortBy === key}
+                      direction={sortBy === key ? sortDir : 'desc'}
+                      onClick={() => handleSortRequest(key)}
+                    >
+                      {formatResourceName(goodsNames, boostedGoods, key)}
+                      {showPerSquare ? '/sq' : ''}
+                    </TableSortLabel>
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -356,9 +539,41 @@ export const InventoryMain = () => {
                     {isAggregatedRowDisplay(item)
                       ? '<n/a>'
                       : item.changedAt
-                        ? new Date(item.changedAt * 1000).toLocaleString()
+                        ? new Date(item.changedAt * 1000).toLocaleString(undefined, {
+                            hour12: false,
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                         : ''}
                   </TableCell>
+                  {allResourceKeys.map((key) => {
+                    const val = (item.provisions[key] || 0) + (item.production[key] || 0);
+                    let display = '-';
+                    if (val > 0) {
+                      if (showPerSquare) {
+                        let area = 0;
+                        if (isAggregatedRowDisplay(item)) {
+                          area = item.totalArea;
+                        } else {
+                          if (item.size) {
+                            const [w, h] = item.size.split('x').map(Number);
+                            if (!isNaN(w) && !isNaN(h)) area = w * h;
+                          }
+                        }
+                        if (area > 0) display = (val / area).toLocaleString(undefined, { maximumFractionDigits: 1 });
+                      } else {
+                        display = val.toLocaleString();
+                      }
+                    }
+                    return (
+                      <TableCell key={key} align='right'>
+                        {display}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>

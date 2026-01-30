@@ -179,7 +179,7 @@ export function CityGrid() {
       sortedBlocks.push(['dragged', draggedBlock]);
     }
     return sortedBlocks.map(([index, block]) => BlockRect(index === 'dragged' ? index : Number(index), block, zoom));
-  }, [blocks, dragIndex, zoom]);
+  }, [blocks, dragIndex, zoom, city.chapter, city.squadSize]);
 
   return (
     <div

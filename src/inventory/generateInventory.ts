@@ -6,6 +6,7 @@ import { BuildingEx } from '../model/buildingEx';
 import { InventoryItem } from '../model/inventoryItem';
 import { ItemDefinition } from '../model/itemDefinition';
 import { Tome } from '../model/tome';
+import { getBuildingProvisionsAndProduction } from '../util/getBuildingProvisionsAndProduction';
 
 export async function generateInventory(accountId: string) {
   const accountData = getAccountById(accountId);
@@ -97,21 +98,47 @@ export async function generateInventory(accountId: string) {
     return prettyTypes[type] || type;
   }
 
+  const keysSet = new Set<string>();
+
   const inventory = inventoryItems.map((r) => {
     const building = getBuilding(r);
     const item = getItem(r);
     const tome = getTome(r);
     const fragments = building?.spellFragments || Number(item?.spellFragments) || tome?.spellFragments || 0;
+    if (building) {
+      const { provisions, production } = getBuildingProvisionsAndProduction(building, keysSet);
+      building.provisions = provisions;
+      building.production = production;
+    }
+    const stage = r.properties?.find((p) => p.__class__ === 'InventoryItemEvoBuildingPropertyVO')?.stage;
+    let name = building?.name || item?.name || tome?.name || r.subtype;
+
+    if (stage) {
+      name += ` (Stage ${stage})`;
+    }
+
     return {
       ...r,
       type: getPrettyType(r.type),
-      name: building?.name || item?.name || tome?.name || r.subtype,
+      name,
       resaleResources: (building && getResaleResources(building)) || {},
       chapter: getChapter(r, building),
       spellFragments: Math.round(fragments * spellFragmentsFactor) || undefined,
       size: (building && `${building.width}x${building.length}`) || undefined,
+      stage,
+      building,
     } satisfies InventoryItem;
   });
 
-  return inventory;
+  const sortedKeys = Array.from(keysSet).sort((a, b) => {
+    const priority = ['population', 'culture', 'money', 'supplies'];
+    const idxA = priority.indexOf(a);
+    const idxB = priority.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
+  return { inventory, allResourceKeys: sortedKeys };
 }
