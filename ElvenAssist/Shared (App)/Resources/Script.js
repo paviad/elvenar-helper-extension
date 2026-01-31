@@ -1,24 +1,50 @@
 function show(platform, enabled, useSettingsInsteadOfPreferences) {
-    document.body.classList.add(`platform-${platform}`);
+  // 1. Set Platform (mostly for CSS hooks if needed)
+  document.body.classList.add(`platform-${platform}`);
 
-    if (useSettingsInsteadOfPreferences) {
-        document.getElementsByClassName('platform-mac state-on')[0].innerText = "ElvenAssist’s extension is currently on. You can turn it off in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac state-off')[0].innerText = "ElvenAssist’s extension is currently off. You can turn it on in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac state-unknown')[0].innerText = "You can turn on ElvenAssist’s extension in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac open-preferences')[0].innerText = "Quit and Open Safari Settings…";
-    }
+  const statusBox = document.getElementById('status-message');
+  const button = document.getElementById('open-btn');
+  const instructions = document.querySelector('.instructions');
+  const footer = document.querySelector('.footer');
 
-    if (typeof enabled === "boolean") {
-        document.body.classList.toggle(`state-on`, enabled);
-        document.body.classList.toggle(`state-off`, !enabled);
-    } else {
-        document.body.classList.remove(`state-on`);
-        document.body.classList.remove(`state-off`);
-    }
+  // 2. Update Text based on macOS version (Settings vs Preferences)
+  if (useSettingsInsteadOfPreferences) {
+    button.innerText = 'Open Safari Settings';
+  } else {
+    button.innerText = 'Open Safari Preferences';
+  }
+
+  // 3. Handle State (On vs Off)
+  if (enabled === true) {
+    // STATE: Extension is ON
+    document.body.classList.add('state-on');
+    document.body.classList.remove('state-off');
+
+    statusBox.innerText = '✅ ElvenAssist is active!';
+    statusBox.classList.add('active'); // Makes it green via CSS
+
+    // Hide button and instructions since it's already working
+    button.style.display = 'none';
+    instructions.style.display = 'none';
+    footer.style.display = 'none';
+  } else {
+    // STATE: Extension is OFF (or unknown)
+    document.body.classList.add('state-off');
+    document.body.classList.remove('state-on');
+
+    statusBox.innerText = 'Extension is currently disabled.';
+    statusBox.classList.remove('active');
+
+    // Show everything needed to fix it
+    button.style.display = 'block';
+    instructions.style.display = 'block';
+    footer.style.display = 'block';
+  }
 }
 
 function openPreferences() {
-    webkit.messageHandlers.controller.postMessage("open-preferences");
+  webkit.messageHandlers.controller.postMessage('open-preferences');
 }
 
-document.querySelector("button.open-preferences").addEventListener("click", openPreferences);
+// Bind the click event to the new button ID
+document.getElementById('open-btn').addEventListener('click', openPreferences);

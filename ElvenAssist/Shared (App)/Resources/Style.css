@@ -1,61 +1,119 @@
+/* 1. NATIVE APP FEEL (Keep this!) */
 * {
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
-    cursor: default;
+  -webkit-user-select: none; /* Prevents text highlighting */
+  -webkit-user-drag: none; /* Prevents dragging images */
+  cursor: default; /* Always show the arrow cursor */
 }
 
+/* 2. VARIABLES */
 :root {
-    color-scheme: light dark;
-
-    --spacing: 20px;
+  --system-blue: #007aff;
+  --system-gray: #8e8e93;
+  --bg-color: #f5f5f7;
+  --text-color: #1d1d1f;
 }
 
-html {
-    height: 100%;
-}
-
+/* 3. LAYOUT */
 body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-
-    gap: var(--spacing);
-    margin: 0 calc(var(--spacing) * 2);
-    height: 100%;
-
-    font: -apple-system-short-body;
-    text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  text-align: center;
 }
 
-body:not(.platform-mac, .platform-ios) :is(.platform-mac, .platform-ios) {
-    display: none;
+.container {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
 }
 
-body.platform-ios .platform-mac {
-    display: none;
+.logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  border-radius: 18px;
 }
 
-body.platform-mac .platform-ios {
-    display: none;
+h1 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+.subtitle {
+  color: var(--system-gray);
+  margin-top: 0;
+  margin-bottom: 30px;
 }
 
-body.platform-ios .platform-mac {
-    display: none;
+/* 4. INSTRUCTIONS BOX */
+.instructions {
+  text-align: left;
+  margin-bottom: 30px;
+  background: #f2f2f7;
+  padding: 20px;
+  border-radius: 12px;
 }
 
-body:not(.state-on, .state-off) :is(.state-on, .state-off) {
-    display: none;
+.step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.step:last-child {
+  margin-bottom: 0;
 }
 
-body.state-on :is(.state-off, .state-unknown) {
-    display: none;
+.step-num {
+  background: var(--system-blue);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 12px;
+  flex-shrink: 0;
 }
 
-body.state-off :is(.state-on, .state-unknown) {
-    display: none;
-}
-
+/* 5. BUTTONS */
 button {
-    font-size: 1em;
+  background-color: var(--system-blue);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 12px;
+  /* We allow the pointer cursor ONLY on buttons */
+  cursor: pointer;
+  width: 100%;
+  font-weight: 600;
+}
+button:hover {
+  opacity: 0.8;
+}
+
+.footer {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--system-gray);
+}
+
+/* 6. STATUS LOGIC */
+.status-box {
+  font-weight: bold;
+  color: var(--system-gray);
+  margin-bottom: 20px;
+}
+.status-box.active {
+  color: #34c759; /* Green */
 }
