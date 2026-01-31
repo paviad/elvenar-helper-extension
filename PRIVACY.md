@@ -1,0 +1,1 @@
+ElvenAssist does not collect, store, or share any personal user data. All game data is processed locally on your device.
