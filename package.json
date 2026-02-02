@@ -1,12 +1,16 @@
 {
   "name": "elven-assist",
-  "version": "6.0.5",
+  "version": "6.0.6",
   "description": "Unofficial extension to help with Elvenar city planning",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
   "sideEffects": false,
   "main": "index.js",
   "scripts": {
+    "prebuild": "node util/check-branch.js",
+    "prepack": "npm run prebuild",
+    "prepack:firefox": "npm run prebuild",
+    "prepack:safari": "npm run prebuild",
     "test": "echo \"Error: no test specified\" && exit 1",
     "webpack": "npm run webpack:chrome",
     "webpack:chrome": "copy /y manifest\\manifest-chrome.json assets\\manifest.json && webpack",
