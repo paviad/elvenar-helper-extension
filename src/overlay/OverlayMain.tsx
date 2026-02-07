@@ -2,7 +2,11 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import { Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
 import React from 'react';
-import { clearTradeParsedListener, setupTradeParsedListener, TradeParsedMessage } from '../chrome/messages';
+import {
+  clearTradeParsedListener,
+  setupTradeParsedListener,
+  TradeParsedMessage,
+} from '../chrome/messages';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { expandPanel } from '../overlay';
@@ -26,6 +30,9 @@ export function OverlayMain() {
   const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
 
   const chapter = useOverlayStore((state) => state.chapter);
+
+  const chatTab = 0;
+  const tradeTab = chapter >= 18 ? 1 : -1;
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
   const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
@@ -109,7 +116,7 @@ export function OverlayMain() {
     if (autoOpen) {
       expandPanel(offeredGoods.length > 0);
       if (offeredGoods.length > 0) {
-        setTab(1);
+        setTab(tradeTab);
       }
     }
   }, [tradesMsg, chapter, autoOpen]);
@@ -148,7 +155,7 @@ export function OverlayMain() {
           <Tab label='Chat' />
           {chapter >= 18 && <Tab label='Trade' />}
         </Tabs>
-        {tab === 0 && (
+        {tab === chatTab && (
           <>
             <IconButton aria-label='Search chat' size='small' sx={{ ml: 1 }} onClick={() => setSearchActive((v) => !v)}>
               <SearchIcon fontSize='small' />
@@ -177,8 +184,8 @@ export function OverlayMain() {
         </IconButton>
         <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
       </Box>
-      {tab === 0 && <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />}
-      {chapter >= 18 && tab === 1 && <TradeView />}
+      {tab === chatTab && <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />}
+      {chapter >= 18 && tab === tradeTab && <TradeView />}
     </div>
   );
 }
