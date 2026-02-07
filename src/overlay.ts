@@ -280,6 +280,7 @@ const initFunc = async () => {
   }
 
   expandFn = (state: boolean) => {
+    if(collapsed === state) return; // No change needed
     if (!state) {
       // About to expand, restore last size
       draggableDiv.style.width = lastExpandedWidth;
@@ -347,12 +348,3 @@ export const ensureMinWidthAndHeight = (minWidth: number, minHeight: number) => 
 };
 
 initFunc();
-
-injectScriptTag();
-
-function injectScriptTag() {
-  const script = document.createElement('script');
-  script.setAttribute('type', 'text/javascript');
-  script.setAttribute('src', chrome.runtime.getURL('elvenassist-inject.bundle.js'));
-  (document.head || document.documentElement).appendChild(script);
-}

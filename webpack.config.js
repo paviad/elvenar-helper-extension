@@ -68,6 +68,7 @@ module.exports = (env) => [
   {
     entry: {
       'elvenassist-overlay': './src/overlay.ts',
+      'elvenassist-overlay-inject': './src/inject.ts',
       'elvenassist-tab': './src/tab.ts',
       popup: './src/popup.ts',
       'elvenassist-inject': './src/inject/inject-main.ts',

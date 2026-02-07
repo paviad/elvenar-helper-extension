@@ -40,6 +40,16 @@
         "elvenassist-overlay.bundle.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.elvenar.com/*"
+      ],
+      "js": [
+        "elvenassist-vendors.bundle.js",
+        "elvenassist-overlay-inject.bundle.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "icons": {
