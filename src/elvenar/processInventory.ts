@@ -3,11 +3,21 @@ import { InventoryItem } from '../model/inventoryItem';
 import { getAccountBySessionId } from './AccountManager';
 
 export async function processInventory(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
-  const json = untypedJson as [unknown, { responseData: InventoryItem[] }];
+  const responseJson = untypedJson as {
+    requestClass: string;
+    requestMethod: string;
+    responseData: unknown;
+  }[];
+
+  const json = responseJson.find(
+    (entry) => entry.requestClass === 'InventoryService' && entry.requestMethod === 'updateItems',
+  );
+
+  const inventoryItems = json?.responseData as InventoryItem[];
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 
   if (accountData) {
-    accountData.inventoryItems = json[1].responseData;
+    accountData.inventoryItems = inventoryItems;
   }
 }

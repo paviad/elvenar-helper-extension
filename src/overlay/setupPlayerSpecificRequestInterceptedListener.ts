@@ -14,6 +14,8 @@ export function setupPlayerSpecificRequestInterceptedListener() {
       case 'CAULDRON_DATA_PROCESSED':
       case 'OTHER_PLAYER_DATA_PROCESSED':
       case 'NOTIFICATIONS':
+      case 'CITY_RESOURCES_UPDATE':
+      case 'INVENTORY_UPDATED':
         sendInterceptedPlayerSpecificRequest(event.data);
         break;
       default:

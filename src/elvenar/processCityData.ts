@@ -28,6 +28,14 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     seasonal_events?: { type: string }[];
   };
 
+  const cityResourcesService = json.find(
+    (r) => r.requestClass === 'CityResourcesService' && r.requestMethod === 'getResources',
+  )?.responseData as {
+    resources: Record<string, number>;
+  };
+
+  const { __class__, ...cityResources } = cityResourcesService?.resources || {};
+
   const questService = json.find((r) => r.requestClass === 'QuestService')?.responseData as Quest[];
 
   const faRequirements = Object.fromEntries(
@@ -150,6 +158,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       relicBoosts,
       squadSize,
       rankingPoints,
+      cityResources,
     },
     sharedInfo,
     isDetached: false,

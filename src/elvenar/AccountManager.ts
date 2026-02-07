@@ -29,6 +29,7 @@ interface CityQuery {
   relicBoosts: Record<keyof Relics, number>;
   squadSize: number;
   rankingPoints: number;
+  cityResources?: Record<string, number>;
 }
 
 export interface FaQuest {

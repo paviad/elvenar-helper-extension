@@ -35,10 +35,20 @@ export interface NotificationsMessage extends PlayerSpecificMessageBase {
   type: 'NOTIFICATIONS';
 }
 
+export interface CityResourcesUpdateMessage extends PlayerSpecificMessageBase {
+  type: 'CITY_RESOURCES_UPDATE';
+}
+
+export interface InventoryUpdatedMessage extends PlayerSpecificMessageBase {
+  type: 'INVENTORY_UPDATED';
+}
+
 export type PlayerSpecificMessage =
   | CityDataProcessedMessage
   | InventoryDataProcessedMessage
   | TradeDataProcessedMessage
   | CauldronDataProcessedMessage
   | OtherPlayerDataProcessedMessage
-  | NotificationsMessage;
+  | NotificationsMessage
+  | CityResourcesUpdateMessage
+  | InventoryUpdatedMessage;

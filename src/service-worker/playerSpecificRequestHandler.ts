@@ -6,6 +6,7 @@ import {
 import { getAccountBySessionId, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
+import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
 import { processInventory } from '../elvenar/processInventory';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
@@ -16,7 +17,7 @@ import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
 type Processors = Record<
   PlayerSpecificMessage['type'],
-  (untypedJson: unknown, sharedInfo: ExtensionSharedInfo) => Promise<void>
+  (untypedJson: unknown, sharedInfo: ExtensionSharedInfo) => Promise<unknown>
 >;
 
 export const playerSpecificRequestHandler = async (
@@ -30,6 +31,8 @@ export const playerSpecificRequestHandler = async (
     case 'CAULDRON_DATA_PROCESSED':
     case 'OTHER_PLAYER_DATA_PROCESSED':
     case 'NOTIFICATIONS':
+    case 'CITY_RESOURCES_UPDATE':
+    case 'INVENTORY_UPDATED':
       break;
     default:
       msg.payload satisfies never;
@@ -49,9 +52,13 @@ export const playerSpecificRequestHandler = async (
     CAULDRON_DATA_PROCESSED: processCauldron,
     OTHER_PLAYER_DATA_PROCESSED: processOtherPlayerData,
     NOTIFICATIONS: processNotifications,
+    CITY_RESOURCES_UPDATE: processCityResourcesUpdate,
+    INVENTORY_UPDATED: processInventory,
   };
 
-  await processors[msg.payload.type](untypedJson, sharedInfo);
+  const accountData = getAccountBySessionId(sharedInfo.sessionId);
+
+  const result = await processors[msg.payload.type](untypedJson, sharedInfo);
 
   await saveAllAccounts();
 
@@ -61,7 +68,6 @@ export const playerSpecificRequestHandler = async (
       break;
     case 'TRADE_DATA_PROCESSED':
       {
-        const accountData = getAccountBySessionId(sharedInfo.sessionId);
         if (accountData) {
           await tradeOpenedCallback(accountData);
         }
@@ -70,9 +76,12 @@ export const playerSpecificRequestHandler = async (
     case 'OTHER_PLAYER_DATA_PROCESSED':
       await sendOtherPlayerCityDataUpdatedMessage();
       break;
+      break;
     case 'INVENTORY_DATA_PROCESSED':
     case 'CAULDRON_DATA_PROCESSED':
     case 'NOTIFICATIONS':
+    case 'CITY_RESOURCES_UPDATE':
+    case 'INVENTORY_UPDATED':
       break;
     default:
       msg.payload satisfies never;

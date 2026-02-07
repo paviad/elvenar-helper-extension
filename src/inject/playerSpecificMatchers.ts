@@ -1,6 +1,18 @@
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { PlayerSpecificMessage } from './playerSpecificMessages';
 
-export const playerSpecificMatchers = [
+export interface PlayerSpecificMatcherSpecification {
+  id: string;
+  messageType: PlayerSpecificMessage['type'];
+  regex?: RegExp;
+  responseSelector?: {
+    requestClass: string;
+    requestMethod: string;
+  };
+  local?: (responseText: string, sharedInfo: ExtensionSharedInfo) => Promise<unknown>; // local handling, don't propagate to overlay / service worker
+}
+
+export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   {
     id: 'cityData',
     regex:
@@ -31,8 +43,20 @@ export const playerSpecificMatchers = [
       /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[\d+\],"requestClass":"OtherPlayerService","requestMethod":"visitPlayer","requestId":\d+}]/,
     messageType: 'OTHER_PLAYER_DATA_PROCESSED',
   },
-] satisfies {
-  id: string;
-  messageType: PlayerSpecificMessage['type'];
-  regex: RegExp;
-}[];
+  {
+    id: 'cityResourcesUpdate',
+    responseSelector: {
+      requestClass: 'CityResourcesService',
+      requestMethod: 'getResources',
+    },
+    messageType: 'CITY_RESOURCES_UPDATE',
+  },
+  {
+    id: 'inventoryUpdate',
+    responseSelector: {
+      requestClass: 'InventoryService',
+      requestMethod: 'updateItems',
+    },
+    messageType: 'INVENTORY_DATA_PROCESSED',
+  },
+];

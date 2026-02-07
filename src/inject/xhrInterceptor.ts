@@ -3,7 +3,7 @@ import { decodeRequestBody } from './decodeRequestBody';
 import { getDecodedText } from './getDecodedText';
 import { nonSpecificMatchers } from './nonSpecificMatchers';
 import { NonSpecificMessage } from './nonSpecificMessages';
-import { playerSpecificMatchers } from './playerSpecificMatchers';
+import { playerSpecificMatchers, PlayerSpecificMatcherSpecification } from './playerSpecificMatchers';
 import { PlayerSpecificMessage } from './playerSpecificMessages';
 
 declare global {
@@ -42,7 +42,8 @@ export class GlobalHttpInterceptorService {
       const nonSpecificMatchFound = nonSpecificMatchers.find((matcher) => requestUrl.match(matcher.regex));
 
       const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
-      let playerSpecificMatchFound: (typeof playerSpecificMatchers)[0] | undefined;
+      let playerSpecificMatchFound: PlayerSpecificMatcherSpecification | undefined;
+      let responseSelectorMatchFound: PlayerSpecificMatcherSpecification | undefined;
 
       const urlMatch = requestUrl.match(urlMatcher);
 
@@ -77,13 +78,49 @@ export class GlobalHttpInterceptorService {
         sharedInfo.sessionId = sessionId;
         sharedInfo.reqBody = decodedString;
 
-        playerSpecificMatchFound = playerSpecificMatchers.find((matcher) => decodedString.match(matcher.regex));
+        playerSpecificMatchFound = playerSpecificMatchers.find(
+          (matcher) => matcher.regex && decodedString.match(matcher.regex),
+        );
       }
 
       this.onreadystatechange = (...cbArgs) => {
         if (this.readyState === 4) {
+          const decodedResponse = getDecodedText(this);
+
+          if (decodedResponse && urlMatch) {
+            try {
+              const responseGeneric = JSON.parse(decodedResponse) as {
+                requestClass: string;
+                requestMethod: string;
+              }[];
+
+              const responseSelectorMatch = playerSpecificMatchers.find(
+                (matcher) =>
+                  matcher.responseSelector &&
+                  responseGeneric.some(
+                    (entry) =>
+                      entry.requestClass === matcher.responseSelector?.requestClass &&
+                      entry.requestMethod === matcher.responseSelector?.requestMethod,
+                  ),
+              );
+
+              if (responseSelectorMatch) {
+                const message = {
+                  type: responseSelectorMatch.messageType,
+                  specific: true,
+                  payload: {
+                    decodedResponse,
+                    sharedInfo,
+                  },
+                } satisfies PlayerSpecificMessage;
+                window.postMessage(message, '*');
+              }
+            } catch (error) {
+              console.error('Error parsing response JSON:', error);
+            }
+          }
+
           if (notificationServiceRequest) {
-            const decodedResponse = getDecodedText(this);
             if (decodedResponse) {
               const message = {
                 type: 'NOTIFICATIONS',
@@ -98,7 +135,6 @@ export class GlobalHttpInterceptorService {
           }
 
           if (nonSpecificMatchFound) {
-            const decodedResponse = getDecodedText(this);
             if (decodedResponse) {
               const message = {
                 type: nonSpecificMatchFound.messageType,
@@ -113,7 +149,11 @@ export class GlobalHttpInterceptorService {
           }
 
           if (playerSpecificMatchFound) {
-            const decodedResponse = getDecodedText(this);
+            if (playerSpecificMatchFound.local) {
+              if (decodedResponse) {
+                playerSpecificMatchFound.local?.(decodedResponse, sharedInfo);
+              }
+            }
             if (decodedResponse) {
               const message = {
                 type: playerSpecificMatchFound.messageType,
