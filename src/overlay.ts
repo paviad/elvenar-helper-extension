@@ -285,6 +285,10 @@ const initFunc = async () => {
       // About to expand, restore last size
       draggableDiv.style.width = lastExpandedWidth;
       draggableDiv.style.height = lastExpandedHeight;
+    } else {
+      // About to collapse, save current size
+      lastExpandedWidth = draggableDiv.style.width || '250px';
+      lastExpandedHeight = draggableDiv.style.height || '450px';
     }
     collapsed = state;
     updateStateByCollapsed();
