@@ -2,7 +2,9 @@
 
 [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/kikdpnpfhakidgkojboebobjlknflilc)](https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb)
 [![Firefox Add-On](https://img.shields.io/amo/v/elven-assist)](https://addons.mozilla.org/en-US/firefox/addon/elven-assist/)
-[![Safari Add-On](https://img.shields.io/itunes/v/com.paviad.elven-assist)](https://apps.apple.com/us/app/elvenassist/id6470343360)
+[![iTunes App Store](https://img.shields.io/itunes/v/6757679219)](https://apps.apple.com/us/app/elvenassist/id6757679219)
+
+
 
 > **⚠️ UNOFFICIAL FAN PROJECT**
 >
