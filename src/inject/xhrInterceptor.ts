@@ -1,5 +1,6 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { decodeRequestBody } from './decodeRequestBody';
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { getDecodedText } from './getDecodedText';
 import { nonSpecificMatchers, NonSpecificMatcherSpecification } from './nonSpecificMatchers';
 import { NonSpecificMessage } from './nonSpecificMessages';
@@ -180,10 +181,3 @@ function toAbsoluteUrl(url: string): string {
   }
 }
 
-interface ElvenarRequestResponseEntry {
-  __class__: string;
-  requestData: unknown;
-  requestClass: string;
-  requestMethod: string;
-  requestId: number;
-}

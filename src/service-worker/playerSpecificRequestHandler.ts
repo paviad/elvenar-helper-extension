@@ -12,12 +12,13 @@ import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processTradeData } from '../elvenar/processTradeData';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
 type Processors = Record<
   PlayerSpecificMessage['type'],
-  (untypedJson: unknown, sharedInfo: ExtensionSharedInfo) => Promise<unknown>
+  (untypedResponseArray: ElvenarRequestResponseEntry[], sharedInfo: ExtensionSharedInfo) => Promise<unknown>
 >;
 
 export const playerSpecificRequestHandler = async (

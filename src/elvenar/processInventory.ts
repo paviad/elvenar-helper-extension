@@ -1,19 +1,14 @@
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { InventoryItem } from '../model/inventoryItem';
 import { getAccountBySessionId } from './AccountManager';
+import { extractElvenarResponse } from './extractElvenarResponse';
 
-export async function processInventory(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
-  const responseJson = untypedJson as {
-    requestClass: string;
-    requestMethod: string;
-    responseData: unknown;
-  }[];
-
-  const json = responseJson.find(
-    (entry) => entry.requestClass === 'InventoryService' && entry.requestMethod === 'updateItems',
-  );
-
-  const inventoryItems = json?.responseData as InventoryItem[];
+export async function processInventory(
+  untypedResponseArray: ElvenarRequestResponseEntry[],
+  sharedInfo: ExtensionSharedInfo,
+) {
+  const inventoryItems = extractElvenarResponse<InventoryItem>(untypedResponseArray, 'InventoryService', 'updateItems');
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 
