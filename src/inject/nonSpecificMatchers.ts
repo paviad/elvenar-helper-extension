@@ -1,6 +1,12 @@
 import { NonSpecificMessage } from './nonSpecificMessages';
 
-export const nonSpecificMatchers = [
+export interface NonSpecificMatcherSpecification {
+  id: string;
+  messageType: NonSpecificMessage['type'];
+  regex: RegExp;
+}
+
+export const nonSpecificMatchers: NonSpecificMatcherSpecification[] = [
   {
     id: 'featureBuildings',
     messageType: 'BUILDINGS_FEATURE',
@@ -49,8 +55,4 @@ export const nonSpecificMatchers = [
     regex:
       /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.city\.EvolvingBuildings_[a-f0-9]{32}\.json$/,
   },
-] satisfies {
-  id: string;
-  messageType: NonSpecificMessage['type'];
-  regex: RegExp;
-}[];
+];

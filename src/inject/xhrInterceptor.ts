@@ -1,7 +1,7 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { decodeRequestBody } from './decodeRequestBody';
 import { getDecodedText } from './getDecodedText';
-import { nonSpecificMatchers } from './nonSpecificMatchers';
+import { nonSpecificMatchers, NonSpecificMatcherSpecification } from './nonSpecificMatchers';
 import { NonSpecificMessage } from './nonSpecificMessages';
 import { playerSpecificMatchers, PlayerSpecificMatcherSpecification } from './playerSpecificMatchers';
 import { PlayerSpecificMessage } from './playerSpecificMessages';
@@ -9,6 +9,10 @@ import { PlayerSpecificMessage } from './playerSpecificMessages';
 declare global {
   interface XMLHttpRequest {
     _requestUrl?: string;
+    sharedInfo: ExtensionSharedInfo;
+    urlMatch?: RegExpMatchArray | null;
+    nonSpecificMatchFound?: NonSpecificMatcherSpecification;
+    matchesFound: PlayerSpecificMatcherSpecification[];
   }
 }
 
@@ -31,23 +35,8 @@ export class GlobalHttpInterceptorService {
       password?: string | null,
     ) {
       this._requestUrl = url.toString();
-      // Add your logic here to modify the request, add headers, etc.
-      originalOpen.call(this, method, url, async as boolean, user, password);
-    };
 
-    // Intercept the response
-    XMLHttpRequest.prototype.send = function (body, ...args) {
-      const originalOnReadyStateChange = this.onreadystatechange;
-      const requestUrl = toAbsoluteUrl(this._requestUrl || '');
-      const nonSpecificMatchFound = nonSpecificMatchers.find((matcher) => requestUrl.match(matcher.regex));
-
-      const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
-      let playerSpecificMatchFound: PlayerSpecificMatcherSpecification | undefined;
-      let responseSelectorMatchFound: PlayerSpecificMatcherSpecification | undefined;
-
-      const urlMatch = requestUrl.match(urlMatcher);
-
-      const sharedInfo: ExtensionSharedInfo = {
+      this.sharedInfo = {
         reqUrl: '',
         reqReferrer: '',
         worldId: '',
@@ -56,115 +45,110 @@ export class GlobalHttpInterceptorService {
         reqBody: '',
       };
 
-      let notificationServiceRequest: ElvenarRequestEntry | undefined;
+      this.matchesFound = [];
+      // Add your logic here to modify the request, add headers, etc.
+      originalOpen.call(this, method, url, async as boolean, user, password);
+    };
 
-      if (urlMatch) {
+    // Intercept the response
+    XMLHttpRequest.prototype.send = function (body, ...args) {
+      const originalOnReadyStateChange = this.onreadystatechange;
+      const requestUrl = toAbsoluteUrl(this._requestUrl || '');
+      this.nonSpecificMatchFound = nonSpecificMatchers.find((matcher) => requestUrl.match(matcher.regex));
+
+      const urlMatcher = /^(https:\/\/(.*?)\.elvenar\.com\/)game\/json\?h=([\w\d]+)$/;
+
+      this.urlMatch = requestUrl.match(urlMatcher);
+
+      if (!this.urlMatch && !this.nonSpecificMatchFound) {
+        originalSend.apply(this, [body, ...args]);
+        return;
+      }
+
+      if (this.urlMatch) {
         const decodedString = decodeRequestBody(body);
 
-        const parsedRequest = parseElvenarRequest(decodedString);
-        notificationServiceRequest = parsedRequest.find(
-          (req) =>
-            req.requestClass === 'NotificationService' &&
-            ['getAllNotifications', 'getPreviewNotifications'].includes(req.requestMethod),
+        const referer = this.urlMatch[1];
+        const worldId = this.urlMatch[2];
+        const sessionId = this.urlMatch[3];
+
+        this.sharedInfo.reqReferrer = referer;
+        this.sharedInfo.worldId = worldId;
+        this.sharedInfo.reqUrl = requestUrl;
+        this.sharedInfo.sessionId = sessionId;
+        this.sharedInfo.reqBody = decodedString;
+
+        const requestGeneric = JSON.parse(decodedString.substring(10)) as ElvenarRequestResponseEntry[];
+
+        const requestSelectorMatches = playerSpecificMatchers.filter(
+          (matcher) =>
+            matcher.requestSelector &&
+            requestGeneric.some(
+              (entry) =>
+                entry.requestClass === matcher.requestSelector?.requestClass &&
+                entry.requestMethod === matcher.requestSelector?.requestMethod,
+            ),
         );
 
-        const referer = urlMatch[1];
-        const worldId = urlMatch[2];
-        const sessionId = urlMatch[3];
-
-        sharedInfo.reqReferrer = referer;
-        sharedInfo.worldId = worldId;
-        sharedInfo.reqUrl = requestUrl;
-        sharedInfo.sessionId = sessionId;
-        sharedInfo.reqBody = decodedString;
-
-        playerSpecificMatchFound = playerSpecificMatchers.find(
+        const playerSpecificMatchesFound = playerSpecificMatchers.filter(
           (matcher) => matcher.regex && decodedString.match(matcher.regex),
         );
+
+        // Combine requestSelectorMatches and playerSpecificMatchesFound
+        this.matchesFound = [...requestSelectorMatches, ...playerSpecificMatchesFound];
       }
 
       this.onreadystatechange = (...cbArgs) => {
         if (this.readyState === 4) {
           const decodedResponse = getDecodedText(this);
 
-          if (decodedResponse && urlMatch) {
-            try {
-              const responseGeneric = JSON.parse(decodedResponse) as {
-                requestClass: string;
-                requestMethod: string;
-              }[];
+          try {
+            if (decodedResponse) {
+              if (this.urlMatch) {
+                const responseGeneric = JSON.parse(decodedResponse) as ElvenarRequestResponseEntry[];
 
-              const responseSelectorMatch = playerSpecificMatchers.find(
-                (matcher) =>
-                  matcher.responseSelector &&
-                  responseGeneric.some(
-                    (entry) =>
-                      entry.requestClass === matcher.responseSelector?.requestClass &&
-                      entry.requestMethod === matcher.responseSelector?.requestMethod,
-                  ),
-              );
+                const responseSelectorMatches = playerSpecificMatchers.filter(
+                  (matcher) =>
+                    matcher.responseSelector &&
+                    responseGeneric.some(
+                      (entry) =>
+                        entry.requestClass === matcher.responseSelector?.requestClass &&
+                        entry.requestMethod === matcher.responseSelector?.requestMethod,
+                    ),
+                );
 
-              if (responseSelectorMatch) {
+                this.matchesFound.push(...responseSelectorMatches);
+
+                for (const match of this.matchesFound) {
+                  if (match.local) {
+                    match.local?.(decodedResponse, this.sharedInfo);
+                  }
+                  const message = {
+                    type: match.messageType,
+                    specific: true,
+                    payload: {
+                      decodedResponse,
+                      sharedInfo: this.sharedInfo,
+                    },
+                  } satisfies PlayerSpecificMessage;
+                  window.postMessage(message, '*');
+                }
+              }
+
+              if (this.nonSpecificMatchFound) {
                 const message = {
-                  type: responseSelectorMatch.messageType,
-                  specific: true,
+                  type: this.nonSpecificMatchFound.messageType,
+                  specific: false,
                   payload: {
                     decodedResponse,
-                    sharedInfo,
+                    sharedInfo: this.sharedInfo,
                   },
-                } satisfies PlayerSpecificMessage;
+                } satisfies NonSpecificMessage;
                 window.postMessage(message, '*');
               }
-            } catch (error) {
-              console.error('Error parsing response JSON:', error);
             }
-          }
-
-          if (notificationServiceRequest) {
-            if (decodedResponse) {
-              const message = {
-                type: 'NOTIFICATIONS',
-                specific: true,
-                payload: {
-                  decodedResponse,
-                  sharedInfo,
-                },
-              } satisfies PlayerSpecificMessage;
-              window.postMessage(message, '*');
-            }
-          }
-
-          if (nonSpecificMatchFound) {
-            if (decodedResponse) {
-              const message = {
-                type: nonSpecificMatchFound.messageType,
-                specific: false,
-                payload: {
-                  decodedResponse,
-                  sharedInfo,
-                },
-              } satisfies NonSpecificMessage;
-              window.postMessage(message, '*');
-            }
-          }
-
-          if (playerSpecificMatchFound) {
-            if (playerSpecificMatchFound.local) {
-              if (decodedResponse) {
-                playerSpecificMatchFound.local?.(decodedResponse, sharedInfo);
-              }
-            }
-            if (decodedResponse) {
-              const message = {
-                type: playerSpecificMatchFound.messageType,
-                specific: true,
-                payload: {
-                  decodedResponse,
-                  sharedInfo,
-                },
-              } satisfies PlayerSpecificMessage;
-              window.postMessage(message, '*');
-            }
+          } catch (error) {
+            console.error('Error parsing response JSON:', error);
           }
         }
 
@@ -196,16 +180,10 @@ function toAbsoluteUrl(url: string): string {
   }
 }
 
-interface ElvenarRequestEntry {
+interface ElvenarRequestResponseEntry {
   __class__: string;
   requestData: unknown;
   requestClass: string;
   requestMethod: string;
   requestId: number;
-}
-
-function parseElvenarRequest(requestBody: string): ElvenarRequestEntry[] {
-  const requestJson = requestBody.substring(10);
-  const parsed = JSON.parse(requestJson) as ElvenarRequestEntry[];
-  return parsed;
 }

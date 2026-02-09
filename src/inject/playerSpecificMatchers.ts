@@ -5,6 +5,10 @@ export interface PlayerSpecificMatcherSpecification {
   id: string;
   messageType: PlayerSpecificMessage['type'];
   regex?: RegExp;
+  requestSelector?: {
+    requestClass: string;
+    requestMethod: string;
+  };
   responseSelector?: {
     requestClass: string;
     requestMethod: string;
@@ -13,6 +17,22 @@ export interface PlayerSpecificMatcherSpecification {
 }
 
 export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
+  {
+    id: 'notifications',
+    requestSelector: {
+      requestClass: 'NotificationService',
+      requestMethod: 'getAllNotifications',
+    },
+    messageType: 'NOTIFICATIONS',
+  },
+  {
+    id: 'notifications',
+    requestSelector: {
+      requestClass: 'NotificationService',
+      requestMethod: 'getPreviewNotifications',
+    },
+    messageType: 'NOTIFICATIONS',
+  },
   {
     id: 'cityData',
     regex:
