@@ -18,8 +18,8 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 600,
-          height: 400,
+          width: 650,
+          height: 410,
           p: 0,
           outline: 'none',
           display: 'flex',
@@ -53,9 +53,9 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
             v{EXTENSION_VERSION}
           </Typography>
         </Box>
-        <Box sx={{ flex: 1, p: 3, overflowY: 'auto' }}>
+        <Box sx={{ flex: 1, p: 3, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           {/* --- HELP CONTENT START --- */}
-          <Typography id='help-modal-description' sx={{ color: '#e0e0e0', textAlign: 'left' }}>
+          <Typography id='help-modal-description' component="div" sx={{ color: '#e0e0e0', textAlign: 'left', flex: 1 }}>
             <Box component='ol' sx={{ pl: 3, mt: 0, mb: 0, textAlign: 'left' }}>
               <li style={{ marginBottom: 16 }}>
                 <img
@@ -99,6 +99,13 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
             </Box>
           </Typography>
           {/* --- HELP CONTENT END --- */}
+
+          {/* Special Thanks Footer */}
+          <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid #444', textAlign: 'center' }}>
+            <Typography sx={{ fontSize: 13, color: '#888', fontStyle: 'italic' }}>
+              Special Thanks to <span style={{ color: '#ccc', fontWeight: 600 }}>A S L A N</span>
+            </Typography>
+          </Box>
         </Box>
       </Paper>
     </Modal>

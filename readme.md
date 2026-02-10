@@ -122,6 +122,10 @@ To release a new version (e.g., `5.8.6`):
 
 Contributions are welcome! Please open an issue or submit a pull request with your suggestions or improvements.
 
+## Acknowledgements
+
+Special Thanks to A S L A N for testing and community support.
+
 ## License
 
 This project is licensed under the MIT License.

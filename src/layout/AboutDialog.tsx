@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Typography } from '@mui/material';
 import React from 'react';
 import { EXTENSION_DATE, EXTENSION_NAME, EXTENSION_VERSION } from './extensionAboutInfo';
 
@@ -7,6 +7,7 @@ export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => v
     <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <DialogContentText
+          component="div"
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -22,6 +23,10 @@ export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => v
               Release Date: {EXTENSION_DATE}
             </span>
           )}
+
+          <Typography variant="body2" sx={{ mt: 3, fontStyle: 'italic', color: 'text.secondary' }}>
+            Special Thanks to <strong>A S L A N</strong>
+          </Typography>
         </DialogContentText>
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
