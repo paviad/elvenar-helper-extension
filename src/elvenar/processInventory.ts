@@ -8,7 +8,11 @@ export async function processInventory(
   untypedResponseArray: ElvenarRequestResponseEntry[],
   sharedInfo: ExtensionSharedInfo,
 ) {
-  const inventoryItems = extractElvenarResponse<InventoryItem>(untypedResponseArray, 'InventoryService', 'updateItems');
+  const inventoryItems = extractElvenarResponse<InventoryItem[]>(
+    untypedResponseArray,
+    'InventoryService',
+    'updateItems',
+  ).flatMap((items) => items);
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 

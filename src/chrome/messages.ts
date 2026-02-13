@@ -132,7 +132,7 @@ export const sendInterceptedPlayerSpecificRequest = async (payload: PlayerSpecif
       payload,
     } satisfies InterceptedPlayerSpecificRequest);
   } catch (e) {
-    console.log('ElvenAssist: Error sending interceptedPlayerSpecificRequest:', e);
+    console.log('ElvenAssist: Error sending interceptedPlayerSpecificRequest:', e, payload);
   }
 };
 

@@ -73,7 +73,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
       accountName,
       cityName: compositeCityName,
       url,
-      tabId: sharedInfo.tabId,
+      tabId: 0,
       sessionId: sharedInfo.sessionId,
       badges: {
         badge_brewery: 0,
