@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "ElvenAssist",
-  "version": "6.0.8",
+  "version": "6.0.9",
   "description": "A comprehensive unofficial toolkit for Elvenar featuring a live city planner, inventory manager, and FA tracker.",
   "permissions": [
     "storage",
