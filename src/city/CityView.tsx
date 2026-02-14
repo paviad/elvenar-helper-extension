@@ -104,7 +104,6 @@ export function CityView() {
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
-              flexGrow: 1, // Allow this section to grow and scroll
             }}
           >
             <RenderLegend />
