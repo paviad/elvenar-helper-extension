@@ -138,6 +138,8 @@ export const CityProvider = ({
       setRankingPoints(accountData.cityQuery.rankingPoints || 0);
     }
     setSearchTerm('');
+    setMoveLog([]);
+    setRedoStack([]);
   }, [accountId, forceUpdate]);
 
   React.useEffect(() => {
