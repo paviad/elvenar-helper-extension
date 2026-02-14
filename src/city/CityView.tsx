@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box } from '@mui/material';
 import { getAccountById } from '../elvenar/AccountManager';
 import { CityEntityEx } from '../model/cityEntity';
 import { UnlockedArea } from '../model/unlockedArea';
@@ -58,78 +59,86 @@ export function CityView() {
       forceUpdate={forceUpdate}
       triggerForceUpdate={triggerForceUpdate}
     >
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
         {/* Left Column: Settings & Move Log */}
-        <div
-          style={{
-            display: 'flex',
+        <Box
+          sx={{
+            display: { xs: 'none', lg: 'flex' }, // Hide on screens smaller than 1200px
             flexDirection: 'column',
-            marginRight: 16,
+            mr: 2,
             position: 'sticky',
             top: 0,
+            maxHeight: '100vh',
           }}
         >
           <CitySettings />
           <RenderMoveLog />
-        </div>
+        </Box>
 
         {/* Center / Grid - Flex grow to fill space */}
-        <div style={{ flexGrow: 1, overflow: 'hidden' }}>
+        <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
           <RenderCityGrid />
-        </div>
+        </Box>
 
         {/* Right Sidebar - Legend + Resource Summary */}
-        <div
-          style={{
-            display: 'flex',
+        <Box
+          sx={{
+            display: { xs: 'none', lg: 'flex' }, // Hide on screens smaller than 1200px
             flexDirection: 'column',
             width: 320,
             minWidth: 320,
-            borderLeft: '1px solid rgba(0,0,0,0.12)',
-            backgroundColor: '#f5f5f5',
+            borderLeft: 1,
+            borderColor: 'divider',
+            bgcolor: 'grey.100', // Replaces #f5f5f5
             // Sticky positioning to keep sidebar in view while page scrolls
             position: 'sticky',
             top: 0,
+            height: '100vh', // Ensure sidebar spans viewport height for internal scrolling if needed
           }}
         >
           {/* Legend - Scrollable Area */}
-          <div
-            style={{
+          <Box
+            sx={{
               overflowY: 'auto',
-              padding: '8px',
+              p: 1,
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px',
+              gap: 2,
+              flexGrow: 1, // Allow this section to grow and scroll
             }}
           >
             <RenderLegend />
-          </div>
+          </Box>
 
           {/* Working State */}
-          <div
-            style={{
-              padding: '8px',
-              borderTop: '1px solid rgba(0,0,0,0.12)',
-              backgroundColor: '#f5f5f5',
+          <Box
+            sx={{
+              p: 1,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'grey.100',
               boxShadow: '0 -2px 5px rgba(0,0,0,0.05)',
+              zIndex: 1,
             }}
           >
             <WorkingState />
-          </div>
+          </Box>
 
           {/* Resource Summary - Fixed/Sticky at Bottom */}
-          <div
-            style={{
-              padding: '8px',
-              borderTop: '1px solid rgba(0,0,0,0.12)',
-              backgroundColor: '#f5f5f5',
+          <Box
+            sx={{
+              p: 1,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'grey.100',
               boxShadow: '0 -2px 5px rgba(0,0,0,0.05)',
+              zIndex: 1,
             }}
           >
             <CityResourceSummary />
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </CityProvider>
   );
 }
