@@ -1,16 +1,30 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material';
 import React from 'react';
-import { useTabStore } from '../../util/tabStore';
 import { useCity } from '../CityContext';
 import { colorDescriptions } from './colorDescriptions';
 import { getTypeColor } from './getTypeColor';
+import { getFromStorage, saveToStorage } from '../../chrome/storage';
 
 export function RenderLegend() {
   const s = useCity();
   const { allTypes } = s;
-  const legendCollapsed = useTabStore((state) => state.legendCollapsed);
-  const setLegendCollapsed = useTabStore((state) => state.setLegendCollapsed);
+  const [legendCollapsed, setLegendCollapsed] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadLegendCollapsed() {
+      const lc = await getFromStorage('legend_collapsed');
+      setLegendCollapsed(lc === 'true');
+    }
+    loadLegendCollapsed();
+  }, []);
+
+  React.useEffect(() => {
+    async function Do() {
+      await saveToStorage('legend_collapsed', legendCollapsed ? 'true' : 'false');
+    }
+    Do();
+  }, [legendCollapsed]);
 
   return (
     <Box>
