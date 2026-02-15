@@ -47,6 +47,7 @@ yarn.lock
 # miscellaneous
 bin/
 secrets/
+/secrets
 setvars.cmd
 temp_firefox_sign/
 crx/
