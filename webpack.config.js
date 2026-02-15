@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-const commonOptimization = (env)=>({
+const commonOptimization = (env) => ({
   minimize: !!env.production,
   usedExports: true,
 });
@@ -72,6 +72,8 @@ module.exports = (env) => [
       'elvenassist-tab': './src/tab.ts',
       popup: './src/popup.ts',
       'elvenassist-inject': './src/inject/inject-main.ts',
+      'elvenassist-spirewizard': './src/spirewizard/spirewizard-main.ts',
+      'elvenassist-spirewizard-inject': './src/spirewizard/spirewizard-inject.ts',
     },
     ...commonConfig(env),
     optimization: {

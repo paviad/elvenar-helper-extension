@@ -7,7 +7,8 @@
     "storage",
     "webRequest",
     "https://*.elvenar.com/*",
-    "https://*.innogamescdn.com/*"
+    "https://*.innogamescdn.com/*",
+    "https://javascriptorian.com/*"
   ],
   "background": {
     "scripts": [
@@ -23,6 +24,7 @@
     "icon32.png",
     "sprite.png",
     "elvenassist-inject.bundle.js",
+    "elvenassist-spirewizard-inject.bundle.js",
     "helper.png"
   ],
   "content_scripts": [
@@ -45,6 +47,16 @@
         "elvenassist-overlay-inject.bundle.js"
       ],
       "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://javascriptorian.com/*"
+      ],
+      "js": [
+        "elvenassist-vendors.bundle.js",
+        "elvenassist-spirewizard.bundle.js"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "icons": {

@@ -10,6 +10,8 @@ import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdat
 import { processInventory } from '../elvenar/processInventory';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
+import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
+import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
 import { processTradeData } from '../elvenar/processTradeData';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
@@ -34,6 +36,8 @@ export const playerSpecificRequestHandler = async (
     case 'NOTIFICATIONS':
     case 'CITY_RESOURCES_UPDATE':
     case 'INVENTORY_UPDATED':
+    case 'SPIRE_ENCOUNTER_START':
+    case 'SPIRE_DIPLOMACY_SUBMIT':
       break;
     default:
       msg.payload satisfies never;
@@ -55,6 +59,8 @@ export const playerSpecificRequestHandler = async (
     NOTIFICATIONS: processNotifications,
     CITY_RESOURCES_UPDATE: processCityResourcesUpdate,
     INVENTORY_UPDATED: processInventory,
+    SPIRE_ENCOUNTER_START: processSpireEncounterStart,
+    SPIRE_DIPLOMACY_SUBMIT: processSpireDiplomacySubmit,
   };
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
@@ -77,7 +83,10 @@ export const playerSpecificRequestHandler = async (
     case 'OTHER_PLAYER_DATA_PROCESSED':
       await sendOtherPlayerCityDataUpdatedMessage();
       break;
+    case 'SPIRE_ENCOUNTER_START':
+      // await sendSpireEncounterStartedMessage();
       break;
+    case 'SPIRE_DIPLOMACY_SUBMIT':
     case 'INVENTORY_DATA_PROCESSED':
     case 'CAULDRON_DATA_PROCESSED':
     case 'NOTIFICATIONS':

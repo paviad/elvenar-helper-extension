@@ -79,4 +79,19 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
     },
     messageType: 'INVENTORY_DATA_PROCESSED',
   },
+  {
+    id: 'spireEncounterStart',
+    regex:
+      //    2cab212bab[{"__class__":"ServerRequestVO","requestData":[14]  ,"requestClass":"SpireService","requestMethod":"getEncounter","requestId":44}]
+      /[a-zA-Z0-9]+\[{"__class__":"ServerRequestVO","requestData":\[\d+],"requestClass":"SpireService","requestMethod":"getEncounter","requestId":\d+}]/,
+    messageType: 'SPIRE_ENCOUNTER_START',
+  },
+  {
+    id: 'spireDiplomacySubmit',
+    requestSelector: {
+      requestClass: 'SpireDiplomacyService',
+      requestMethod: 'submit',
+    },
+    messageType: 'SPIRE_DIPLOMACY_SUBMIT',
+  }
 ];

@@ -280,7 +280,7 @@ const initFunc = async () => {
   }
 
   expandFn = (state: boolean) => {
-    if(collapsed === state) return; // No change needed
+    if (collapsed === state) return; // No change needed
     if (!state) {
       // About to expand, restore last size
       draggableDiv.style.width = lastExpandedWidth;

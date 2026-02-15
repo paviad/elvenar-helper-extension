@@ -43,6 +43,14 @@ export interface InventoryUpdatedMessage extends PlayerSpecificMessageBase {
   type: 'INVENTORY_UPDATED';
 }
 
+export interface SpireEncounterStartMessage extends PlayerSpecificMessageBase {
+  type: 'SPIRE_ENCOUNTER_START';
+}
+
+export interface SpireDiplomacySubmitMessage extends PlayerSpecificMessageBase {
+  type: 'SPIRE_DIPLOMACY_SUBMIT';
+}
+
 export type PlayerSpecificMessage =
   | CityDataProcessedMessage
   | InventoryDataProcessedMessage
@@ -51,4 +59,6 @@ export type PlayerSpecificMessage =
   | OtherPlayerDataProcessedMessage
   | NotificationsMessage
   | CityResourcesUpdateMessage
-  | InventoryUpdatedMessage;
+  | InventoryUpdatedMessage
+  | SpireEncounterStartMessage
+  | SpireDiplomacySubmitMessage;
