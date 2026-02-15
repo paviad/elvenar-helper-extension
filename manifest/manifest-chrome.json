@@ -24,7 +24,8 @@
         "icon32.png",
         "sprite.png",
         "elvenassist-inject.bundle.js",
-        "helper.png"
+        "helper.png",
+        "splitview.jpg"
       ],
       "matches": [
         "https://*.elvenar.com/*"

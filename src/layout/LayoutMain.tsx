@@ -1,5 +1,6 @@
 import MenuIcon from '@mui/icons-material/Menu';
-import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; // Import Help Icon
+import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography, Tooltip, Badge } from '@mui/material';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { getFromStorage, saveToStorage } from '../chrome/storage';
@@ -154,6 +155,7 @@ export const LayoutMain = () => {
           >
             <MenuItem onClick={handleAboutOpen}>About</MenuItem>
           </Menu>
+          
           <Button component={NavLink} to='/city' color='inherit' sx={{ mr: 2 }}>
             City
           </Button>
@@ -164,10 +166,35 @@ export const LayoutMain = () => {
             Fellowship Adventure
           </Button>
 
-          {/* <Button component={NavLink} to='/trade' color='inherit' sx={{ mr: 2 }}>
-            Trade
-          </Button> */}
+          {/* Spacer to push remaining items to the right */}
           <Box sx={{ flexGrow: 1 }} />
+
+          {/* Help Button - With New Badge wrapped around button */}
+          <Badge 
+            badgeContent="NEW" 
+            color="secondary" 
+            sx={{ 
+              mr: 6,
+              '& .MuiBadge-badge': { 
+                fontSize: '0.6rem', 
+                height: 16, 
+                minWidth: 16, 
+                px: 0.5,
+              } 
+            }}
+          >
+            <Button
+              component={NavLink}
+              to='/help'
+              color='inherit'
+              startIcon={<HelpOutlineIcon />}
+              sx={{ textTransform: 'none', fontSize: '1rem' }}
+            >
+              Help
+            </Button>
+          </Badge>
+
+          {/* Account Selector */}
           <Box
             sx={{ ml: 'auto', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}
             onClick={handleAccountClick}

@@ -7,6 +7,7 @@ import { InventoryMain } from '../inventory/InventoryMain';
 import { LayoutMain } from '../layout/LayoutMain';
 import { Activate } from './Activate';
 import { CityMain } from './CityMain';
+import { HelpPage } from '../help/HelpPage';
 
 export function createReactUi() {
   const root = createRoot(document.getElementById('root') as HTMLElement);
@@ -21,6 +22,7 @@ export function createReactUi() {
             <Route path='/inventory' element={<InventoryMain />} />
             {/* <Route path='/trade' element={<TradeMain />} /> */}
             <Route path='/fellowship-adventure' element={<FellowshipAdventure />} />
+            <Route path='/help' element={<HelpPage />} />
             <Route path='*' element={<Navigate to='/city' replace />} />
           </Route>
         </Routes>

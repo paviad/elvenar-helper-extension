@@ -25,7 +25,8 @@
     "sprite.png",
     "elvenassist-inject.bundle.js",
     "elvenassist-spirewizard-inject.bundle.js",
-    "helper.png"
+    "helper.png",
+    "splitview.jpg"
   ],
   "content_scripts": [
     {
