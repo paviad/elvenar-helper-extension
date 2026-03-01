@@ -55,7 +55,7 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
         </Box>
         <Box sx={{ flex: 1, p: 3, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           {/* --- HELP CONTENT START --- */}
-          <Typography id='help-modal-description' component="div" sx={{ color: '#e0e0e0', textAlign: 'left', flex: 1 }}>
+          <Typography id='help-modal-description' component='div' sx={{ color: '#e0e0e0', textAlign: 'left', flex: 1 }}>
             <Box component='ol' sx={{ pl: 3, mt: 0, mb: 0, textAlign: 'left' }}>
               <li style={{ marginBottom: 16 }}>
                 <img

@@ -93,5 +93,5 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'submit',
     },
     messageType: 'SPIRE_DIPLOMACY_SUBMIT',
-  }
+  },
 ];

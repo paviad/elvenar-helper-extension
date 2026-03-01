@@ -7,7 +7,7 @@ export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => v
     <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <DialogContentText
-          component="div"
+          component='div'
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -24,7 +24,7 @@ export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => v
             </span>
           )}
 
-          <Typography variant="body2" sx={{ mt: 3, fontStyle: 'italic', color: 'text.secondary' }}>
+          <Typography variant='body2' sx={{ mt: 3, fontStyle: 'italic', color: 'text.secondary' }}>
             Special Thanks to <strong>A S L A N</strong>
           </Typography>
         </DialogContentText>

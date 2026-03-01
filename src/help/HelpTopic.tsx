@@ -8,9 +8,7 @@ interface HelpTopicProps {
 export const HelpTopic: React.FC<HelpTopicProps> = ({ content }) => {
   return (
     <Paper elevation={0} sx={{ p: 4, height: '100%', overflowY: 'auto', bgcolor: 'transparent' }}>
-      <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-        {content}
-      </Box>
+      <Box sx={{ maxWidth: 800, mx: 'auto' }}>{content}</Box>
     </Paper>
   );
 };

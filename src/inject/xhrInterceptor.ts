@@ -180,4 +180,3 @@ function toAbsoluteUrl(url: string): string {
     return url; // fallback if URL is invalid
   }
 }
-

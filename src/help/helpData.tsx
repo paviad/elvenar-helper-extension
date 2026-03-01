@@ -16,27 +16,27 @@ export const HELP_SECTIONS: HelpSection[] = [
   {
     id: 'intro',
     title: 'Introduction',
-    content: <Introduction />
+    content: <Introduction />,
   },
   {
     id: 'city-planner',
     title: 'City Planner',
-    content: <CityPlanner />
+    content: <CityPlanner />,
   },
   {
     id: 'inventory',
     title: 'Inventory Manager',
-    content: <InventoryManager />
+    content: <InventoryManager />,
   },
   {
     id: 'fa-tracker',
     title: 'Fellowship Adventure',
-    content: <FellowshipAdventure />
+    content: <FellowshipAdventure />,
   },
   {
     id: 'spire-wizard',
     title: 'Spire Wizard',
     content: <SpireWizardIntegration />,
-    isNew: true
-  }
+    isNew: true,
+  },
 ];
