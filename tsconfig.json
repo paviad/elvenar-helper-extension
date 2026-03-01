@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "types": ["chrome-types"],
     "lib": ["ESNext", "DOM"],
-    "jsx": "react",
-  }
+    "jsx": "react"
+  },
+  "exclude": ["**/*.spec.ts"]
 }
