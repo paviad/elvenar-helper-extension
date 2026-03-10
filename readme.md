@@ -115,7 +115,7 @@ To release a new version (e.g., `5.8.6`):
 7.  **Create GitHub Release:**
     Generates release notes and uploads both zip artifacts to the existing GitHub tag.
     ```bash
-    npm run create-release 5.8.6
+    npm run release 5.8.6
     ```
 
 ## Contributing
