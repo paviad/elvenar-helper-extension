@@ -70,6 +70,7 @@ export interface CityContextType {
   setMhRankingPoints: (num: number) => void;
   mouseGridPosition: { x: number; y: number } | null;
   setMouseGridPosition: (pos: { x: number; y: number } | null) => void;
+  resources: Record<string, number>;
 }
 
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
@@ -106,6 +107,7 @@ export const CityProvider = ({
   const [popRequired, setPopRequired] = React.useState<number>(0);
   const [residentialPop, setResidentialPop] = React.useState<number>(0);
   const [rankingPoints, setRankingPoints] = React.useState<number>(0);
+  const [resources, setResources] = React.useState<Record<string, number>>({});
   const [mouseGridPosition, setMouseGridPosition] = React.useState<{ x: number; y: number } | null>(null);
 
   const [awLevels, setAwLevels] = React.useState<number>(0);
@@ -136,6 +138,7 @@ export const CityProvider = ({
       setChapter(accountData.cityQuery.chapter);
       setSquadSize(accountData.cityQuery.squadSize || 0);
       setRankingPoints(accountData.cityQuery.rankingPoints || 0);
+      setResources(accountData.cityQuery.cityResources || {});
     }
     setSearchTerm('');
     setMoveLog([]);
@@ -355,6 +358,7 @@ export const CityProvider = ({
     setMhRankingPoints,
     mouseGridPosition,
     setMouseGridPosition,
+    resources,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

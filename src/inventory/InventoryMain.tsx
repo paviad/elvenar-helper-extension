@@ -25,7 +25,6 @@ import { getAccountById } from '../elvenar/AccountManager';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { InventoryItem } from '../model/inventoryItem';
 import { formatResourceName } from '../util/formatResourceName';
-import { getBuildingProvisionsAndProduction as getBuildingProvisionsAndProduction } from '../util/getBuildingProvisionsAndProduction';
 import { useTabStore } from '../util/tabStore';
 import { generateInventory } from './generateInventory';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';

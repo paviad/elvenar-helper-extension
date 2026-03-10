@@ -15,6 +15,7 @@ import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { RenderLegend } from './Legend/RenderLegend';
 import { RenderMoveLog } from './MoveLog/RenderMoveLog';
 import { WorkingState } from './WorkingState';
+import { RuneShards } from './RuneShards';
 
 export function CityView() {
   const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntityEx[], UnlockedArea[]]);
@@ -99,11 +100,12 @@ export function CityView() {
           {/* Legend - Scrollable Area */}
           <Box
             sx={{
-              overflowY: 'auto',
               p: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'grey.100',
+              boxShadow: '0 -2px 5px rgba(0,0,0,0.05)',
+              zIndex: 1,
             }}
           >
             <RenderLegend />
@@ -135,6 +137,20 @@ export function CityView() {
             }}
           >
             <CityResourceSummary />
+          </Box>
+
+          {/* Rune Shards */}
+          <Box
+            sx={{
+              p: 1,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'grey.100',
+              boxShadow: '0 -2px 5px rgba(0,0,0,0.05)',
+              zIndex: 1,
+            }}
+          >
+            <RuneShards />
           </Box>
         </Box>
       </Box>

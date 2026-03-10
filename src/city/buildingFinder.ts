@@ -15,8 +15,10 @@ interface bAndC {
 
 export class BuildingFinder {
   private buildingsDictionary!: Record<string, Building[]>;
+  private buildingsDictionaryLowerCase!: Record<string, Building[]>;
 
   private hintsDictionary!: Record<string, string>;
+  private hintsDictionaryLowerCase!: Record<string, string>;
   private evolvingBuildingsDictionary!: Record<string, StageProvision>;
 
   private getBaseName(goodsId: string): bAndC {
@@ -50,10 +52,21 @@ export class BuildingFinder {
     const evolvingBuildings = await getEvolvingBuildings();
 
     this.hintsDictionary = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]));
+    this.hintsDictionaryLowerCase = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, '').toLowerCase(), h.section]));
 
     this.buildingsDictionary = buildings.reduce(
       (acc, building) => {
         const normalizedBaseName = building.base_name;
+        acc[normalizedBaseName] = acc[normalizedBaseName] || [];
+        acc[normalizedBaseName].push(building);
+        return acc;
+      },
+      {} as Record<string, Building[]>,
+    );
+
+    this.buildingsDictionaryLowerCase = buildings.reduce(
+      (acc, building) => {
+        const normalizedBaseName = building.base_name.toLowerCase();
         acc[normalizedBaseName] = acc[normalizedBaseName] || [];
         acc[normalizedBaseName].push(building);
         return acc;
@@ -92,6 +105,21 @@ export class BuildingFinder {
     const building = this.buildingsDictionary[baseName]?.find((b) => b.level === level);
 
     const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
+
+    if (building) {
+      const bldg = building;
+
+      return this.getBuildingEx(bldg, hint);
+    }
+  }
+
+  public getBuildingLowerCase(id: string, level = 1): BuildingEx | undefined {
+    const { baseName: baseName1 } = this.getBaseName(id);
+    const baseName = baseName1.toLowerCase();
+
+    const building = this.buildingsDictionaryLowerCase[baseName]?.find((b) => b.level === level);
+
+    const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionaryLowerCase[baseName]) || undefined;
 
     if (building) {
       const bldg = building;
