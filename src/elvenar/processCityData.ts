@@ -75,7 +75,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     featureFlags?.find((r: any) => r.feature.startsWith('ch'))?.feature.replace('ch', ''),
   );
 
-  const boostedGoods = relic_boost_good.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`);
+  const boostedGoods = relic_boost_good?.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`) || [];
 
   const chapter = user_data.technologySection.index;
 
