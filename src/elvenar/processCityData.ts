@@ -26,19 +26,19 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       remainingTime: number;
     }[];
     seasonal_events?: { type: string }[];
-  };
+  } | undefined;
 
   const cityResourcesService = json.find(
     (r) => r.requestClass === 'CityResourcesService' && r.requestMethod === 'getResources',
   )?.responseData as {
     resources: Record<string, number>;
-  };
+  } | undefined;
 
   const { __class__, ...cityResources } = cityResourcesService?.resources || {};
 
-  const questService = json.find((r) => r.requestClass === 'QuestService')?.responseData as Quest[];
+  const questService = json.find((r) => r.requestClass === 'QuestService')?.responseData as Quest[] | undefined;
 
-  const faRequirements = Object.fromEntries(
+  const faRequirements = questService ? Object.fromEntries(
     questService
       .filter((r) => r.rewards?.length > 0 && r.successConditions?.length > 0)
       .map((r, idx) => [
@@ -50,23 +50,28 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
           currentProgress: r.successConditions[0].currentProgress || 0,
         } satisfies FaQuest,
       ]),
-  );
+  ) : {};
 
   const effectsService = json.find((r) => r.requestClass === 'EffectsService' && r.requestMethod === 'getAllSources')
     ?.responseData as {
-    name: string;
-    value: number;
-  }[];
+      name: string;
+      value: number;
+    }[] | undefined;
 
-  const squadSize = effectsService.find((r) => r.name === 'squadSize')?.value || 0;
+  const squadSize = effectsService?.find((r) => r.name === 'squadSize')?.value || 0;
 
   const rankingService = json.find((r) => r.requestClass === 'RankingService' && r.requestMethod === 'newRank')
     ?.responseData as {
-    rank: number;
-    points: number;
-  };
+      rank: number;
+      points: number;
+    } | undefined;
 
   const rankingPoints = rankingService?.points || 0;
+
+  if (!startupService) {
+    console.warn('No StartupService data found in the provided JSON.');
+    return;
+  }
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 

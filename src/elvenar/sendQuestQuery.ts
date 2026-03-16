@@ -41,7 +41,12 @@ export async function sendQuestQuery(sharedInfo: ExtensionSharedInfo) {
     name: string;
     state: string;
     remainingTime: number;
-  }[];
+  }[] | undefined;
+
+  if (!seasonalEventsService) {
+    console.warn('No SeasonalEventsService data found in the provided JSON.');
+    return;
+  }
 
   const fa = seasonalEventsService.find(
     (r) => r.type === 'multiplayerEvent' && r.subType === 'mpe_i' && r.state === 'running',

@@ -14,7 +14,12 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
     city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
     city_name: string;
     technologySection: number;
-  };
+  } | undefined;
+
+  if (!startupService) {
+    console.warn('No OtherPlayerService data found in the provided JSON.');
+    return;
+  }
 
   const { other_player, city_map, technologySection } = startupService;
 
