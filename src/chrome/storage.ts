@@ -11,3 +11,7 @@ export async function getAllKeysFromStorage(): Promise<string[]> {
   const result = await chrome.storage.local.getKeys();
   return result;
 }
+
+export async function removeFromStorage(keys: string | string[]): Promise<void> {
+  await chrome.storage.local.remove(keys);
+}

@@ -1,4 +1,4 @@
-import { getAllKeysFromStorage, getFromStorage } from '../chrome/storage';
+import { getAllKeysFromStorage, getFromStorage, removeFromStorage } from '../chrome/storage';
 import { CityEntity } from '../model/cityEntity';
 import { UnlockedArea } from '../model/unlockedArea';
 import { AccountData, accounts, accounts_last_saved_single, saveSingleAccount } from './Accounts';
@@ -254,5 +254,5 @@ export const saveCityInPlace = async (accountId: string, cityEntities: CityEntit
 export const deleteCityById = async (accountId: string) => {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete accounts[accountId];
-  await saveAllAccounts();
+  await removeFromStorage([`accounts_${accountId}`, `accounts_last_saved_${accountId}`]);
 };
