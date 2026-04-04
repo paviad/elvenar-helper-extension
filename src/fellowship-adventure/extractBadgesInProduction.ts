@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { FaQuest } from '../elvenar/AccountManager';
+import { FaQuest } from '../elvenar/Accounts';
 import { CityEntity } from '../model/cityEntity';
 import { ProductionBadgeInfo } from './ProductionBadgeInfo';
 

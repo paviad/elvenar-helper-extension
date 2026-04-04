@@ -6,7 +6,9 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Quest } from '../model/quest';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
-import { AccountData, FaQuest, generateAccountId, getAccountBySessionId, setAccountData } from './AccountManager';
+import { generateAccountId, getAccountBySessionId, setAccountData } from './AccountManager';
+import { FaQuest } from './Accounts';
+import { AccountData } from './Accounts';
 
 export async function processCityData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];

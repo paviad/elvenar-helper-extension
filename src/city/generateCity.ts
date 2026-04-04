@@ -1,4 +1,4 @@
-import { AccountData } from '../elvenar/AccountManager';
+import { AccountData } from '../elvenar/Accounts';
 import { CityEntity, CityEntityEx } from '../model/cityEntity';
 import { BuildingFinder } from './buildingFinder';
 import { CityBlock } from './CityBlock';

@@ -1,5 +1,5 @@
 import { sendTradeParsedMessage } from '../chrome/messages';
-import { AccountData } from '../elvenar/AccountManager';
+import { AccountData } from '../elvenar/Accounts';
 import { TradeSummary } from '../model/tradeSummary';
 
 export const tradeOpenedCallback = async (accountData: AccountData) => {

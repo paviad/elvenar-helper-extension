@@ -4,7 +4,8 @@ import { OtherPlayerClass } from '../model/otherPlayer';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
-import { AccountData, setAccountData } from './AccountManager';
+import { setAccountData } from './AccountManager';
+import { AccountData } from './Accounts';
 
 export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; responseData: unknown }];

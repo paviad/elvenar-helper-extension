@@ -6,3 +6,8 @@ export async function getFromStorage(key: string): Promise<string | null> {
 export async function saveToStorage(key: string, value: string): Promise<void> {
   await chrome.storage.local.set({ [key]: value });
 }
+
+export async function getAllKeysFromStorage(): Promise<string[]> {
+  const result = await chrome.storage.local.getKeys();
+  return result;
+}

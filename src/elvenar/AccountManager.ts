@@ -1,67 +1,9 @@
-import { getFromStorage, saveToStorage } from '../chrome/storage';
-import { Badges, Relics } from '../model/badges';
+import { getAllKeysFromStorage, getFromStorage } from '../chrome/storage';
 import { CityEntity } from '../model/cityEntity';
-import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { Ingredient } from '../model/ingredient';
-import { InventoryItem } from '../model/inventoryItem';
-import { PotionEffect } from '../model/potionEffect';
-import { Trade } from '../model/trade';
 import { UnlockedArea } from '../model/unlockedArea';
-import { ElvenarUserData } from '../model/userData';
+import { AccountData, accounts, accounts_last_saved_single, saveSingleAccount } from './Accounts';
+import { dbVersion, migrate } from './migrations';
 
-interface CityQuery {
-  boostedGoods: string[];
-  cityEntities: CityEntity[];
-  unlockedAreas: UnlockedArea[];
-  accountId: string;
-  accountName: string;
-  cityName: string;
-  maxChapter: number;
-  chapter: number;
-  userData: ElvenarUserData;
-  url: string;
-  tabId: number;
-  sessionId: string;
-  badges: Badges;
-  relics: Relics;
-  timestamp: number;
-  faRequirements: Record<string, FaQuest>;
-  relicBoosts: Record<keyof Relics, number>;
-  squadSize: number;
-  rankingPoints: number;
-  cityResources?: Record<string, number>;
-}
-
-export interface FaQuest {
-  id: number;
-  badge: string;
-  maxProgress: number;
-  currentProgress: number;
-}
-
-interface CauldronQuery {
-  potionEffects: PotionEffect[];
-  ingredients: Ingredient[];
-}
-
-export interface AccountData {
-  isDetached: boolean;
-
-  sharedInfo: ExtensionSharedInfo;
-
-  cityQuery?: CityQuery;
-
-  inventoryItems?: InventoryItem[];
-
-  trades?: Trade[];
-
-  cauldron?: CauldronQuery;
-
-  faEndTime?: number;
-}
-
-let accounts: Record<string, AccountData> = {};
-let accounts_last_saved: number | null = null;
 let saveHook: (() => void) | null = null;
 
 export function setSaveHook(hook: () => void) {
@@ -77,23 +19,10 @@ export async function setAccountData(accountId: string, accountData: AccountData
 }
 
 export async function saveAllAccounts() {
-  const accountsLastSavedRaw = await getFromStorage('accounts_last_saved');
-  if (accountsLastSavedRaw) {
-    const accountsLastSaved = parseInt(accountsLastSavedRaw, 10);
-    if (accounts_last_saved && accountsLastSaved > accounts_last_saved) {
-      throw new Error('ElvenAssist: Detected newer accounts in storage, aborting save');
-    }
+  const allKeys = Object.keys(accounts);
+  for (const accountId of allKeys) {
+    await saveSingleAccount(accountId);
   }
-  const numAccounts = +((await getFromStorage('num_accounts')) || 0);
-  const currentNumAccounts = Object.keys(accounts).length;
-  if (numAccounts <= 1 && currentNumAccounts > 1) {
-    await saveToStorage('notifyMultipleAccounts', 'true');
-  }
-  await saveToStorage('num_accounts', currentNumAccounts.toString());
-
-  await saveToStorage('accounts', JSON.stringify(accounts));
-  accounts_last_saved = Date.now();
-  await saveToStorage('accounts_last_saved', accounts_last_saved.toString());
 
   if (saveHook) {
     saveHook();
@@ -120,38 +49,51 @@ export function getAccountById(accountId: string): AccountData | undefined {
 }
 
 let loadReadyResolve: () => void;
-let loadReadyPromise: Promise<void> | undefined;
-let initialized = false;
+const loadReadyPromise: Record<string, Promise<void> | undefined> = {};
+const initialized: Record<string, boolean> = {};
 
-export const loadAccountManagerFromStorage = async (refresh = false) => {
-  const accountsLastSavedRaw = await getFromStorage('accounts_last_saved');
+export const loadSingleAccountFromStorage = async (accountId: string, refresh = false) => {
+  const accountsLastSavedRaw = await getFromStorage(`accounts_last_saved_${accountId}`);
   if (accountsLastSavedRaw) {
     const accountsLastSaved = parseInt(accountsLastSavedRaw, 10);
-    if (accounts_last_saved && accountsLastSaved > accounts_last_saved) {
+    if (accounts_last_saved_single[accountId] && accountsLastSaved > accounts_last_saved_single[accountId]) {
       refresh = true;
     }
   }
 
-  if (initialized && !refresh) {
+  if (initialized[accountId] && !refresh) {
     return;
   }
-  initialized = false;
-  if (loadReadyPromise) {
-    await loadReadyPromise;
+  initialized[accountId] = false;
+  if (loadReadyPromise[accountId]) {
+    await loadReadyPromise[accountId];
     return;
   }
-  loadReadyPromise = new Promise<void>((resolve) => {
+  loadReadyPromise[accountId] = new Promise<void>((resolve) => {
     loadReadyResolve = resolve;
   });
-  const accountsRaw = await getFromStorage('accounts');
+  const accountsRaw = await getFromStorage(`accounts_${accountId}`);
   if (accountsRaw) {
-    const parsedAccounts = JSON.parse(accountsRaw) as Record<string, AccountData>;
-    accounts = { ...parsedAccounts };
+    const parsedAccounts = JSON.parse(accountsRaw) as AccountData;
+    accounts[accountId] = { ...parsedAccounts };
   }
-  initialized = true;
-  loadReadyPromise = undefined;
-  accounts_last_saved = new Date().getTime();
+  initialized[accountId] = true;
+  loadReadyPromise[accountId] = undefined;
+  accounts_last_saved_single[accountId] = new Date().getTime();
   loadReadyResolve();
+};
+
+export const loadAccountManagerFromStorage = async (refresh = false) => {
+  await migrate(dbVersion);
+
+  const keys = await getAllKeysFromStorage();
+
+  const accountKeys = keys.filter((k) => k.startsWith('accounts_') && !k.startsWith('accounts_last_saved_'));
+
+  for (const key of accountKeys) {
+    const accountId = key.replace('accounts_', '');
+    await loadSingleAccountFromStorage(accountId, refresh);
+  }
 };
 
 export const getAllStoredAccounts = (): [string, AccountData][] => {

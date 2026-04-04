@@ -1,7 +1,9 @@
 import { Box, Stack } from '@mui/material';
 import React from 'react';
 import { generateCity } from '../city/generateCity';
-import { AccountData, FaQuest, getAccountById } from '../elvenar/AccountManager';
+import { getAccountById } from '../elvenar/AccountManager';
+import { FaQuest } from '../elvenar/Accounts';
+import { AccountData } from '../elvenar/Accounts';
 import { getEffects } from '../elvenar/getEffects';
 import { Badges } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
