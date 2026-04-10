@@ -11,7 +11,7 @@ export const InventoryManager = () => (
     <Typography variant='h4' gutterBottom>
       Inventory Manager Guide
     </Typography>
-    <Typography paragraph>
+    <Typography component="p" variant="body1" gutterBottom>
       The Inventory Manager transforms your cluttered inventory into a powerful, searchable database. It helps you make
       informed decisions about what to place, what to keep, and what to disenchant.
     </Typography>

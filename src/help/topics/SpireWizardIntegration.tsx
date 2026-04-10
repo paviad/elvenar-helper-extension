@@ -18,14 +18,14 @@ export const SpireWizardIntegration = () => {
       <Typography variant='h4' gutterBottom>
         Spire Wizard Integration
       </Typography>
-      <Typography paragraph>
+      <Typography component="p" variant="body1" gutterBottom>
         ElvenAssist integrates seamlessly with the{' '}
         <Link href='https://javascriptorian.com/spire-wizard-mobile' target='_blank' rel='noopener'>
           Spire Wizard
         </Link>
         , a popular external tool for solving Spire of Eternity negotiations.
       </Typography>
-      <Typography paragraph>
+      <Typography component="p" variant="body1" gutterBottom>
         The extension is active on the Spire Wizard website as well as the game, allowing it to bridge data between the
         two in real-time.
       </Typography>
@@ -43,7 +43,7 @@ export const SpireWizardIntegration = () => {
       <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <AutoFixHighIcon color='primary' fontSize='small' /> Automated Setup
       </Typography>
-      <Typography paragraph>
+      <Typography component="p" variant="body1" gutterBottom>
         When you initiate a negotiation encounter in the Spire (diplomacy option), ElvenAssist detects the available
         resources and context. It automatically updates the Spire Wizard tab, selecting the correct set of resources for
         the current encounter so you don't have to manually input them.
@@ -55,7 +55,9 @@ export const SpireWizardIntegration = () => {
       <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <SyncIcon color='primary' fontSize='small' /> Live Status Sync
       </Typography>
-      <Typography paragraph>As you play the negotiation minigame, the extension tracks your results:</Typography>
+      <Typography component="p" variant="body1" gutterBottom>
+        As you play the negotiation minigame, the extension tracks your results:
+      </Typography>
       <List dense disablePadding>
         <ListItem>
           <ListItemText
@@ -77,7 +79,7 @@ export const SpireWizardIntegration = () => {
       <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <ViewSidebarIcon color='primary' fontSize='small' /> Recommended Setup: Split View
       </Typography>
-      <Typography paragraph>
+      <Typography component="p" variant="body1" gutterBottom>
         For the most efficient workflow, we recommend arranging your browser tabs side-by-side using Chrome's split view
         capabilities (or separate windows). This allows you to see the game and the wizard simultaneously.
       </Typography>

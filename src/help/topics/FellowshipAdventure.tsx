@@ -8,7 +8,7 @@ export const FellowshipAdventure = () => (
     <Typography variant='h4' gutterBottom>
       Fellowship Adventure Tracker
     </Typography>
-    <Typography paragraph>
+    <Typography component="p" variant="body1" gutterBottom>
       During a Fellowship Adventure, this tab becomes your command center. It helps you track your progress and plan
       your collections efficiently.
     </Typography>

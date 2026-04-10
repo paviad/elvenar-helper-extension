@@ -13,7 +13,7 @@ export const CityPlanner = () => (
     <Typography variant='h4' gutterBottom>
       City Planner Guide
     </Typography>
-    <Typography paragraph>
+    <Typography component="p" variant="body1" gutterBottom>
       The City Planner is the core of ElvenAssist, allowing you to manipulate your city layout with live data. Below is
       a detailed guide to its capabilities.
     </Typography>

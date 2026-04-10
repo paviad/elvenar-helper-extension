@@ -21,6 +21,7 @@ import HelperAvatar from '../helper/HelperAvatar';
 import { useHelper } from '../helper/HelperContext';
 import { useTabStore } from '../util/tabStore';
 import { AboutDialog } from './AboutDialog';
+import { DiscordButton } from '../widgets/DiscordButton';
 
 const ERROR_BAR_HEIGHT = 48; // px
 
@@ -181,12 +182,12 @@ export const LayoutMain = () => {
           {/* Spacer to push remaining items to the right */}
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Help Button - With New Badge wrapped around button */}
+          {/* Discord Button - With New Badge */}
           <Badge
             badgeContent='NEW'
             color='secondary'
             sx={{
-              mr: 6,
+              mr: 2,
               '& .MuiBadge-badge': {
                 fontSize: '0.6rem',
                 height: 16,
@@ -195,16 +196,25 @@ export const LayoutMain = () => {
               },
             }}
           >
-            <Button
-              component={NavLink}
-              to='/help'
-              color='inherit'
-              startIcon={<HelpOutlineIcon />}
-              sx={{ textTransform: 'none', fontSize: '1rem' }}
-            >
-              Help
-            </Button>
+            <DiscordButton
+              discordUrl='https://discord.gg/zYzUUDcMrv'
+              sx={{
+                color: 'inherit', // Use inherit so it appears white on the colored AppBar
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)' },
+              }}
+            />
           </Badge>
+
+          {/* Help Button */}
+          <Button
+            component={NavLink}
+            to='/help'
+            color='inherit'
+            startIcon={<HelpOutlineIcon />}
+            sx={{ textTransform: 'none', fontSize: '1rem', mr: 6 }}
+          >
+            Help
+          </Button>
 
           {/* Account Selector */}
           <Box

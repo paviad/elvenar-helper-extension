@@ -11,6 +11,7 @@ import { HelpDialog } from './HelpDialog';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { TradeView } from './TradeView';
+import { DiscordButton } from '../widgets/DiscordButton';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -170,6 +171,13 @@ export function OverlayMain() {
             )}
           </>
         )}
+
+        <DiscordButton
+          discordUrl='https://discord.gg/zYzUUDcMrv'
+          size='small'
+          sx={{ position: 'absolute', top: -46, right: 94, zIndex: 10 }}
+        />
+
         <IconButton
           aria-label='Help'
           size='small'

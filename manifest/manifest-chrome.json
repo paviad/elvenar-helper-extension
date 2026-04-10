@@ -47,7 +47,8 @@
       ],
       "js": [
         "elvenassist-vendors.bundle.js",
-        "elvenassist-overlay.bundle.js"
+        "elvenassist-overlay.bundle.js",
+        "101.bundle.js"
       ],
       "run_at": "document_idle"
     },

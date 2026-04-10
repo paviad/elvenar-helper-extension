@@ -28,7 +28,7 @@ if (missingFiles.length > 0) {
   process.exit(1);
 }
 
-console.log(`🚀 Creating GitHub Release for ${tag}...`);
+console.log(`🚀 Creating DRAFT GitHub Release for ${tag}...`);
 console.log(`📦 Attaching assets:`);
 console.log(`   Chrome:  ${path.basename(chromeAsset)}`);
 console.log(`   Firefox: ${path.basename(firefoxAsset)}`);
@@ -37,12 +37,14 @@ try {
   // 4. Run the GitHub CLI command
   // --generate-notes: Automatically adds the changelog from Pull Requests
   // --title: Sets the release title
-  const command = `gh release create "${tag}" "${chromeAsset}" "${firefoxAsset}" --title "${tag}" --generate-notes`;
+  // --draft: Creates the release as a draft so webhooks do not fire yet
+  const command = `gh release create "${tag}" "${chromeAsset}" "${firefoxAsset}" --title "${tag}" --generate-notes --draft`;
 
   // inherit: prints the command output directly to console
   execSync(command, { stdio: 'inherit' });
 
-  console.log('\n✅ Release created successfully!');
+  console.log('\n✅ Draft release created successfully!');
+  console.log('⚠️  Remember to go to GitHub and click "Publish release" once the stores approve it!');
 } catch (error) {
   console.error('\n❌ Release creation failed.');
   // The 'gh' command usually prints its own error message, so we just exit.

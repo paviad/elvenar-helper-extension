@@ -17,6 +17,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'intro',
     title: 'Introduction',
     content: <Introduction />,
+    isNew: true,
   },
   {
     id: 'city-planner',
@@ -37,6 +38,5 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'spire-wizard',
     title: 'Spire Wizard',
     content: <SpireWizardIntegration />,
-    isNew: true,
   },
 ];
