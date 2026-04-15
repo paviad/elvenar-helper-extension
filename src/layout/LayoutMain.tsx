@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';
-import { getFromStorage, saveToStorage } from '../chrome/storage';
+import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
 import { getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
 import HelperAvatar from '../helper/HelperAvatar';
 import { useHelper } from '../helper/HelperContext';
@@ -127,6 +127,17 @@ export const LayoutMain = () => {
     setAboutOpen(false);
   };
 
+  const handleResetEverything = async () => {
+    if (window.confirm('Are you sure you want to reset everything? This cannot be undone.')) {
+      const techTreeSpriteUrl = await getFromStorage('techTreeSpriteUrl');
+      await clearStorage();
+      if (techTreeSpriteUrl) {
+        await saveToStorage('techTreeSpriteUrl', techTreeSpriteUrl);
+      }
+      window.location.reload();
+    }
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       {/* Error bar overlays AppBar, both are fixed at top */}
@@ -166,6 +177,7 @@ export const LayoutMain = () => {
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
+            <MenuItem onClick={handleResetEverything}>Reset Everything</MenuItem>
             <MenuItem onClick={handleAboutOpen}>About</MenuItem>
           </Menu>
 
