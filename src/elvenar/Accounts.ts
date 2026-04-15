@@ -67,7 +67,11 @@ export async function saveSingleAccount(accountId: string) {
   if (accountsLastSavedRaw) {
     const accountsLastSaved = parseInt(accountsLastSavedRaw, 10);
     if (accounts_last_saved_single[accountId] && accountsLastSaved > accounts_last_saved_single[accountId]) {
-      throw new Error('ElvenAssist: Detected newer accounts in storage, aborting save');
+      console.warn(`ElvenAssist: Detected newer account data for account ${accountId} in storage,
+         continuing with save but be aware that you might lose some data. If this happens repeatedly,
+         please report this issue to the developers at either of these links:
+         github: https://github.com/paviad/elvenar-helper-extension/issues/5
+         discord: https://discord.com/channels/1492111560884228276/1492119022639124520`);
     }
   }
   const numAccounts = +((await getFromStorage('num_accounts')) || 0);

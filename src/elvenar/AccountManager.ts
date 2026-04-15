@@ -92,7 +92,12 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
 
   for (const key of accountKeys) {
     const accountId = key.replace('accounts_', '');
-    await loadSingleAccountFromStorage(accountId, refresh);
+    try {
+      await loadSingleAccountFromStorage(accountId, refresh);
+    } catch (err) {
+      console.warn(`ElvenAssist: Failed to load account ${accountId} from storage, skipping. Error:`, err);
+      await removeFromStorage([`accounts_${accountId}`, `accounts_last_saved_${accountId}`]);
+    }
   }
 };
 
