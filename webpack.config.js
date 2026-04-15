@@ -1,10 +1,12 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const WebpackManifestPlugin = require('webpack-manifest-plugin').WebpackManifestPlugin;
 
 const commonOptimization = (env) => ({
   minimize: !!env.production,
   usedExports: true,
+  chunkIds: 'deterministic',
 });
 
 const splitChunks = {
@@ -61,6 +63,12 @@ const commonConfig = (env) => ({
     // new webpack.optimize.LimitChunkCountPlugin({
     //   maxChunks: 1,
     // }),
+    new WebpackManifestPlugin({
+      fileName: 'prod.manifest.json',
+      generate: (seed, files, entries) => {
+        return entries;
+      },
+    }),
   ],
 });
 

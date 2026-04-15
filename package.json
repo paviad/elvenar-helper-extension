@@ -47,7 +47,8 @@
     "typescript-eslint": "^8.35.1",
     "web-ext": "^10.0.0",
     "webpack": "^5.99.9",
-    "webpack-cli": "^7.0.0"
+    "webpack-cli": "^7.0.0",
+    "webpack-manifest-plugin": "^6.0.1"
   },
   "nx": {},
   "dependencies": {
