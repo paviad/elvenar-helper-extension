@@ -18,7 +18,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
   } | undefined;
 
   if (!startupService) {
-    console.warn('No OtherPlayerService data found in the provided JSON.');
+    console.warn('ElvenAssist: No OtherPlayerService data found in the provided JSON.');
     return;
   }
 

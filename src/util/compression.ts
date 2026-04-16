@@ -31,7 +31,7 @@ export async function smartCompress(input: string): Promise<string> {
 
     return input;
   } catch (error) {
-    console.warn('Compression failed, falling back to plain text:', error);
+    console.warn('ElvenAssist: Compression failed, falling back to plain text:', error);
     return input;
   }
 }

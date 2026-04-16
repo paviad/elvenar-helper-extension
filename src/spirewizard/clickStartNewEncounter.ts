@@ -13,9 +13,9 @@ export const clickStartNewEncounter = async () => {
         await sleep(300);
       }
     } else {
-      console.warn('No buttons found in spire-nav container.');
+      console.warn('ElvenAssist: No buttons found in spire-nav container.');
     }
   } else {
-    console.warn('No spire-nav container found.');
+    console.warn('ElvenAssist: No spire-nav container found.');
   }
 };

@@ -71,7 +71,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
   const rankingPoints = rankingService?.points || 0;
 
   if (!startupService) {
-    console.warn('No StartupService data found in the provided JSON.');
+    console.warn('ElvenAssist: No StartupService data found in the provided JSON.');
     return;
   }
 

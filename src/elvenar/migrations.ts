@@ -29,11 +29,11 @@ export const migrate = async (latestVersion: number) => {
   }
 
   if (dbVersion < 2) {
-    console.log('Migrating from version 1 to version 2');
+    console.log('ElvenAssist: Migrating from version 1 to version 2');
     await migrateV1ToV2();
   }
 
-  console.log('Migration completed, setting db_version to', latestVersion);
+  console.log('ElvenAssist: Migration completed, setting db_version to', latestVersion);
   await saveToStorage('db_version', latestVersion.toString());
 }; export const dbVersion = 2;
 

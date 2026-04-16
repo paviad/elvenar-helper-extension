@@ -5,9 +5,9 @@ export const clickConfirmResourceSelection = async () => {
     if (firstButton) {
       (firstButton as HTMLButtonElement).click();
     } else {
-      console.warn('No button found in spire-nav container.');
+      console.warn('ElvenAssist: No button found in spire-nav container.');
     }
   } else {
-    console.warn('No spire-nav container found.');
+    console.warn('ElvenAssist: No spire-nav container found.');
   }
 };

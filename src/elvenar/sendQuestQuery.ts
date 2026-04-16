@@ -44,7 +44,7 @@ export async function sendQuestQuery(sharedInfo: ExtensionSharedInfo) {
   }[] | undefined;
 
   if (!seasonalEventsService) {
-    console.warn('No SeasonalEventsService data found in the provided JSON.');
+    console.warn('ElvenAssist: No SeasonalEventsService data found in the provided JSON.');
     return;
   }
 

@@ -8,7 +8,7 @@ export async function refreshCity(city: CityContextType) {
   const setGlobalError = useTabStore.getState().setGlobalError;
 
   if (!accountId) {
-    console.warn('No accountId set in CityViewState, cannot refresh city');
+    console.warn('ElvenAssist: No accountId set in CityViewState, cannot refresh city');
     return;
   }
   const response = await sendRefreshCityMessage(accountId);
