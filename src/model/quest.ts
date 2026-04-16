@@ -74,7 +74,7 @@ export interface SuccessCondition {
   iconType: string;
   description: string;
   hint?: string;
-  currentProgress?: number;
+  totalProgress?: number;
   maxProgress: number;
   progress?: number;
 }

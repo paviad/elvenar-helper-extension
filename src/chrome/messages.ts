@@ -20,6 +20,11 @@ export interface RefreshCityMessage {
   accountId: string;
 }
 
+export interface CityEntitiesUpdatedMessage {
+  type: 'cityEntitiesUpdated';
+  tabId: number;
+}
+
 export interface OpenExtensionTabMessage {
   type: 'openExtensionTab';
 }
@@ -52,6 +57,7 @@ export type AllMessages =
   | TradeOpenedMessage
   | TradeParsedMessage
   | RefreshCityMessage
+  | CityEntitiesUpdatedMessage
   | OpenExtensionTabMessage
   | CityDataUpdatedMessage
   | CitySavedMessage
@@ -107,6 +113,17 @@ export const sendRefreshCityMessage = async (accountId: string): Promise<Message
   );
 
   return await responsePromise;
+};
+
+export const sendCityEntitiesUpdatedMessage = async (tabId: number) => {
+  try {
+    await chrome.runtime.sendMessage({
+      type: 'cityEntitiesUpdated',
+      tabId,
+    } satisfies CityEntitiesUpdatedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending cityEntitiesUpdated message:', e);
+  }
 };
 
 export const sendCityDataUpdatedMessage = async (tabId: number) => {
@@ -179,6 +196,8 @@ export const setupTradeParsedListener = (callback: (tradesMsg: TradeParsedMessag
   (callbackMap['tradeParsed'] = callback);
 export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
   (callbackMap['refreshCity'] = callback);
+export const setupCityEntitiesUpdatedListener = (callback: (message: CityEntitiesUpdatedMessage) => void) =>
+  (callbackMap['cityEntitiesUpdated'] = callback);
 export const setupOpenExtensionTabListener = (
   callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void,
 ) => (callbackMap['openExtensionTab'] = callback);

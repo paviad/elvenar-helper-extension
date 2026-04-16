@@ -51,6 +51,14 @@ export interface SpireDiplomacySubmitMessage extends PlayerSpecificMessageBase {
   type: 'SPIRE_DIPLOMACY_SUBMIT';
 }
 
+export interface QuestMessage extends PlayerSpecificMessageBase {
+  type: 'QUEST';
+}
+
+export interface CityMapServiceUpdateMessage extends PlayerSpecificMessageBase {
+  type: 'CITY_MAP_SERVICE_UPDATE';
+}
+
 export type PlayerSpecificMessage =
   | CityDataProcessedMessage
   | InventoryDataProcessedMessage
@@ -61,4 +69,6 @@ export type PlayerSpecificMessage =
   | CityResourcesUpdateMessage
   | InventoryUpdatedMessage
   | SpireEncounterStartMessage
-  | SpireDiplomacySubmitMessage;
+  | SpireDiplomacySubmitMessage
+  | QuestMessage
+  | CityMapServiceUpdateMessage;

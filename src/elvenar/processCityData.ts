@@ -49,7 +49,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
           id: idx,
           badge: r.rewards[0].iconType,
           maxProgress: r.successConditions[0].maxProgress,
-          currentProgress: r.successConditions[0].currentProgress || 0,
+          currentProgress: r.successConditions[0].totalProgress || 0,
         } satisfies FaQuest,
       ]),
   ) : {};

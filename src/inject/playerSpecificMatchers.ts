@@ -94,4 +94,20 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
     },
     messageType: 'SPIRE_DIPLOMACY_SUBMIT',
   },
+  {
+    id: 'quest',
+    requestSelector: {
+      requestClass: 'QuestService',
+      requestMethod: 'getUpdates',
+    },
+    messageType: 'QUEST',
+  },
+  {
+    id: 'cityMapServiceUpdate',
+    responseSelector: {
+      requestClass: 'CityMapService',
+      requestMethod: 'reset',
+    },
+    messageType: 'CITY_MAP_SERVICE_UPDATE',
+  },
 ];

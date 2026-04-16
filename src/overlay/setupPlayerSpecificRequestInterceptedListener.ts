@@ -18,6 +18,8 @@ export function setupPlayerSpecificRequestInterceptedListener() {
       case 'INVENTORY_UPDATED':
       case 'SPIRE_ENCOUNTER_START':
       case 'SPIRE_DIPLOMACY_SUBMIT':
+      case 'QUEST':
+      case 'CITY_MAP_SERVICE_UPDATE':
         sendInterceptedPlayerSpecificRequest(event.data);
         break;
       default:

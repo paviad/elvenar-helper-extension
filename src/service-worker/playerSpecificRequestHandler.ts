@@ -1,6 +1,7 @@
 import {
   InterceptedPlayerSpecificRequest,
   sendCityDataUpdatedMessage,
+  sendCityEntitiesUpdatedMessage,
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
 import { getAccountBySessionId, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
@@ -13,10 +14,12 @@ import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
 import { processTradeData } from '../elvenar/processTradeData';
+import { processQuest } from '../elvenar/processQuest';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
+import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 
 type Processors = Record<
   PlayerSpecificMessage['type'],
@@ -38,6 +41,8 @@ export const playerSpecificRequestHandler = async (
     case 'INVENTORY_UPDATED':
     case 'SPIRE_ENCOUNTER_START':
     case 'SPIRE_DIPLOMACY_SUBMIT':
+    case 'QUEST':
+    case 'CITY_MAP_SERVICE_UPDATE':
       break;
     default:
       msg.payload satisfies never;
@@ -61,6 +66,8 @@ export const playerSpecificRequestHandler = async (
     INVENTORY_UPDATED: processInventory,
     SPIRE_ENCOUNTER_START: processSpireEncounterStart,
     SPIRE_DIPLOMACY_SUBMIT: processSpireDiplomacySubmit,
+    QUEST: processQuest,
+    CITY_MAP_SERVICE_UPDATE: processCityMapServiceUpdate,
   };
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
@@ -86,12 +93,16 @@ export const playerSpecificRequestHandler = async (
     case 'SPIRE_ENCOUNTER_START':
       // await sendSpireEncounterStartedMessage();
       break;
+    case 'CITY_MAP_SERVICE_UPDATE':
+      sendCityEntitiesUpdatedMessage(sharedInfo.tabId);
+      break;
     case 'SPIRE_DIPLOMACY_SUBMIT':
     case 'INVENTORY_DATA_PROCESSED':
     case 'CAULDRON_DATA_PROCESSED':
     case 'NOTIFICATIONS':
     case 'CITY_RESOURCES_UPDATE':
     case 'INVENTORY_UPDATED':
+    case 'QUEST':
       break;
     default:
       msg.payload satisfies never;
