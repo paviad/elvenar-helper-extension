@@ -59,7 +59,7 @@ export function extractBadgesInProduction(
 
   const goldenBracelets1 = entities
     .filter((r) => r.level > 1 && faRequirements['golden_bracelet'])
-    .filter((r) => /^marble_|steel_|planks_/.test(r.state?.current_product?.asset_name || ''))
+    .filter((r) => /^(marble_|steel_|planks_)/.test(r.state?.current_product?.asset_name || ''))
     .map(mapr2);
 
   const goldenBracelets = goldenBracelets1.reduce(grpr2('golden_bracelet'), grpi());
