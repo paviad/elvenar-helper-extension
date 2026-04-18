@@ -1,7 +1,7 @@
 import { Box, Stack } from '@mui/material';
 import React from 'react';
 import { generateCity } from '../city/generateCity';
-import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { getAccountById } from '../elvenar/AccountManager';
 import { FaQuest } from '../elvenar/Accounts';
 import { AccountData } from '../elvenar/Accounts';
 import { getEffects } from '../elvenar/getEffects';
@@ -12,7 +12,6 @@ import FaProgress from './FaProgress';
 import { ProductionTimeline } from './ProductionTimeline';
 import { badgeSpriteInfo } from './badgeSpriteInfo';
 import { extractBadgesInProduction } from './extractBadgesInProduction';
-import { setupCityEntitiesUpdatedListener } from '../chrome/messages';
 
 export function FellowshipAdventure() {
   const [badgesInProduction, setBadgesInProduction] = React.useState<Record<string, Record<number, number>>>({});
@@ -27,24 +26,8 @@ export function FellowshipAdventure() {
   const [mmEnchantmentEnabled, setMmEnchantmentEnabled] = React.useState<boolean>(false);
   const [enchantmentBonus, setEnchantmentBonus] = React.useState<number>(50);
 
-  const [refresh, doRefresh] = React.useReducer((x) => x + 1, 0);
-
   const accountId = useTabStore((state) => state.accountId);
-
-  React.useEffect(() => {
-    setupCityEntitiesUpdatedListener(async () => {
-      if (!accountId) {
-        return;
-      }
-      await loadSingleAccountFromStorage(accountId);
-      doRefresh();
-    });
-    return () => {
-      setupCityEntitiesUpdatedListener(() => {
-        // ignore
-      });
-    };
-  }, []);
+  const forceUpdate = useTabStore((state) => state.forceUpdate);
 
   React.useEffect(() => {
     if (!accountId) {
@@ -109,7 +92,7 @@ export function FellowshipAdventure() {
       setEndTime(accountData.faEndTime);
     }
     fetchCityData(accountData);
-  }, [accountId, mmEnchantmentEnabled, enchantmentBonus, refresh]);
+  }, [accountId, mmEnchantmentEnabled, enchantmentBonus, forceUpdate]);
 
   const badgeList = Object.values(faRequirements)
     .sort((a, b) => a.id - b.id)

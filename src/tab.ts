@@ -1,4 +1,4 @@
-import { setupMessageListener, setupOtherPlayerCityUpdatedListener } from './chrome/messages';
+import { setupCityEntitiesUpdatedListener, setupMessageListener, setupOtherPlayerCityUpdatedListener } from './chrome/messages';
 import { createReactUi } from './city/createReactUi';
 import { loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { useTabStore } from './util/tabStore';
@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadAccountManagerFromStorage(true);
     useTabStore.getState()?.triggerForceUpdate();
     useTabStore.getState()?.setOtherCityUpdated(true);
+  });
+  setupCityEntitiesUpdatedListener(async (msg) => {
+    await loadAccountManagerFromStorage(true);
+    useTabStore.getState()?.triggerForceUpdate();
   });
   createReactUi();
 });
