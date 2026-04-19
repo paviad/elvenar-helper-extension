@@ -16,6 +16,9 @@ window.addEventListener('message', (event) => {
     }
     return;
   }
+  if (event.data?.topic !== 'detectAngular' && !event.data?.isAngularDevTools) {
+    console.log('ElvenAssist: Message received in Spire Wizard Inject', event.data);
+  }
   if (event.data?.type === 'spireEncounterStarted') {
     startNewEncounter(event.data.payload);
   }

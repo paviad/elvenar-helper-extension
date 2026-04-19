@@ -23,6 +23,8 @@ export const processSpireDiplomacySubmit = async (untypedJson: unknown, sharedIn
       payload: {
         diplomacySubmitData,
       },
+    }).catch((e) => {
+      /* ignore */
     });
   });
 };

@@ -23,6 +23,8 @@ export async function processSpireEncounterStart(untypedJson: unknown, sharedInf
       payload: {
         encounterData,
       },
+    }).catch((e) => {
+      /* ignore */
     });
   });
 }
