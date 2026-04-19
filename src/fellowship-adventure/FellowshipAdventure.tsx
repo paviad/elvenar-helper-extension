@@ -12,6 +12,7 @@ import FaProgress from './FaProgress';
 import { ProductionTimeline } from './ProductionTimeline';
 import { badgeSpriteInfo } from './badgeSpriteInfo';
 import { extractBadgesInProduction } from './extractBadgesInProduction';
+import { getFromStorage, saveToStorage } from '../chrome/storage';
 
 export function FellowshipAdventure() {
   const [badgesInProduction, setBadgesInProduction] = React.useState<Record<string, Record<number, number>>>({});
@@ -39,12 +40,42 @@ export function FellowshipAdventure() {
       return;
     }
 
+    const faParameters = {
+      mmEnchantmentEnabled,
+      enchantmentBonus,
+    };
+
+    saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
+  }, [mmEnchantmentEnabled, enchantmentBonus]);
+
+  React.useEffect(() => {
+    if (!accountId) {
+      return;
+    }
+
+    const accountData = getAccountById(accountId);
+    if (!accountData) {
+      return;
+    }
+
     setIsDetached(accountData.isDetached);
 
     async function fetchCityData(accountData: AccountData) {
       if (!accountData.cityQuery || !accountData.cityQuery.cityEntities) {
         return;
       }
+
+      try {
+        const faParameters = await getFromStorage(`faParameters_${accountId}`);
+        if (faParameters) {
+          const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters);
+          setMmEnchantmentEnabled(mmEnchantmentEnabled);
+          setEnchantmentBonus(enchantmentBonus);
+        }
+      } catch (error) {
+        /* ignore */
+      }
+
       const entities = await generateCity(accountData);
       const effects = await getEffects();
       const goodsProductionEffects = effects.filter((r) => r.action === 'manufactories_production_boost');
