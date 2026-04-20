@@ -31,22 +31,26 @@ export function FellowshipAdventure() {
   const forceUpdate = useTabStore((state) => state.forceUpdate);
 
   React.useEffect(() => {
-    if (!accountId) {
-      return;
+    async function loadFaParameters() {
+      if (!accountId) {
+        return;
+      }
+
+      try {
+        console.log('loading FA parameters');
+        const faParameters = await getFromStorage(`faParameters_${accountId}`);
+        if (faParameters) {
+          const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters);
+          setMmEnchantmentEnabled(mmEnchantmentEnabled);
+          setEnchantmentBonus(enchantmentBonus);
+        }
+      } catch (error) {
+        /* ignore */
+      }
     }
 
-    const accountData = getAccountById(accountId);
-    if (!accountData) {
-      return;
-    }
-
-    const faParameters = {
-      mmEnchantmentEnabled,
-      enchantmentBonus,
-    };
-
-    saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
-  }, [mmEnchantmentEnabled, enchantmentBonus]);
+    loadFaParameters();
+  }, []);
 
   React.useEffect(() => {
     if (!accountId) {
@@ -63,17 +67,6 @@ export function FellowshipAdventure() {
     async function fetchCityData(accountData: AccountData) {
       if (!accountData.cityQuery || !accountData.cityQuery.cityEntities) {
         return;
-      }
-
-      try {
-        const faParameters = await getFromStorage(`faParameters_${accountId}`);
-        if (faParameters) {
-          const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters);
-          setMmEnchantmentEnabled(mmEnchantmentEnabled);
-          setEnchantmentBonus(enchantmentBonus);
-        }
-      } catch (error) {
-        /* ignore */
       }
 
       const entities = await generateCity(accountData);
@@ -124,6 +117,40 @@ export function FellowshipAdventure() {
     }
     fetchCityData(accountData);
   }, [accountId, mmEnchantmentEnabled, enchantmentBonus, forceUpdate]);
+
+  const setMmEnchantmentEnabled2 = React.useCallback(
+    (enabled: boolean) => {
+      async function setAndSave(enabled: boolean) {
+        const faParameters = {
+          mmEnchantmentEnabled: enabled,
+          enchantmentBonus,
+        };
+
+        console.log('Saving FA parameters:', faParameters);
+        saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
+        setMmEnchantmentEnabled(enabled);
+      }
+      setAndSave(enabled);
+    },
+    [setMmEnchantmentEnabled, enchantmentBonus, accountId],
+  );
+
+  const setEnchantmentBonus2 = React.useCallback(
+    (bonus: number) => {
+      async function setAndSave(bonus: number) {
+        const faParameters = {
+          mmEnchantmentEnabled,
+          enchantmentBonus: bonus,
+        };
+
+        console.log('Saving FA parameters:', faParameters);
+        saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
+        setEnchantmentBonus(bonus);
+      }
+      setAndSave(bonus);
+    },
+    [setEnchantmentBonus, mmEnchantmentEnabled, accountId],
+  );
 
   const badgeList = Object.values(faRequirements)
     .sort((a, b) => a.id - b.id)
@@ -205,9 +232,9 @@ export function FellowshipAdventure() {
           <Box>
             <FaControlPanel
               mmEnchantmentEnabled={mmEnchantmentEnabled}
-              onToggleMmEnchantment={setMmEnchantmentEnabled}
+              onToggleMmEnchantment={setMmEnchantmentEnabled2}
               enchantmentBonus={enchantmentBonus}
-              onEnchantmentBonusChange={setEnchantmentBonus}
+              onEnchantmentBonusChange={setEnchantmentBonus2}
             />
           </Box>
         </Stack>
