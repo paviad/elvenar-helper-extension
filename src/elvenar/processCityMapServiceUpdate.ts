@@ -15,7 +15,6 @@ export const processCityMapServiceUpdate = async (untypedJson: unknown, sharedIn
       const existingEntityIndex = accountData.cityQuery.cityEntities.findIndex((e) => e.id === entity.id);
       if (existingEntityIndex !== undefined && existingEntityIndex !== -1) {
         accountData.cityQuery.cityEntities[existingEntityIndex] = entity;
-        console.log(`Updated city entity with ID ${entity.id} at index ${existingEntityIndex}`, entity);
       } else {
         accountData.cityQuery.cityEntities.push(entity);
       }

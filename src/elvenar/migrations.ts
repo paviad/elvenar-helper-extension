@@ -14,7 +14,7 @@ export const loadAccountManagerFromStorageV1 = async () => {
 export const migrateV1ToV2 = async () => {
   const accountsV1 = await loadAccountManagerFromStorageV1();
   for (const [accountId, accountData] of Object.entries(accountsV1)) {
-    console.log(`Migrating account ${accountId}`);
+    console.log(`ElvenAssist: Migrating account ${accountId}`);
     accounts[accountId] = accountData;
     await saveSingleAccount(accountId);
   }

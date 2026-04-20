@@ -4,12 +4,16 @@ import { getEffects } from '../elvenar/getEffects';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { getMaxLevels } from '../elvenar/getMaxLevels';
+import { CityEntityEx } from '../model/cityEntity';
 import { Effect } from '../model/effect';
 import { StageProvision } from '../model/stageProvision';
 import { UnlockedArea } from '../model/unlockedArea';
 import { useTabStore } from '../util/tabStore';
 import { BuildingFinder } from './buildingFinder';
 import { CityBlock } from './CityBlock';
+import { generateCity } from './generateCity';
+import { generateCityBlocks } from './generateCityBlocks';
+import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
 
 export interface CityContextType {
@@ -75,19 +79,7 @@ export interface CityContextType {
 
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
 
-export const CityProvider = ({
-  sourceBlocks,
-  unlockedAreas,
-  triggerForceUpdate,
-  forceUpdate,
-  children,
-}: {
-  sourceBlocks: CityBlock[];
-  unlockedAreas: UnlockedArea[];
-  triggerForceUpdate: () => void;
-  forceUpdate: number;
-  children: React.ReactNode;
-}) => {
+export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [moveLog, setMoveLog] = React.useState<MoveLogInterface[]>([]);
   const [redoStack, setRedoStack] = React.useState<MoveLogInterface[]>([]);
   const [blocks, setBlocks] = React.useState<Record<number, CityBlock>>({});
@@ -120,6 +112,13 @@ export const CityProvider = ({
   const [chapter, setChapter] = React.useState<number>(100);
   const [squadSize, setSquadSize] = React.useState<number>(0);
 
+  const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntityEx[], UnlockedArea[]]);
+  const [unlockedAreas, setUnlockedAreas] = React.useState([] as UnlockedArea[]);
+  const triggerForceUpdate = useTabStore((state) => state.triggerForceUpdate);
+  const forceUpdate = useTabStore((state) => state.forceUpdate);
+
+  const [localRefresh, triggerLocalRefresh] = React.useReducer((x) => x + 1, 0);
+
   let boostedGoods: string[] = [];
 
   let race = 'humans';
@@ -132,26 +131,54 @@ export const CityProvider = ({
   }
 
   React.useEffect(() => {
-    if (!accountId) return;
-    const accountData = getAccountById(accountId);
-    if (accountData?.cityQuery) {
-      setChapter(accountData.cityQuery.chapter);
-      setSquadSize(accountData.cityQuery.squadSize || 0);
-      setRankingPoints(accountData.cityQuery.rankingPoints || 0);
-      setResources(accountData.cityQuery.cityResources || {});
-    }
-    setSearchTerm('');
-    setMoveLog([]);
-    setRedoStack([]);
-  }, [accountId, forceUpdate]);
+    triggerLocalRefresh();
+  }, [accountId]);
 
   React.useEffect(() => {
-    if (!accountId) return;
-    const accountData = getAccountById(accountId);
-    if (accountData?.cityQuery) {
-      accountData.cityQuery.chapter = chapter;
+      if (moveLog.length !== 0) {
+        return;
+      }
+      triggerLocalRefresh();
+  }, [forceUpdate]);
+
+  React.useEffect(() => {
+    async function fetchCityData() {
+      if (!accountId) {
+        return;
+      }
+      const accountData = getAccountById(accountId);
+      if (!accountData || !accountData.cityQuery) {
+        return;
+      }
+
+      const entities = await generateCity(accountData);
+      if (entities) {
+        setCityEntities([entities.q, entities.unlockedAreas]);
+      }
+
+      if (accountData?.cityQuery) {
+        console.log('setting chapter to', accountData.cityQuery.chapter);
+        setChapter(accountData.cityQuery.chapter);
+        setSquadSize(accountData.cityQuery.squadSize || 0);
+        setRankingPoints(accountData.cityQuery.rankingPoints || 0);
+        setResources(accountData.cityQuery.cityResources || {});
+      }
+      setSearchTerm('');
+      setMoveLog([]);
+      setRedoStack([]);
     }
-  }, [chapter]);
+    fetchCityData();
+  }, [localRefresh]);
+
+  React.useEffect(() => {
+    async function updateBlocks() {
+      const blocks = await generateCityBlocks(cityEntities[0]);
+      const unlockedAreas = generateUnlockedAreas(cityEntities[1]);
+      setBlocks(blocks);
+      setUnlockedAreas(unlockedAreas);
+    }
+    updateBlocks();
+  }, [cityEntities]);
 
   // temporary
   const lastId = React.useRef<number>(-1);
@@ -182,15 +209,12 @@ export const CityProvider = ({
     Do();
   }, []);
 
-  React.useEffect(() => {
-    setBlocks(sourceBlocks);
-  }, [sourceBlocks]);
-
   const allTypes = React.useMemo(() => {
     const set = new Set<string>();
-    (sourceBlocks || []).forEach((b) => set.add(b.type));
+    const blocksArray = Object.values(blocks);
+    (blocksArray || []).forEach((b) => set.add(b.type));
     return Array.from(set);
-  }, [sourceBlocks]);
+  }, [blocks]);
 
   const clearRedoStack = () => {
     setRedoStack([]);

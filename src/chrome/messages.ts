@@ -117,7 +117,7 @@ export const sendRefreshCityMessage = async (accountId: string): Promise<Message
 
 export const sendCityEntitiesUpdatedMessage = async (tabId: number) => {
   try {
-    await chrome.tabs.sendMessage(tabId, {
+    await chrome.runtime.sendMessage({
       type: 'cityEntitiesUpdated',
       tabId,
     } satisfies CityEntitiesUpdatedMessage);

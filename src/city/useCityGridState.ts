@@ -492,7 +492,7 @@ export const useCityGridState = () => {
       return;
     }
 
-    await saveCityInPlace(city.accountId, newBlocks);
+    await saveCityInPlace(city.accountId, newBlocks, city.chapter);
     resetMovedInPlace(Object.values(blocks));
     city.triggerForceUpdate();
   }
@@ -501,7 +501,7 @@ export const useCityGridState = () => {
     setSaveAsDialog({ open: false, defaultName: '', existingCities: [] });
     const cityEntities = saveBack(Object.values(blocks));
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await saveCurrentCityAs(city.accountId!, name, cityEntities);
+    await saveCurrentCityAs(city.accountId!, name, cityEntities, city.chapter);
     await sendCitySavedMessage(name);
     resetMovedInPlace(Object.values(blocks));
     setAccountId(name);

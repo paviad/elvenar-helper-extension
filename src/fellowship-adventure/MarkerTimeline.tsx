@@ -567,7 +567,7 @@ const styles: Record<string, React.CSSProperties> = {
     flexGrow: 1,
     padding: '24px',
     boxSizing: 'border-box',
-    overflowX: 'auto',
+    overflowX: 'visible',
     backgroundColor: '#ffffff',
   },
   wrapper: {
