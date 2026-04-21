@@ -50,7 +50,7 @@ export function FellowshipAdventure() {
     }
 
     loadFaParameters();
-  }, []);
+  }, [accountId]);
 
   React.useEffect(() => {
     if (!accountId) {
