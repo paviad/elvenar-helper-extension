@@ -122,7 +122,9 @@ export class GlobalHttpInterceptorService {
 
                 for (const match of this.matchesFound) {
                   if (match.local) {
-                    match.local?.(decodedResponse, this.sharedInfo);
+                      match.local?.(decodedResponse, this.sharedInfo)?.catch((error) => {
+                        console.error('Error in local handler for messageType', match.messageType, error);
+                      });
                   }
                   const message = {
                     type: match.messageType,
