@@ -3,7 +3,7 @@ import { backTranslations } from './backTranslations';
 import { SpireWizard } from './SpireWizard';
 
 export const submitDiplomacy = async (diplomacySubmitData: DiplomacySubmitData) => {
-  apiSubmitDiplomacy(diplomacySubmitData);
+  await apiSubmitDiplomacy(diplomacySubmitData);
 };
 
 const apiSubmitDiplomacy = async (diplomacySubmitData: DiplomacySubmitData) => {

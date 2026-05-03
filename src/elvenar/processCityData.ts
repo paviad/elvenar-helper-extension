@@ -78,8 +78,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
   const maxChapter = Number(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    featureFlags?.find((r: any) => r.feature.startsWith('ch'))?.feature.replace('ch', ''),
+    featureFlags?.find((r) => r.feature.startsWith('ch'))?.feature.replace('ch', ''),
   );
 
   const boostedGoods = relic_boost_good?.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`) || [];
@@ -171,7 +170,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     isDetached: false,
   } satisfies AccountData;
 
-  await setAccountData(accountId, data);
+  setAccountData(accountId, data);
   await setMaxChapter(maxChapter);
 }
 

@@ -16,14 +16,14 @@ export function RenderLegend() {
       const lc = await getFromStorage('legend_collapsed');
       setLegendCollapsed(lc === 'true');
     }
-    loadLegendCollapsed();
+    void loadLegendCollapsed();
   }, []);
 
   React.useEffect(() => {
     async function Do() {
       await saveToStorage('legend_collapsed', legendCollapsed ? 'true' : 'false');
     }
-    Do();
+    void Do();
   }, [legendCollapsed]);
 
   return (

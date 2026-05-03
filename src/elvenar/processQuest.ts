@@ -1,6 +1,7 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountIdBySessionId, getAccountById, setAccountData } from './AccountManager';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function processQuest(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; responseData: unknown; }];
 
@@ -32,5 +33,5 @@ export async function processQuest(untypedJson: unknown, sharedInfo: ExtensionSh
   }
   accountData.faEndTime = fa ? fa.remainingTime * 1000 + Date.now() : undefined;
 
-  await setAccountData(accountId, accountData);
+  setAccountData(accountId, accountData);
 }

@@ -4,7 +4,7 @@ import React from 'react';
 interface SaveCityDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string) => void;
+  onSave: (name: string) => void | Promise<void>;
   defaultName?: string;
   existingCities?: string[];
 }
@@ -42,20 +42,24 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
   };
 
   const handleInitialSubmit = () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) return;
+    void (async () => {
+      const trimmedName = name.trim();
+      if (!trimmedName) return;
 
-    if (existingCities.includes(trimmedName)) {
-      setIsConfirming(true);
-    } else {
-      onSave(trimmedName);
-      onClose();
-    }
+      if (existingCities.includes(trimmedName)) {
+        setIsConfirming(true);
+      } else {
+        await onSave(trimmedName);
+        onClose();
+      }
+    })();
   };
 
   const handleConfirmOverwrite = () => {
-    onSave(name.trim());
-    onClose();
+    void (async () => {
+      await onSave(name.trim());
+      onClose();
+    })();
   };
 
   const handleCancelConfirmation = () => {

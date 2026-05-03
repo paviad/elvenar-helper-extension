@@ -17,6 +17,6 @@ export function matchTechTreeUrl(
     async function Do() {
       await saveToStorage('techTreeSpriteUrl', details.url);
     }
-    Do();
+    void Do();
   }
 }

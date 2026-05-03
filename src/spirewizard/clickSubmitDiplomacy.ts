@@ -40,9 +40,9 @@ export const clickSubmitDiplomacy = async (diplomacySubmitData: DiplomacySubmitD
             throw new Error('Dropdown menu does not have the "show" class after clicking resourceDiv.');
           }
           const colorClass = resultColors[res.result]; // should be 'green', 'yellow', or 'red'
-          const colorLink = dropdownMenu.querySelector(`a.${colorClass}`) as HTMLAnchorElement | null;
+          const colorLink = dropdownMenu.querySelector(`a.${colorClass}`);
           if (colorLink) {
-            colorLink.click();
+            (colorLink as HTMLAnchorElement).click();
             await sleep(300);
           } else {
             throw new Error(`No <a> tag with class ${colorClass} found in dropdown menu.`);
@@ -55,9 +55,9 @@ export const clickSubmitDiplomacy = async (diplomacySubmitData: DiplomacySubmitD
       }
     }
     // Find the submit button with class "submit-choice" under the choice div and click it
-    const submitButton = choiceDiv.querySelector('button.submit-choice') as HTMLButtonElement | null;
+    const submitButton = choiceDiv.querySelector('button.submit-choice');
     if (submitButton) {
-      submitButton.click();
+      (submitButton as HTMLButtonElement).click();
     } else {
       throw new Error('No submit-choice button found in choice div.');
     }

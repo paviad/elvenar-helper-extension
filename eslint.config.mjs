@@ -1,12 +1,24 @@
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import { defineConfig } from 'eslint/config';
+// @ts-check
 
-export default defineConfig([
+import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
+
+export default defineConfig(
+  js.configs.recommended,
+  tseslint.configs.recommendedTypeChecked,
   {
-    extends: [eslint.configs.recommended, tseslint.configs.strict, tseslint.configs.stylistic],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
@@ -22,4 +34,4 @@ export default defineConfig([
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
-]);
+);

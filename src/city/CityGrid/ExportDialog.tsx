@@ -16,14 +16,16 @@ const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose, exportStri
 
   if (!isOpen) return null;
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(exportString);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
+  const handleCopy = () => {
+    void (async () => {
+      try {
+        await navigator.clipboard.writeText(exportString);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
+    })();
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {

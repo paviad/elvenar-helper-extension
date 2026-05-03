@@ -2,7 +2,7 @@ import { sendInterceptedPlayerSpecificRequest } from '../chrome/messages';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 
 export function setupPlayerSpecificRequestInterceptedListener() {
-  window.addEventListener('message', async (event: MessageEvent<PlayerSpecificMessage>) => {
+  window.addEventListener('message', (event: MessageEvent<PlayerSpecificMessage>) => {
     if (event.source !== window) {
       return;
     }
@@ -20,7 +20,7 @@ export function setupPlayerSpecificRequestInterceptedListener() {
       case 'SPIRE_DIPLOMACY_SUBMIT':
       case 'QUEST':
       case 'CITY_MAP_SERVICE_UPDATE':
-        sendInterceptedPlayerSpecificRequest(event.data);
+        void sendInterceptedPlayerSpecificRequest(event.data);
         break;
       default:
         event.data satisfies never;

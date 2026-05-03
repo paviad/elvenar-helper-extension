@@ -18,10 +18,10 @@ export function Activate() {
         await loadAccountManagerFromStorage(true);
         setAccountId(routeAccountId);
         setDoNavigate(true);
-        nav('/city', { replace: true });
+        await nav('/city', { replace: true });
       }
     }
-    loadData();
+    void loadData();
   }, []);
 
   return (

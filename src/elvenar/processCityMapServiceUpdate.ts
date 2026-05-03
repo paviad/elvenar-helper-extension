@@ -2,6 +2,7 @@ import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountBySessionId } from './AccountManager';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export const processCityMapServiceUpdate = async (untypedJson: unknown, sharedInfo: ExtensionSharedInfo) => {
   const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];
 

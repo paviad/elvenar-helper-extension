@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { decodeRequestBody } from './decodeRequestBody';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';

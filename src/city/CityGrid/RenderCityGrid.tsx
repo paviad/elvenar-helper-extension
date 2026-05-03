@@ -86,9 +86,11 @@ export const RenderCityGrid = () => {
           levelInput={state.levelInput}
           setLevelInput={state.setLevelInput}
           onUpdate={(newLevel) => {
-            state.setShowLevelDialog({ open: false, index: -1 });
-            state.duplicateAndDeleteBlock(state.showLevelDialog.index, newLevel);
-            setMenu(null);
+            void (async () => {
+              state.setShowLevelDialog({ open: false, index: -1 });
+              await state.duplicateAndDeleteBlock(state.showLevelDialog.index, newLevel);
+              setMenu(null);
+            })();
           }}
         />
 

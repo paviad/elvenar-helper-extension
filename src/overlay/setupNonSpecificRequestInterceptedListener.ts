@@ -2,7 +2,7 @@ import { sendInterceptedNonSpecificRequest } from '../chrome/messages';
 import { NonSpecificMessage } from '../inject/nonSpecificMessages';
 
 export function setupNonSpecificRequestInterceptedListener() {
-  window.addEventListener('message', async (event: MessageEvent<NonSpecificMessage>) => {
+  window.addEventListener('message', (event: MessageEvent<NonSpecificMessage>) => {
     if (event.source !== window) {
       return;
     }
@@ -16,7 +16,7 @@ export function setupNonSpecificRequestInterceptedListener() {
       case 'PREMIUM_BUILDING_HINTS':
       case 'GOODS_NAMES':
       case 'EVOLVING_BUILDINGS':
-        sendInterceptedNonSpecificRequest(event.data);
+        void sendInterceptedNonSpecificRequest(event.data);
         break;
       default:
         event.data satisfies never;

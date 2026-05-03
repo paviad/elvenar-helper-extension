@@ -177,7 +177,9 @@ const messageReceiver = (
   if (callback) {
     const rc = callback(message, sender);
     if (rc instanceof Promise) {
-      rc.then((r) => sendResponse(r));
+      rc.then((r) => sendResponse(r)).catch((e) => {
+        console.log('ElvenAssist: Error in message handler for message', message, e);
+      });
       return true;
     } else {
       sendResponse(rc);
@@ -196,7 +198,7 @@ export const setupTradeParsedListener = (callback: (tradesMsg: TradeParsedMessag
   (callbackMap['tradeParsed'] = callback);
 export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
   (callbackMap['refreshCity'] = callback);
-export const setupCityEntitiesUpdatedListener = (callback: (message: CityEntitiesUpdatedMessage) => void) =>
+export const setupCityEntitiesUpdatedListener = (callback: (message: CityEntitiesUpdatedMessage) => void | Promise<void>) =>
   (callbackMap['cityEntitiesUpdated'] = callback);
 export const setupOpenExtensionTabListener = (
   callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void,
@@ -205,7 +207,7 @@ export const setupOpenExtensionTabListener = (
 export const setupCityDataUpdatedListener = (callback: (tabId: CityDataUpdatedMessage) => void) =>
   (callbackMap['cityDataUpdated'] = callback);
 
-export const setupOtherPlayerCityUpdatedListener = (callback: (message: OtherPlayerCityUpdatedMessage) => void) =>
+export const setupOtherPlayerCityUpdatedListener = (callback: (message: OtherPlayerCityUpdatedMessage) => void | Promise<void>) =>
   (callbackMap['otherPlayerCityUpdated'] = callback);
 
 export const setupCitySavedListener = (callback: (message: CitySavedMessage) => void) =>

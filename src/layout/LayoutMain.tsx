@@ -1,18 +1,6 @@
 import MenuIcon from '@mui/icons-material/Menu';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; // Import Help Icon
-import {
-  Alert,
-  AppBar,
-  Box,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar,
-  Typography,
-  Tooltip,
-  Badge,
-} from '@mui/material';
+import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography, Badge } from '@mui/material';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
@@ -59,7 +47,7 @@ export const LayoutMain = () => {
         await saveToStorage('notifyMultipleAccounts', 'false');
       }
     }
-    Do();
+    void Do();
   }, [saved]);
 
   React.useEffect(() => {
@@ -72,7 +60,7 @@ export const LayoutMain = () => {
       };
       img.src = url;
     }
-    getSpriteUrl();
+    void getSpriteUrl();
   }, []);
 
   const handleAccountClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -177,7 +165,7 @@ export const LayoutMain = () => {
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
-            <MenuItem onClick={handleResetEverything}>Reset Everything</MenuItem>
+            <MenuItem onClick={() => void handleResetEverything()}>Reset Everything</MenuItem>
             <MenuItem onClick={handleAboutOpen}>About</MenuItem>
           </Menu>
 

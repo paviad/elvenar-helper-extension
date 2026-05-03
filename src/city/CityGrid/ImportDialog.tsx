@@ -4,7 +4,7 @@ import React from 'react';
 interface ImportDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (name: string, data: string) => void;
+  onImport: (name: string, data: string) => void | Promise<void>;
   existingCities?: string[];
 }
 
@@ -61,7 +61,9 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
         }
       };
 
-      checkClipboard();
+      checkClipboard().catch((err) => {
+        console.error('Error checking clipboard: ', err);
+      });
 
       // 3. Focus Textarea
       setTimeout(() => {
@@ -81,22 +83,26 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
   };
 
   const handleInitialSubmit = () => {
-    const trimmedName = name.trim();
-    const trimmedData = dataString.trim();
+    void (async () => {
+      const trimmedName = name.trim();
+      const trimmedData = dataString.trim();
 
-    if (!trimmedName || !isValid) return;
+      if (!trimmedName || !isValid) return;
 
-    if (existingCities.includes(trimmedName)) {
-      setIsConfirming(true);
-    } else {
-      onImport(trimmedName, trimmedData);
-      onClose();
-    }
+      if (existingCities.includes(trimmedName)) {
+        setIsConfirming(true);
+      } else {
+        await onImport(trimmedName, trimmedData);
+        onClose();
+      }
+    })();
   };
 
   const handleConfirmOverwrite = () => {
-    onImport(name.trim(), dataString.trim());
-    onClose();
+    void (async () => {
+      await onImport(name.trim(), dataString.trim());
+      onClose();
+    })();
   };
 
   const handleCancelConfirmation = () => {

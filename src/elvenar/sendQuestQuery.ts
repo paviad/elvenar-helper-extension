@@ -62,5 +62,5 @@ export async function sendQuestQuery(sharedInfo: ExtensionSharedInfo) {
   }
   accountData.faEndTime = fa ? fa.remainingTime + Date.now() : undefined;
 
-  await setAccountData(accountId, accountData);
+  setAccountData(accountId, accountData);
 }

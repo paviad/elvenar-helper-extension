@@ -17,9 +17,9 @@ export async function openOrRestoreTab(accountId?: string) {
     const params = { url: accountId ? `tab.html#/activate/?accountId=${accountId}` : 'tab.html#/city', active: true };
 
     if (views.length === 0) {
-      chrome.tabs.create(params);
+      await chrome.tabs.create(params);
     } else {
-      chrome.tabs.update(views[0].tabId, params);
+      await chrome.tabs.update(views[0].tabId, params);
     }
 
     return;

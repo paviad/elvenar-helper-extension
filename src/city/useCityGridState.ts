@@ -68,7 +68,6 @@ export const useCityGridState = () => {
   const [importDialog, setImportDialog] = React.useState({ open: false, existingCities: [] as string[] });
 
   // Derived State
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const isDetached = !!getAccountById(city.accountId!)?.isDetached;
 
   // --- Effects ---
@@ -81,7 +80,7 @@ export const useCityGridState = () => {
       const blds = finder.getAllBuildingsByCategory(city.race);
       setBuildings(blds);
     }
-    loadBuildings();
+    void loadBuildings();
   }, [city.race]);
 
   // Keyboard Handler for Dragging (Level Up/Down/Delete)
@@ -193,8 +192,8 @@ export const useCityGridState = () => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', ($event) => void handleKeyDown($event));
+    return () => window.removeEventListener('keydown', ($event) => void handleKeyDown($event));
   }, [
     dragIndex,
     blocks,
@@ -212,7 +211,7 @@ export const useCityGridState = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'KeyS' && !event.altKey && !event.repeat && event.ctrlKey && !event.metaKey) {
         event.preventDefault();
-        saveCity();
+        void saveCity();
       }
       if (event.code === 'KeyB' && event.altKey && !event.repeat && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
@@ -226,7 +225,7 @@ export const useCityGridState = () => {
   // Helper Tip
   React.useEffect(() => {
     if (showBuildDialog) {
-      helper.showMessage('you_can_press_alt_b_to_build');
+       helper.showMessage('you_can_press_alt_b_to_build');
     }
   }, [showBuildDialog, helper]);
 
@@ -500,7 +499,6 @@ export const useCityGridState = () => {
   async function handleSaveDialogSave(name: string) {
     setSaveAsDialog({ open: false, defaultName: '', existingCities: [] });
     const cityEntities = saveBack(Object.values(blocks));
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await saveCurrentCityAs(city.accountId!, name, cityEntities, city.chapter);
     await sendCitySavedMessage(name);
     resetMovedInPlace(Object.values(blocks));

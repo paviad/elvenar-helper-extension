@@ -39,7 +39,7 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
       const maxChapter = await getMaxChapter();
       setMaxChapter(maxChapter);
     }
-    fetchMaxChapter();
+    void fetchMaxChapter();
   }, []);
 
   const updateConfig = (field: keyof typeof configValues) => (value: number | undefined) => {

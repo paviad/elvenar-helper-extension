@@ -51,7 +51,7 @@ export const playerSpecificRequestHandler = async (
 
   const sharedInfo = msg.payload.payload.sharedInfo;
   sharedInfo.tabId = sender.tab?.id || -1;
-  const untypedJson = JSON.parse(msg.payload.payload.decodedResponse);
+  const untypedJson = JSON.parse(msg.payload.payload.decodedResponse) as ElvenarRequestResponseEntry[];
 
   await loadAccountManagerFromStorage();
 
@@ -78,7 +78,7 @@ export const playerSpecificRequestHandler = async (
 
   switch (msg.payload.type) {
     case 'CITY_DATA_PROCESSED':
-      sendCityDataUpdatedMessage(sharedInfo.tabId);
+      await sendCityDataUpdatedMessage(sharedInfo.tabId);
       break;
     case 'TRADE_DATA_PROCESSED':
       {
@@ -94,7 +94,7 @@ export const playerSpecificRequestHandler = async (
       // await sendSpireEncounterStartedMessage();
       break;
     case 'CITY_MAP_SERVICE_UPDATE':
-      sendCityEntitiesUpdatedMessage(sharedInfo.tabId);
+      await sendCityEntitiesUpdatedMessage(sharedInfo.tabId);
       break;
     case 'SPIRE_DIPLOMACY_SUBMIT':
     case 'INVENTORY_DATA_PROCESSED':

@@ -40,7 +40,7 @@ export const RuneShards = () => {
 
       setRawShards(shards);
     }
-    Do();
+    void Do();
   }, [city.resources, city.buildingFinder]);
 
   // Dynamically sort the shards when the data or sort preference changes

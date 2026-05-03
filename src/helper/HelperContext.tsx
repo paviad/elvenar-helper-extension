@@ -43,7 +43,7 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   React.useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get([STORAGE_KEY], (result) => {
-        const rawData = result[STORAGE_KEY];
+        const rawData = result[STORAGE_KEY] as Record<string, HistoryEntry | number> | undefined;
         if (rawData) {
           // Normalize data: Convert old number format to new object format if needed
           const normalized: Record<string, HistoryEntry> = {};
@@ -93,7 +93,9 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setHistory(newHistory);
 
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ [STORAGE_KEY]: newHistory });
+        chrome.storage.local.set({ [STORAGE_KEY]: newHistory }).catch((err) => {
+          console.warn('Failed to save helper message history:', err);
+        });
       }
     },
     [history],

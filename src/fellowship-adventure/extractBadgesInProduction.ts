@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import { FaQuest } from '../elvenar/Accounts';
 import { CityEntity } from '../model/cityEntity';
 import { ProductionBadgeInfo } from './ProductionBadgeInfo';
@@ -18,8 +16,8 @@ export function extractBadgesInProduction(
   const mapr = (r: CityEntity) =>
     ({
       id: r.id,
-      name: r.state!.current_product!.name!,
-      asset_name: r.state!.current_product!.asset_name!,
+      name: r.state!.current_product.name!,
+      asset_name: r.state!.current_product.asset_name!,
       next_state_transition_in: r.state!.next_state_transition_in,
       productionAmount: r.state!.current_product?.productionAmount,
     }) satisfies ProductionBadgeInfo;
@@ -28,8 +26,8 @@ export function extractBadgesInProduction(
     const boostFactor = boostedGoods[r.state?.current_product?.asset_name?.replace(/_\d+$/, '') || ''] || 1;
     return {
       id: r.id,
-      name: r.state!.current_product!.name!,
-      asset_name: r.state!.current_product!.asset_name!,
+      name: r.state!.current_product.name!,
+      asset_name: r.state!.current_product.asset_name!,
       next_state_transition_in: r.state!.next_state_transition_in,
       productionAmount:
         ((Object.entries(r.state!.current_product?.revenue.resources).find(([k, v]) =>

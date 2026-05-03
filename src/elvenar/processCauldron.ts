@@ -3,6 +3,7 @@ import { Ingredient } from '../model/ingredient';
 import { PotionEffect } from '../model/potionEffect';
 import { getAccountBySessionId } from './AccountManager';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function processCauldron(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [unknown, { responseData: Ingredient[] }, { responseData: PotionEffect[] }];
 

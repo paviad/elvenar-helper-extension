@@ -1,3 +1,4 @@
+import { DiplomacySubmitData, EncounterData } from '../model/spire';
 import { startNewEncounter } from './startNewEncounter';
 import { submitDiplomacy } from './submitDiplomacy';
 
@@ -20,10 +21,10 @@ window.addEventListener('message', (event) => {
     console.log('ElvenAssist: Message received in Spire Wizard Inject', event.data);
   }
   if (event.data?.type === 'spireEncounterStarted') {
-    startNewEncounter(event.data.payload);
+    void startNewEncounter(event.data.payload as EncounterData);
   }
   if (event.data?.type === 'spireDiplomacySubmit') {
-    submitDiplomacy(event.data.payload);
+    void submitDiplomacy(event.data.payload as DiplomacySubmitData);
     // Add your message handling logic here
   }
   // Add your message handling logic here

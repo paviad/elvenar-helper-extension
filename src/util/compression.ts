@@ -15,7 +15,7 @@ export async function smartCompress(input: string): Promise<string> {
     const compressedStream = stream.pipeThrough(new CompressionStream('deflate'));
 
     // 3. Read the stream and convert to Base64
-    const response = await new Response(compressedStream);
+    const response = new Response(compressedStream);
     const blob = await response.blob();
     const buffer = await blob.arrayBuffer();
 
@@ -58,7 +58,7 @@ export async function smartDecompress(input: string): Promise<string> {
     const decompressedStream = stream.pipeThrough(new DecompressionStream('deflate'));
 
     // 3. Decode back to text
-    const response = await new Response(decompressedStream);
+    const response = new Response(decompressedStream);
     return await response.text();
   } catch (error) {
     console.error('Decompression failed:', error);

@@ -1,5 +1,6 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function processNotifications(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as {
     requestClass: string;

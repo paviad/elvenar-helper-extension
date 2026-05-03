@@ -40,7 +40,10 @@ export function FellowshipAdventure() {
         console.log('loading FA parameters');
         const faParameters = await getFromStorage(`faParameters_${accountId}`);
         if (faParameters) {
-          const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters);
+          const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters) as {
+            mmEnchantmentEnabled: boolean;
+            enchantmentBonus: number;
+          };
           setMmEnchantmentEnabled(mmEnchantmentEnabled);
           setEnchantmentBonus(enchantmentBonus);
         }
@@ -49,7 +52,7 @@ export function FellowshipAdventure() {
       }
     }
 
-    loadFaParameters();
+    void loadFaParameters();
   }, [accountId]);
 
   React.useEffect(() => {
@@ -115,7 +118,7 @@ export function FellowshipAdventure() {
 
       setEndTime(accountData.faEndTime);
     }
-    fetchCityData(accountData);
+    void fetchCityData(accountData);
   }, [accountId, mmEnchantmentEnabled, enchantmentBonus, forceUpdate]);
 
   const setMmEnchantmentEnabled2 = React.useCallback(
@@ -127,10 +130,10 @@ export function FellowshipAdventure() {
         };
 
         console.log('Saving FA parameters:', faParameters);
-        saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
+        await saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
         setMmEnchantmentEnabled(enabled);
       }
-      setAndSave(enabled);
+      void setAndSave(enabled);
     },
     [setMmEnchantmentEnabled, enchantmentBonus, accountId],
   );
@@ -144,10 +147,10 @@ export function FellowshipAdventure() {
         };
 
         console.log('Saving FA parameters:', faParameters);
-        saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
+        await saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
         setEnchantmentBonus(bonus);
       }
-      setAndSave(bonus);
+      void setAndSave(bonus);
     },
     [setEnchantmentBonus, mmEnchantmentEnabled, accountId],
   );
@@ -162,8 +165,7 @@ export function FellowshipAdventure() {
     .filter((r) => badgeSpriteInfo[r])
     .map((badge) => {
       const req = faRequirements[badge];
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const spriteInfo = badgeSpriteInfo[badge]!;
+      const spriteInfo = badgeSpriteInfo[badge];
 
       const storageValue = badges ? badges[badge as keyof Badges] || 0 : 0;
       const value = (req.currentProgress / req.maxProgress) * 100;

@@ -14,7 +14,7 @@ export function generateAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
 }
 
-export async function setAccountData(accountId: string, accountData: AccountData) {
+export function setAccountData(accountId: string, accountData: AccountData) {
   accounts[accountId] = accountData;
 }
 
@@ -261,7 +261,6 @@ export const saveCityInPlace = async (accountId: string, cityEntities: CityEntit
 };
 
 export const deleteCityById = async (accountId: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete accounts[accountId];
   await removeFromStorage([`accounts_${accountId}`, `accounts_last_saved_${accountId}`]);
 };

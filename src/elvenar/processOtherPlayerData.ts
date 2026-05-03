@@ -7,6 +7,7 @@ import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromCha
 import { setAccountData } from './AccountManager';
 import { AccountData } from './Accounts';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; responseData: unknown }];
 
@@ -130,7 +131,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
     isDetached: true,
   } satisfies AccountData;
 
-  await setAccountData(accountId, data);
+  setAccountData(accountId, data);
 }
 
 const maxUpgradeIndexByChapter = [

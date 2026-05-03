@@ -16,7 +16,7 @@ let ensureWidthAndHeightAtLeastFn: (minWidth: number, minHeight: number) => void
 
 console.log('ElvenAssist: Content script loaded');
 
-const initFunc = async () => {
+const initFunc = () => {
   // Remove existing panel if present
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
   if (existingPanel) {
@@ -71,40 +71,42 @@ const initFunc = async () => {
   iconImg.style.display = '';
   iconImg.title = 'Open City Planner';
 
-  iconImg.addEventListener('click', async () => {
+  iconImg.addEventListener('click', () => {
     if (isDragging) return;
-    try {
-      await chrome.runtime.sendMessage({ type: 'openExtensionTab' });
-    } catch (error) {
-      console.error('Error opening extension tab:', error);
-      // Show a red cross SVG in place of the icon
-      iconImg.src = '';
-      iconImg.alt = 'Error';
-      iconImg.style.background = 'none';
-      iconImg.style.display = '';
-      iconImg.style.width = '20px';
-      iconImg.style.height = '20px';
-      const parentNode = iconImg.parentNode;
-      const nextSibling = iconImg.nextSibling;
-      parentNode?.removeChild(iconImg);
+    void (async () => {
+      try {
+        await chrome.runtime.sendMessage({ type: 'openExtensionTab' });
+      } catch (error) {
+        console.error('Error opening extension tab:', error);
+        // Show a red cross SVG in place of the icon
+        iconImg.src = '';
+        iconImg.alt = 'Error';
+        iconImg.style.background = 'none';
+        iconImg.style.display = '';
+        iconImg.style.width = '20px';
+        iconImg.style.height = '20px';
+        const parentNode = iconImg.parentNode;
+        const nextSibling = iconImg.nextSibling;
+        parentNode?.removeChild(iconImg);
 
-      const errorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      errorSvg.setAttribute('width', '20');
-      errorSvg.setAttribute('height', '20');
-      errorSvg.setAttribute('viewBox', '0 0 20 20');
-      errorSvg.innerHTML = `
+        const errorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        errorSvg.setAttribute('width', '20');
+        errorSvg.setAttribute('height', '20');
+        errorSvg.setAttribute('viewBox', '0 0 20 20');
+        errorSvg.innerHTML = `
         <circle cx="10" cy="10" r="9" fill="#fff" stroke="#e53935" stroke-width="2"/>
         <line x1="6" y1="6" x2="14" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
         <line x1="14" y1="6" x2="6" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
       `;
-      const titleElem = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-      titleElem.textContent = 'Extension Updated, Please Refresh the Tab';
-      errorSvg.appendChild(titleElem);
-      if (nextSibling) {
-        parentNode?.removeChild(nextSibling);
+        const titleElem = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        titleElem.textContent = 'Extension Updated, Please Refresh the Tab';
+        errorSvg.appendChild(titleElem);
+        if (nextSibling) {
+          parentNode?.removeChild(nextSibling);
+        }
+        parentNode?.appendChild(errorSvg);
       }
-      parentNode?.appendChild(errorSvg);
-    }
+    })();
   });
   header.appendChild(iconImg);
 
@@ -315,7 +317,9 @@ const initFunc = async () => {
 
   setupMessageListener();
   setupCityDataUpdatedListener(({ tabId }) => {
-    setup(tabId, content);
+    setup(tabId, content).catch((err) => {
+      console.error('Error setting up overlay:', err);
+    });
   });
 };
 
@@ -325,8 +329,8 @@ async function setup(tabId: number, contentDiv: HTMLDivElement) {
   if (accountId) {
     generateOverlayStore(accountId);
     const store = getOverlayStore();
-    store.persist.onFinishHydration(async (state) => {
-      const chapter = (await getAccountById(accountId))?.cityQuery?.chapter || 0;
+    store.persist.onFinishHydration((state) => {
+      const chapter = (getAccountById(accountId))?.cityQuery?.chapter || 0;
       state.setChapter(chapter);
 
       if (!state.lastSeenChat) {

@@ -5,7 +5,7 @@ export const clickStartNewEncounter = async () => {
   if (navContainer) {
     const buttons = navContainer.querySelectorAll('button');
     if (buttons.length === 2) {
-      (buttons[0] as HTMLButtonElement).click();
+      (buttons[0]).click();
     } else if (buttons.length === 1) {
       const selectedResources = Array.from(document.querySelectorAll('div.resource-list div.select-resource.selected'));
       for (const res of selectedResources) {

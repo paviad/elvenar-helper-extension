@@ -22,7 +22,7 @@ import { BuildingConfig, BuildingDefinition, CATEGORIES } from './CATEGORIES';
 import { BuildingConfiguration } from './BuildingConfiguration';
 
 interface NewBuildingSelectorProps {
-  onSelectBuilding: (building: BuildingDefinition, config: BuildingConfig) => void;
+  onSelectBuilding: (building: BuildingDefinition, config: BuildingConfig) => void | Promise<void>;
   buildings: BuildingDefinition[];
   currentCityChapter: number;
 }
@@ -53,20 +53,24 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
   };
 
   const handleBuildingClick = (building: BuildingDefinition) => {
-    if (building.supportedFields && building.supportedFields.length > 0) {
-      if (building.supportedFields.includes('Chapter')) {
-        building.chapter = currentCityChapter;
+    void (async () => {
+      if (building.supportedFields && building.supportedFields.length > 0) {
+        if (building.supportedFields.includes('Chapter')) {
+          building.chapter = currentCityChapter;
+        }
+        setSelectedBuilding(building);
+      } else {
+        await onSelectBuilding(building, {});
       }
-      setSelectedBuilding(building);
-    } else {
-      onSelectBuilding(building, {});
-    }
+    })();
   };
 
   const handleAddBuilding = (config: BuildingConfig) => {
     if (!selectedBuilding) return;
-    onSelectBuilding(selectedBuilding, config);
-    setSelectedBuilding(null);
+    void (async () => {
+      await onSelectBuilding(selectedBuilding, config);
+      setSelectedBuilding(null);
+    })();
   };
 
   // --- Filtering Logic ---

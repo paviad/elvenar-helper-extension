@@ -109,7 +109,7 @@ export const TableCityView = () => {
       setTableData(computedRows);
       setAllResourceKeys(sortedKeys);
     }
-    buildData();
+    void buildData();
   }, [blocks, race]);
 
   const handleRequestSort = (property: string) => {
@@ -148,8 +148,8 @@ export const TableCityView = () => {
 
   const sortedRows = React.useMemo(() => {
     const comparator = (a: TableRowData, b: TableRowData) => {
-      let aValue: number | string = 0;
-      let bValue: number | string = 0;
+      let aValue: number | string;
+      let bValue: number | string;
 
       if (orderBy === 'name') {
         return (a.name || '').localeCompare(b.name || '');

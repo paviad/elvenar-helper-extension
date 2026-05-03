@@ -78,7 +78,7 @@ export const InventoryMain = () => {
       await finder.ensureInitialized();
       setFinder(new BuildingFinder());
     }
-    initializeFinder();
+    void initializeFinder();
   }, []);
 
   React.useEffect(() => {
@@ -157,7 +157,7 @@ export const InventoryMain = () => {
       setGoodsNames(goodsNames);
       setBoostedGoods(boostedGoods);
     }
-    fetchInventory();
+    void fetchInventory();
   }, [accountId]);
 
   // Get unique types and subtypes for filter dropdowns
@@ -230,7 +230,7 @@ export const InventoryMain = () => {
     displayRows = Array.from(map.values()).map((row) => ({
       ...row,
       chapters: Array.from(row.chapters)
-        .sort((a, b) => (a as number) - (b as number))
+        .sort((a, b) => a - b)
         .join(', '),
     }));
   }

@@ -6,7 +6,7 @@ type Severity = 'info' | 'success' | 'warning' | 'error';
 interface MyConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void; // Triggered by Cancel, Backdrop, or Escape
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   title: string;
   message: string;
   severity?: Severity;
@@ -105,8 +105,10 @@ const MyConfirmDialog: React.FC<MyConfirmDialogProps> = ({
 
           <button
             onClick={() => {
-              onConfirm();
-              onClose();
+              void (async () => {
+                await onConfirm();
+                onClose();
+              })();
             }}
             style={{
               ...styles.primaryButton,

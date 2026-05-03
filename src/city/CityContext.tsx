@@ -135,10 +135,10 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }, [accountId]);
 
   React.useEffect(() => {
-      if (moveLog.length !== 0) {
-        return;
-      }
-      triggerLocalRefresh();
+    if (moveLog.length !== 0) {
+      return;
+    }
+    triggerLocalRefresh();
   }, [forceUpdate]);
 
   React.useEffect(() => {
@@ -167,17 +167,14 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       setMoveLog([]);
       setRedoStack([]);
     }
-    fetchCityData();
+    void fetchCityData();
   }, [localRefresh]);
 
   React.useEffect(() => {
-    async function updateBlocks() {
-      const blocks = await generateCityBlocks(cityEntities[0]);
-      const unlockedAreas = generateUnlockedAreas(cityEntities[1]);
-      setBlocks(blocks);
-      setUnlockedAreas(unlockedAreas);
-    }
-    updateBlocks();
+    const blocks = generateCityBlocks(cityEntities[0]);
+    const unlockedAreas = generateUnlockedAreas(cityEntities[1]);
+    setBlocks(blocks);
+    setUnlockedAreas(unlockedAreas);
   }, [cityEntities]);
 
   // temporary
@@ -194,7 +191,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     async function Do() {
       await buildingFinder?.ensureInitialized();
     }
-    Do();
+    void Do();
   }, [buildingFinder]);
 
   React.useEffect(() => {
@@ -206,7 +203,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       const effects = await getEffects();
       setEffects(effects);
     }
-    Do();
+    void Do();
   }, []);
 
   const allTypes = React.useMemo(() => {
@@ -251,7 +248,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       const maxLevels = await getMaxLevels();
       setMaxLevels(maxLevels);
     };
-    fetchMaxLevels();
+    void fetchMaxLevels();
   }, []);
 
   const handleUndo = () => {

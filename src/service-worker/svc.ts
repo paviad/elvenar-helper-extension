@@ -29,15 +29,15 @@ console.log('Elvenar Extension: Service Worker Loaded');
 
 async function initialize() {
   setupMessageListener();
-  setupOpenExtensionTabListener(async (msg, sender) => {
+  setupOpenExtensionTabListener((msg, sender) => {
     let accountId: string | undefined;
     if (sender.tab?.id) {
       accountId = getAccountByTabId(sender.tab.id);
     }
-    await openOrRestoreTab(accountId);
+    void openOrRestoreTab(accountId);
   });
-  setupCitySavedListener(async (msg) => {
-    await loadAccountManagerFromStorage(true);
+  setupCitySavedListener((msg) => {
+    void loadAccountManagerFromStorage(true);
   });
   setupRefreshCityListener(async (msg) => {
     await loadAccountManagerFromStorage();
@@ -61,16 +61,16 @@ async function initialize() {
       };
     }
   });
-  setupInterceptedNonSpecificRequestListener(nonSpecificRequestHandler);
-  setupInterceptedPlayerSpecificRequestListener(playerSpecificRequestHandler);
+  setupInterceptedNonSpecificRequestListener((msg) => void nonSpecificRequestHandler(msg));
+  setupInterceptedPlayerSpecificRequestListener((msg, sender) => void playerSpecificRequestHandler(msg, sender));
   await loadAccountManagerFromStorage();
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }
 
-initialize();
+void initialize();
 
-chrome.action.onClicked.addListener(async (tab) => {
-  await openOrRestoreTab();
+chrome.action.onClicked.addListener((tab) => {
+  void openOrRestoreTab();
 });
 
 const callbackRequest = (details: {

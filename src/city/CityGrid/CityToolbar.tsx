@@ -6,14 +6,14 @@ import React from 'react';
 
 interface CityToolbarProps {
   isDetached: boolean;
-  onRefresh: () => void;
+  onRefresh: () => void | Promise<void>;
   onSellStreets: () => void;
   onBuild: () => void;
   onImport: () => void;
   onExport: () => void;
   onSaveAs: () => void;
   onDelete: () => void;
-  onSave: () => void;
+  onSave: () => void | Promise<void>;
   showSaveButton: boolean;
   onDeleteHighlighted: (highlighted: boolean) => void;
   hasHighlightedBlocks: boolean;
@@ -76,7 +76,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
     <Stack>
       <Stack direction='row'>
         {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
-        {!isDetached && <Button onClick={onRefresh}>Refresh City</Button>}
+        {!isDetached && <Button onClick={() => void onRefresh()}>Refresh City</Button>}
         <Button onClick={onSellStreets}>Sell Streets</Button>
         <Button onClick={onBuild}>Build</Button>
         <Button onClick={onImport}>Import City</Button>
@@ -86,7 +86,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
           Delete
         </Button>
 
-        {showSaveButton && <Button onClick={onSave}>Save</Button>}
+        {showSaveButton && <Button onClick={() => void onSave()}>Save</Button>}
         <Button onClick={() => onDeleteHighlighted(true)} disabled={!hasHighlightedBlocks}>
           Delete Highlighted
         </Button>
@@ -131,7 +131,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
             <ToggleButtonGroup
               value={viewMode}
               exclusive
-              onChange={(e, newMode) => newMode && onViewModeChange(newMode)}
+              onChange={(e, newMode: 'top' | 'iso' | 'table') => newMode && onViewModeChange(newMode)}
               size='small'
               aria-label='view mode'
             >

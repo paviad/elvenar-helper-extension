@@ -9,17 +9,19 @@ if (typeof chrome.action === 'undefined') {
   chrome.action = (chrome as any).browserAction;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadAccountManagerFromStorage();
-  setupMessageListener();
-  setupOtherPlayerCityUpdatedListener(async () => {
-    await loadAccountManagerFromStorage(true);
-    useTabStore.getState()?.triggerForceUpdate();
-    useTabStore.getState()?.setOtherCityUpdated(true);
-  });
-  setupCityEntitiesUpdatedListener(async (msg) => {
-    await loadAccountManagerFromStorage(true);
-    useTabStore.getState()?.triggerForceUpdate();
-  });
-  createReactUi();
+document.addEventListener('DOMContentLoaded', () => {
+  void (async () => {
+    await loadAccountManagerFromStorage();
+    setupMessageListener();
+    setupOtherPlayerCityUpdatedListener(async () => {
+      await loadAccountManagerFromStorage(true);
+      useTabStore.getState()?.triggerForceUpdate();
+      useTabStore.getState()?.setOtherCityUpdated(true);
+    });
+    setupCityEntitiesUpdatedListener(async (msg) => {
+      await loadAccountManagerFromStorage(true);
+      useTabStore.getState()?.triggerForceUpdate();
+    });
+    createReactUi();
+  })();
 });

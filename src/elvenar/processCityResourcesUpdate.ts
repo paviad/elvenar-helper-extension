@@ -1,6 +1,7 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountBySessionId } from './AccountManager';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export const processCityResourcesUpdate = async (untypedJson: unknown, sharedInfo: ExtensionSharedInfo) => {
   const responseJson = untypedJson as {
     requestClass: string;
