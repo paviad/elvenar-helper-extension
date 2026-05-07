@@ -36,6 +36,7 @@ type Category =
   | 'wealth';
 
 export interface Production {
+  isSwitchable: boolean;
   products: Product[];
 }
 

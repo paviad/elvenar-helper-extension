@@ -8,6 +8,7 @@ import { RenderLegend } from './Legend/RenderLegend';
 import { RenderMoveLog } from './MoveLog/RenderMoveLog';
 import { WorkingState } from './WorkingState';
 import { RuneShards } from './RuneShards';
+import { SwitchableProduction } from './SwitchableProduction';
 
 export function CityView() {
   return (
@@ -103,6 +104,20 @@ export function CityView() {
             }}
           >
             <RuneShards />
+          </Box>
+
+          {/* Switchable Production */}
+          <Box
+            sx={{
+              p: 1,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'grey.100',
+              boxShadow: '0 -2px 5px rgba(0,0,0,0.05)',
+              zIndex: 1,
+            }}
+          >
+            <SwitchableProduction />
           </Box>
         </Box>
       </Box>

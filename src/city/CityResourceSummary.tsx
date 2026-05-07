@@ -1,14 +1,16 @@
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PeopleIcon from '@mui/icons-material/People';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import WorkIcon from '@mui/icons-material/Work';
-import { Box, Card, CardContent, Divider, LinearProgress, Stack, Typography } from '@mui/material';
-import React from 'react';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Card, CardContent, Divider, LinearProgress, Stack, Typography } from '@mui/material';
+import React, { useState } from 'react';
 import { Building } from '../model/building';
 import { useCity } from './CityContext';
 import { calculateCityBonuses } from './calculateCityBonuses';
 
 export const CityResourceSummary = () => {
   const city = useCity();
+  const [collapsed, setCollapsed] = useState(false);
   const blocks = React.useMemo(() => Object.values(city.blocks), [city.blocks]);
   const blocksIdAndLevel = React.useMemo(() => blocks.map((b) => ({ id: b.gameId, level: b.level })), [blocks]);
   const buildingFinder = city.buildingFinder;
@@ -161,11 +163,18 @@ export const CityResourceSummary = () => {
   };
 
   return (
-    <Card elevation={3} sx={{ height: '100%', overflow: 'auto' }}>
-      <CardContent>
-        <Typography variant='h6' component='div' sx={{ mb: 2, fontWeight: 'bold' }}>
-          Resource Summary
-        </Typography>
+    <Box>
+      <Accordion
+        expanded={!collapsed}
+        onChange={(_, expanded) => setCollapsed(!expanded)}
+        elevation={3}
+        disableGutters
+        sx={{ borderRadius: 2 }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='legend-content' id='legend-header'>
+          <Typography fontWeight='bold'>Resource Summary</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
 
         {renderRow('Population', <PeopleIcon fontSize='small' />, summary.population, '#4caf50')}
         <Divider sx={{ my: 1.5 }} />
@@ -177,7 +186,8 @@ export const CityResourceSummary = () => {
             {renderRow('Prosperity', <WorkIcon fontSize='small' />, summary.prosperity, '#9c27b0')}
           </>
         )}
-      </CardContent>
-    </Card>
+        </AccordionDetails>
+      </Accordion>
+    </Box>
   );
 };

@@ -48,11 +48,7 @@ export interface CurrentProduct {
 }
 
 export interface Revenue {
-  resources: OriginalRevenueResources;
-}
-
-export interface OriginalRevenueResources {
-  seeds: number;
+  resources: Record<string, number>;
 }
 
 export interface RequiredResourcesClass {
