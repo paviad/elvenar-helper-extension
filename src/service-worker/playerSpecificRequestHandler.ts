@@ -20,6 +20,7 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
+import { processTranscendenceService } from '../elvenar/processTranscendenceService';
 
 type Processors = Record<
   PlayerSpecificMessage['type'],
@@ -43,6 +44,7 @@ export const playerSpecificRequestHandler = async (
     case 'SPIRE_DIPLOMACY_SUBMIT':
     case 'QUEST':
     case 'CITY_MAP_SERVICE_UPDATE':
+    case 'TRANSCENDENCE_SERVICE':
       break;
     default:
       msg.payload satisfies never;
@@ -68,6 +70,7 @@ export const playerSpecificRequestHandler = async (
     SPIRE_DIPLOMACY_SUBMIT: processSpireDiplomacySubmit,
     QUEST: processQuest,
     CITY_MAP_SERVICE_UPDATE: processCityMapServiceUpdate,
+    TRANSCENDENCE_SERVICE: processTranscendenceService,
   };
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
@@ -93,6 +96,7 @@ export const playerSpecificRequestHandler = async (
     case 'SPIRE_ENCOUNTER_START':
       // await sendSpireEncounterStartedMessage();
       break;
+    case 'TRANSCENDENCE_SERVICE':
     case 'CITY_MAP_SERVICE_UPDATE':
       await sendCityEntitiesUpdatedMessage(sharedInfo.tabId);
       break;

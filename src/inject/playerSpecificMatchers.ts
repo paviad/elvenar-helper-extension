@@ -110,4 +110,12 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
     },
     messageType: 'CITY_MAP_SERVICE_UPDATE',
   },
+  {
+    id: 'transcendenceService',
+    responseSelector: {
+      requestClass: 'TranscendenceService',
+      requestMethod: 'allBuildingsStates',
+    },
+    messageType: 'TRANSCENDENCE_SERVICE',
+  },
 ];

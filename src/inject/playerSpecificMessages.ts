@@ -59,6 +59,10 @@ export interface CityMapServiceUpdateMessage extends PlayerSpecificMessageBase {
   type: 'CITY_MAP_SERVICE_UPDATE';
 }
 
+export interface TranscendenceServiceMessage extends PlayerSpecificMessageBase {
+  type: 'TRANSCENDENCE_SERVICE';
+}
+
 export type PlayerSpecificMessage =
   | CityDataProcessedMessage
   | InventoryDataProcessedMessage
@@ -71,4 +75,5 @@ export type PlayerSpecificMessage =
   | SpireEncounterStartMessage
   | SpireDiplomacySubmitMessage
   | QuestMessage
-  | CityMapServiceUpdateMessage;
+  | CityMapServiceUpdateMessage
+  | TranscendenceServiceMessage;

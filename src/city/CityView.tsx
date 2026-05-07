@@ -12,6 +12,8 @@ import { RenderMoveLog } from './MoveLog/RenderMoveLog';
 import { RuneShards } from './RuneShards';
 import { SwitchableProduction, SwitchableProductionViewModel } from './SwitchableProduction';
 import { WorkingState } from './WorkingState';
+import { getAccountById } from '../elvenar/AccountManager';
+import { TranscendenceStatus, TranscendenceViewModel } from './TranscendenceStatus';
 
 export function CityView() {
   return (
@@ -32,7 +34,64 @@ const getCurrentProduct = (state: State | undefined): string => {
 
 function CityViewInner() {
   const city = useCity();
-  const [viewModels, setViewModels] = useState<SwitchableProductionViewModel[]>([]);
+  const [switchableProductionViewModels, setSwitchableProductionViewModels] = useState<SwitchableProductionViewModel[]>(
+    [],
+  );
+  const [transcendenceViewModels, setTranscendenceViewModels] = useState<TranscendenceViewModel[]>([]);
+
+  useEffect(() => {
+    function Do() {
+      if (!city.accountId) {
+        return;
+      }
+
+      const accountData = getAccountById(city.accountId);
+
+      if (!accountData) {
+        return;
+      }
+
+      const transcendenceData = accountData.transcendenceData;
+
+      if (!transcendenceData) {
+        return;
+      }
+
+      const byEntityId = Object.values(city.blocks).reduce(
+        (acc, block) => {
+          acc[block.entity.id] = block;
+          return acc;
+        },
+        {} as Record<string, (typeof city.blocks)[number]>,
+      );
+
+      const buildings = transcendenceData.map((t) => {
+        const block = byEntityId[t.buildingId];
+        return {
+          building: block?.gameId ? city.buildingFinder.getBuildingExact(block?.gameId) : undefined,
+          transcendence: t,
+        };
+      });
+
+      const transcendenceViewModels = buildings
+        .filter((b) => !!b.building)
+        .map(
+          (b) =>
+            ({
+              buildingName: b.building!.name,
+              volatile_sigils_cost: b.transcendence.costs.resources.volatile_sigils,
+              purchasableTime: b.transcendence.purchasableTime,
+              state: b.transcendence.state,
+              stageToUnlock: b.transcendence.stageToUnlock,
+              endTime: b.transcendence.endTime,
+            }) satisfies TranscendenceViewModel,
+        );
+
+      setTranscendenceViewModels(transcendenceViewModels);
+    }
+
+    void Do();
+  }, [city.blocks, city.buildingFinder]);
 
   useEffect(() => {
     async function Do() {
@@ -44,10 +103,10 @@ function CityViewInner() {
           currentProduct: getCurrentProduct(r.state),
         }));
 
-      const switchableProductionBuildings = buildings.filter((b) => b.building.sourceBuilding.production?.isSwitchable);
-
       const goodsNames = await getGoodsNames();
       const boostedGoods = city.boostedGoods;
+
+      const switchableProductionBuildings = buildings.filter((b) => b.building.sourceBuilding.production?.isSwitchable);
 
       const viewModel = switchableProductionBuildings
         .map((b) => ({
@@ -97,7 +156,7 @@ function CityViewInner() {
             }) satisfies SwitchableProductionViewModel,
         );
 
-      setViewModels(viewModel);
+      setSwitchableProductionViewModels(viewModel);
     }
 
     void Do();
@@ -197,7 +256,7 @@ function CityViewInner() {
           <RuneShards />
         </Box>
 
-        {viewModels.length > 0 && (
+        {switchableProductionViewModels.length > 0 && (
           /* Switchable Production */
           <Box
             sx={{
@@ -209,7 +268,23 @@ function CityViewInner() {
               zIndex: 1,
             }}
           >
-            <SwitchableProduction viewModels={viewModels} />
+            <SwitchableProduction viewModels={switchableProductionViewModels} />
+          </Box>
+        )}
+
+        {transcendenceViewModels.length > 0 && (
+          /* Transcendence Status */
+          <Box
+            sx={{
+              p: 1,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'grey.100',
+              boxShadow: '0 -2px 5px rgba(0,0,0,0.05)',
+              zIndex: 1,
+            }}
+          >
+            <TranscendenceStatus transcendenceData={transcendenceViewModels} />
           </Box>
         )}
       </Box>

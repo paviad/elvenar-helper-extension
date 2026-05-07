@@ -20,6 +20,7 @@ export function setupPlayerSpecificRequestInterceptedListener() {
       case 'SPIRE_DIPLOMACY_SUBMIT':
       case 'QUEST':
       case 'CITY_MAP_SERVICE_UPDATE':
+      case 'TRANSCENDENCE_SERVICE':
         void sendInterceptedPlayerSpecificRequest(event.data);
         break;
       default:

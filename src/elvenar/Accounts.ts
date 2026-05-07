@@ -6,6 +6,7 @@ import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
 import { PotionEffect } from '../model/potionEffect';
 import { Trade } from '../model/trade';
+import { Transcendence } from '../model/transcendence';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 
@@ -57,6 +58,8 @@ export interface AccountData {
   cauldron?: CauldronQuery;
 
   faEndTime?: number;
+
+  transcendenceData?: Transcendence[];
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};
