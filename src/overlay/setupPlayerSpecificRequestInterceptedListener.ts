@@ -21,6 +21,7 @@ export function setupPlayerSpecificRequestInterceptedListener() {
       case 'QUEST':
       case 'CITY_MAP_SERVICE_UPDATE':
       case 'TRANSCENDENCE_SERVICE':
+      case 'ACTIVE_EFFECTS_UPDATE':
         void sendInterceptedPlayerSpecificRequest(event.data);
         break;
       default:

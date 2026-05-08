@@ -10,6 +10,7 @@ export const processEffects = async (responseText: string) => {
     'available_population_bonus',
     'available_culture_bonus',
     'culture_by_ranking_points',
+    'spell_pet_food_1',
   ];
 
   const effects = effectsRaw.filter((r) => captureEffects.includes(r.action));

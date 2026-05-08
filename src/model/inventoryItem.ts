@@ -15,9 +15,10 @@ export interface InventoryItem {
   size?: string;
   stage?: number;
   building?: BuildingEx;
+  transcendence?: TranscendenceProperty;
 }
 
-export type Property = Chapter | Stage;
+export type Property = Chapter | Stage | TranscendenceProperty;
 
 export interface Chapter {
   __class__: 'ChapterBasedInventoryItemPropertyVO';
@@ -27,4 +28,19 @@ export interface Chapter {
 export interface Stage {
   __class__: 'InventoryItemEvoBuildingPropertyVO';
   stage: number;
+}
+
+export interface TranscendenceProperty {
+  __class__: 'InventoryItemTranscendedBuildingPropertyVO';
+  stage: number;
+  costs?: Costs;
+  counter?: number;
+}
+
+export interface Costs {
+  resources: Resources;
+}
+
+export interface Resources {
+  volatile_sigils: number;
 }

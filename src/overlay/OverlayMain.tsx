@@ -2,7 +2,13 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import { Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
 import React from 'react';
-import { clearTradeParsedListener, setupTradeParsedListener, TradeParsedMessage } from '../chrome/messages';
+import {
+  clearActiveEffectsUpdatedListener,
+  clearTradeParsedListener,
+  setupActiveEffectsUpdatedListener,
+  setupTradeParsedListener,
+  TradeParsedMessage,
+} from '../chrome/messages';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { expandPanel } from '../overlay';
@@ -12,6 +18,7 @@ import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { TradeView } from './TradeView';
 import { DiscordButton } from '../widgets/DiscordButton';
+import { EeView } from './EeView';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -30,6 +37,7 @@ export function OverlayMain() {
 
   const chatTab = 0;
   const tradeTab = chapter >= 18 ? 1 : -1;
+  const eeTab = chapter >= 18 ? 2 : 1;
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
   const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
@@ -125,9 +133,14 @@ export function OverlayMain() {
       setTradesMsg(tradesMsg);
     });
 
+    setupActiveEffectsUpdatedListener(() => {
+      useOverlayStore.getState().triggerEeUpdate();
+    });
+
     return () => {
       window.removeEventListener('message', messageHandler);
       clearTradeParsedListener();
+      clearActiveEffectsUpdatedListener();
     };
   }, []);
 
@@ -151,6 +164,7 @@ export function OverlayMain() {
         <Tabs value={tab} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
           <Tab label='Chat' />
           {chapter >= 18 && <Tab label='Trade' />}
+          <Tab label='EE' />
         </Tabs>
         {tab === chatTab && (
           <>
@@ -192,6 +206,7 @@ export function OverlayMain() {
         <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
       )}
       {chapter >= 18 && tab === tradeTab && <TradeView />}
+      {tab == eeTab && <EeView />}
     </div>
   );
 }

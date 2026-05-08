@@ -3,6 +3,7 @@ import {
   sendCityDataUpdatedMessage,
   sendCityEntitiesUpdatedMessage,
   sendOtherPlayerCityDataUpdatedMessage,
+  sendActiveEffectsUpdatedMessage,
 } from '../chrome/messages';
 import { getAccountBySessionId, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
 import { processCauldron } from '../elvenar/processCauldron';
@@ -21,6 +22,7 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processTranscendenceService } from '../elvenar/processTranscendenceService';
+import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 
 type Processors = Record<
   PlayerSpecificMessage['type'],
@@ -45,6 +47,7 @@ export const playerSpecificRequestHandler = async (
     case 'QUEST':
     case 'CITY_MAP_SERVICE_UPDATE':
     case 'TRANSCENDENCE_SERVICE':
+    case 'ACTIVE_EFFECTS_UPDATE':
       break;
     default:
       msg.payload satisfies never;
@@ -71,6 +74,7 @@ export const playerSpecificRequestHandler = async (
     QUEST: processQuest,
     CITY_MAP_SERVICE_UPDATE: processCityMapServiceUpdate,
     TRANSCENDENCE_SERVICE: processTranscendenceService,
+    ACTIVE_EFFECTS_UPDATE: processActiveEffectsUpdate,
   };
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
@@ -99,6 +103,9 @@ export const playerSpecificRequestHandler = async (
     case 'TRANSCENDENCE_SERVICE':
     case 'CITY_MAP_SERVICE_UPDATE':
       await sendCityEntitiesUpdatedMessage(sharedInfo.tabId);
+      break;
+    case 'ACTIVE_EFFECTS_UPDATE':
+      await sendActiveEffectsUpdatedMessage(sharedInfo.tabId);
       break;
     case 'SPIRE_DIPLOMACY_SUBMIT':
     case 'INVENTORY_DATA_PROCESSED':

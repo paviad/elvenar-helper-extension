@@ -25,6 +25,11 @@ export interface CityEntitiesUpdatedMessage {
   tabId: number;
 }
 
+export interface ActiveEffectsUpdatedMessage {
+  type: 'activeEffectsUpdated';
+  tabId: number;
+}
+
 export interface OpenExtensionTabMessage {
   type: 'openExtensionTab';
 }
@@ -32,6 +37,12 @@ export interface OpenExtensionTabMessage {
 export interface CityDataUpdatedMessage {
   type: 'cityDataUpdated';
   tabId: number;
+}
+
+export interface MissingEeMessage {
+  type: 'missingEe';
+  tabId: number;
+  entityIds: number[];
 }
 
 export interface OtherPlayerCityUpdatedMessage {
@@ -62,6 +73,7 @@ export type AllMessages =
   | CityDataUpdatedMessage
   | CitySavedMessage
   | OtherPlayerCityUpdatedMessage
+  | MissingEeMessage
   | InterceptedPlayerSpecificRequest
   | InterceptedNonSpecificRequest;
 
@@ -126,11 +138,30 @@ export const sendCityEntitiesUpdatedMessage = async (tabId: number) => {
   }
 };
 
+export const sendActiveEffectsUpdatedMessage = async (tabId: number) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'activeEffectsUpdated',
+      tabId,
+    } satisfies ActiveEffectsUpdatedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending activeEffectsUpdated message:', e);
+  }
+};
+
 export const sendCityDataUpdatedMessage = async (tabId: number) => {
   try {
     await chrome.tabs.sendMessage(tabId, { type: 'cityDataUpdated', tabId } satisfies CityDataUpdatedMessage);
   } catch (e) {
     console.log('ElvenAssist: Error sending cityDataUpdated message:', e);
+  }
+};
+
+export const sendMissingEeMessage = async (tabId: number, entityIds: number[]) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'missingEe', tabId, entityIds } satisfies MissingEeMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending missingEe message:', e);
   }
 };
 
@@ -200,12 +231,22 @@ export const setupRefreshCityListener = (callback: (message: RefreshCityMessage)
   (callbackMap['refreshCity'] = callback);
 export const setupCityEntitiesUpdatedListener = (callback: (message: CityEntitiesUpdatedMessage) => void | Promise<void>) =>
   (callbackMap['cityEntitiesUpdated'] = callback);
+export const clearCityEntitiesUpdatedListener = () => {
+  delete callbackMap['cityEntitiesUpdated'];
+};
+export const setupActiveEffectsUpdatedListener = (callback: (message: ActiveEffectsUpdatedMessage) => void | Promise<void>) =>
+  (callbackMap['activeEffectsUpdated'] = callback);
+export const clearActiveEffectsUpdatedListener = () => {
+  delete callbackMap['activeEffectsUpdated'];
+};
 export const setupOpenExtensionTabListener = (
   callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void,
 ) => (callbackMap['openExtensionTab'] = callback);
 
 export const setupCityDataUpdatedListener = (callback: (tabId: CityDataUpdatedMessage) => void) =>
   (callbackMap['cityDataUpdated'] = callback);
+
+export const setupMissingEeListener = (callback: (message: MissingEeMessage) => void) => (callbackMap['missingEe'] = callback);
 
 export const setupOtherPlayerCityUpdatedListener = (callback: (message: OtherPlayerCityUpdatedMessage) => void | Promise<void>) =>
   (callbackMap['otherPlayerCityUpdated'] = callback);

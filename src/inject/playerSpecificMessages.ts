@@ -63,6 +63,10 @@ export interface TranscendenceServiceMessage extends PlayerSpecificMessageBase {
   type: 'TRANSCENDENCE_SERVICE';
 }
 
+export interface ActiveEffectsUpdateMessage extends PlayerSpecificMessageBase {
+  type: 'ACTIVE_EFFECTS_UPDATE';
+}
+
 export type PlayerSpecificMessage =
   | CityDataProcessedMessage
   | InventoryDataProcessedMessage
@@ -76,4 +80,5 @@ export type PlayerSpecificMessage =
   | SpireDiplomacySubmitMessage
   | QuestMessage
   | CityMapServiceUpdateMessage
-  | TranscendenceServiceMessage;
+  | TranscendenceServiceMessage
+  | ActiveEffectsUpdateMessage;

@@ -157,7 +157,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (accountData?.cityQuery) {
-        console.log('setting chapter to', accountData.cityQuery.chapter);
         setChapter(accountData.cityQuery.chapter);
         setSquadSize(accountData.cityQuery.squadSize || 0);
         setRankingPoints(accountData.cityQuery.rankingPoints || 0);

@@ -1,6 +1,7 @@
 import { getFromStorage, saveToStorage } from '../chrome/storage';
 import { Badges, Relics } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
+import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
@@ -60,6 +61,8 @@ export interface AccountData {
   faEndTime?: number;
 
   transcendenceData?: Transcendence[];
+
+  ensorcelledEndowmentData?: EnsorcelledEndowment[];
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};

@@ -135,6 +135,7 @@ export async function generateInventory(accountId: string) {
       size: (building && `${building.width}x${building.length}`) || undefined,
       stage,
       building,
+      transcendence: r.properties?.find((p) => p.__class__ === 'InventoryItemTranscendedBuildingPropertyVO'),
     } satisfies InventoryItem;
   });
 

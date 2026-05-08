@@ -237,7 +237,6 @@ export const saveCurrentCityAs = async (currentAccountId: string, newAccountId: 
   };
   newAccountData.isDetached = true;
   newAccountData.cityQuery.cityEntities = cityEntities;
-  console.log('saving chapter', chapter, 'for new account', newAccountId);
   newAccountData.cityQuery.chapter = chapter;
   accounts[newAccountId] = newAccountData;
   await saveAllAccounts();
@@ -255,7 +254,6 @@ export const saveCityInPlace = async (accountId: string, cityEntities: CityEntit
     throw new Error('ElvenAssist: Cannot save city in place for non-detached account');
   }
   accountData.cityQuery.cityEntities = cityEntities;
-  console.log('saving chapter', chapter, 'for account', accountId);
   accountData.cityQuery.chapter = chapter;
   await saveAllAccounts();
 };

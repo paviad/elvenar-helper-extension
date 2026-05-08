@@ -37,7 +37,6 @@ export function FellowshipAdventure() {
       }
 
       try {
-        console.log('loading FA parameters');
         const faParameters = await getFromStorage(`faParameters_${accountId}`);
         if (faParameters) {
           const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters) as {
@@ -129,7 +128,6 @@ export function FellowshipAdventure() {
           enchantmentBonus,
         };
 
-        console.log('Saving FA parameters:', faParameters);
         await saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
         setMmEnchantmentEnabled(enabled);
       }
@@ -146,7 +144,6 @@ export function FellowshipAdventure() {
           enchantmentBonus: bonus,
         };
 
-        console.log('Saving FA parameters:', faParameters);
         await saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
         setEnchantmentBonus(bonus);
       }

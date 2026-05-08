@@ -118,4 +118,12 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
     },
     messageType: 'TRANSCENDENCE_SERVICE',
   },
+  {
+    id: 'activeEffects',
+    responseSelector: {
+      requestClass: 'EffectsService',
+      requestMethod: 'update',
+    },
+    messageType: 'ACTIVE_EFFECTS_UPDATE',
+  },
 ];

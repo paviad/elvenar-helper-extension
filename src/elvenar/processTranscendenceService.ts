@@ -5,8 +5,6 @@ import { getAccountBySessionId } from './AccountManager';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export const processTranscendenceService = async (untypedJson: unknown, sharedInfo: ExtensionSharedInfo): Promise<void> => {
-  console.log('Processing transcendence service response:', untypedJson);
-
   const response = untypedJson as ElvenarRequestResponseEntry[];
 
   const transcendenceServiceResponse = response.find(
@@ -17,8 +15,6 @@ export const processTranscendenceService = async (untypedJson: unknown, sharedIn
     ...raw,
     endTime: Date.now() + raw.remainingTime * 1000, // assuming remainingTime is in seconds
   }));
-
-  console.log('Processed transcendence data:', transcendenceData);
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 

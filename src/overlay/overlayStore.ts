@@ -20,6 +20,8 @@ interface OverlayState {
   setLastSeenChat: (timestamp: number) => void;
   autoOpenTrade?: boolean;
   setAutoOpenTrade: (autoOpen: boolean) => void;
+  eeUpdate: number;
+  triggerEeUpdate: () => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -46,12 +48,14 @@ export const generateOverlayStore = (accountId: string) => {
         setLastSeenChat: (timestamp) => set({ lastSeenChat: timestamp }),
         autoOpenTrade: true,
         setAutoOpenTrade: (autoOpen) => set({ autoOpenTrade: autoOpen }),
+        eeUpdate: 0,
+        triggerEeUpdate: () => set((state) => ({ eeUpdate: state.eeUpdate + 1 })),
       }),
       {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
-          const { offeredGoods, forceUpdate, overlayExpanded, ...toPersist } = state;
+          const { offeredGoods, forceUpdate, overlayExpanded, eeUpdate, ...toPersist } = state;
           return toPersist;
         },
       },
