@@ -1,4 +1,5 @@
 import { CustomWebSocket } from './customWebSocket';
+import { castEe, createSpellService } from './gameops/castEe';
 import { injectMutate } from './injectMutate';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
@@ -26,5 +27,35 @@ if (document.readyState !== 'loading') {
 } else {
   document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 }
+
+window.addEventListener('message', (event) => {
+  if (event.source !== window) {
+    return;
+  }
+
+  if (event.data.type !== 'CAST_EE') {
+    return;
+  }
+
+  const payload = event.data.payload as number[];
+
+  void castEeOncePerSecond(payload);
+});
+
+const castEeOncePerSecond = async (entityIds: number[]) => {
+  if (entityIds.length === 0) {
+    return;
+  }
+
+  const service = createSpellService();
+  if (!service) {
+    console.error('ElvenAssist: SpellService not available, cannot cast EE');
+    return;
+  }
+  for (const entityId of entityIds) {
+    castEe(service, entityId);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+};
 
 setupKeyHandlers();
