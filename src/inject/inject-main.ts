@@ -1,14 +1,9 @@
 import { CustomWebSocket } from './customWebSocket';
+import { injectMutate } from './injectMutate';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
-
-declare global {
-  interface Window {
-    WebSocketUnchanged: typeof WebSocket;
-  }
-}
 
 // Source - https://stackoverflow.com/a/75762050
 // Posted by ProgrammingSauce, modified by community. See post 'Timeline' for change history
@@ -21,5 +16,15 @@ console.log('ElvenAssist: Finished adding interceptor to WebSocket');
 
 const xhrInterceptor = new GlobalHttpInterceptorService();
 console.log('ElvenAssist: Finished adding interceptor to XMLHttpRequest');
+
+function onDOMContentLoaded() {
+  injectMutate();
+}
+
+if (document.readyState !== 'loading') {
+  onDOMContentLoaded();
+} else {
+  document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+}
 
 setupKeyHandlers();

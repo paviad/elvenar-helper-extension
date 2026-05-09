@@ -92,6 +92,16 @@ export interface MessagesUpdatedMessage {
   reqRespType: string;
 }
 
+export interface RetrievingCounterUpdateMessage {
+  type: 'retrievingCounterUpdate';
+  retrievingCounter: number;
+}
+
+export interface KpHuntOpportunityMessage {
+  type: 'kpHuntOpportunity';
+  tabId: number;
+}
+
 // ============================================================================
 // UNION TYPES & UTILITIES
 // ============================================================================
@@ -109,7 +119,9 @@ export type AllMessages =
   | TradeParsedMessage
   | ActiveEffectsUpdatedMessage
   | MissingEeMessage
-  | MessagesUpdatedMessage;
+  | MessagesUpdatedMessage
+  | RetrievingCounterUpdateMessage
+  | KpHuntOpportunityMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -259,6 +271,27 @@ export const sendMessagesUpdatedMessage = async (tabId: number, reqRespType: str
   }
 };
 
+export const sendRetrievingCounterUpdateMessage = async (tabId: number, retrievingCounter: number) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'retrievingCounterUpdate',
+      retrievingCounter,
+    } satisfies RetrievingCounterUpdateMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending retrievingCounterUpdate message:', e);
+  }
+};
+
+export const sendKpHuntOpportunity = async (tabId: number) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'kpHuntOpportunity' } satisfies {
+      type: 'kpHuntOpportunity';
+    });
+  } catch (e) {
+    console.log('ElvenAssist: Error sending kpHuntOpportunity message:', e);
+  }
+};
+
 // ============================================================================
 // LISTENER SETUP & ROUTING
 // ============================================================================
@@ -394,4 +427,15 @@ export const setupMessagesUpdatedListener = (callback: (message: MessagesUpdated
 
 export const clearMessagesUpdatedListener = () => {
   delete callbackMap['messagesUpdated'];
+};
+
+export const setupRetrievingCounterUpdateListener = (
+  callback: (message: { tabId: number; retrievingCounter: number }) => void,
+) => (callbackMap['retrievingCounterUpdate'] = callback);
+
+export const setupKpHuntOpportunityListener = (callback: (message: KpHuntOpportunityMessage) => void) =>
+  (callbackMap['kpHuntOpportunity'] = callback);
+
+export const clearKpHuntOpportunityListener = () => {
+  delete callbackMap['kpHuntOpportunity'];
 };

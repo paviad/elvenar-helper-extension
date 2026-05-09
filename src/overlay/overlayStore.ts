@@ -43,6 +43,8 @@ interface OverlayState {
   // In game time (unix seconds from the posts), not local clock time.
   swapsClearedAt?: number;
   setSwapsClearedAt: (at: number) => void;
+  retrievingCounter: number;
+  setRetrievingCounter: (count: number) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -104,20 +106,17 @@ export const generateOverlayStore = (accountId: string) => {
         setPaidSwaps: (keys) => set({ paidSwaps: keys }),
         swapsClearedAt: undefined,
         setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
+        retrievingCounter: 0,
+        setRetrievingCounter: (count) => set({ retrievingCounter: count }),
       }),
       {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
-          const {
-            offeredGoods,
-            forceUpdate,
-            overlayExpanded,
-            eeUpdate,
-            messagesUpdate,
-            messagesDetailsReceived,
-            ...toPersist
-          } = state;
+          // Exclude certain states from being persisted
+          const { offeredGoods, forceUpdate, overlayExpanded, eeUpdate, messagesUpdate, messagesDetailsReceived, ...toPersist } =
+            state;
+          // avatarPosition remains in `toPersist` automatically
           return toPersist;
         },
       },

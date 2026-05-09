@@ -1,5 +1,9 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
-import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import {
+  setupCityDataUpdatedListener,
+  setupMessageListener,
+  setupRetrievingCounterUpdateListener,
+} from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
@@ -15,6 +19,9 @@ let expandFn: (state: boolean) => void;
 let ensureWidthAndHeightAtLeastFn: (minWidth: number, minHeight: number) => void;
 
 console.log('ElvenAssist: Content script loaded');
+
+const defaultStartingWidth = 630;
+const defaultStartingHeight = 800;
 
 const initFunc = () => {
   // Remove existing panel if present
@@ -32,8 +39,8 @@ const initFunc = () => {
   draggableDiv.style.position = 'fixed';
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
-  draggableDiv.style.width = '250px';
-  draggableDiv.style.height = '450px';
+  draggableDiv.style.width = `${defaultStartingWidth}px`;
+  draggableDiv.style.height = `${defaultStartingHeight}px`;
   draggableDiv.style.background = '#fff';
   draggableDiv.style.border = '1px solid #ccc';
   draggableDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
@@ -233,14 +240,14 @@ const initFunc = () => {
 
   // Collapse logic
   let collapsed = true;
-  let lastExpandedWidth = '250px';
-  let lastExpandedHeight = '450px';
+  let lastExpandedWidth = `${defaultStartingWidth}px`;
+  let lastExpandedHeight = `${defaultStartingHeight}px`;
   collapseBtn.addEventListener('click', () => {
     if (isDragging) return;
     if (!collapsed) {
       // About to collapse, save current size
-      lastExpandedWidth = draggableDiv.style.width || '250px';
-      lastExpandedHeight = draggableDiv.style.height || '450px';
+      lastExpandedWidth = draggableDiv.style.width || `${defaultStartingWidth}px`;
+      lastExpandedHeight = draggableDiv.style.height || `${defaultStartingHeight}px`;
     }
     collapsed = !collapsed;
     updateStateByCollapsed();
@@ -289,8 +296,8 @@ const initFunc = () => {
       draggableDiv.style.height = lastExpandedHeight;
     } else {
       // About to collapse, save current size
-      lastExpandedWidth = draggableDiv.style.width || '250px';
-      lastExpandedHeight = draggableDiv.style.height || '450px';
+      lastExpandedWidth = draggableDiv.style.width || `${defaultStartingWidth}px`;
+      lastExpandedHeight = draggableDiv.style.height || `${defaultStartingHeight}px`;
     }
     collapsed = state;
     updateStateByCollapsed();
@@ -320,6 +327,10 @@ const initFunc = () => {
     setup(tabId, content).catch((err) => {
       console.error('Error setting up overlay:', err);
     });
+  });
+  setupRetrievingCounterUpdateListener(({ tabId, retrievingCounter }) => {
+    const store = getOverlayStore();
+    store.getState().setRetrievingCounter(retrievingCounter);
   });
 };
 

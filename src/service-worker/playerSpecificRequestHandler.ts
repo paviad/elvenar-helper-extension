@@ -5,6 +5,7 @@ import {
   sendCityDataUpdatedMessage,
   sendCityEntitiesUpdatedMessage,
   sendGenericResponse,
+  sendKpHuntOpportunity,
   sendMessagesUpdatedMessage,
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
@@ -15,15 +16,17 @@ import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
+import { processGuildData } from '../elvenar/processGuildData';
 import { processInventory } from '../elvenar/processInventory';
 import { processMessageMarkedAsRead } from '../elvenar/processMessageMarkedAsRead';
 import { processMessageOverview } from '../elvenar/processMessageOverview';
 import { processMessages } from '../elvenar/processMessages';
+import { processNeighborAncientWondersData } from '../elvenar/processNeighborAncientWondersData';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
 import { processQuestUpdates } from '../elvenar/processQuestUpdates';
-import { processReplyMessage } from '../elvenar/processReplyMessage';
+import { processRankingData } from '../elvenar/processRankingData';
 import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
@@ -131,6 +134,10 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:MessageService/fetchMessages': processMessages,
     'R:MessageService/markMessageAsRead': processMessageMarkedAsRead,
     'R:MessageService/replyMessage': processReplyMessage,
+
+    'R:AncientWonderService/getOtherPlayerAncientWonders': processNeighborAncientWondersData,
+    'R:RankingService/getRankingList': processRankingData,
+    'R:GuildService/getGuild': processGuildData,
   };
 
   const processorFunction = processors[msg.payload.type];
@@ -177,6 +184,11 @@ export const playerSpecificRequestHandlerInternal = async (
       break;
     case 'Q:SpireService/getEncounter':
       // await sendSpireEncounterStartedMessage();
+      break;
+    case 'R:AncientWonderService/getOtherPlayerAncientWonders':
+      if (result as boolean) {
+        await sendKpHuntOpportunity(sharedInfo.tabId);
+      }
       break;
     case 'R:TranscendenceService/allBuildingsStates':
     case 'R:CityMapService/reset':

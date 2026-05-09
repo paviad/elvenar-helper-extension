@@ -5,15 +5,19 @@ import { Box, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
+  clearKpHuntOpportunityListener,
   clearMessagesUpdatedListener,
   clearTradeParsedListener,
   setupActiveEffectsUpdatedListener,
   setupGenericResponseListener,
+  setupKpHuntOpportunityListener,
   setupMessagesUpdatedListener,
   setupTradeParsedListener,
   TradeParsedMessage,
 } from '../chrome/messages';
+import { getAccountById, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
+import { KpHuntData } from '../model/kpHuntData';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { expandPanel } from '../overlay';
 import { parseQuestExport } from '../util/parseQuestExport';
@@ -21,13 +25,15 @@ import { DiscordButton } from '../widgets/DiscordButton';
 import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
+import { KpHuntOpportunities } from './KpHuntOpportunities';
 import { MessagesView } from './MessagesView';
-import { getOverlayStore } from './overlayStore';
+import { getAccountId, getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
+import { SwapsView } from './SwapsView';
 import { TradeView } from './TradeView';
 
-type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages';
+type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'swaps' | 'kphunt';
 
 interface OverlayTab {
   key: OverlayTabKey;
@@ -47,6 +53,9 @@ export function OverlayMain() {
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
   const tabRef = React.useRef<OverlayTabKey>(tabKey);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
+  const [kpHuntOpportunities, setKpHuntOpportunities] = React.useState<Record<string, KpHuntData>>({});
+  const [cityResources, setCityResources] = React.useState<Record<string, number>>({});
+  const [kpInstantsInventory, setKpInstantsInventory] = React.useState<Record<number, number>>({});
 
   const useOverlayStore = getOverlayStore();
   const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
@@ -57,6 +66,24 @@ export function OverlayMain() {
   const setQuests = useOverlayStore((state) => state.setQuests);
   const [dropError, setDropError] = React.useState<string | undefined>(undefined);
 
+  const retrievingCounterRaw = useOverlayStore((state) => state.retrievingCounter);
+  const [retrievingCounter, setRetrievingCounter] = React.useState(retrievingCounterRaw);
+
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (retrievingCounterRaw === 0 && retrievingCounter !== 0) {
+      timeoutRef.current = setTimeout(() => {
+        setRetrievingCounter(0);
+      }, 500);
+    } else {
+      setRetrievingCounter(retrievingCounterRaw);
+    }
+  }, [retrievingCounterRaw]);
+
   // Declarative, so the tab set, the Alt+C chord map and the rendered content all read from
   // one place. Hand-computed indices used to have to be adjusted in two places whenever the
   // Trade tab came and went with the chapter.
@@ -66,7 +93,9 @@ export function OverlayMain() {
       ...(chapter >= 18 ? ([{ key: 'trade', label: 'Trade' }] satisfies OverlayTab[]) : []),
       { key: 'ee', label: 'EE', shortcut: 'KeyE' },
       { key: 'quests', label: 'Quests', shortcut: 'KeyQ' },
-      { key: 'messages', label: 'Messages', shortcut: 'KeyM', isNew: true },
+      { key: 'messages', label: 'Messages', shortcut: 'KeyM' },
+      { key: 'swaps', label: 'Swaps', shortcut: 'KeyS', isNew: true },
+      { key: 'kphunt', label: 'KP Hunt' },
     ],
     [chapter],
   );
@@ -185,6 +214,31 @@ export function OverlayMain() {
   }, [tradesMsg, chapter, autoOpen]);
 
   React.useEffect(() => {
+    function fillData(accountData: ReturnType<typeof getAccountById>) {
+      setKpHuntOpportunities(accountData?.kpHuntOpportunities || {});
+      setCityResources(accountData?.cityQuery?.cityResources || {});
+      const inventory = accountData?.inventoryItems?.filter((item) => item.subtype?.startsWith('INS_KP_AW_')) || [];
+      const inventoryMap: Record<number, number> = {};
+      inventory.forEach((item) => {
+        const match = item.subtype.match(/INS_KP_AW_(\d+)/);
+        if (match) {
+          const instantId = parseInt(match[1], 10);
+          inventoryMap[instantId] = (inventoryMap[instantId] || 0) + item.amount;
+        }
+      });
+      setKpInstantsInventory(inventoryMap);
+    }
+
+    async function Do() {
+      await loadAccountManagerFromStorage();
+
+      const accountId = getAccountId();
+      if (accountId) {
+        const accountData = getAccountById(accountId);
+        fillData(accountData);
+      }
+    }
+
     window.addEventListener('message', messageHandler);
 
     setupTradeParsedListener((tradesMsg) => {
@@ -204,16 +258,59 @@ export function OverlayMain() {
       }
     });
 
+    setupKpHuntOpportunityListener((msg) => {
+      void (async () => {
+        expandPanel(true);
+        const accountId = getAccountId();
+        if (!accountId) return;
+        await loadAccountManagerFromStorage();
+        const accountData = getAccountById(accountId);
+        fillData(accountData);
+        setTabKey('kphunt');
+      })();
+    });
+
+    void Do();
+
     return () => {
       window.removeEventListener('message', messageHandler);
       clearTradeParsedListener();
       clearActiveEffectsUpdatedListener();
       clearMessagesUpdatedListener();
+      clearKpHuntOpportunityListener();
     };
   }, []);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabKey(tabs[newValue].key);
+  };
+
+  const onClearAllOpportunities = async () => {
+    await loadAccountManagerFromStorage();
+    const accountId = getAccountId();
+    if (!accountId) return;
+    const accountData = getAccountById(accountId);
+    if (!accountData || !accountData.kpHuntOpportunities) return;
+    accountData.kpHuntOpportunities = {};
+    setKpHuntOpportunities({});
+    accountData.kpHuntOpportunities = {};
+    await saveAllAccounts();
+    // expandPanel(false);
+  };
+
+  const onClearOpportunity = async (id: string) => {
+    await loadAccountManagerFromStorage();
+    const accountId = getAccountId();
+    if (!accountId) return;
+    const accountData = getAccountById(accountId);
+    if (!accountData || !accountData.kpHuntOpportunities) return;
+    const { [id]: _, ...rest } = accountData.kpHuntOpportunities;
+    setKpHuntOpportunities({ ...rest });
+    accountData.kpHuntOpportunities = { ...rest };
+    await saveAllAccounts();
+    // if (Object.keys(rest).length === 0) {
+    //   expandPanel(false);
+    // }
   };
 
   useEffect(() => {
@@ -310,146 +407,178 @@ export function OverlayMain() {
   );
 
   return (
-    <div style={{ height: '100%' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          position: 'sticky',
-          top: 0,
-          zIndex: 2,
-          background: '#f9f9fb',
-          pr: 2,
-        }}
-      >
-        <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
-          {tabs.map((t) => (
-            <Tab key={t.key} label={renderLabel(t)} />
-          ))}
-        </Tabs>
-        {tabKey === 'chat' && (
-          <>
-            <IconButton aria-label='Search chat' size='small' sx={{ ml: 1 }} onClick={() => setSearchActive((v) => !v)}>
-              <SearchIcon fontSize='small' />
-            </IconButton>
-            {searchActive && (
-              <TextField
-                autoFocus
-                size='small'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder='Search chat...'
-                sx={{ ml: 1, minWidth: 180 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onKeyUp={(e) => e.stopPropagation()}
-              />
-            )}
-          </>
-        )}
-
-        <DiscordButton
-          discordUrl='https://discord.gg/zYzUUDcMrv'
-          size='small'
-          sx={{ position: 'absolute', top: -46, right: 94, zIndex: 10 }}
-        />
-
-        <IconButton
-          aria-label='Help'
-          size='small'
-          sx={{ position: 'absolute', top: -46, right: 62, zIndex: 10 }} // User can adjust top/right as needed
-          onClick={() => setHelpOpen(true)}
+    <>
+      <div style={{ height: '100%' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            background: '#f9f9fb',
+            pr: 2,
+          }}
         >
-          <HelpOutlineIcon fontSize='small' />
-        </IconButton>
-        <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
-      </Box>
-      {tabKey === 'chat' && (
-        <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
-      )}
-      {chapter >= 18 && tabKey === 'trade' && <TradeView />}
-      {tabKey === 'ee' && <EeView />}
-      {tabKey === 'quests' &&
-        (quests === undefined ? (
-          <Box
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onClick={() => document.getElementById('quest-file-upload')?.click()}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              boxSizing: 'border-box',
-              minHeight: 300,
-              p: 4,
-              m: 2,
-              textAlign: 'center',
-              border: '2px dashed',
-              borderColor: dropError ? 'error.main' : 'divider',
-              borderRadius: 2,
-              bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
-              cursor: 'pointer',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
-              },
-            }}
-          >
-            <input
-              type='file'
-              id='quest-file-upload'
-              accept='.txt'
-              style={{ display: 'none' }}
-              onChange={handleFileInput}
-            />
+          <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
+            {tabs.map((t) => (
+              <Tab key={t.key} label={renderLabel(t)} />
+            ))}
+          </Tabs>
+          {tabKey === 'chat' && (
+            <>
+              <IconButton
+                aria-label='Search chat'
+                size='small'
+                sx={{ ml: 1 }}
+                onClick={() => setSearchActive((v) => !v)}
+              >
+                <SearchIcon fontSize='small' />
+              </IconButton>
+              {searchActive && (
+                <TextField
+                  autoFocus
+                  size='small'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder='Search chat...'
+                  sx={{ ml: 1, minWidth: 180 }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onKeyUp={(e) => e.stopPropagation()}
+                />
+              )}
+            </>
+          )}
 
-            {dropError ? (
-              <>
-                <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
-                  Upload Failed
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
-                  {dropError}
-                </Typography>
-                <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-                  Click or drag a new file to try again.
-                </Typography>
-              </>
-            ) : (
-              <>
-                <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
-                  No quests loaded
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'text.disabled' }}>
-                  Drag and drop a .txt quest export file here, or click to browse.
-                </Typography>
-              </>
-            )}
-          </Box>
-        ) : initialQuestIndex === undefined ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              p: 4,
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant='h6' sx={{ color: 'text.secondary' }}>
-              There is no event currently in progress.
-            </Typography>
-          </Box>
-        ) : (
-          <QuestJournal
-            quests={quests}
-            initialQuestIndex={initialQuestIndex}
-            onClearQuests={() => setQuests(undefined)}
+          <DiscordButton
+            discordUrl='https://discord.gg/zYzUUDcMrv'
+            size='small'
+            sx={{ position: 'absolute', top: -46, right: 94, zIndex: 10 }}
           />
-        ))}{' '}
-      {tabKey === 'messages' && <MessagesView />}
-    </div>
+
+          <IconButton
+            aria-label='Help'
+            size='small'
+            sx={{ position: 'absolute', top: -46, right: 62, zIndex: 10 }} // User can adjust top/right as needed
+            onClick={() => setHelpOpen(true)}
+          >
+            <HelpOutlineIcon fontSize='small' />
+          </IconButton>
+          <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+        </Box>
+        {tabKey === 'chat' && (
+          <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
+        )}
+        {chapter >= 18 && tabKey === 'trade' && <TradeView />}
+        {tabKey === 'ee' && <EeView />}
+        {tabKey === 'quests' &&
+          (quests === undefined ? (
+            <Box
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onClick={() => document.getElementById('quest-file-upload')?.click()}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                boxSizing: 'border-box',
+                minHeight: 300,
+                p: 4,
+                m: 2,
+                textAlign: 'center',
+                border: '2px dashed',
+                borderColor: dropError ? 'error.main' : 'divider',
+                borderRadius: 2,
+                bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
+                },
+              }}
+            >
+              <input
+                type='file'
+                id='quest-file-upload'
+                accept='.txt'
+                style={{ display: 'none' }}
+                onChange={handleFileInput}
+              />
+
+              {dropError ? (
+                <>
+                  <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
+                    Upload Failed
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
+                    {dropError}
+                  </Typography>
+                  <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+                    Click or drag a new file to try again.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
+                    No quests loaded
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'text.disabled' }}>
+                    Drag and drop a .txt quest export file here, or click to browse.
+                  </Typography>
+                </>
+              )}
+            </Box>
+          ) : initialQuestIndex === undefined ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                p: 4,
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant='h6' sx={{ color: 'text.secondary' }}>
+                There is no event currently in progress.
+              </Typography>
+            </Box>
+          ) : (
+            <QuestJournal
+              quests={quests}
+              initialQuestIndex={initialQuestIndex}
+              onClearQuests={() => setQuests(undefined)}
+            />
+          ))}{' '}
+        {tabKey === 'messages' && <MessagesView />}
+        {tabKey === 'swaps' && <SwapsView />}
+        {tabKey === 'kphunt' && (
+          <KpHuntOpportunities
+            kpHuntOpportunities={kpHuntOpportunities}
+            onClearAllOpportunities={() => void onClearAllOpportunities()}
+            onClearOpportunity={(id) => void onClearOpportunity(id)}
+            cityResources={cityResources}
+            kpInstantsInventory={kpInstantsInventory}
+          />
+        )}
+      </div>
+      {retrievingCounter > 0 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 40,
+            right: 16,
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            backgroundColor: '#1976d2',
+            border: '2px solid white',
+            zIndex: 100,
+          }}
+        />
+      )}
+    </>
   );
 }
