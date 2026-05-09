@@ -1,28 +1,28 @@
 import {
   InterceptedPlayerSpecificRequest,
+  sendActiveEffectsUpdatedMessage,
   sendCityDataUpdatedMessage,
   sendCityEntitiesUpdatedMessage,
   sendOtherPlayerCityDataUpdatedMessage,
-  sendActiveEffectsUpdatedMessage,
 } from '../chrome/messages';
 import { getAccountBySessionId, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
+import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
+import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
 import { processInventory } from '../elvenar/processInventory';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
+import { processQuest } from '../elvenar/processQuest';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
 import { processTradeData } from '../elvenar/processTradeData';
-import { processQuest } from '../elvenar/processQuest';
+import { processTranscendenceService } from '../elvenar/processTranscendenceService';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
-import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
-import { processTranscendenceService } from '../elvenar/processTranscendenceService';
-import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 
 type Processors = Record<
   PlayerSpecificMessage['type'],

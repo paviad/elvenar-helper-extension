@@ -1,4 +1,8 @@
-import { setupCityEntitiesUpdatedListener, setupMessageListener, setupOtherPlayerCityUpdatedListener } from './chrome/messages';
+import {
+  setupCityEntitiesUpdatedListener,
+  setupMessageListener,
+  setupOtherPlayerCityUpdatedListener
+} from './chrome/messages';
 import { createReactUi } from './city/createReactUi';
 import { loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { useTabStore } from './util/tabStore';

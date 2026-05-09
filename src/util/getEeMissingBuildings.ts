@@ -1,4 +1,3 @@
-import { sendMissingEeMessage } from '../chrome/messages';
 import { BuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
 import { getEffects } from '../elvenar/getEffects';

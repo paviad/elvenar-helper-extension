@@ -1,4 +1,4 @@
-import { setupMissingEeListener, setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
@@ -320,10 +320,6 @@ const initFunc = () => {
     setup(tabId, content).catch((err) => {
       console.error('Error setting up overlay:', err);
     });
-  });
-  setupMissingEeListener((message) => {
-    const entityIds = message.entityIds;
-    window.postMessage({ type: 'CAST_EE', payload: entityIds }, '*');
   });
 };
 
