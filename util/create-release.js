@@ -13,6 +13,18 @@ if (!version) {
 
 const tag = `v${version}`;
 
+// Verify Git Tag Exists
+try {
+  // git rev-parse exits with a non-zero status if the tag is missing
+  execSync(`git rev-parse -q --verify "refs/tags/${tag}"`, { stdio: 'ignore' });
+} catch (error) {
+  console.error(`❌ Error: Git tag '${tag}' does not exist locally.`);
+  console.error(`Please create and push the tag first:`);
+  console.error(`  git tag ${tag}`);
+  console.error(`  git push origin ${tag}`);
+  process.exit(1);
+}
+
 // 2. Define File Paths (Based on your requirements)
 const chromeAsset = path.join(__dirname, `../store-dist/elven-assist-v${version}.zip`);
 const firefoxAsset = path.join(__dirname, `../store-dist-firefox/FIREFOX-v${version}.zip`);
