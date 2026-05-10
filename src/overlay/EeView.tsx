@@ -6,15 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { EeMissingBuilding, getEeMissingBuildings } from '../util/getEeMissingBuildings';
 import { getAccountId, getOverlayStore } from './overlayStore';
-
-const formatTimeLeft = (endTime: number, currentTime: number): string => {
-  const diffMs = endTime - currentTime;
-  if (diffMs <= 0) return 'Expired';
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  const minutes = Math.floor((diffMs / 1000 / 60) % 60);
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-};
+import { formatTimeLeft } from '../util/formatTimeLeft';
 
 export const EeView = () => {
   const overlayStore = getOverlayStore();

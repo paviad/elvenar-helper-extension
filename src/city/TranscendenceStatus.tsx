@@ -1,6 +1,7 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Typography, Stack, Divider } from '@mui/material';
-import React, { useState } from 'react';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Divider, Stack, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { formatTimeLeft } from '../util/formatTimeLeft';
 
 export interface TranscendenceViewModel {
   buildingName: string; // Title of the building, e.g. "Sawmill"
@@ -15,20 +16,6 @@ export interface TranscendenceProps {
   transcendenceData: TranscendenceViewModel[];
 }
 
-// Shortened relative time (e.g., "34d 16h")
-const formatTimeLeft = (endTime: number): string => {
-  const diffMs = endTime - Date.now();
-  if (diffMs <= 0) return 'Expired';
-
-  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diffMs / 1000 / 60) % 60);
-
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-};
-
 // Compact extension time (e.g., "+11d" or "+24h")
 const formatPurchasableTime = (seconds: number): string => {
   const hours = seconds / 3600;
@@ -41,6 +28,13 @@ const formatPurchasableTime = (seconds: number): string => {
 export const TranscendenceStatus = (props: TranscendenceProps) => {
   const { transcendenceData } = props;
   const [collapsed, setCollapsed] = useState(true);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    // Refresh the component every minute to update the "time left" counters automatically
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <Box>
@@ -95,7 +89,7 @@ export const TranscendenceStatus = (props: TranscendenceProps) => {
                             fontWeight='medium'
                             sx={{ ml: 1 }}
                           >
-                            {formatTimeLeft(item.endTime)}
+                            {formatTimeLeft(item.endTime, now)}
                           </Typography>
                         </Box>
                       )}
