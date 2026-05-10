@@ -1,16 +1,33 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Box, List, ListItem, ListItemText, Typography, Chip, Divider, CircularProgress, Tooltip } from '@mui/material';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'; // Represents enchantment
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
-import { getEeMissingBuildings, EeMissingBuilding } from '../util/getEeMissingBuildings';
-import { getAccountId, getOverlayStore } from './overlayStore';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import { Box, Chip, CircularProgress, Divider, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
+import React, { useEffect, useMemo, useState } from 'react';
 import { loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { EeMissingBuilding, getEeMissingBuildings } from '../util/getEeMissingBuildings';
+import { getAccountId, getOverlayStore } from './overlayStore';
+
+const formatTimeLeft = (endTime: number, currentTime: number): string => {
+  const diffMs = endTime - currentTime;
+  if (diffMs <= 0) return 'Expired';
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs / 1000 / 60) % 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
 
 export const EeView = () => {
   const overlayStore = getOverlayStore();
   const eeUpdate = overlayStore((state) => state.eeUpdate);
 
   const [buildings, setBuildings] = useState<EeMissingBuilding[] | null>(null);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    // Refresh the component every minute to update the "time left" counters automatically
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     async function Do() {
@@ -29,11 +46,28 @@ export const EeView = () => {
     void Do();
   }, [eeUpdate]);
 
-  // Sort alphabetically by name
+  // Sort by help received first (descending time left), then alphabetically by name
   const sortedBuildings = useMemo(() => {
     if (!buildings) return [];
-    return [...buildings].sort((a, b) => a.name.localeCompare(b.name));
-  }, [buildings]);
+    return [...buildings].sort((a, b) => {
+      const aEndTime = a.helpEndTime;
+      const bEndTime = b.helpEndTime;
+
+      const aHasHelp = aEndTime && aEndTime > now ? 1 : 0;
+      const bHasHelp = bEndTime && bEndTime > now ? 1 : 0;
+
+      if (aHasHelp !== bHasHelp) {
+        return bHasHelp - aHasHelp; // Buildings with active help come first
+      }
+
+      // Both have help: sort by descending time left (largest end time first)
+      if (aHasHelp && bHasHelp && aEndTime && bEndTime) {
+        return bEndTime - aEndTime;
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+  }, [buildings, now]);
 
   if (buildings === null) {
     return (
@@ -93,9 +127,19 @@ export const EeView = () => {
                   </Typography>
                 }
                 secondary={
-                  <Typography variant='caption' color='text.secondary'>
-                    Size: {b.length}x{b.height}
-                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                    <Typography variant='caption' color='text.secondary'>
+                      Size: {b.length}x{b.height}
+                    </Typography>
+                    {b.helpEndTime && b.helpEndTime > now && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <VolunteerActivismIcon sx={{ fontSize: 14, color: 'success.main' }} />
+                        <Typography variant='caption' color='success.main' fontWeight='medium'>
+                          Help received: {formatTimeLeft(b.helpEndTime, now)} left
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
                 }
                 sx={{ pr: 10 }} // Ensure text doesn't overlap the coordinate chip
               />

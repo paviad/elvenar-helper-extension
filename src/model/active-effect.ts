@@ -34,8 +34,9 @@ export type Type =
   | "trader";
 
 export type Action =
-  // This is the important one for EE, but we can capture more if needed in the future
+  // This is the important ones for EE, but we can capture more if needed in the future
   | 'neighbourly_help_boost_spell'
+  | 'time_limited_help'
 
   | 'academy_production_time_reduction'
   | 'armory_training_slot_increase'
@@ -77,7 +78,6 @@ export type Action =
   | 'storage_cap_boost'
   | 'strength_increase'
   | 'supply_production_boost_spell'
-  | 'time_limited_help'
   | 'tournament_cooldown_reduction'
   | 'trading_fee_reduction'
   | 'training_speed_bonus'

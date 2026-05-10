@@ -62,7 +62,10 @@ export interface AccountData {
 
   transcendenceData?: Transcendence[];
 
-  ensorcelledEndowmentData?: EnsorcelledEndowment[];
+  ensorcelledEndowmentData?: {
+    eeEffects: EnsorcelledEndowment[];
+    neighborlyHelpEffects: EnsorcelledEndowment[];
+  };
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};

@@ -1,6 +1,7 @@
 import { BuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
 import { getEffects } from '../elvenar/getEffects';
+import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { getCulturalBuildings } from './getCulturalBuildings';
 
 export interface EeMissingBuilding {
@@ -10,6 +11,7 @@ export interface EeMissingBuilding {
   y: number;
   height: number;
   length: number;
+  helpEndTime?: number;
 }
 
 export const getEeMissingBuildings = async (accountId: string): Promise<EeMissingBuilding[]> => {
@@ -26,8 +28,19 @@ export const getEeMissingBuildings = async (accountId: string): Promise<EeMissin
   const effects = await getEffects();
   const cultureBlocks = getCulturalBuildings(cityEntities, buildingFinder, effects, 2, 2);
 
+  const eeDictionary = eeData.eeEffects.reduce((acc, effect) => {
+    acc[effect.id] = effect;
+    return acc;
+  }, {} as Record<number, EnsorcelledEndowment>);
+
+  const helpDictionary = eeData.neighborlyHelpEffects.reduce((acc, effect) => {
+    acc[effect.id] = effect;
+    return acc;
+  }, {} as Record<number, EnsorcelledEndowment>);
+
+
   const eeMissing = cultureBlocks.filter((block) => {
-    const hasEffect = eeData.some((effect) => effect.id === block.id);
+    const hasEffect = eeDictionary[block.id];
     return !hasEffect;
   });
 
@@ -40,6 +53,7 @@ export const getEeMissingBuildings = async (accountId: string): Promise<EeMissin
       y: block.y,
       height: buildingDef?.width || 0,
       length: buildingDef?.length || 0,
+      helpEndTime: helpDictionary[block.id]?.endTime,
     };
   });
 
