@@ -1,6 +1,6 @@
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
+import { Badge, Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
 import React from 'react';
 import {
   clearActiveEffectsUpdatedListener,
@@ -164,7 +164,24 @@ export function OverlayMain() {
         <Tabs value={tab} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
           <Tab label='Chat' />
           {chapter >= 18 && <Tab label='Trade' />}
-          <Tab label='EE' />
+          <Tab
+            label={
+              <Badge
+                badgeContent='NEW'
+                color='secondary'
+                sx={{
+                  '& .MuiBadge-badge': {
+                    fontSize: '0.6rem',
+                    height: 16,
+                    minWidth: 16,
+                    px: 0.5,
+                  },
+                }}
+              >
+                <Box sx={{ pr: 2.5 }}>EE</Box>
+              </Badge>
+            }
+          />
         </Tabs>
         {tab === chatTab && (
           <>
