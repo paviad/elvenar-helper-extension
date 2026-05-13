@@ -19,13 +19,12 @@ import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySub
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
 import { processTradeData } from '../elvenar/processTradeData';
 import { processTranscendenceService } from '../elvenar/processTranscendenceService';
-import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
 type Processors = Record<
-  PlayerSpecificMessage['type'],
+  string,
   (untypedResponseArray: ElvenarRequestResponseEntry[], sharedInfo: ExtensionSharedInfo) => Promise<unknown>
 >;
 
@@ -33,89 +32,71 @@ export const playerSpecificRequestHandler = async (
   msg: InterceptedPlayerSpecificRequest,
   sender: chrome.runtime.MessageSender,
 ): Promise<void> => {
-  switch (msg.payload.type) {
-    case 'CITY_DATA_PROCESSED':
-    case 'INVENTORY_DATA_PROCESSED':
-    case 'TRADE_DATA_PROCESSED':
-    case 'CAULDRON_DATA_PROCESSED':
-    case 'OTHER_PLAYER_DATA_PROCESSED':
-    case 'NOTIFICATIONS':
-    case 'CITY_RESOURCES_UPDATE':
-    case 'INVENTORY_UPDATED':
-    case 'SPIRE_ENCOUNTER_START':
-    case 'SPIRE_DIPLOMACY_SUBMIT':
-    case 'QUEST':
-    case 'CITY_MAP_SERVICE_UPDATE':
-    case 'TRANSCENDENCE_SERVICE':
-    case 'ACTIVE_EFFECTS_UPDATE':
-      break;
-    default:
-      msg.payload satisfies never;
-      return;
+  if (!/^(Q:|R:)/.test(msg.payload.type)) {
+    return;
   }
 
   const sharedInfo = msg.payload.payload.sharedInfo;
   sharedInfo.tabId = sender.tab?.id || -1;
-  const untypedJson = JSON.parse(msg.payload.payload.decodedResponse) as ElvenarRequestResponseEntry[];
+  const untypedJson = msg.payload.payload.response;
 
   await loadAccountManagerFromStorage();
 
   const processors: Processors = {
-    CITY_DATA_PROCESSED: processCityData,
-    INVENTORY_DATA_PROCESSED: processInventory,
-    TRADE_DATA_PROCESSED: processTradeData,
-    CAULDRON_DATA_PROCESSED: processCauldron,
-    OTHER_PLAYER_DATA_PROCESSED: processOtherPlayerData,
-    NOTIFICATIONS: processNotifications,
-    CITY_RESOURCES_UPDATE: processCityResourcesUpdate,
-    INVENTORY_UPDATED: processInventory,
-    SPIRE_ENCOUNTER_START: processSpireEncounterStart,
-    SPIRE_DIPLOMACY_SUBMIT: processSpireDiplomacySubmit,
-    QUEST: processQuest,
-    CITY_MAP_SERVICE_UPDATE: processCityMapServiceUpdate,
-    TRANSCENDENCE_SERVICE: processTranscendenceService,
-    ACTIVE_EFFECTS_UPDATE: processActiveEffectsUpdate,
+    'Q:NotificationService/getAllNotifications': processNotifications,
+    'Q:NotificationService/getPreviewNotifications': processNotifications,
+    'Q:StartupService/getData': processCityData,
+    'Q:InventoryService/getItems': processInventory,
+    'Q:TradeService/getOtherPlayersTrades': processTradeData,
+    'Q:CauldronService/getIngredients': processCauldron,
+    'Q:CauldronService/getPotionEffects': processCauldron,
+    'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
+    'Q:SpireService/getEncounter': processSpireEncounterStart,
+    'Q:SpireDiplomacyService/submit': processSpireDiplomacySubmit,
+    'Q:QuestService/getUpdates': processQuest,
+
+    'R:CityResourcesService/getResources': processCityResourcesUpdate,
+    'R:InventoryService/updateItems': processInventory,
+    'R:CityMapService/reset': processCityMapServiceUpdate,
+    'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
+    'R:EffectsService/update': processActiveEffectsUpdate,
   };
+
+  const processorFunction = processors[msg.payload.type];
+  if (!processorFunction) {
+    console.warn(`No processor function found for message type: ${msg.payload.type}`);
+    return;
+  }
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 
-  const result = await processors[msg.payload.type](untypedJson, sharedInfo);
+  const result = await processorFunction(untypedJson, sharedInfo);
 
   await saveAllAccounts();
 
   switch (msg.payload.type) {
-    case 'CITY_DATA_PROCESSED':
+    case 'Q:StartupService/getData':
       await sendCityDataUpdatedMessage(sharedInfo.tabId);
       break;
-    case 'TRADE_DATA_PROCESSED':
+    case 'Q:TradeService/getOtherPlayersTrades':
       {
         if (accountData) {
           await tradeOpenedCallback(accountData);
         }
       }
       break;
-    case 'OTHER_PLAYER_DATA_PROCESSED':
+    case 'Q:OtherPlayerService/visitPlayer':
       await sendOtherPlayerCityDataUpdatedMessage();
       break;
-    case 'SPIRE_ENCOUNTER_START':
+    case 'Q:SpireService/getEncounter':
       // await sendSpireEncounterStartedMessage();
       break;
-    case 'TRANSCENDENCE_SERVICE':
-    case 'CITY_MAP_SERVICE_UPDATE':
+    case 'R:TranscendenceService/allBuildingsStates':
+    case 'R:CityMapService/reset':
       await sendCityEntitiesUpdatedMessage(sharedInfo.tabId);
       break;
-    case 'ACTIVE_EFFECTS_UPDATE':
+    case 'R:EffectsService/update':
       await sendActiveEffectsUpdatedMessage(sharedInfo.tabId);
       break;
-    case 'SPIRE_DIPLOMACY_SUBMIT':
-    case 'INVENTORY_DATA_PROCESSED':
-    case 'CAULDRON_DATA_PROCESSED':
-    case 'NOTIFICATIONS':
-    case 'CITY_RESOURCES_UPDATE':
-    case 'INVENTORY_UPDATED':
-    case 'QUEST':
-      break;
-    default:
-      msg.payload satisfies never;
   }
 };

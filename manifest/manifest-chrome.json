@@ -24,6 +24,7 @@
         "icon32.png",
         "sprite.png",
         "elvenassist-inject.bundle.js",
+        "elvenassist-vendors.bundle.js",
         "helper.png",
         "splitview.jpg"
       ],

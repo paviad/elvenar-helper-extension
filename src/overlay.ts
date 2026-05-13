@@ -1,9 +1,9 @@
+import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
-import { setupPlayerSpecificRequestInterceptedListener } from './overlay/setupPlayerSpecificRequestInterceptedListener';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {
@@ -23,7 +23,7 @@ const initFunc = () => {
     existingPanel.remove();
   } else {
     setupNonSpecificRequestInterceptedListener();
-    setupPlayerSpecificRequestInterceptedListener();
+    setupAggregateRequestResponseListener();
   }
 
   // Create the div

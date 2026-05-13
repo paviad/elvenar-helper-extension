@@ -1,84 +1,11 @@
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 
-export interface InterceptedRequestMessageBase {
-  specific: boolean;
+export interface PlayerSpecificMessage {
+  type: string;
+  specific: true;
   payload: {
-    decodedResponse: string;
+    response: ElvenarRequestResponseEntry[];
     sharedInfo: ExtensionSharedInfo;
   };
 }
-
-interface PlayerSpecificMessageBase extends InterceptedRequestMessageBase {
-  specific: true;
-}
-
-export interface CityDataProcessedMessage extends PlayerSpecificMessageBase {
-  type: 'CITY_DATA_PROCESSED';
-}
-
-export interface InventoryDataProcessedMessage extends PlayerSpecificMessageBase {
-  type: 'INVENTORY_DATA_PROCESSED';
-}
-export interface TradeDataProcessedMessage extends PlayerSpecificMessageBase {
-  type: 'TRADE_DATA_PROCESSED';
-}
-
-export interface CauldronDataProcessedMessage extends PlayerSpecificMessageBase {
-  type: 'CAULDRON_DATA_PROCESSED';
-}
-
-export interface OtherPlayerDataProcessedMessage extends PlayerSpecificMessageBase {
-  type: 'OTHER_PLAYER_DATA_PROCESSED';
-}
-
-export interface NotificationsMessage extends PlayerSpecificMessageBase {
-  type: 'NOTIFICATIONS';
-}
-
-export interface CityResourcesUpdateMessage extends PlayerSpecificMessageBase {
-  type: 'CITY_RESOURCES_UPDATE';
-}
-
-export interface InventoryUpdatedMessage extends PlayerSpecificMessageBase {
-  type: 'INVENTORY_UPDATED';
-}
-
-export interface SpireEncounterStartMessage extends PlayerSpecificMessageBase {
-  type: 'SPIRE_ENCOUNTER_START';
-}
-
-export interface SpireDiplomacySubmitMessage extends PlayerSpecificMessageBase {
-  type: 'SPIRE_DIPLOMACY_SUBMIT';
-}
-
-export interface QuestMessage extends PlayerSpecificMessageBase {
-  type: 'QUEST';
-}
-
-export interface CityMapServiceUpdateMessage extends PlayerSpecificMessageBase {
-  type: 'CITY_MAP_SERVICE_UPDATE';
-}
-
-export interface TranscendenceServiceMessage extends PlayerSpecificMessageBase {
-  type: 'TRANSCENDENCE_SERVICE';
-}
-
-export interface ActiveEffectsUpdateMessage extends PlayerSpecificMessageBase {
-  type: 'ACTIVE_EFFECTS_UPDATE';
-}
-
-export type PlayerSpecificMessage =
-  | CityDataProcessedMessage
-  | InventoryDataProcessedMessage
-  | TradeDataProcessedMessage
-  | CauldronDataProcessedMessage
-  | OtherPlayerDataProcessedMessage
-  | NotificationsMessage
-  | CityResourcesUpdateMessage
-  | InventoryUpdatedMessage
-  | SpireEncounterStartMessage
-  | SpireDiplomacySubmitMessage
-  | QuestMessage
-  | CityMapServiceUpdateMessage
-  | TranscendenceServiceMessage
-  | ActiveEffectsUpdateMessage;

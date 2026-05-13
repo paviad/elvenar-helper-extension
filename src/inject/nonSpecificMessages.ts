@@ -1,4 +1,12 @@
-import { InterceptedRequestMessageBase } from './playerSpecificMessages';
+import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+
+export interface InterceptedRequestMessageBase {
+  specific: boolean;
+  payload: {
+    decodedResponse: string;
+    sharedInfo: ExtensionSharedInfo;
+  };
+}
 
 interface NonSpecificMessageBase extends InterceptedRequestMessageBase {
   specific: false;

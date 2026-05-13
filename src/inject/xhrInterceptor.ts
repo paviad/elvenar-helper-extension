@@ -5,8 +5,9 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { getDecodedText } from './getDecodedText';
 import { nonSpecificMatchers, NonSpecificMatcherSpecification } from './nonSpecificMatchers';
 import { NonSpecificMessage } from './nonSpecificMessages';
-import { playerSpecificMatchers, PlayerSpecificMatcherSpecification } from './playerSpecificMatchers';
-import { PlayerSpecificMessage } from './playerSpecificMessages';
+import { playerSpecificMatchers } from './playerSpecificMatchers';
+import { debounceTime, groupBy, mergeMap, Subject } from 'rxjs';
+import { AggregateRequestResponse } from '../chrome/aggregateRequestResponse';
 
 declare global {
   interface XMLHttpRequest {
@@ -14,13 +15,57 @@ declare global {
     sharedInfo: ExtensionSharedInfo;
     urlMatch?: RegExpMatchArray | null;
     nonSpecificMatchFound?: NonSpecificMatcherSpecification;
-    matchesFound: PlayerSpecificMatcherSpecification[];
   }
 }
+
+const requestMap = new Map<number, AggregateRequestResponse>();
+const responseSubject = new Subject<number>();
+const responseObservable = responseSubject.pipe(groupBy((requestId) => requestId), mergeMap((group) => group.pipe(debounceTime(300))));
+
+const addRequest = (request: ElvenarRequestResponseEntry, nonce: string, sharedInfo: ExtensionSharedInfo): void => {
+  if (!request.requestId) {
+    return;
+  }
+  requestMap.set(request.requestId, { request, nonce, sharedInfo, response: [] });
+};
+
+const addResponse = (response: ElvenarRequestResponseEntry): void => {
+  const existingEntry = requestMap.get(response.requestId);
+  if (!existingEntry) {
+    return;
+  }
+  existingEntry.response.push(response);
+  responseSubject.next(response.requestId);
+};
 
 export class GlobalHttpInterceptorService {
   constructor() {
     this.initInterceptor();
+
+    responseObservable.subscribe((requestId) => {
+      const entry = requestMap.get(requestId);
+      if (entry) {
+
+        for (const matcher of playerSpecificMatchers.filter(r => r.responseSelector && r.local)) {
+          for (const response of entry.response) {
+            if (matcher.responseSelector!.requestClass === response.requestClass &&
+              matcher.responseSelector!.requestMethod === response.requestMethod) {
+              // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
+
+              matcher.local!([response], entry.sharedInfo).catch((error) => {
+                console.error('Error in local handler for messageType', matcher, error);
+              });
+            }
+          }
+        }
+
+        const message = {
+          type: 'aggregateRequestResponse',
+          payload: entry,
+        };
+        window.postMessage(message, '*');
+      }
+    });
   }
 
   private initInterceptor(): void {
@@ -47,7 +92,6 @@ export class GlobalHttpInterceptorService {
         reqBody: '',
       };
 
-      this.matchesFound = [];
       // Add your logic here to modify the request, add headers, etc.
       originalOpen.call(this, method, url, async as boolean, user, password);
     };
@@ -82,22 +126,10 @@ export class GlobalHttpInterceptorService {
 
         const requestGeneric = JSON.parse(decodedString.substring(10)) as ElvenarRequestResponseEntry[];
 
-        const requestSelectorMatches = playerSpecificMatchers.filter(
-          (matcher) =>
-            matcher.requestSelector &&
-            requestGeneric.some(
-              (entry) =>
-                entry.requestClass === matcher.requestSelector?.requestClass &&
-                entry.requestMethod === matcher.requestSelector?.requestMethod,
-            ),
-        );
-
-        const playerSpecificMatchesFound = playerSpecificMatchers.filter(
-          (matcher) => matcher.regex && decodedString.match(matcher.regex),
-        );
-
-        // Combine requestSelectorMatches and playerSpecificMatchesFound
-        this.matchesFound = [...requestSelectorMatches, ...playerSpecificMatchesFound];
+        const requestNonce = decodedString.substring(0, 10);
+        for (const request of requestGeneric) {
+          addRequest(request, requestNonce, this.sharedInfo);
+        }
       }
 
       this.onreadystatechange = (...cbArgs) => {
@@ -109,33 +141,8 @@ export class GlobalHttpInterceptorService {
               if (this.urlMatch) {
                 const responseGeneric = JSON.parse(decodedResponse) as ElvenarRequestResponseEntry[];
 
-                const responseSelectorMatches = playerSpecificMatchers.filter(
-                  (matcher) =>
-                    matcher.responseSelector &&
-                    responseGeneric.some(
-                      (entry) =>
-                        entry.requestClass === matcher.responseSelector?.requestClass &&
-                        entry.requestMethod === matcher.responseSelector?.requestMethod,
-                    ),
-                );
-
-                this.matchesFound.push(...responseSelectorMatches);
-
-                for (const match of this.matchesFound) {
-                  if (match.local) {
-                      match.local?.(decodedResponse, this.sharedInfo)?.catch((error) => {
-                        console.error('Error in local handler for messageType', match.messageType, error);
-                      });
-                  }
-                  const message = {
-                    type: match.messageType,
-                    specific: true,
-                    payload: {
-                      decodedResponse,
-                      sharedInfo: this.sharedInfo,
-                    },
-                  } satisfies PlayerSpecificMessage;
-                  window.postMessage(message, '*');
+                for (const response of responseGeneric) {
+                  addResponse(response);
                 }
               }
 
