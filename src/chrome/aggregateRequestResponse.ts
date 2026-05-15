@@ -35,6 +35,7 @@ export const setupAggregateRequestResponseListener = (): void => {
               type: `Q:${requestClass}/${requestMethod}`,
               specific: true,
               payload: {
+                request: payload.request,
                 response: payload.response,
                 sharedInfo: payload.sharedInfo,
               },
@@ -56,6 +57,7 @@ export const setupAggregateRequestResponseListener = (): void => {
                 type: `R:${response.requestClass}/${response.requestMethod}`,
                 specific: true,
                 payload: {
+                  request: payload.request,
                   response: [response],
                   sharedInfo: payload.sharedInfo,
                 },

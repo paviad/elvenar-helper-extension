@@ -5,6 +5,7 @@ export interface PlayerSpecificMessage {
   type: string;
   specific: true;
   payload: {
+    request: ElvenarRequestResponseEntry;
     response: ElvenarRequestResponseEntry[];
     sharedInfo: ExtensionSharedInfo;
   };

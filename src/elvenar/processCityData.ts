@@ -1,4 +1,5 @@
 import { saveToStorage } from '../chrome/storage';
+import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
@@ -28,6 +29,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       remainingTime: number;
     }[];
     seasonal_events?: { type: string }[];
+    army_details?: ArmyDetails;
   } | undefined;
 
   const cityResourcesService = json.find(
@@ -165,6 +167,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       squadSize,
       rankingPoints,
       cityResources,
+      armyDetails: startupService.army_details,
     },
     sharedInfo,
     isDetached: false,

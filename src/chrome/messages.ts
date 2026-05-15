@@ -17,6 +17,12 @@ export interface InterceptedNonSpecificRequest {
   payload: NonSpecificMessage;
 }
 
+export interface GenericResponseMessage<T> {
+  type: `genericResponse:${string}`;
+  reqRespType: string;
+  payload: T;
+}
+
 export interface RefreshCityMessage {
   type: 'refreshCity';
   accountId: string;
@@ -181,6 +187,18 @@ export const sendTradeOpenedMessage = async () => {
 
 /** --- 2. Tab Senders (chrome.tabs) --- **/
 
+export const sendGenericResponse = async<T>(reqRespType: string, payload: T, tabId: number) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: `genericResponse:${reqRespType}`,
+      reqRespType,
+      payload,
+    } satisfies GenericResponseMessage<T>);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending genericResponse message:', e);
+  }
+};
+
 export const sendCityDataUpdatedMessage = async (tabId: number) => {
   try {
     await chrome.tabs.sendMessage(tabId, { type: 'cityDataUpdated', tabId } satisfies CityDataUpdatedMessage);
@@ -221,27 +239,41 @@ export const sendMissingEeMessage = async (tabId: number, entityIds: number[]) =
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const callbackMap: Record<string, (...args: any[]) => any> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const callbackMap2: Record<string, { messageType: string, callback: (...args: any[]) => any }> = {};
 
 const messageReceiver = (
-  message: unknown,
+  message: AllMessages,
   sender: chrome.runtime.MessageSender,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendResponse: (response?: any) => void,
 ): boolean | undefined => {
-  const callback = callbackMap[(message as AllMessages).type];
-  if (callback) {
-    const rc = callback(message, sender);
-    if (rc instanceof Promise) {
-      rc.then((r) => sendResponse(r)).catch((e) => {
-        console.log('ElvenAssist: Error in message handler for message', message, e);
-      });
-      return true;
+  const callback1 = callbackMap[message.type];
+  const callbacks2 =
+    Object.values(callbackMap2)
+      .filter((entry) => entry.messageType === message.type)
+      .map((entry) => entry.callback);
+  const callbacks = callback1 ? [callback1, ...callbacks2] : callbacks2;
+
+  let rc2: boolean | undefined = undefined;
+
+  for (const callback of callbacks) {
+    if (callback) {
+      const rc = callback(message, sender);
+      if (rc instanceof Promise) {
+        rc.then((r) => sendResponse(r)).catch((e) => {
+          console.log('ElvenAssist: Error in message handler for message', message, e);
+        });
+        rc2 = true;
+      } else {
+        sendResponse(rc);
+      }
     } else {
-      sendResponse(rc);
+      sendResponse();
     }
-  } else {
-    sendResponse();
   }
+
+  return rc2;
 };
 
 export const setupMessageListener = () => chrome.runtime.onMessage.addListener(messageReceiver);
@@ -255,6 +287,21 @@ export const setupInterceptedPlayerSpecificRequestListener = (
 export const setupInterceptedNonSpecificRequestListener = (
   callback: (message: InterceptedNonSpecificRequest) => void,
 ) => (callbackMap['interceptedNonSpecificRequest'] = callback);
+
+export const setupGenericResponseListener = <T>(reqRespType: string, callback: (message: GenericResponseMessage<T>) => void) => {
+  const id = crypto.randomUUID();
+  if (!callbackMap2[id]) {
+    callbackMap2[id] = { messageType: `genericResponse:${reqRespType}`, callback };
+  }
+  callbackMap2[id] = { messageType: `genericResponse:${reqRespType}`, callback };
+  return id;
+};
+
+export const clearGenericResponseListener = (id: string) => {
+  if (callbackMap2[id]) {
+    delete callbackMap2[id];
+  }
+};
 
 export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
   (callbackMap['refreshCity'] = callback);

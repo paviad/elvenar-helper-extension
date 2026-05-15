@@ -3,6 +3,7 @@ import {
   sendActiveEffectsUpdatedMessage,
   sendCityDataUpdatedMessage,
   sendCityEntitiesUpdatedMessage,
+  sendGenericResponse,
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
 import { getAccountBySessionId, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
@@ -25,7 +26,7 @@ import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
 type Processors = Record<
   string,
-  (untypedResponseArray: ElvenarRequestResponseEntry[], sharedInfo: ExtensionSharedInfo) => Promise<unknown>
+  (untypedResponseArray: ElvenarRequestResponseEntry[], sharedInfo: ExtensionSharedInfo, request: ElvenarRequestResponseEntry) => Promise<unknown>
 >;
 
 export const playerSpecificRequestHandler = async (
@@ -38,7 +39,8 @@ export const playerSpecificRequestHandler = async (
 
   const sharedInfo = msg.payload.payload.sharedInfo;
   sharedInfo.tabId = sender.tab?.id || -1;
-  const untypedJson = msg.payload.payload.response;
+  const request = msg.payload.payload.request;
+  const response = msg.payload.payload.response;
 
   await loadAccountManagerFromStorage();
 
@@ -70,9 +72,11 @@ export const playerSpecificRequestHandler = async (
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
 
-  const result = await processorFunction(untypedJson, sharedInfo);
+  const result = await processorFunction(response, sharedInfo, request);
 
   await saveAllAccounts();
+
+  await sendGenericResponse(msg.payload.type, result, sharedInfo.tabId);
 
   switch (msg.payload.type) {
     case 'Q:StartupService/getData':

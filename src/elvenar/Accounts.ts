@@ -1,4 +1,5 @@
 import { getFromStorage, saveToStorage } from '../chrome/storage';
+import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
@@ -43,6 +44,7 @@ export interface CityQuery {
   squadSize: number;
   rankingPoints: number;
   cityResources?: Record<string, number>;
+  armyDetails?: ArmyDetails;
 }
 
 export interface AccountData {
