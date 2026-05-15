@@ -14,9 +14,12 @@ export interface ArmyDetails {
 type TrainingBuilding = 'hb' | 'eb' | 'mc' | 'tg';
 type TroopType = 'hm' | 'hr' | 'lm' | 'lr' | 'ma';
 
+export type FriendlyUnitBaseName = `${TrainingBuilding}_${TroopType}`;
+export type EnemyUnitBaseName = `mob_${TrainingBuilding}${TroopType}`;
+export type UnitBaseName = FriendlyUnitBaseName | EnemyUnitBaseName;
+
 export type FriendlyUnitType = `${TrainingBuilding}_${TroopType}_${number}`;
 export type EnemyUnitType = `mob_${TrainingBuilding}${TroopType}_${number}`;
-
 export type UnitType = FriendlyUnitType | EnemyUnitType;
 
 export interface UnitSquad {

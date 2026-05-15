@@ -10,7 +10,7 @@ export const createNeighbourlyHelpService = () => {
 
 export const getNeighborlyHelpBuildings = (service: ReturnType<typeof createOtherPlayerService>, playerId: number) => {
   service?.getNeighbourlyHelpBuildings(playerId, (response) => {
-    console.log('Neighborly help buildings response:', response);
+    console.log('E Neighborly help buildings response:', response);
   });
 };
 
@@ -21,7 +21,7 @@ export const performHelp = (
   playerId: number,
 ) => {
   service?.performAction(action, entityId, playerId, (response) => {
-    console.log('Perform help response:', response);
+    console.log('E Perform help response:', response);
   });
 };
 
@@ -32,12 +32,12 @@ export const createWorldMapService = () => {
 
 export const getDiscoveredPlayerProvinces = (service: ReturnType<typeof createWorldMapService>) => {
   service?.getDiscoveredPlayerProvinces((response) => {
-    console.log('Discovered player provinces response:', response);
+    console.log('E Discovered player provinces response:', response);
   });
 };
 
 export const fetchInitialWorldMapData = (service: ReturnType<typeof createWorldMapService>) => {
   service?.startup((response) => {
-    console.log('Initial world map data response:', response);
+    console.log('E Initial world map data response:', response);
   });
 };

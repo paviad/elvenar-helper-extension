@@ -1,5 +1,6 @@
 import { InitialWorldMapData } from '../model/initialWorldMapData';
 import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
+import { TournyFight } from '../model/tourny/tournyFight';
 import { WorldNeighbor } from '../model/worldNeighbors';
 import { CustomWebSocket } from './customWebSocket';
 import { castEe, createSpellService } from './gameops/castEe';
@@ -11,6 +12,17 @@ import {
   getDiscoveredPlayerProvinces,
   getNeighborlyHelpBuildings,
 } from './gameops/neighbourlyHelp';
+import {
+  createBattlefieldService,
+  createTournamentService,
+  createUnlockEncounterService,
+  createWorldMapTournamentService,
+  getProvinceInformation,
+  getProvincesOverview,
+  getTournamentOverview,
+  instantBattle,
+  unlockEncounter,
+} from './gameops/tourny';
 import { injectMutate } from './injectMutate';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
@@ -60,26 +72,32 @@ window.addEventListener('message', (event) => {
       {
         const payload = event.data.payload as number[];
         void castEeOncePerSecond(payload);
-        console.log('Received CAST_EE message', payload);
       }
       break;
     case 'neighbourHelpBuildings':
       {
         const neighbourHelpData = event.data.payload as NeighbourHelpData;
-        console.log('Received neighbourHelpBuildings message in inject script:', neighbourHelpData);
         void receivedNeighbourHelpBuildings(neighbourHelpData);
       }
       break;
     case 'getNeighborlyHelpBuildings':
       {
         const playerId = event.data.payload as number;
-        console.log('Received getNeighborlyHelpBuildings message in inject script for playerId:', playerId);
         const service = createOtherPlayerService();
         getNeighborlyHelpBuildings(service, playerId);
       }
       break;
     case 'fetchWorldNeighbors':
       void fetchWorldNeighbors();
+      break;
+    case 'tournyFight':
+      void tournyFight(event.data.payload as TournyFight);
+      break;
+    case 'tournyOpen':
+      void tournyOpen(event.data.payload as { q: number; r: number });
+      break;
+    case 'tournyCater':
+      void tournyCater(event.data.payload as { q: number; r: number });
       break;
   }
 });
@@ -101,7 +119,6 @@ const castEeOncePerSecond = async (entityIds: number[]) => {
 };
 
 const receivedNeighbourHelpBuildings = (neighbourHelpData: NeighbourHelpData) => {
-  console.log('Handling received neighbour help buildings in inject script:', neighbourHelpData);
   const service = createNeighbourlyHelpService();
 
   const buildings = neighbourHelpData.buildings;
@@ -113,19 +130,16 @@ const receivedNeighbourHelpBuildings = (neighbourHelpData: NeighbourHelpData) =>
   const playerId = neighbourHelpData.player.player_id;
 
   if (builders) {
-    console.log('Performing help action for builders');
     service?.performAction('limited_help', builders.entityId, playerId, (response) => {
-      console.log('Perform help response for builders:', response);
+      console.log('E Perform help response for builders:', response);
     });
   } else if (culture) {
-    console.log('Performing help action for culture building');
     service?.performAction('time_limited_help', culture.entityId, playerId, (response) => {
-      console.log('Perform help response for culture building:', response);
+      console.log('E Perform help response for culture building:', response);
     });
   } else {
-    console.log('Performing help action for main hall');
     service?.performAction('unlimited_help', mainHall.entityId, playerId, (response) => {
-      console.log('Perform help response for main hall:', response);
+      console.log('E Perform help response for main hall:', response);
     });
   }
 };
@@ -135,6 +149,33 @@ const fetchWorldNeighbors = async () => {
   fetchInitialWorldMapData(service);
   await new Promise((resolve) => setTimeout(resolve, 200));
   getDiscoveredPlayerProvinces(service);
+};
+
+const tournyFight = async (fightData: TournyFight) => {
+  const service = createBattlefieldService();
+  instantBattle(service, fightData);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  const tournamentService = createTournamentService();
+  getTournamentOverview(tournamentService);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  const worldMapTournamentService = createWorldMapTournamentService();
+  getProvincesOverview(worldMapTournamentService);
+};
+
+const tournyOpen = (payload: { q: number; r: number }) => {
+  const worldMapService = createWorldMapService();
+  getProvinceInformation(worldMapService, payload);
+};
+
+const tournyCater = async (payload: { q: number; r: number }) => {
+  const unlockEncounterService = createUnlockEncounterService();
+  unlockEncounter(unlockEncounterService, payload);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  const tournamentService = createTournamentService();
+  getTournamentOverview(tournamentService);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  const worldMapTournamentService = createWorldMapTournamentService();
+  getProvincesOverview(worldMapTournamentService);
 };
 
 setupKeyHandlers();

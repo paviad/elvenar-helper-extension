@@ -24,6 +24,9 @@ import {
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { KpHuntData } from '../model/kpHuntData';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { TournyProvinceInformation } from '../model/tourny/provinceInformation';
+import { TournyProvince } from '../model/tourny/provincesOverview';
+import { TournyTime } from '../model/tourny/tournamentTime';
 import { expandPanel } from '../overlay';
 import { parseQuestExport } from '../util/parseQuestExport';
 import { DiscordButton } from '../widgets/DiscordButton';
@@ -36,28 +39,18 @@ import { NeighbourlyHelp } from './NeighbourlyHelp';
 import { getAccountId, getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
-import { SwapsView } from './SwapsView';
+import { Tourny } from './Tourny';
 import { TradeView } from './TradeView';
-
-type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'swaps' | 'kphunt' | 'nhelp';
-
-interface OverlayTab {
-  key: OverlayTabKey;
-  label: string;
-  /** Second key of the Alt+C chord. Tabs without one are mouse-only. */
-  shortcut?: string;
-  isNew?: boolean;
-}
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
   const [searchActive, setSearchActive] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [tabKey, setTabKey] = React.useState<OverlayTabKey>('chat');
+  const [tab, setTab] = React.useState(0);
   const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
-  const tabRef = React.useRef<OverlayTabKey>(tabKey);
+  const tabRef = React.useRef<number>(tab);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
   const [kpHuntOpportunities, setKpHuntOpportunities] = React.useState<Record<string, KpHuntData>>({});
   const [cityResources, setCityResources] = React.useState<Record<string, number>>({});
@@ -92,35 +85,14 @@ export function OverlayMain() {
     }
   }, [retrievingCounterRaw]);
 
-  // Declarative, so the tab set, the Alt+C chord map and the rendered content all read from
-  // one place. Hand-computed indices used to have to be adjusted in two places whenever the
-  // Trade tab came and went with the chapter.
-  const tabs = React.useMemo<OverlayTab[]>(
-    () => [
-      { key: 'chat', label: 'Chat', shortcut: 'KeyC' },
-      ...(chapter >= 18 ? ([{ key: 'trade', label: 'Trade' }] satisfies OverlayTab[]) : []),
-      { key: 'ee', label: 'EE', shortcut: 'KeyE' },
-      { key: 'quests', label: 'Quests', shortcut: 'KeyQ' },
-      { key: 'messages', label: 'Messages', shortcut: 'KeyM' },
-      { key: 'swaps', label: 'Swaps', shortcut: 'KeyS', isNew: true },
-      { key: 'kphunt', label: 'KP Hunt' },
-      { key: 'nhelp', label: 'N.Help' },
-    ],
-    [chapter],
-  );
-
-  // Selection is held as a key rather than an index, so the Trade tab appearing once the
-  // chapter loads cannot silently shift which tab is showing.
-  const tabIndex = Math.max(
-    0,
-    tabs.findIndex((t) => t.key === tabKey),
-  );
-
-  // The chord listener is installed once, so it reads the current tabs through a ref.
-  const tabsRef = React.useRef(tabs);
-  React.useEffect(() => {
-    tabsRef.current = tabs;
-  }, [tabs]);
+  const chatTab = 0;
+  const tradeTab = chapter >= 18 ? 1 : -1;
+  const eeTab = chapter >= 18 ? 2 : 1;
+  const questsTab = chapter >= 18 ? 3 : 2;
+  const messagesTab = chapter >= 18 ? 4 : 3;
+  const kpHuntTab = chapter >= 18 ? 5 : 4;
+  const neighbourlyHelpTab = chapter >= 18 ? 6 : 5;
+  const tournyTab = chapter >= 18 ? 7 : 6;
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
   const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
@@ -141,16 +113,22 @@ export function OverlayMain() {
         return;
       }
 
-      const requested = tabsRef.current.find((t) => t.shortcut === code);
-      if (!requested) {
+      const tabDic = {
+        KeyC: chatTab,
+        KeyE: eeTab,
+        KeyQ: questsTab,
+        KeyM: messagesTab,
+      };
+      if (!(code in tabDic)) {
         return;
       }
       const overlayExpanded = useOverlayStore.getState().overlayExpanded;
-      if (overlayExpanded && tabRef.current === requested.key) {
+      const requestedTab = tabDic[code as keyof typeof tabDic];
+      if (overlayExpanded && tabRef.current === requestedTab) {
         expandPanel(false);
       } else {
         expandPanel(true);
-        setTabKey(requested.key); // Set the tab based on the captured key
+        setTab(requestedTab); // Set the tab based on the captured key
       }
     };
 
@@ -159,8 +137,8 @@ export function OverlayMain() {
   }, []);
 
   React.useEffect(() => {
-    tabRef.current = tabKey;
-  }, [tabKey]);
+    tabRef.current = tab;
+  }, [tab]);
 
   React.useEffect(() => {
     const newMessages = chatMessages.filter((m) => !storeChatMessages?.some((sm) => sm.uuid === m.uuid));
@@ -217,7 +195,7 @@ export function OverlayMain() {
     if (autoOpen) {
       expandPanel(offeredGoods.length > 0);
       if (offeredGoods.length > 0) {
-        setTabKey('trade');
+        setTab(tradeTab);
       }
     }
   }, [tradesMsg, chapter, autoOpen]);
@@ -275,7 +253,7 @@ export function OverlayMain() {
         await loadAccountManagerFromStorage();
         const accountData = getAccountById(accountId);
         fillData(accountData);
-        setTabKey('kphunt');
+        setTab(kpHuntTab);
       })();
     });
 
@@ -291,7 +269,7 @@ export function OverlayMain() {
   }, []);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabKey(tabs[newValue].key);
+    setTab(newValue);
   };
 
   const onClearAllOpportunities = async () => {
@@ -322,8 +300,97 @@ export function OverlayMain() {
     // }
   };
 
+  // Tourny data collector
   useEffect(() => {
     const listenerIds: string[] = [];
+
+    const accountId = getAccountId();
+    if (!accountId) {
+      return;
+    }
+
+    const accountData = getAccountById(accountId);
+    const armyDetails = accountData?.cityQuery?.armyDetails;
+    if (!armyDetails) {
+      return;
+    }
+
+    listenerIds.push(
+      setupGenericResponseListener<TournyProvince[] | undefined>('R:TournamentService/getProvincesOverview', (msg) => {
+        const provinces = msg.payload;
+
+        if (!provinces) {
+          return;
+        }
+
+        const tournyData = {
+          ...(useOverlayStore.getState().tournyData || { provincesOverview: [], provinceInformation: {} }),
+        };
+        const setTournyData = useOverlayStore.getState().setTournyData;
+
+        for (const province of provinces) {
+          const previousProvince = tournyData.provincesOverview.find((p) => p.r === province.r && p.q === province.q);
+          if (previousProvince) {
+            const leveledUp = province.level !== previousProvince.level;
+            const upgradeTimeElapsed = !province.upgradeTime && previousProvince.upgradeTime;
+            if (leveledUp || upgradeTimeElapsed) {
+              const provinceInfo = tournyData.provinceInformation[`${province.r},${province.q}`];
+              if (provinceInfo) {
+                delete tournyData.provinceInformation[`${province.r},${province.q}`];
+              }
+            }
+          }
+        }
+
+        setTournyData({ ...tournyData, provincesOverview: provinces });
+        console.log('E Received tournament provinces overview data:', provinces);
+      }),
+    );
+
+    // R:WorldMapService/getProvinceInformation
+    listenerIds.push(
+      setupGenericResponseListener<TournyProvinceInformation>('R:WorldMapService/getProvinceInformation', (msg) => {
+        const provinceInfo = msg.payload;
+        const tournyData = useOverlayStore.getState().tournyData || { provincesOverview: [], provinceInformation: {} };
+        const setTournyData = useOverlayStore.getState().setTournyData;
+        setTournyData({
+          ...tournyData,
+          provinceInformation: {
+            ...tournyData.provinceInformation,
+            [`${provinceInfo.r},${provinceInfo.q}`]: provinceInfo,
+          },
+        });
+        console.log('E Received tournament province information data:', provinceInfo);
+      }),
+    );
+
+    listenerIds.push(
+      setupGenericResponseListener<TournyTime | undefined>('R:WorldMapService/updateTournamentTime', (msg) => {
+        const tournyTime = msg.payload;
+        if (!tournyTime) {
+          return;
+        }
+
+        const tournyData = useOverlayStore.getState().tournyData || { provincesOverview: [], provinceInformation: {} };
+        const overviewProvince = tournyData.provincesOverview.find((p) => p.r === tournyTime.r && p.q === tournyTime.q);
+        if (overviewProvince) {
+          if (tournyTime.remainingTime > 0) {
+            overviewProvince.upgradeTime = tournyTime.remainingTime;
+            overviewProvince.upgradeTimeEnd = Date.now() + tournyTime.remainingTime * 1000;
+          } else {
+            delete overviewProvince.upgradeTime;
+            delete overviewProvince.upgradeTimeEnd;
+          }
+          const setTournyData = useOverlayStore.getState().setTournyData;
+          setTournyData({
+            ...tournyData,
+            provincesOverview: [...tournyData.provincesOverview],
+          });
+
+          console.log('E Received tournament time update:', tournyTime);
+        }
+      }),
+    );
 
     listenerIds.push(
       setupGenericResponseListener<number | undefined>('R:QuestMilestoneService/updateQuestMilestone', (msg) => {
@@ -394,36 +461,15 @@ export function OverlayMain() {
     processFile(file);
   };
 
-  // The chord's second key is always the label's initial, so the underline doubles as the hint.
-  const renderLabel = ({ label, shortcut, isNew }: OverlayTab) => (
-    <span style={{ display: 'inline-flex', alignItems: 'flex-start' }}>
-      {shortcut ? (
-        <span title={`Alt+C, ${label[0]}`}>
-          <span style={{ fontSize: '1.2em', fontWeight: 700, textDecoration: 'underline' }}>{label[0]}</span>
-          {label.slice(1)}
-        </span>
-      ) : (
-        label
-      )}
-      {isNew && (
-        <span
-          style={{
-            marginLeft: 4,
-            marginTop: -2,
-            padding: '1px 4px',
-            fontSize: '0.55rem',
-            fontWeight: 700,
-            lineHeight: 1.4,
-            color: '#fff',
-            background: '#9c27b0',
-            borderRadius: 8,
-          }}
-        >
-          NEW
-        </span>
-      )}
-    </span>
-  );
+  const renderLabel = (text: string) => {
+    const tooltip = `Alt+C, ${text[0]}`;
+    return (
+      <span title={tooltip}>
+        <span style={{ fontSize: '1.2em', fontWeight: 700, textDecoration: 'underline' }}>{text[0]}</span>
+        {text.slice(1)}
+      </span>
+    );
+  };
 
   return (
     <>
@@ -439,12 +485,45 @@ export function OverlayMain() {
             pr: 2,
           }}
         >
-          <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
-            {tabs.map((t) => (
-              <Tab key={t.key} label={renderLabel(t)} />
-            ))}
+          <Tabs
+            value={tab}
+            onChange={handleChange}
+            variant='scrollable'
+            scrollButtons='auto'
+            aria-label='Overlay Tabs'
+            sx={{ flex: 1 }}
+          >
+            <Tab label={renderLabel('Chat')} />
+            {chapter >= 18 && <Tab label='Trade' />}
+            <Tab label={renderLabel('EE')} />
+            <Tab label={renderLabel('Quests')} />
+            <Tab
+              label={
+                <span style={{ display: 'inline-flex', alignItems: 'flex-start' }}>
+                  {renderLabel('Messages')}
+                  <span
+                    style={{
+                      marginLeft: 4,
+                      marginTop: -2,
+                      padding: '1px 4px',
+                      fontSize: '0.55rem',
+                      fontWeight: 700,
+                      lineHeight: 1.4,
+                      color: '#fff',
+                      background: '#9c27b0',
+                      borderRadius: 8,
+                    }}
+                  >
+                    NEW
+                  </span>
+                </span>
+              }
+            />
+            <Tab label={renderLabel('KP Hunt')} />
+            <Tab label={renderLabel('N.Help')} />
+            <Tab label={renderLabel('Tourny')} />
           </Tabs>
-          {tabKey === 'chat' && (
+          {tab === chatTab && (
             <>
               <IconButton
                 aria-label='Search chat'
@@ -485,12 +564,12 @@ export function OverlayMain() {
           </IconButton>
           <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
         </Box>
-        {tabKey === 'chat' && (
+        {tab === chatTab && (
           <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
         )}
-        {chapter >= 18 && tabKey === 'trade' && <TradeView />}
-        {tabKey === 'ee' && <EeView />}
-        {tabKey === 'quests' &&
+        {chapter >= 18 && tab === tradeTab && <TradeView />}
+        {tab == eeTab && <EeView />}
+        {tab === questsTab &&
           (quests === undefined ? (
             <Box
               onDrop={handleDrop}
@@ -571,9 +650,8 @@ export function OverlayMain() {
               onClearQuests={() => setQuests(undefined)}
             />
           ))}{' '}
-        {tabKey === 'messages' && <MessagesView />}
-        {tabKey === 'swaps' && <SwapsView />}
-        {tabKey === 'kphunt' && (
+        {tab === messagesTab && <MessagesView />}
+        {tab === kpHuntTab && (
           <KpHuntOpportunities
             kpHuntOpportunities={kpHuntOpportunities}
             onClearAllOpportunities={() => void onClearAllOpportunities()}
@@ -582,7 +660,8 @@ export function OverlayMain() {
             kpInstantsInventory={kpInstantsInventory}
           />
         )}
-        {tabKey === 'nhelp' && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
+        {tab === neighbourlyHelpTab && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
+        {tab === tournyTab && <Tourny />}
       </div>
       {retrievingCounter > 0 && (
         <Box

@@ -15,8 +15,6 @@ export const processNeighbourHelpBuildings = async (
 
   const neighbourHelpData = neighbourHelpBuildingsResponse?.responseData;
 
-  console.log('Processed neighbour help buildings data:', neighbourHelpData);
-
   const rc = neighbourHelpData;
 
   return rc;

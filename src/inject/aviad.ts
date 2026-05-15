@@ -11,6 +11,15 @@ declare global {
       'de.innogames.onyx.worldmap.service.WorldMapService': new () => {
         getDiscoveredPlayerProvinces: (callback: (response: unknown) => void) => void;
         startup: (callback: (response: unknown) => void) => void;
+        request: (action: string) => {
+          withData: (...data: unknown[]) => {
+            withCallback: (callback: (response: unknown) => void) => {
+              immediate: () => {
+                call: () => void;
+              };
+            };
+          };
+        };
       };
       'de.innogames.onyx.city.service.OtherPlayerService': new () => {
         getNeighbourlyHelpBuildings: (playerId: number, callback: (response: unknown) => void) => void;
@@ -22,6 +31,26 @@ declare global {
           playerId: number,
           callback: (response: unknown) => void,
         ) => void;
+      };
+      'de.innogames.onyx.worldmap.service.WorldMapBattleService': new () => {
+        request: (action: string) => {
+          withData: (...data: unknown[]) => {
+            withCallback: (callback: (response: unknown) => void) => {
+              immediate: () => {
+                call: () => void;
+              };
+            };
+          };
+        };
+      };
+      'de.innogames.onyx.tournaments.services.TournamentService': new () => {
+        getTournamentProgress: (callback: (response: unknown) => void) => void;
+      };
+      'de.innogames.onyx.tournaments.services.WorldMapTournamentService': new () => {
+        getProvincesOverview: (callback: (response: unknown) => void) => void;
+      };
+      'de.innogames.onyx.worldmap.service.UnlockEncounterService': new () => {
+        unlockEncounter: (q: number, r: number, encounterIndex: number, callback: (response: unknown) => void) => void;
       };
     };
   }

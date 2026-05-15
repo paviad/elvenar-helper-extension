@@ -6,6 +6,7 @@ import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { TournyData } from './tournyData';
 
 interface OverlayState {
   offeredGoods: string[];
@@ -54,6 +55,8 @@ interface OverlayState {
   setWorldNeighbors: (neighbors: WorldNeighbor[]) => void;
   neighbourHelpData?: NeighbourHelpData;
   setNeighbourHelpData: (data: NeighbourHelpData) => void;
+  tournyData?: TournyData;
+  setTournyData: (data: TournyData) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -123,6 +126,8 @@ export const generateOverlayStore = (accountId: string) => {
         setWorldNeighbors: (neighbors) => set({ worldNeighbors: neighbors }),
         neighbourHelpData: undefined,
         setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
+        tournyData: undefined,
+        setTournyData: (data) => set({ tournyData: data }),
       }),
       {
         name: `overlay-store-${accountId}`,
@@ -140,6 +145,7 @@ export const generateOverlayStore = (accountId: string) => {
             initialWorldMapData,
             worldNeighbors,
             neighbourHelpData,
+            // tournyData,
             ...toPersist
           } = state;
           // avatarPosition remains in `toPersist` automatically

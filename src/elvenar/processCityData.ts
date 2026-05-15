@@ -3,6 +3,7 @@ import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Quest } from '../model/quest';
 import { SeasonalEvent } from '../model/seasonalEvent';
@@ -98,7 +99,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   if (!startupService) {
     console.warn('ElvenAssist: No StartupService data found in the provided JSON.');
-    return;
+    return json;
   }
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
@@ -205,6 +206,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   setAccountData(accountId, data);
   await setMaxChapter(maxChapter);
+
+  return json;
 }
 
 async function setMaxChapter(maxChapter: number) {

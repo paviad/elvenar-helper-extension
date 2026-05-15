@@ -40,6 +40,10 @@ export interface EvolvingBuildingsMessage extends NonSpecificMessageBase {
   type: 'EVOLVING_BUILDINGS';
 }
 
+export interface BattleUnitTypesMessage extends NonSpecificMessageBase {
+  type: 'BATTLE_UNIT_TYPES';
+}
+
 export type NonSpecificMessage =
   | BuildingsMessage
   | ItemsMessage
@@ -47,4 +51,5 @@ export type NonSpecificMessage =
   | TomesMessage
   | PremiumBuildingHintsMessage
   | GoodsNamesMessage
-  | EvolvingBuildingsMessage;
+  | EvolvingBuildingsMessage
+  | BattleUnitTypesMessage;

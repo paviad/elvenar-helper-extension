@@ -24,6 +24,7 @@
   "web_accessible_resources": [
     "icon32.png",
     "sprite.png",
+    "military_sprite.png",
     "elvenassist-inject.bundle.js",
     "elvenassist-vendors.bundle.js",
     "elvenassist-spirewizard-inject.bundle.js",

@@ -19,8 +19,6 @@ export const processHelpPerformedUpdateProvince = async (
 
   const updatedProvince = updatedProvinceResponse?.responseData;
 
-  console.log('Processed world neighbors data:', updatedProvince);
-
   const rc = updatedProvince;
 
   return rc;

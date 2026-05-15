@@ -17,8 +17,6 @@ export const processWorldNeighbors = async (
     ...raw,
   }));
 
-  console.log('Processed world neighbors data:', worldNeighborsData);
-
   const rc = worldNeighborsData || [];
 
   return rc;

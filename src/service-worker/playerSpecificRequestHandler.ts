@@ -37,6 +37,10 @@ import { processRankingData } from '../elvenar/processRankingData';
 import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
+import { processTournyAddUnits } from '../elvenar/processTournyAddUnits';
+import { processTournyProvinceInformation } from '../elvenar/processTournyProvinceInformation';
+import { processTournyProvincesOverview } from '../elvenar/processTournyProvincesOverview';
+import { processTournyUpdateTime } from '../elvenar/processTournyUpdateTime';
 import { processTradeData } from '../elvenar/processTradeData';
 import { processTranscendenceService } from '../elvenar/processTranscendenceService';
 import { processUpdateChestPayInProgress } from '../elvenar/processUpdateChestPayInProgress';
@@ -153,6 +157,11 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:WorldMapService/getDiscoveredPlayerProvinces': processWorldNeighbors,
     'R:OtherPlayerService/getNeighbourlyHelpBuildings': processNeighbourHelpBuildings,
     'R:WorldMapService/updateProvince': processHelpPerformedUpdateProvince,
+
+    'R:TournamentService/getProvincesOverview': processTournyProvincesOverview,
+    'R:WorldMapService/getProvinceInformation': processTournyProvinceInformation,
+    'R:WorldMapService/updateTournamentTime': processTournyUpdateTime,
+    'R:ArmyService/addUnit': processTournyAddUnits,
   };
 
   const processorFunction = processors[msg.payload.type];

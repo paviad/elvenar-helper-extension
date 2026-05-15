@@ -188,13 +188,11 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
 
     setIsHelping(true);
     stopRequestedRef.current = false;
-    console.log(`Starting automated help for ${targets.length} neighbors:`, targets);
 
     try {
       for (let i = 0; i < targets.length; i++) {
         // Check if the user pressed the Stop button
         if (stopRequestedRef.current) {
-          console.log('Automated help stopped by user.');
           break;
         }
 
@@ -222,7 +220,6 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
         });
 
         if (stopRequestedRef.current) {
-          console.log('Automated help stopped by user.');
           break;
         }
 
@@ -236,8 +233,6 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
           await new Promise((res) => setTimeout(res, safeDelay));
         }
       }
-
-      console.log('Automated help finished!');
     } catch (error) {
       console.error('Error during automated help:', error);
     } finally {

@@ -212,4 +212,28 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'updateProvince',
     },
   },
+  {
+    responseSelector: {
+      requestClass: 'TournamentService',
+      requestMethod: 'getProvincesOverview',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'getProvinceInformation',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'updateTournamentTime',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'ArmyService',
+      requestMethod: 'addUnit',
+    },
+  },
 ];

@@ -15,7 +15,5 @@ export const processInitialWorldMapData = async (
 
   const initialWorldMapData = initialWorldMapDataResponse?.responseData;
 
-  console.log('Processed initial world map data:', initialWorldMapData);
-
   return initialWorldMapData;
 };

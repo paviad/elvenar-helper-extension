@@ -16,6 +16,7 @@ export function setupNonSpecificRequestInterceptedListener() {
       case 'PREMIUM_BUILDING_HINTS':
       case 'GOODS_NAMES':
       case 'EVOLVING_BUILDINGS':
+      case 'BATTLE_UNIT_TYPES':
         void sendInterceptedNonSpecificRequest(event.data);
         break;
       default:
