@@ -25,6 +25,7 @@ const commonConfig = (env) => ({
   mode: 'production',
   node: false,
   optimization: commonOptimization(env),
+  devtool: env.production ? false : 'source-map',
   performance: {
     hints: false,
   },

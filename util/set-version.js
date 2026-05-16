@@ -14,9 +14,9 @@ if (!newVersion) {
 const files = {
   package: path.join(__dirname, '../package.json'),
   manifests: [
-    path.join(__dirname, '../manifest/manifest-chrome.json'),
-    path.join(__dirname, '../manifest/manifest-firefox.json'),
-    path.join(__dirname, '../manifest/manifest-safari.json'),
+    path.join(__dirname, '../manifest/manifest-chrome.jsonc'),
+    path.join(__dirname, '../manifest/manifest-firefox.jsonc'),
+    path.join(__dirname, '../manifest/manifest-safari.jsonc'),
   ],
   tsFile: path.join(__dirname, '../src/layout/extensionAboutInfo.ts'),
 };
@@ -34,21 +34,33 @@ const newDate = getFormattedDate();
 
 console.log(`🚀 Bumping version to: ${newVersion} (Date: ${newDate})`);
 
-// 2. Update JSON Files (package.json + manifests)
-const jsonFiles = [files.package, ...files.manifests];
+// 2. Update package.json (Standard JSON, safe to parse)
+if (fs.existsSync(files.package)) {
+  const content = JSON.parse(fs.readFileSync(files.package, 'utf8'));
+  content.version = newVersion;
+  fs.writeFileSync(files.package, JSON.stringify(content, null, 2) + '\n');
+  console.log(`✅ Updated ${path.basename(files.package)}`);
+} else {
+  console.warn(`⚠️ Warning: File not found: ${files.package}`);
+}
 
-jsonFiles.forEach((filePath) => {
+// 3. Update Manifests (Has comments, use Regex to preserve them)
+files.manifests.forEach((filePath) => {
   if (fs.existsSync(filePath)) {
-    const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    content.version = newVersion;
-    fs.writeFileSync(filePath, JSON.stringify(content, null, 2) + '\n');
+    let content = fs.readFileSync(filePath, 'utf8');
+
+    // This regex looks for "version": "something" and updates the value.
+    // It only replaces the first instance it finds, keeping everything else intact.
+    content = content.replace(/("version"\s*:\s*)"[^"]+"/, `$1"${newVersion}"`);
+
+    fs.writeFileSync(filePath, content);
     console.log(`✅ Updated ${path.basename(filePath)}`);
   } else {
     console.warn(`⚠️ Warning: File not found: ${filePath}`);
   }
 });
 
-// 3. Update TypeScript File (src/layout/extensionAboutInfo.ts)
+// 4. Update TypeScript File (src/layout/extensionAboutInfo.ts)
 if (fs.existsSync(files.tsFile)) {
   let tsContent = fs.readFileSync(files.tsFile, 'utf8');
 

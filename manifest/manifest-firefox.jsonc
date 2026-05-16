@@ -7,13 +7,27 @@
     "storage",
     "webRequest"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "@elvenar-helper-extension",
+      "strict_min_version": "115.0",
+      "data_collection_permissions": {
+        "required": [
+          "websiteContent"
+        ],
+        "optional": []
+      }
+    }
+  },
   "host_permissions": [
     "https://*.elvenar.com/*",
     "https://*.innogamescdn.com/*",
     "https://javascriptorian.com/*"
   ],
   "background": {
-    "service_worker": "elvenassist-service-worker.bundle.js"
+    "scripts": [
+      "elvenassist-service-worker.bundle.js"
+    ]
   },
   "action": {
     "default_title": "(Click to show tab)"
@@ -26,7 +40,8 @@
         "elvenassist-inject.bundle.js",
         "elvenassist-vendors.bundle.js",
         "helper.png",
-        "splitview.jpg"
+        "splitview.jpg",
+        "*.js.map" // debug
       ],
       "matches": [
         "https://*.elvenar.com/*"

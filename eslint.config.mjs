@@ -8,6 +8,7 @@ export default defineConfig(
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   {
+    files: ['src/**/*'],
     languageOptions: {
       parserOptions: {
         projectService: true,

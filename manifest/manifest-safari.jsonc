@@ -1,25 +1,11 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "ElvenAssist",
   "version": "7.7.0",
   "description": "A comprehensive unofficial toolkit for Elvenar featuring a live city planner, inventory manager, and FA tracker.",
   "permissions": [
     "storage",
-    "webRequest"
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "@elvenar-helper-extension",
-      "strict_min_version": "115.0",
-      "data_collection_permissions": {
-        "required": [
-          "websiteContent"
-        ],
-        "optional": []
-      }
-    }
-  },
-  "host_permissions": [
+    "webRequest",
     "https://*.elvenar.com/*",
     "https://*.innogamescdn.com/*",
     "https://javascriptorian.com/*"
@@ -27,33 +13,22 @@
   "background": {
     "scripts": [
       "elvenassist-service-worker.bundle.js"
-    ]
+    ],
+    "persistent": true
   },
-  "action": {
-    "default_title": "(Click to show tab)"
+  "browser_action": {
+    "default_title": "(Click to show tab)",
+    "default_icon": "icon32.png"
   },
   "web_accessible_resources": [
-    {
-      "resources": [
-        "icon32.png",
-        "sprite.png",
-        "elvenassist-inject.bundle.js",
-        "elvenassist-vendors.bundle.js",
-        "helper.png",
-        "splitview.jpg"
-      ],
-      "matches": [
-        "https://*.elvenar.com/*"
-      ]
-    },
-    {
-      "resources": [
-        "elvenassist-spirewizard-inject.bundle.js"
-      ],
-      "matches": [
-        "https://javascriptorian.com/*"
-      ]
-    }
+    "icon32.png",
+    "sprite.png",
+    "elvenassist-inject.bundle.js",
+    "elvenassist-vendors.bundle.js",
+    "elvenassist-spirewizard-inject.bundle.js",
+    "helper.png",
+    "splitview.jpg",
+    "*.js.map" // debug
   ],
   "content_scripts": [
     {
