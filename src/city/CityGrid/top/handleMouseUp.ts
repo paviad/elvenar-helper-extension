@@ -2,6 +2,7 @@ import { useCity } from '../../CityContext';
 import { isOverlapping } from '../isOverlapping';
 
 export const handleMouseUp = (city: ReturnType<typeof useCity>) => {
+  console.log('Mouse Up');
   const setMoveLog = city.setMoveLog;
   const clearRedoStack = city.clearRedoStack;
 

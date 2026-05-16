@@ -192,8 +192,9 @@ export const useCityGridState = () => {
       }
     };
 
-    window.addEventListener('keydown', ($event) => void handleKeyDown($event));
-    return () => window.removeEventListener('keydown', ($event) => void handleKeyDown($event));
+    const listener = (event: KeyboardEvent) => void handleKeyDown(event);
+    window.addEventListener('keydown', listener);
+    return () => window.removeEventListener('keydown', listener);
   }, [
     dragIndex,
     blocks,
