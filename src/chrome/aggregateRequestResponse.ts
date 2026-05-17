@@ -42,8 +42,6 @@ export const setupAggregateRequestResponseListener = (): void => {
             } satisfies PlayerSpecificMessage;
 
             await sendInterceptedPlayerSpecificRequest(message);
-
-            console.log('Sending', message);
           }
         }
 
@@ -64,8 +62,6 @@ export const setupAggregateRequestResponseListener = (): void => {
               } satisfies PlayerSpecificMessage;
 
               await sendInterceptedPlayerSpecificRequest(message);
-
-              console.log('Sending', message);
             }
           }
         }

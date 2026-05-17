@@ -7,6 +7,7 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
 import { PotionEffect } from '../model/potionEffect';
+import { SeasonalEvent } from '../model/seasonalEvent';
 import { Trade } from '../model/trade';
 import { Transcendence } from '../model/transcendence';
 import { UnlockedArea } from '../model/unlockedArea';
@@ -45,6 +46,7 @@ export interface CityQuery {
   rankingPoints: number;
   cityResources?: Record<string, number>;
   armyDetails?: ArmyDetails;
+  tournaments?: SeasonalEvent[];
 }
 
 export interface AccountData {

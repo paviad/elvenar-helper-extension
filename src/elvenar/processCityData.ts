@@ -5,6 +5,7 @@ import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Quest } from '../model/quest';
+import { SeasonalEvent } from '../model/seasonalEvent';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 import { generateAccountId, getAccountBySessionId, setAccountData } from './AccountManager';
@@ -28,7 +29,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       owner: string;
       remainingTime: number;
     }[];
-    seasonal_events?: { type: string }[];
+    seasonal_events?: SeasonalEvent[];
     army_details?: ArmyDetails;
   } | undefined;
 
@@ -131,6 +132,10 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     type: string;
   };
 
+  const tournaments = startupService.seasonal_events?.filter((r) => r.type === 'tournament') || [];
+
+  console.log('Tournament data:', tournaments);
+
   const worldNames: Record<string, string> = {
     '1': 'Arendyll',
     '2': 'Wyniandor',
@@ -168,6 +173,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       rankingPoints,
       cityResources,
       armyDetails: startupService.army_details,
+      tournaments,
     },
     sharedInfo,
     isDetached: false,
