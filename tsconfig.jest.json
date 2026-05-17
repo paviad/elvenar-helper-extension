@@ -8,10 +8,10 @@
     "allowJs": true,
     "outDir": "./build-jest",
     "sourceMap": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "isolatedModules": true
   },
   "include": [
-    "src/**/*.ts",
     "src/**/*.spec.ts"
   ],
   "exclude": [
