@@ -6,7 +6,7 @@ export const WorkingState: React.FC = () => {
   // Accessing blocks to count highlighted ones.
   // Assuming 'pointer' exists in context for grid coordinates {x, y}.
   // If not, it will gracefully fallback.
-  const { blocks, mouseGridPosition } = useCity();
+  const { blocks, mouseGridPosition, emptySquares } = useCity();
 
   const highlightedCount = React.useMemo(() => {
     if (!blocks) return 0;
@@ -36,6 +36,15 @@ export const WorkingState: React.FC = () => {
             </Typography>
             <Typography variant='body2' fontWeight='bold'>
               {highlightedCount}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant='body2' color='text.secondary'>
+              Empty Squares
+            </Typography>
+            <Typography variant='body2' fontWeight='bold'>
+              {emptySquares}
             </Typography>
           </Box>
         </Stack>

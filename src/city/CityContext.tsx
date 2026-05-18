@@ -75,6 +75,7 @@ export interface CityContextType {
   mouseGridPosition: { x: number; y: number } | null;
   setMouseGridPosition: (pos: { x: number; y: number } | null) => void;
   resources: Record<string, number>;
+  emptySquares: number;
 }
 
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
@@ -118,6 +119,8 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const forceUpdate = useTabStore((state) => state.forceUpdate);
 
   const [localRefresh, triggerLocalRefresh] = React.useReducer((x) => x + 1, 0);
+
+  const [emptySquares, setEmptySquares] = React.useState<number>(0);
 
   let boostedGoods: string[] = [];
 
@@ -170,11 +173,42 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }, [localRefresh]);
 
   React.useEffect(() => {
-    const blocks = generateCityBlocks(cityEntities[0]);
+    const blocksArr = generateCityBlocks(cityEntities[0]);
     const unlockedAreas = generateUnlockedAreas(cityEntities[1]);
+    const blocks = Object.fromEntries(blocksArr.map((b) => [b.id, b]));
     setBlocks(blocks);
     setUnlockedAreas(unlockedAreas);
   }, [cityEntities]);
+
+  React.useEffect(() => {
+    // don't calculate while dragging to avoid performance issues
+    if (dragIndex !== null) {
+      return;
+    }
+
+    const allSquares = unlockedAreas.flatMap((area) => {
+      const squares = [];
+      for (let x = area.x; x <= area.x + area.width - 1; x++) {
+        for (let y = area.y; y <= area.y + area.length - 1; y++) {
+          squares.push(`${x},${y}`);
+        }
+      }
+      return squares;
+    });
+    const blockSquares = Object.values(blocks).flatMap((b) => {
+      const squares = [];
+      for (let x = b.x; x <= b.x + b.width - 1; x++) {
+        for (let y = b.y; y <= b.y + b.length - 1; y++) {
+          squares.push(`${x},${y}`);
+        }
+      }
+      return squares;
+    });
+    const setOfBlockSquares: Set<string> = new Set(blockSquares);
+    const unoccupiedSquares = allSquares.filter((x) => !setOfBlockSquares.has(x));
+    console.log('Unoccupied squares:', unoccupiedSquares);
+    setEmptySquares(unoccupiedSquares.length);
+  }, [blocks, dragIndex]);
 
   // temporary
   const lastId = React.useRef<number>(-1);
@@ -379,6 +413,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     mouseGridPosition,
     setMouseGridPosition,
     resources,
+    emptySquares,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;
