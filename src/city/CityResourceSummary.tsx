@@ -2,7 +2,18 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PeopleIcon from '@mui/icons-material/People';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import WorkIcon from '@mui/icons-material/Work';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Card, CardContent, Divider, LinearProgress, Stack, Typography } from '@mui/material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Card,
+  CardContent,
+  Divider,
+  LinearProgress,
+  Stack,
+  Typography,
+} from '@mui/material';
 import React, { useState } from 'react';
 import { Building } from '../model/building';
 import { useCity } from './CityContext';
@@ -41,6 +52,11 @@ export const CityResourceSummary = () => {
 
       if (!building) return;
       const source: Building = building.sourceBuilding;
+
+      // disregard building if outside of city limits
+      if (block.outOfGrid) {
+        return;
+      }
 
       if (building.sourceBuilding.type === 'ancient_wonder') {
         awLevels += block.level;
@@ -175,17 +191,16 @@ export const CityResourceSummary = () => {
           <Typography fontWeight='bold'>Resource Summary</Typography>
         </AccordionSummary>
         <AccordionDetails>
+          {renderRow('Population', <PeopleIcon fontSize='small' />, summary.population, '#4caf50')}
+          <Divider sx={{ my: 1.5 }} />
+          {renderRow('Culture', <WbSunnyIcon fontSize='small' />, summary.culture, '#ff9800')}
 
-        {renderRow('Population', <PeopleIcon fontSize='small' />, summary.population, '#4caf50')}
-        <Divider sx={{ my: 1.5 }} />
-        {renderRow('Culture', <WbSunnyIcon fontSize='small' />, summary.culture, '#ff9800')}
-
-        {(summary.prosperity.provided > 0 || summary.prosperity.required > 0) && (
-          <>
-            <Divider sx={{ my: 1.5 }} />
-            {renderRow('Prosperity', <WorkIcon fontSize='small' />, summary.prosperity, '#9c27b0')}
-          </>
-        )}
+          {(summary.prosperity.provided > 0 || summary.prosperity.required > 0) && (
+            <>
+              <Divider sx={{ my: 1.5 }} />
+              {renderRow('Prosperity', <WorkIcon fontSize='small' />, summary.prosperity, '#9c27b0')}
+            </>
+          )}
         </AccordionDetails>
       </Accordion>
     </Box>

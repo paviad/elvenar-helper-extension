@@ -59,6 +59,8 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
       return;
     }
 
+    const outOfGrid = newX < 0 || newY < 0 || newX + blocks[dragIndex].width > GridMax || newY + blocks[dragIndex].length > GridMax;
+
     setBlocks((prev) => {
       if (!prev[dragIndex]) {
         return prev;
@@ -69,6 +71,7 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
           ...prev[dragIndex],
           x: newX,
           y: newY,
+          outOfGrid,
         },
       };
     });
