@@ -148,7 +148,7 @@ export class BuildingFinder {
     const building = this.getBuilding(id, level);
 
     if (!building) {
-      console.warn(`Building not found for id: ${id}`);
+      console.warn(`ElvenAssist: Building not found for id: ${id}`);
     }
 
     const length = building?.length || 1;

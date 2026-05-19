@@ -61,7 +61,7 @@ export async function smartDecompress(input: string): Promise<string> {
     const response = new Response(decompressedStream);
     return await response.text();
   } catch (error) {
-    console.error('Decompression failed:', error);
+    console.error('ElvenAssist: Decompression failed:', error);
     return input;
   }
 }

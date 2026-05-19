@@ -22,7 +22,7 @@ export const clickSelectResources = async (encounterData: EncounterData) => {
     if (resourceDiv) {
       (resourceDiv as HTMLDivElement).click();
     } else {
-      console.warn(`Resource div for ${backTranslation} not found.`);
+      console.warn(`ElvenAssist: Resource div for ${backTranslation} not found.`);
     }
 
     await sleep(300);

@@ -66,7 +66,7 @@ export const playerSpecificRequestHandler = async (
 
   const processorFunction = processors[msg.payload.type];
   if (!processorFunction) {
-    console.warn(`No processor function found for message type: ${msg.payload.type}`);
+    console.warn(`ElvenAssist: No processor function found for message type: ${msg.payload.type}`);
     return;
   }
 

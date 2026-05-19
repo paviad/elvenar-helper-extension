@@ -2,12 +2,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Navigate, Route, Routes } from 'react-router';
 import { FellowshipAdventure } from '../fellowship-adventure/FellowshipAdventure';
+import { HelpPage } from '../help/HelpPage';
 import { HelperProvider } from '../helper/HelperContext';
 import { InventoryMain } from '../inventory/InventoryMain';
 import { LayoutMain } from '../layout/LayoutMain';
 import { Activate } from './Activate';
 import { CityMain } from './CityMain';
-import { HelpPage } from '../help/HelpPage';
 
 export function createReactUi() {
   const root = createRoot(document.getElementById('root') as HTMLElement);

@@ -13,7 +13,7 @@ export async function refreshCity(city: CityContextType) {
   }
   const response = await sendRefreshCityMessage(accountId);
   if (!response.success) {
-    console.error('Failed to refresh city:', response.message);
+    console.error('ElvenAssist: Failed to refresh city:', response.message);
     setGlobalError('Failed to refresh city, please refresh your Elvenar tab and try again.');
     return;
   }

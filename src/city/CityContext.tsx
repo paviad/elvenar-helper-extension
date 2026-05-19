@@ -207,7 +207,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     });
     const setOfBlockSquares: Set<string> = new Set(blockSquares);
     const unoccupiedSquares = allSquares.filter((x) => !setOfBlockSquares.has(x));
-    console.log('Unoccupied squares:', unoccupiedSquares);
     setEmptySquares(unoccupiedSquares.length);
   }, [blocks, dragIndex]);
 

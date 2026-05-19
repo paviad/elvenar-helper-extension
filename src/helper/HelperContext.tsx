@@ -94,7 +94,7 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ [STORAGE_KEY]: newHistory }).catch((err) => {
-          console.warn('Failed to save helper message history:', err);
+          console.warn('ElvenAssist: Failed to save helper message history:', err);
         });
       }
     },

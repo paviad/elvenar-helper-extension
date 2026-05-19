@@ -29,9 +29,10 @@
     "lint": "eslint src",
     "prettify": "prettier --write src",
     "bump": "node util/set-version.js",
-    "release": "node util/create-release.js",
-    "deploy:chrome": "node util/deploy-chrome.js",
-    "deploy:firefox": "node util/deploy-firefox.js"
+    "release": "npm run check-logs && node util/create-release.js",
+    "deploy:chrome": "npm run check-logs && node util/deploy-chrome.js",
+    "deploy:firefox": "npm run check-logs && node util/deploy-firefox.js",
+    "check-logs": "node util/check-logs.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

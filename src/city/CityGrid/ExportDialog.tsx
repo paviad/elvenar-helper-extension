@@ -23,7 +23,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose, exportStri
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        console.error('Failed to copy text: ', err);
+        console.error('ElvenAssist: Failed to copy text: ', err);
       }
     })();
   };

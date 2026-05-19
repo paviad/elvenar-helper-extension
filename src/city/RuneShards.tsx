@@ -64,7 +64,7 @@ export const RuneShards = () => {
       .join('\n');
 
     navigator.clipboard.writeText(textToCopy).catch((err) => {
-      console.error('Unable to copy', err);
+      console.error('ElvenAssist: Unable to copy to clipboard', err);
     });
   };
 
