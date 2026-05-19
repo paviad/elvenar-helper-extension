@@ -3,8 +3,6 @@ import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
 import { getEntityMaxLevel } from '../getEntityMaxLevel';
 
-const PADDING_TILES = 10;
-
 export const handleMouseDown = (
   city: ReturnType<typeof useCity>,
   helperContext: ReturnType<typeof useHelper>,
@@ -20,7 +18,7 @@ export const handleMouseDown = (
 
   // Calculate scaled grid size and padding
   const sGridSize = GridSize * zoom;
-  const paddingPx = PADDING_TILES * sGridSize;
+  const paddingPx = city.PaddingTiles * sGridSize;
 
   e.stopPropagation();
   const svg = svgRef.current;

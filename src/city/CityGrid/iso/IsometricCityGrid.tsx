@@ -16,11 +16,10 @@ const darken = (color: string, amount: number) => {
 };
 
 const ZOOM_LEVELS = [0.75, 1, 1.5, 2, 2.5, 3];
-const PADDING_TILES = 10;
 
 export function IsometricCityGrid() {
   const city = useCity();
-  const { GridSize, GridMax, blocks, unlockedAreas, setMouseGridPosition } = city;
+  const { GridSize, GridMax, blocks, unlockedAreas, setMouseGridPosition, PaddingTiles } = city;
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [zoom, setZoom] = React.useState(1);
@@ -35,16 +34,16 @@ export function IsometricCityGrid() {
   const tileHeight = GridSize * 0.9 * zoom;
 
   // Origin with Padding Logic
-  const paddedGridMax = GridMax + PADDING_TILES * 2;
+  const paddedGridMax = GridMax + PaddingTiles * 2;
   // Center X: The middle of the expanded grid width
   const originX = (paddedGridMax * tileWidth) / 2;
   // Center Y: Shifted down by vertical padding
-  const originY = 50 + PADDING_TILES * tileHeight;
+  const originY = 50 + PaddingTiles * tileHeight;
 
   // Total Dimensions
   const totalWidth = paddedGridMax * tileWidth + 100;
   // Height must accommodate the bottom half of the diamond plus padding
-  const totalHeight = (GridMax + PADDING_TILES * 2) * tileHeight + 200;
+  const totalHeight = (GridMax + PaddingTiles * 2) * tileHeight + 200;
 
   const toIso = (x: number, y: number) => {
     return {
@@ -56,9 +55,9 @@ export function IsometricCityGrid() {
   const getIsoPoint = (x: number, y: number, z: number) => {
     const tw = GridSize * 1.8 * z;
     const th = GridSize * 0.9 * z;
-    const pGridMax = GridMax + PADDING_TILES * 2;
+    const pGridMax = GridMax + PaddingTiles * 2;
     const ox = (pGridMax * tw) / 2;
-    const oy = 50 + PADDING_TILES * th;
+    const oy = 50 + PaddingTiles * th;
     return {
       x: ox + (x - y) * (tw / 2),
       y: oy + (x + y) * (th / 2),
@@ -68,9 +67,9 @@ export function IsometricCityGrid() {
   const fromIso = (screenX: number, screenY: number, currentZoom: number) => {
     const tw = GridSize * 1.8 * currentZoom;
     const th = GridSize * 0.9 * currentZoom;
-    const pGridMax = GridMax + PADDING_TILES * 2;
+    const pGridMax = GridMax + PaddingTiles * 2;
     const ox = (pGridMax * tw) / 2;
-    const oy = 50 + PADDING_TILES * th;
+    const oy = 50 + PaddingTiles * th;
 
     const adjX = screenX - ox;
     const adjY = screenY - oy;
@@ -222,6 +221,7 @@ export function IsometricCityGrid() {
   React.useEffect(() => {
     if (!hasCentered.current && containerRef.current && totalWidth > 100) {
       containerRef.current.scrollLeft = (totalWidth - containerRef.current.clientWidth) / 2;
+      containerRef.current.scrollTop = PaddingTiles * 10;
       hasCentered.current = true;
     }
   }, [totalWidth]);
@@ -257,10 +257,10 @@ export function IsometricCityGrid() {
       >
         {/* Including padding */}
         {renderPolygon(
-          -PADDING_TILES,
-          -PADDING_TILES,
-          GridMax + PADDING_TILES,
-          GridMax + PADDING_TILES,
+          -PaddingTiles,
+          -PaddingTiles,
+          GridMax + PaddingTiles,
+          GridMax + PaddingTiles,
           '#27292c',
           'none',
           0,

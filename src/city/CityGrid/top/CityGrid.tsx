@@ -5,7 +5,6 @@ import { handleMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
 
 const ZOOM_LEVELS = [0.75, 1, 1.25, 1.5, 2];
-const PADDING_TILES = 10; // Must match handleMouseMove.ts
 
 export function CityGrid() {
   const city = useCity();
@@ -29,7 +28,7 @@ export function CityGrid() {
   // Dimension Calculation
   const gridSizePx = baseGridSize * zoom;
   const gridDimension = gridSizePx * GridMax;
-  const paddingPx = PADDING_TILES * gridSizePx;
+  const paddingPx = city.PaddingTiles * gridSizePx;
   const totalDimension = gridDimension + paddingPx * 2;
 
   // --- Scroll Restoration after Zoom ---
@@ -47,6 +46,7 @@ export function CityGrid() {
       const clientW = containerRef.current.clientWidth;
       if (totalDimension > clientW) {
         containerRef.current.scrollLeft = (totalDimension - clientW) / 2;
+        containerRef.current.scrollTop = paddingPx - 10 * gridSizePx; // Adjust to show some of the top area
       }
       hasCentered.current = true;
     }

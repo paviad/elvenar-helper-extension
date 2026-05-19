@@ -3,8 +3,6 @@ import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
 import { getEntityMaxLevel } from '../getEntityMaxLevel';
 
-const PADDING_TILES = 10;
-
 export const handleIsoMouseDownWithZoom = (
   city: ReturnType<typeof useCity>,
   helperContext: ReturnType<typeof useHelper>,
@@ -16,7 +14,7 @@ export const handleIsoMouseDownWithZoom = (
   const setDragOffset = city.setDragOffset;
   const blocks = city.blocks;
   const setOriginalPos = city.setOriginalPos;
-  const { GridSize, svgRef, GridMax, maxLevels } = city;
+  const { GridSize, svgRef, GridMax, maxLevels, PaddingTiles } = city;
 
   e.stopPropagation();
   const svg = svgRef.current;
@@ -29,9 +27,9 @@ export const handleIsoMouseDownWithZoom = (
   const tileHeight = GridSize * 0.9 * zoom;
 
   // Updated Origins with Padding
-  const paddedGridMax = GridMax + PADDING_TILES * 2;
+  const paddedGridMax = GridMax + PaddingTiles * 2;
   const originX = (paddedGridMax * tileWidth) / 2;
-  const originY = 50 + PADDING_TILES * tileHeight;
+  const originY = 50 + PaddingTiles * tileHeight;
 
   const toIso = (x: number, y: number) => {
     return {

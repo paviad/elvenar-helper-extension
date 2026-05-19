@@ -18,8 +18,6 @@ export const subscribeToIsoMouseMove = () => {
   });
 };
 
-const PADDING_TILES = 10;
-
 const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   const blocks = city.blocks;
   const setBlocks = city.setBlocks;
@@ -27,7 +25,7 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
   const dragIndex = city.dragIndex;
   const dragOffset = city.dragOffset;
 
-  const { GridSize, svgRef, GridMax, mousePositionRef } = city;
+  const { GridSize, svgRef, GridMax, mousePositionRef, PaddingTiles } = city;
 
   const svg = svgRef.current;
   if (!svg) return;
@@ -40,9 +38,9 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
   // --- Isometric Constants ---
   const tileWidth = GridSize * 1.8 * zoom;
   const tileHeight = GridSize * 0.9 * zoom;
-  const paddedGridMax = GridMax + PADDING_TILES * 2;
+  const paddedGridMax = GridMax + PaddingTiles * 2;
   const originX = (paddedGridMax * tileWidth) / 2;
-  const originY = 50 + PADDING_TILES * tileHeight;
+  const originY = 50 + PaddingTiles * tileHeight;
 
   // --- Coordinate Transformation Helper ---
   const fromIso = (screenX: number, screenY: number) => {
@@ -64,8 +62,8 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
     const targetScreenY = mouseY - dragOffset.y;
     const gridPos = fromIso(targetScreenX, targetScreenY);
 
-    const newX = Math.max(-PADDING_TILES, Math.min(GridMax - blocks[dragIndex].width + PADDING_TILES, gridPos.x));
-    const newY = Math.max(-PADDING_TILES, Math.min(GridMax - blocks[dragIndex].length + PADDING_TILES, gridPos.y));
+    const newX = Math.max(-PaddingTiles, Math.min(GridMax - blocks[dragIndex].width + PaddingTiles, gridPos.x));
+    const newY = Math.max(-PaddingTiles, Math.min(GridMax - blocks[dragIndex].length + PaddingTiles, gridPos.y));
 
     if (blocks[dragIndex].x === newX && blocks[dragIndex].y === newY) {
       return;
@@ -97,10 +95,10 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
 
     if (mouseGrid) {
       if (
-        gridX >= -PADDING_TILES &&
-        gridX < GridMax + PADDING_TILES &&
-        gridY >= -PADDING_TILES &&
-        gridY < GridMax + PADDING_TILES
+        gridX >= -PaddingTiles &&
+        gridX < GridMax + PaddingTiles &&
+        gridY >= -PaddingTiles &&
+        gridY < GridMax + PaddingTiles
       ) {
         // Show coordinate even if negative
         mouseGrid.innerText = `Grid: (${gridX}, ${gridY})`;

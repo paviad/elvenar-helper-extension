@@ -47,6 +47,7 @@ export interface CityContextType {
   handleRedo: () => void;
   GridSize: number;
   GridMax: number;
+  PaddingTiles: number;
   opacity: number;
   allTypes: string[];
   unlockedAreas: UnlockedArea[];
@@ -252,6 +253,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
 
   const GridSize = 15;
   const GridMax = 80;
+  const PaddingTiles = 20;
   const opacity = 0.8;
 
   // Close menu on click outside
@@ -385,6 +387,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     handleRedo: handleRedo,
     GridSize,
     GridMax,
+    PaddingTiles,
     opacity,
     allTypes,
     unlockedAreas,

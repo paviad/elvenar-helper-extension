@@ -19,17 +19,16 @@ const toIso = (x: number, y: number, tileWidth: number, tileHeight: number, orig
 export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom: number) => {
   const city = useCity();
   const helper = useHelper();
-  const { GridSize, GridMax, opacity, chapter } = city;
+  const { GridSize, GridMax, opacity, chapter, PaddingTiles } = city;
 
   // --- Iso Configuration ---
-  const PADDING_TILES = 10;
   const tileWidth = GridSize * 1.8 * zoom;
   const tileHeight = GridSize * 0.9 * zoom;
 
   // Center calculation with Padding
-  const paddedGridMax = GridMax + PADDING_TILES * 2;
+  const paddedGridMax = GridMax + PaddingTiles * 2;
   const originX = (paddedGridMax * tileWidth) / 2;
-  const originY = 50 + PADDING_TILES * tileHeight;
+  const originY = 50 + PaddingTiles * tileHeight;
 
   const setMenu = city.setMenu;
   const blocks = city.blocks;

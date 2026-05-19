@@ -12,7 +12,7 @@ import { handleMouseDown } from './handleMouseDown';
 export const BlockRect = (key: string | number, block: CityBlock, zoom: number) => {
   const city = useCity();
   const helper = useHelper();
-  const { GridSize, opacity, chapter } = city;
+  const { GridSize, opacity, chapter, PaddingTiles } = city;
 
   // Calculate scaled grid size based on zoom
   const sGridSize = GridSize * zoom;
@@ -38,7 +38,6 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
 
   // Context menu handler
   const handleContextMenu = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
-    const PADDING_TILES = 10;
 
     e.preventDefault();
     if (dragging) return;
@@ -51,7 +50,7 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
       x = e.clientX - rect.left;
       y = e.clientY - rect.top;
       const sGridSize = GridSize * zoom;
-      const paddingPx = PADDING_TILES * sGridSize;
+      const paddingPx = PaddingTiles * sGridSize;
       const mouseX = e.clientX - rect.left - paddingPx;
       const mouseY = e.clientY - rect.top - paddingPx;
       setDragOffset({

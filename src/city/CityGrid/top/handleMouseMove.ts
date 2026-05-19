@@ -17,8 +17,6 @@ export const subscribeToMouseMove = () => {
   });
 };
 
-const PADDING_TILES = 10;
-
 const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent, zoom: number) => {
   const blocks = city.blocks;
   const setBlocks = city.setBlocks;
@@ -30,7 +28,7 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
 
   // Calculate scaled grid size
   const sGridSize = GridSize * zoom;
-  const paddingPx = PADDING_TILES * sGridSize;
+  const paddingPx = city.PaddingTiles * sGridSize;
 
   const svg = svgRef.current;
   if (!svg) return;
@@ -43,12 +41,12 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
 
   if (dragIndex !== null) {
     const newX = Math.max(
-      -PADDING_TILES,
-      Math.min(GridMax - blocks[dragIndex].width + PADDING_TILES, Math.round((mouseX - dragOffset.x) / sGridSize)),
+      -city.PaddingTiles,
+      Math.min(GridMax - blocks[dragIndex].width + city.PaddingTiles, Math.round((mouseX - dragOffset.x) / sGridSize)),
     );
     const newY = Math.max(
-      -PADDING_TILES,
-      Math.min(GridMax - blocks[dragIndex].length + PADDING_TILES, Math.round((mouseY - dragOffset.y) / sGridSize)),
+      -city.PaddingTiles,
+      Math.min(GridMax - blocks[dragIndex].length + city.PaddingTiles, Math.round((mouseY - dragOffset.y) / sGridSize)),
     );
 
     if (!blocks[dragIndex]) {
