@@ -16,6 +16,8 @@ interface TabState {
   setLegendCollapsed: (collapsed: boolean) => void;
   viewMode: 'top' | 'iso' | 'table';
   setViewMode: (mode: 'top' | 'iso' | 'table') => void;
+  avatarPosition: { x: number; y: number };
+  setAvatarPosition: (pos: { x: number; y: number }) => void;
 }
 
 export const useTabStore = create<TabState>()(
@@ -35,11 +37,16 @@ export const useTabStore = create<TabState>()(
       setLegendCollapsed: (collapsed: boolean) => set({ legendCollapsed: collapsed }),
       viewMode: 'top',
       setViewMode: (mode) => set({ viewMode: mode }),
+
+      // Avatar position default and setter
+      avatarPosition: { x: 0, y: 0 },
+      setAvatarPosition: (pos) => set({ avatarPosition: pos }),
     }),
     {
       name: 'tab-store',
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => {
+        // avatarPosition stays automatically included
         const { forceUpdate, otherCityUpdated, ...toPersist } = state;
         return toPersist;
       },
