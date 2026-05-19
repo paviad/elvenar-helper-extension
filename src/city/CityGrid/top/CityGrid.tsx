@@ -4,7 +4,7 @@ import { BlockRect } from './BlockRect';
 import { handleMouseMove } from './handleMouseMove';
 import { handleMouseUp } from './handleMouseUp';
 
-const ZOOM_LEVELS = [0.75, 1, 1.25, 1.5, 2];
+const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 export function CityGrid() {
   const city = useCity();
