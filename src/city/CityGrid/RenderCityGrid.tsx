@@ -1,5 +1,6 @@
 import { Box, Dialog, Stack } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 import MyConfirmDialog from '../../widgets/MyConfirmDialog';
 import { useCity } from '../CityContext';
 import { CityContextMenu } from '../dialogs/CityContextMenu';
@@ -23,6 +24,22 @@ export const RenderCityGrid = () => {
 
   // Use Custom Hook for Logic & State
   const state = useCityGridState();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    async function Do() {
+      const rc = searchParams.get('buildId');
+      if (!rc) {
+        return;
+      }
+      await state.onBuildFromInventory(Number(rc));
+
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete('buildId');
+      setSearchParams(nextParams, { replace: true });
+    }
+    void Do();
+  }, [searchParams]);
 
   // Mouse Subscription Effects (UI specific)
   React.useEffect(() => {
@@ -50,7 +67,7 @@ export const RenderCityGrid = () => {
         onSaveAs={state.saveCityAs}
         onDelete={state.deleteCity}
         onSave={state.saveCity}
-        showSaveButton={state.isDetached && city.accountId !== 'Visited'}
+        showSaveButton={false}
         onDeleteHighlighted={state.deleteHighlightedBlocks}
         hasHighlightedBlocks={hasHighlighted}
         searchTerm={city.searchTerm}
@@ -58,6 +75,7 @@ export const RenderCityGrid = () => {
         mousePositionRef={city.mousePositionRef}
         viewMode={state.viewMode}
         onViewModeChange={state.setViewMode}
+        modified={city.modified}
       />
       <div>
         {/* Viewport for City Grid */}

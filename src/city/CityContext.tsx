@@ -1,5 +1,5 @@
 import React from 'react';
-import { getAccountById } from '../elvenar/AccountManager';
+import { getAccountById, saveCityInPlace, saveCurrentCityAs } from '../elvenar/AccountManager';
 import { getEffects } from '../elvenar/getEffects';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
@@ -11,7 +11,7 @@ import { UnlockedArea } from '../model/unlockedArea';
 import { useTabStore } from '../util/tabStore';
 import { BuildingFinder } from './buildingFinder';
 import { CityBlock } from './CityBlock';
-import { generateCity } from './generateCity';
+import { generateCity, saveBack } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
@@ -77,6 +77,7 @@ export interface CityContextType {
   setMouseGridPosition: (pos: { x: number; y: number } | null) => void;
   resources: Record<string, number>;
   emptySquares: number;
+  modified: boolean;
 }
 
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
@@ -123,8 +124,11 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [emptySquares, setEmptySquares] = React.useState<number>(0);
 
-  let boostedGoods: string[] = [];
+  const [ready, setReady] = React.useState<boolean>(false);
+  const [modified, setModified] = React.useState<boolean>(false);
 
+  let boostedGoods: string[] = [];
+  let isDetached = true;
   let race = 'humans';
   if (accountId) {
     const accountData = getAccountById(accountId);
@@ -132,25 +136,48 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       race = accountData.cityQuery.userData.race;
       boostedGoods = accountData.cityQuery.boostedGoods;
     }
+    isDetached = accountData?.isDetached ?? true;
   }
 
+  const previousAccountId = React.useRef<string | undefined>(undefined);
+
   React.useEffect(() => {
-    triggerLocalRefresh();
+    // skip if it's the first load, we will load the city data in another effect
+    if (previousAccountId.current && previousAccountId.current !== accountId) {
+      setReady(false);
+      firstLoad.current = true;
+      setModified(false);
+      triggerLocalRefresh();
+    }
+    previousAccountId.current = accountId;
   }, [accountId]);
 
   React.useEffect(() => {
     if (moveLog.length !== 0) {
       return;
     }
+
+    // skip if it's the first load, we will load the city data in another effect
+    if (forceUpdate === 0) {
+      return;
+    }
+    setReady(false);
+    firstLoad.current = true;
+    setModified(false);
     triggerLocalRefresh();
   }, [forceUpdate]);
 
   React.useEffect(() => {
+    setReady(false);
     async function fetchCityData() {
       if (!accountId) {
         return;
       }
-      const accountData = getAccountById(accountId);
+
+      const autoSaveData = getAccountById(`${accountId} (autosave)`);
+      setModified(!!autoSaveData); // modified if there's an autosave, otherwise not
+      const accountData = autoSaveData ?? getAccountById(accountId);
+
       if (!accountData || !accountData.cityQuery) {
         return;
       }
@@ -173,12 +200,47 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     void fetchCityData();
   }, [localRefresh]);
 
+  const firstLoad = React.useRef(true);
+
   React.useEffect(() => {
+    if (!ready || dragIndex !== null) {
+      return;
+    }
+    if (firstLoad.current) {
+      firstLoad.current = false;
+      return;
+    }
+    setModified(true);
+    if (isDetached) {
+      const cityEntities = saveBack(Object.values(blocks));
+      void saveCityInPlace(accountId!, cityEntities, chapter);
+    } else {
+      void saveCityAuto();
+    }
+  }, [blocks, ready, dragIndex]);
+
+  async function saveCityAuto() {
+    if (!accountId) return;
+    const accountName = getAccountById(accountId)?.cityQuery?.accountName || accountId;
+    if (accountName.endsWith(' (autosave)')) {
+      return;
+    }
+    const cityEntities = saveBack(Object.values(blocks));
+    const name = `${accountName} (autosave)`;
+    const autoSaveAccountId = `${accountId} (autosave)`;
+    await saveCurrentCityAs(accountId, autoSaveAccountId, cityEntities, chapter, name);
+  }
+
+  React.useEffect(() => {
+    if (cityEntities[0].length === 0) {
+      return;
+    }
     const blocksArr = generateCityBlocks(cityEntities[0]);
     const unlockedAreas = generateUnlockedAreas(cityEntities[1]);
     const blocks = Object.fromEntries(blocksArr.map((b) => [b.id, b]));
     setBlocks(blocks);
     setUnlockedAreas(unlockedAreas);
+    setReady(true);
   }, [cityEntities]);
 
   React.useEffect(() => {
@@ -416,6 +478,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     setMouseGridPosition,
     resources,
     emptySquares,
+    modified,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

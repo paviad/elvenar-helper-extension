@@ -38,7 +38,6 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
 
   // Context menu handler
   const handleContextMenu = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
-
     e.preventDefault();
     if (dragging) return;
     // Position relative to SVG container

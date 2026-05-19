@@ -23,6 +23,7 @@ import { getEntityMaxLevel } from './CityGrid/getEntityMaxLevel';
 import { resetMovedInPlace, saveBack } from './generateCity';
 import { getChapterFromEntity, getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
+import { generateInventory } from '../inventory/generateInventory';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -226,7 +227,7 @@ export const useCityGridState = () => {
   // Helper Tip
   React.useEffect(() => {
     if (showBuildDialog) {
-       helper.showMessage('you_can_press_alt_b_to_build');
+      helper.showMessage('you_can_press_alt_b_to_build');
     }
   }, [showBuildDialog, helper]);
 
@@ -336,6 +337,51 @@ export const useCityGridState = () => {
     setBlocks((prev) => Object.fromEntries(Object.entries(prev).filter(([_, b]) => b.type !== 'street')));
   };
 
+  async function onBuildFromInventory(id: number) {
+    if (!city.accountId) {
+      return;
+    }
+
+    const inventory = await generateInventory(city.accountId);
+    const item = inventory?.inventory.find((i) => i.id === id);
+
+    if (!item?.building) {
+      return;
+    }
+    const newBuilding = item.building.sourceBuilding;
+
+    const newLevel = newBuilding.level || 1;
+    const chapter = item.chapter || (newBuilding.requirements.worker && newBuilding.requirements.chapter);
+
+    const newEntity = {
+      id: generateUniqueId(),
+      cityentity_id: newBuilding.id,
+      level: newLevel,
+      player_id: 0,
+      stage: item.stage,
+      type: item.building.type,
+      connected: false,
+      connectionStrategy: newBuilding.requirements.connectionStrategyId,
+      x: 0,
+      y: 0,
+      chapter,
+      length: newBuilding.length,
+      width: newBuilding.width,
+      description: newBuilding.description,
+      name: newBuilding.name,
+    } satisfies CityEntityEx;
+
+    const newBlock = {
+      ...getCityBlockFromCityEntity(newEntity),
+      id: newEntity.id,
+    };
+
+    setBlocks((prev) => ({ ...prev, [newBlock.id]: newBlock }));
+    setDragIndex(newBlock.id);
+    setDragOffset({ x: 10, y: 10 });
+    setOriginalPos(null);
+  }
+
   async function onSelectBuilding(building: BuildingDefinition, config: BuildingConfig) {
     const allBuildings = await getBuildings();
     const qual = config.level || config.chapter || '';
@@ -411,7 +457,7 @@ export const useCityGridState = () => {
   function importCity() {
     const storedAccounts = getAllStoredAccounts();
     const existingCities = storedAccounts
-      .filter(([id, data]) => data.isDetached && id !== 'Visited')
+      .filter(([id, data]) => data.isDetached && id !== 'Visited' && !id.endsWith(' (autosave)'))
       .map(([name]) => name);
     setImportDialog({ open: true, existingCities });
   }
@@ -472,7 +518,7 @@ export const useCityGridState = () => {
   function saveCityAs() {
     const storedAccounts = getAllStoredAccounts();
     const existingCities = storedAccounts
-      .filter(([id, data]) => data.isDetached && id !== 'Visited')
+      .filter(([id, data]) => data.isDetached && id !== 'Visited' && !id.endsWith(' (autosave)'))
       .map(([name]) => name);
     if (!city.accountId) return;
     const accountData = getAccountById(city.accountId);
@@ -598,6 +644,7 @@ export const useCityGridState = () => {
     deleteHighlightedBlocks,
     duplicateAndDeleteBlock,
     sellStreets,
+    onBuildFromInventory,
     onSelectBuilding,
     exportCityAsJson,
     importCity,

@@ -1,3 +1,4 @@
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { processCityData } from './processCityData';
 
@@ -32,6 +33,6 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     );
   }
 
-  const untypedJson = await response.json();
+  const untypedJson = await response.json() as ElvenarRequestResponseEntry[];
   await processCityData(untypedJson, sharedInfo);
 }

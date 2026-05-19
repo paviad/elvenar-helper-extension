@@ -134,8 +134,6 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   const tournaments = startupService.seasonal_events?.filter((r) => r.type === 'tournament') || [];
 
-  console.log('Tournament data:', tournaments);
-
   const worldNames: Record<string, string> = {
     '1': 'Arendyll',
     '2': 'Wyniandor',

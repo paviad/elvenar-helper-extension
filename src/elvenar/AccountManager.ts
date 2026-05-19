@@ -90,8 +90,14 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
 
   const accountKeys = keys.filter((k) => k.startsWith('accounts_') && !k.startsWith('accounts_last_saved_'));
 
-  for (const key of accountKeys) {
-    const accountId = key.replace('accounts_', '');
+  const storedAccountIds = new Set(accountKeys.map((k) => k.replace('accounts_', '')));
+  for (const accountId of Object.keys(accounts)) {
+    if (!storedAccountIds.has(accountId)) {
+      delete accounts[accountId];
+    }
+  }
+
+  for (const accountId of storedAccountIds) {
     try {
       await loadSingleAccountFromStorage(accountId, refresh);
     } catch (err) {
@@ -101,8 +107,11 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
   }
 };
 
-export const getAllStoredAccounts = (): [string, AccountData][] => {
-  return Object.entries(accounts);
+export const getAllStoredAccounts = (includeAutosave = false): [string, AccountData][] => {
+  if (includeAutosave) {
+    return Object.entries(accounts);
+  }
+  return Object.entries(accounts).filter(([accountId]) => !accountId.endsWith(' (autosave)'));
 };
 
 export const saveNewCityAs = async (
@@ -209,7 +218,7 @@ export const saveNewCityAs = async (
   await saveAllAccounts();
 };
 
-export const saveCurrentCityAs = async (currentAccountId: string, newAccountId: string, cityEntities: CityEntity[], chapter: number) => {
+export const saveCurrentCityAs = async (currentAccountId: string, newAccountId: string, cityEntities: CityEntity[], chapter: number, name?: string) => {
   const currentAccount = getAccountById(currentAccountId);
   if (!currentAccount) {
     throw new Error('ElvenAssist: Current account not found');
@@ -223,7 +232,7 @@ export const saveCurrentCityAs = async (currentAccountId: string, newAccountId: 
   }
 
   newAccountData.cityQuery.accountId = newAccountId;
-  newAccountData.cityQuery.accountName = `City ${newAccountId}`;
+  newAccountData.cityQuery.accountName = name || `City ${newAccountId}`;
   newAccountData.cityQuery.sessionId = '';
   newAccountData.cityQuery.tabId = 0;
   newAccountData.cityQuery.url = '';

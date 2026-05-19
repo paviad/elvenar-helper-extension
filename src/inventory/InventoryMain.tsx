@@ -20,14 +20,15 @@ import {
   TextField,
 } from '@mui/material';
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { BuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
+import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { InventoryItem } from '../model/inventoryItem';
 import { formatResourceName } from '../util/formatResourceName';
 import { useTabStore } from '../util/tabStore';
 import { generateInventory } from './generateInventory';
-import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 
 interface InventoryItemWithStats extends InventoryItem {
   provisions: Record<string, number>;
@@ -71,6 +72,7 @@ export const InventoryMain = () => {
   const [finder, setFinder] = React.useState<BuildingFinder | null>(null);
 
   const accountId = useTabStore((state) => state.accountId);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     async function initializeFinder() {
@@ -95,11 +97,8 @@ export const InventoryMain = () => {
       if (!inventoryData) {
         return;
       }
-      // Assuming generateInventory returns basic items, we enrich them here
-      // But the previous code block suggests generateInventory might have been updated or we do it here.
-      // Based on the provided context, the enriching logic was inside the useEffect in previous steps.
-      // I will restore the enriching logic here to ensure `inventory` has stats.
-      const { inventory: rawInventory } = inventoryData; // Assuming standard structure
+
+      const { inventory: rawInventory } = inventoryData;
 
       const finder = new BuildingFinder();
       await finder.ensureInitialized();
@@ -117,7 +116,6 @@ export const InventoryMain = () => {
         };
 
         if (item.building) {
-          // Calculate stats for this item using the helper
           const { provisions, production } = item.building;
 
           Object.entries(provisions || {}).forEach(([k, v]) => {
@@ -127,10 +125,7 @@ export const InventoryMain = () => {
             }
           });
           Object.entries(production || {}).forEach(([k, v]) => {
-            // Only specific resources
             if (['mana', 'orcs', 'seeds', 'unurium'].includes(k) && v > 0) {
-              // If there are multiple production options, we generally take the max for display?
-              // The helper likely returns a merged map.
               enrichedItem.production[k] = v;
               resourceKeys.add(k);
             }
@@ -160,10 +155,8 @@ export const InventoryMain = () => {
     void fetchInventory();
   }, [accountId]);
 
-  // Get unique types and subtypes for filter dropdowns
   const types = React.useMemo(() => Array.from(new Set((inventory || []).map((i) => i.type))).sort(), [inventory]);
 
-  // Filtered and searched inventory
   const filtered = (inventory || []).filter((item) => {
     const matchesSearch = (() => {
       if (!search) return true;
@@ -211,7 +204,6 @@ export const InventoryMain = () => {
         agg.rr += (item.resaleResources?.royalrestoration || 0) * qty;
         agg.spellFragments += (item.spellFragments || 0) * qty;
 
-        // Area calc
         let itemArea = 0;
         if (item.size) {
           const [w, h] = item.size.split('x').map(Number);
@@ -238,8 +230,6 @@ export const InventoryMain = () => {
   const handleSortRequest = (property: string) => {
     const isAsc = sortBy === property && sortDir === 'asc';
     setSortBy(property);
-    // If clicking a new column (especially resource columns), default to descending (high value first)
-    // If clicking the same column, toggle.
     if (sortBy !== property) {
       if (['name'].includes(property)) {
         setSortDir('asc');
@@ -251,13 +241,11 @@ export const InventoryMain = () => {
     }
   };
 
-  // Sorting
   if (sortBy) {
     displayRows = [...displayRows].sort((a, b) => {
       let aVal: string | number = '';
       let bVal: string | number = '';
 
-      // Standard Columns
       if (sortBy === 'name') {
         aVal = a.name || '';
         bVal = b.name || '';
@@ -282,9 +270,7 @@ export const InventoryMain = () => {
       } else if (sortBy === 'size') {
         aVal = (a as InventoryItem).size || '';
         bVal = (b as InventoryItem).size || '';
-      }
-      // Dynamic Resource Columns
-      else if (allResourceKeys.includes(sortBy)) {
+      } else if (allResourceKeys.includes(sortBy)) {
         const getResVal = (row: typeof a) => {
           const val = (row.provisions[sortBy] || 0) + (row.production[sortBy] || 0);
           if (showPerSquare) {
@@ -314,14 +300,12 @@ export const InventoryMain = () => {
     });
   }
 
-  // Total items if only type filter is applied (no text filter)
   const totalTypeFiltered = (inventory || []).filter((item) => {
     const matchesType = !typeFilter || item.type === typeFilter;
     return matchesType;
   }).length;
 
   const handleCopyToClipboard = () => {
-    // 1. Prepare Headers
     const headers = [
       'Name',
       aggregate ? 'Chapters/Levels' : 'Chapter/Level',
@@ -335,7 +319,6 @@ export const InventoryMain = () => {
       ...allResourceKeys.map((k) => `${formatResourceName(goodsNames, boostedGoods, k)}${showPerSquare ? '/sq' : ''}`),
     ];
 
-    // 2. Prepare Rows
     const rows = displayRows.map((row) => {
       const name = row.name || '';
       const chapter = isAggregatedRowDisplay(row) ? row.chapters : (row.chapter ?? '');
@@ -366,14 +349,11 @@ export const InventoryMain = () => {
         return val;
       });
 
-      // Tab separated columns
       return [name, chapter, type, amount, size, cc, rr, sf, date, ...resCols].join('\t');
     });
 
-    // 3. Combine
     const textData = [headers.join('\t'), ...rows].join('\n');
 
-    // 4. Copy to Clipboard
     const textArea = document.createElement('textarea');
     textArea.value = textData;
     document.body.appendChild(textArea);
@@ -420,7 +400,7 @@ export const InventoryMain = () => {
           startIcon={<ContentCopyIcon />}
           onClick={handleCopyToClipboard}
           size='small'
-          sx={{ ml: 'auto' }} // Push button to the right
+          sx={{ ml: 'auto' }}
         >
           Copy Table
         </Button>
@@ -470,6 +450,7 @@ export const InventoryMain = () => {
                     Size
                   </TableSortLabel>
                 </TableCell>
+                <TableCell>Actions</TableCell>
                 <TableCell>
                   <TableSortLabel
                     active={sortBy === 'cc'}
@@ -528,6 +509,22 @@ export const InventoryMain = () => {
                   <TableCell>{item.type}</TableCell>
                   <TableCell>{item.amount}</TableCell>
                   <TableCell>{(item as InventoryItem).size || ''}</TableCell>
+                  <TableCell>
+                    {!isAggregatedRowDisplay(item) && item.type.toLowerCase() === 'building' && (
+                      <Button
+                        size='small'
+                        variant='outlined'
+                        onClick={() => {
+                          const buildId = item.id;
+                          if (buildId) {
+                            void navigate(`/city?buildId=${buildId}`);
+                          }
+                        }}
+                      >
+                        Place
+                      </Button>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {isAggregatedRowDisplay(item) ? item.cc : (item.resaleResources?.combiningcatalyst ?? '')}
                   </TableCell>

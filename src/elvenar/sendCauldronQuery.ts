@@ -33,5 +33,5 @@ export async function sendCauldronQuery(sharedInfo: ExtensionSharedInfo) {
   }
 
   const untypedJson = await response.json();
-  await processCauldron(untypedJson, sharedInfo);
+  // await processCauldron(untypedJson, sharedInfo);
 }

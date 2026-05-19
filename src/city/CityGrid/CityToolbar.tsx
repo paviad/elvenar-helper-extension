@@ -22,6 +22,7 @@ interface CityToolbarProps {
   mousePositionRef: React.RefObject<HTMLDivElement | null>;
   viewMode: 'top' | 'iso' | 'table';
   onViewModeChange: (mode: 'top' | 'iso' | 'table') => void;
+  modified: boolean;
 }
 
 export const CityToolbar: React.FC<CityToolbarProps> = ({
@@ -42,6 +43,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
   mousePositionRef,
   viewMode,
   onViewModeChange,
+  modified,
 }) => {
   // Sticky-to-fixed search box logic
   const searchBoxRef = React.useRef<HTMLDivElement>(null);
@@ -76,7 +78,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
     <Stack>
       <Stack direction='row'>
         {isDetached && <span style={{ alignSelf: 'center' }}>(Detached City)</span>}
-        {!isDetached && <Button onClick={() => void onRefresh()}>Refresh City</Button>}
+        {!isDetached && <Button onClick={() => void onRefresh()} disabled={!modified}>Refresh City</Button>}
         <Button onClick={onSellStreets}>Sell Streets</Button>
         <Button onClick={onBuild}>Build</Button>
         <Button onClick={onImport}>Import City</Button>
