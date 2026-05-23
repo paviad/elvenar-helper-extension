@@ -111,6 +111,29 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
         ? scriptText.replace('var d={},', 'var d={};window.aviad=d;var ')
         : scriptText.replace('var $hxClasses = {},', 'var $hxClasses = {};window.aviad=$hxClasses;var ');
 
+    scriptText = scriptText.replace(
+      /(_createCameraController\s*:\s*function\s*\(\)\s*\{)([\s\S]*?)(\}\s*,)/g,
+      (match, functionStart: string, functionBody: string, functionEnd: string) => {
+        const lastReturnIndex = functionBody.lastIndexOf('return');
+        if (lastReturnIndex === -1) {
+          return match;
+        }
+
+        const returnSlice = functionBody.slice(lastReturnIndex);
+        const returnMatch = returnSlice.match(/^\s*return\s+([\s\S]*?)(;|}|$)/);
+        if (!returnMatch) {
+          console.log("Couldn't extract return value from _createCameraController", returnSlice);
+          return match;
+        }
+
+        const returnValue = returnMatch[1].trim();
+
+        const rc = `${functionStart}${functionBody.slice(0, lastReturnIndex)}window.aviad2=${returnValue};${returnSlice}${functionEnd}`;
+        console.log('Modified _createCameraController function:', rc);
+        return rc;
+      },
+    );
+
     const newScript = document.createElement('script');
     newScript.type = 'text/javascript';
     newScript.textContent = scriptText;
