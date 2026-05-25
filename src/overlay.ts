@@ -6,6 +6,7 @@ import {
   setupMessageListener,
   setupNeighbourHelpDataListener,
   setupRetrievingCounterUpdateListener,
+  setupSpirePicksListener,
   setupWorldNeighborsUpdatedListener,
 } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
@@ -351,6 +352,13 @@ const initFunc = () => {
   });
   setupHelpPerformedUpdateProvinceListener(({ updatedProvince }) => {
     console.log('E Received helpPerformedUpdateProvince message:', updatedProvince);
+  });
+  setupSpirePicksListener(({ picks }) => {
+    const message = {
+      type: 'spirePicks',
+      payload: picks,
+    };
+    window.postMessage(message, '*');
   });
 };
 

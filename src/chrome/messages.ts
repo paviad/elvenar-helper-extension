@@ -58,6 +58,11 @@ export interface OpenExtensionTabMessage {
   type: 'openExtensionTab';
 }
 
+export interface SpirePicksMessage {
+  type: 'spirePicks';
+  picks: string[];
+}
+
 // ============================================================================
 // 2. TAB MESSAGES (Content Script / UI Bound) - TYPES
 // ============================================================================
@@ -148,7 +153,8 @@ export type AllMessages =
   | InitialWorldMapDataMessage
   | WorldNeighborsUpdatedMessage
   | NeighbourHelpDataMessage
-  | HelpPerformedUpdateProvinceMessage;
+  | HelpPerformedUpdateProvinceMessage
+  | SpirePicksMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -538,4 +544,11 @@ export const setupHelpPerformedUpdateProvinceListener = (
 
 export const clearHelpPerformedUpdateProvinceListener = () => {
   delete callbackMap['helpPerformedUpdateProvince'];
+};
+
+export const setupSpirePicksListener = (callback: (message: SpirePicksMessage) => void) =>
+  (callbackMap['spirePicks'] = callback);
+
+export const clearSpirePicksListener = () => {
+  delete callbackMap['spirePicks'];
 };

@@ -1,4 +1,11 @@
+interface SpireWizardState {
+  choice: number;
+  picks: number[][];
+  selectedResources: string[];
+}
+
 interface SpireWizard {
+  getState: () => SpireWizardState;
   toggleResource: (name: string) => void;
   selectResources: (names: string[]) => void;
   getSelectedResources: () => string[];

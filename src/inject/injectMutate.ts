@@ -94,6 +94,42 @@ export function injectMutate() {
   }).observe(document.body, { childList: true, characterData: true, subtree: true });
 }
 
+function patchCtorRegistryAssignment(scriptText: string, registryPath: string, windowField: string): string {
+  const escapedRegistryPath = registryPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const registryRegex1 = new RegExp(`([\\$\\w]+)\\[['"]${escapedRegistryPath}['"]\\]\\s*=\\s*(\\w+)\\s*;`, 'g');
+  const registryRegex2 = new RegExp(`([\\$\\w]+)\\.${escapedRegistryPath}\\s*=\\s*(\\w+)\\s*;`, 'g');
+
+  const registryRegex = escapedRegistryPath === registryPath ? registryRegex2 : registryRegex1;
+
+  const ctorProbe = registryRegex.exec(scriptText);
+  let ctorFound: string | undefined = ctorProbe?.[2];
+
+  if (!ctorFound) {
+    return scriptText;
+  }
+
+  console.log(`Found constructor for ${registryPath}:`, ctorFound);
+  const ctorAssignmentRegex = new RegExp(`\\b${ctorFound}\\s*=\\s*function\\(([^)]*)\\)`, 'g');
+  let argumentList: string;
+  const replacementResult = scriptText.replace(ctorAssignmentRegex, (_match, args) => {
+    argumentList = args;
+    console.log(`replacing ${_match} with ${ctorFound}2=function(${args})`);
+    return `${ctorFound}2=function(${args})`;
+  });
+  // console.log('Ctor assignment replacement result:', replacementResult);
+  scriptText = replacementResult;
+
+  registryRegex.lastIndex = 0;
+  scriptText = scriptText.replace(registryRegex, (_match, registry: string, ctor: string) => {
+    const replacement = `${ctor}=function(${argumentList}){${ctor}2.call(this,${argumentList});console.log('${windowField} = ${registryPath}');window['${windowField}']=this};\n      ${registry}['${registryPath}']=${ctor};`;
+    console.log(`Applied ${registryPath} replacement:`, replacement);
+    ctorFound ??= ctor;
+    return replacement;
+  });
+
+  return scriptText;
+}
+
 async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
   try {
     const response = await fetch(scriptSrc);
@@ -133,6 +169,17 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
         return rc;
       },
     );
+
+    // de.innogames.onyx.spire.views.windows.diplomacy.SpireDiplomacyWindowMediator
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.spire.views.windows.diplomacy.SpireDiplomacyWindowMediator',
+      'aviad_wm',
+    );
+
+    // de.innogames.onyx.spire.wrappers.SpireEncounter
+    // problem: constructor has arguments
+    scriptText = patchCtorRegistryAssignment(scriptText, 'de.innogames.onyx.spire.wrappers.SpireEncounter', 'aviad_se');
 
     const newScript = document.createElement('script');
     newScript.type = 'text/javascript';

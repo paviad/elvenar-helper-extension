@@ -33,6 +33,22 @@ chrome.runtime.onMessage.addListener(
   },
 );
 
+window.addEventListener('message', (event) => {
+  if (event.source !== window) {
+    return;
+  }
+  if (event.data?.type === 'spirePicks') {
+    void sendPicksBackToElvenar(event.data.payload as string[]);
+  }
+});
+
+const sendPicksBackToElvenar = async (picks: string[]) => {
+  await chrome.runtime.sendMessage({
+    type: 'spirePicks',
+    picks,
+  });
+};
+
 injectScriptTag();
 
 function injectScriptTag() {

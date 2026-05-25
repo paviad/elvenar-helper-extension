@@ -1,9 +1,17 @@
 import { DiplomacySubmitData } from '../model/spire';
 import { backTranslations } from './backTranslations';
+import { sendPicksBackToElvenar } from './sendPicksBackToElvenar';
 import { SpireWizard } from './SpireWizard';
+import { waitForChoiceToBe } from './waitForChoiceToBe';
 
 export const submitDiplomacy = async (diplomacySubmitData: DiplomacySubmitData) => {
+  const choice = SpireWizard.getState().choice;
   await apiSubmitDiplomacy(diplomacySubmitData);
+  if (choice === 3) {
+    return;
+  }
+  const picks = await waitForChoiceToBe(choice + 1);
+  sendPicksBackToElvenar(picks);
 };
 
 const apiSubmitDiplomacy = async (diplomacySubmitData: DiplomacySubmitData) => {

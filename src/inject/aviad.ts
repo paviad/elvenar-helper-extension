@@ -1,6 +1,14 @@
 declare global {
   interface Window {
     WebSocketUnchanged: typeof WebSocket;
+    aviad_wm: {
+      _onInvest: ({ resource }: { resource: { id: string; _value: bigint } }) => void;
+    };
+    aviad_se: {
+      diplomacyCosts: {
+        get_resources: () => { id: string; _value: bigint }[];
+      };
+    };
     aviad: {
       'de.innogames.onyx.city.ancientwonders.services.AncientWonderService': new () => {
         getOtherPlayerAncientWonders: (playerId: number, callback: (response: unknown) => void) => void;
