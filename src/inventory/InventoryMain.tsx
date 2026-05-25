@@ -1,5 +1,6 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
+  Badge,
   Box,
   Button,
   FormControl,
@@ -466,7 +467,24 @@ export const InventoryMain = () => {
                     Size
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>
+                  <Badge
+                    badgeContent='NEW'
+                    color='secondary'
+                    sx={{
+                      mr: 2,
+                      '& .MuiBadge-badge': {
+                        fontSize: '0.6rem',
+                        height: 16,
+                        minWidth: 16,
+                        px: 0.5,
+                        mr: -2,
+                      },
+                    }}
+                  >
+                    Actions
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <TableSortLabel
                     active={sortBy === 'cc'}

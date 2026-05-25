@@ -17,7 +17,6 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'intro',
     title: 'Introduction',
     content: <Introduction />,
-    isNew: true,
   },
   {
     id: 'city-planner',
@@ -28,6 +27,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'inventory',
     title: 'Inventory Manager',
     content: <InventoryManager />,
+    isNew: true,
   },
   {
     id: 'fa-tracker',

@@ -164,24 +164,7 @@ export function OverlayMain() {
         <Tabs value={tab} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
           <Tab label='Chat' />
           {chapter >= 18 && <Tab label='Trade' />}
-          <Tab
-            label={
-              <Badge
-                badgeContent='NEW'
-                color='secondary'
-                sx={{
-                  '& .MuiBadge-badge': {
-                    fontSize: '0.6rem',
-                    height: 16,
-                    minWidth: 16,
-                    px: 0.5,
-                  },
-                }}
-              >
-                <Box sx={{ pr: 2.5 }}>EE</Box>
-              </Badge>
-            }
-          />
+          <Tab label='EE' />
         </Tabs>
         {tab === chatTab && (
           <>

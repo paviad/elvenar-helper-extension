@@ -1,10 +1,10 @@
 import React from 'react';
-import { Typography, Box, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { Typography, Box, Divider, List, ListItem, ListItemText, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import AssessmentIcon from '@mui/icons-material/Assessment'; // For stats/analysis
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'; // For resale/value
 import GroupWorkIcon from '@mui/icons-material/GroupWork'; // For grouping/aggregation
+import AddLocationIcon from '@mui/icons-material/AddLocation'; // For placing buildings
 
 export const InventoryManager = () => (
   <Box>
@@ -33,6 +33,48 @@ export const InventoryManager = () => (
         <ListItemText
           primary='Type Filtering'
           secondary="Use the dropdown menu to see only specific categories of items, such as 'Items' or 'Buildings'."
+        />
+      </ListItem>
+    </List>
+
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
+
+    {/* City Planner Integration with NEW badge */}
+    <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <AddLocationIcon color='primary' fontSize='small' />
+      <Badge
+        badgeContent='NEW'
+        color='secondary'
+        sx={{
+          mr: 3, // Margin right to ensure spacing after the badge
+          '& .MuiBadge-badge': {
+            fontSize: '0.6rem',
+            height: 16,
+            minWidth: 16,
+            px: 0.5,
+            right: -24, // Shifts the badge to the right of the text
+            top: 4, // Aligns it vertically with the text
+          },
+        }}
+      >
+        City Planner Integration
+      </Badge>
+    </Typography>
+    <List dense disablePadding>
+      <ListItem>
+        <ListItemText
+          primary='Place Buildings Directly'
+          secondary='Found the perfect building? Click the "Place" button in the Actions column to navigate directly to the City layout with that specific building ready to be placed.'
+        />
+      </ListItem>
+      <ListItem>
+        <ListItemText
+          primary='Placement Requirements'
+          secondary='To place a building, you must select a specific instance of it. If you have "Aggregate by Name" turned on, you will need to toggle it off to reveal the individual "Place" buttons for each chapter/level variant.'
         />
       </ListItem>
     </List>

@@ -172,17 +172,6 @@ export const LayoutMain = () => {
           <Button component={NavLink} to='/city' color='inherit' sx={{ mr: 2 }}>
             City
           </Button>
-          <Button component={NavLink} to='/inventory' color='inherit' sx={{ mr: 2 }}>
-            Inventory
-          </Button>
-          <Button component={NavLink} to='/fellowship-adventure' color='inherit' sx={{ mr: 2 }}>
-            Fellowship Adventure
-          </Button>
-
-          {/* Spacer to push remaining items to the right */}
-          <Box sx={{ flexGrow: 1 }} />
-
-          {/* Discord Button - With New Badge */}
           <Badge
             badgeContent='NEW'
             color='secondary'
@@ -193,17 +182,30 @@ export const LayoutMain = () => {
                 height: 16,
                 minWidth: 16,
                 px: 0.5,
+                mr: 1,
+                mt: 0.5,
               },
             }}
           >
-            <DiscordButton
-              discordUrl='https://discord.gg/zYzUUDcMrv'
-              sx={{
-                color: 'inherit', // Use inherit so it appears white on the colored AppBar
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)' },
-              }}
-            />
+            <Button component={NavLink} to='/inventory' color='inherit' sx={{ mr: 2 }}>
+              Inventory
+            </Button>
           </Badge>
+          <Button component={NavLink} to='/fellowship-adventure' color='inherit' sx={{ mr: 2 }}>
+            Fellowship Adventure
+          </Button>
+
+          {/* Spacer to push remaining items to the right */}
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Discord Button */}
+          <DiscordButton
+            discordUrl='https://discord.gg/zYzUUDcMrv'
+            sx={{
+              color: 'inherit', // Use inherit so it appears white on the colored AppBar
+              '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)' },
+            }}
+          />
 
           {/* Help Button */}
           <Button
