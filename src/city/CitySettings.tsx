@@ -52,10 +52,23 @@ export const CitySettings: React.FC = () => {
         </Typography>
 
         {/* Chapter Control */}
-        <Typography id='input-slider' gutterBottom variant='caption' color='text.secondary'>
+        <Typography
+          id='input-slider'
+          gutterBottom
+          variant='caption'
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           Current Chapter
         </Typography>
-        <Grid container spacing={2} alignItems='center'>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <Grid sx={{ flexGrow: 1 }}>
             <Slider
               value={typeof value === 'number' ? value : 1}
@@ -91,12 +104,21 @@ export const CitySettings: React.FC = () => {
           id='squad-size-slider'
           gutterBottom
           variant='caption'
-          color='text.secondary'
-          sx={{ mt: 2, display: 'block' }}
+          sx={{
+            color: 'text.secondary',
+            mt: 2,
+            display: 'block',
+          }}
         >
           Squad Size
         </Typography>
-        <Grid container spacing={2} alignItems='center'>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <Grid sx={{ flexGrow: 1 }}>
             <Slider
               value={typeof currentSquadSize === 'number' ? currentSquadSize : 0}
@@ -132,12 +154,21 @@ export const CitySettings: React.FC = () => {
           id='ranking-points-label'
           gutterBottom
           variant='caption'
-          color='text.secondary'
-          sx={{ mt: 2, display: 'block' }}
+          sx={{
+            color: 'text.secondary',
+            mt: 2,
+            display: 'block',
+          }}
         >
           Ranking Points (static)
         </Typography>
-        <Grid container spacing={2} alignItems='center'>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <Grid sx={{ flexGrow: 1 }} />
           <Grid>
             <Input

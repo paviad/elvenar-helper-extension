@@ -101,13 +101,18 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
           </Box>
         )}
       </Box>
-
-      <Typography variant='caption' display='block' sx={{ mb: 0.5, color: 'rgba(255, 255, 255, 0.7)' }}>
+      <Typography
+        variant='caption'
+        sx={{
+          display: 'block',
+          mb: 0.5,
+          color: 'rgba(255, 255, 255, 0.7)',
+        }}
+      >
         {building.width}x{building.length}
         {building.chapter ? ` • Chapter ${building.chapter}` : ''}
         {source?.type ? ` • ${formatBuildingType(source.type)}` : ''}
       </Typography>
-
       {/* Description */}
       {building.description && (
         <>
@@ -117,7 +122,6 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
           </Typography>
         </>
       )}
-
       {/* Provisions (Population / Culture) */}
       {hasProvisions && provisions && (
         <>
@@ -134,12 +138,17 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
           </Box>
         </>
       )}
-
       {/* Requirements (Costs & Tech) */}
       {(hasRequirements || upgradeRequirementChapter) && (
         <>
           <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.2)' }} />
-          <Typography variant='caption' display='block' sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <Typography
+            variant='caption'
+            sx={{
+              display: 'block',
+              color: 'rgba(255, 255, 255, 0.7)',
+            }}
+          >
             Requires:
           </Typography>
 
@@ -147,8 +156,8 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
           {upgradeRequirementChapter && (
             <Typography
               variant='caption'
-              display='block'
               sx={{
+                display: 'block',
                 fontWeight: 600,
                 color: currentChapter && upgradeRequirementChapter > currentChapter ? '#f48fb1' : 'inherit',
                 mb: 0.5,
@@ -173,12 +182,17 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
           )}
         </>
       )}
-
       {/* Production Info */}
       {hasProduction && (
         <>
           <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.2)' }} />
-          <Typography variant='caption' display='block' sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <Typography
+            variant='caption'
+            sx={{
+              display: 'block',
+              color: 'rgba(255, 255, 255, 0.7)',
+            }}
+          >
             Produces:
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>

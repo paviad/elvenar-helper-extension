@@ -3,7 +3,7 @@ export const clickConfirmResourceSelection = () => {
   if (navContainer) {
     const firstButton = navContainer.querySelector('button');
     if (firstButton) {
-      (firstButton).click();
+      firstButton.click();
     } else {
       console.warn('ElvenAssist: No button found in spire-nav container.');
     }

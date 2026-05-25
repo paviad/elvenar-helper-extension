@@ -26,18 +26,35 @@ export const SwitchableProduction = (props: { viewModels: SwitchableProductionVi
         sx={{ borderRadius: 2 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='legend-content' id='legend-header'>
-          <Typography fontWeight='bold'>Switchable Production</Typography>
+          <Typography
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
+            Switchable Production
+          </Typography>
         </AccordionSummary>
         <AccordionDetails>
           {viewModels.length === 0 ? (
-            <Typography variant='body2' color='text.secondary'>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               No switchable production buildings found.
             </Typography>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {viewModels.map((item, index) => (
                 <Box key={index}>
-                  <Typography variant='body2' fontWeight='bold' sx={{ mb: 0.75 }}>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      fontWeight: 'bold',
+                      mb: 0.75,
+                    }}
+                  >
                     {item.title}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -57,7 +74,12 @@ export const SwitchableProduction = (props: { viewModels: SwitchableProductionVi
                         />
                       ))
                     ) : (
-                      <Typography variant='caption' color='text.secondary'>
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          color: 'text.secondary',
+                        }}
+                      >
                         Unknown production
                       </Typography>
                     )}

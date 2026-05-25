@@ -8,7 +8,7 @@ export const FellowshipAdventure = () => (
     <Typography variant='h4' gutterBottom>
       Fellowship Adventure Tracker
     </Typography>
-    <Typography component="p" variant="body1" gutterBottom>
+    <Typography component='p' variant='body1' gutterBottom>
       During a Fellowship Adventure, this tab becomes your command center. It helps you track your progress and plan
       your collections efficiently.
     </Typography>
@@ -34,7 +34,11 @@ export const FellowshipAdventure = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Badge Status */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

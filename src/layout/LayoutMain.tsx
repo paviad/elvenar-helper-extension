@@ -1,5 +1,5 @@
 import MenuIcon from '@mui/icons-material/Menu';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; // Import Help Icon
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
 import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography, Badge } from '@mui/material';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';

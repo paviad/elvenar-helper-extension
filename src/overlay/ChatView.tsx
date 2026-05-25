@@ -358,18 +358,20 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                     messageRefs.current[idx] = el;
                   }}
                   direction='row'
-                  alignItems='flex-start'
                   spacing={1}
-                  mb={1.2}
-                  sx={
+                  sx={[
+                    {
+                      alignItems: 'flex-start',
+                      mb: 1.2,
+                    },
                     isCurrent
                       ? { background: '#ffe082' }
                       : isMatch
                         ? { background: '#fffde7' }
                         : isUnread
                           ? { background: '#39d53646' }
-                          : {}
-                  }
+                          : {},
+                  ]}
                 >
                   <Avatar
                     sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }}
@@ -377,12 +379,34 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                   >
                     {name[0]}
                   </Avatar>
-                  <Box flex={1}>
-                    <Stack direction='row' alignItems='baseline' spacing={1}>
-                      <Typography fontWeight={600} color='text.primary' component='span'>
+                  <Box
+                    sx={{
+                      flex: 1,
+                    }}
+                  >
+                    <Stack
+                      direction='row'
+                      spacing={1}
+                      sx={{
+                        alignItems: 'baseline',
+                      }}
+                    >
+                      <Typography
+                        component='span'
+                        sx={{
+                          fontWeight: 600,
+                          color: 'text.primary',
+                        }}
+                      >
                         {name}
                       </Typography>
-                      <Typography color='text.secondary' fontSize={12} component='span'>
+                      <Typography
+                        component='span'
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: 12,
+                        }}
+                      >
                         {time}
                         {dateStr && (
                           <>
@@ -393,9 +417,14 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                       </Typography>
                     </Stack>
                     <Typography
-                      color='text.primary'
                       align='left'
-                      sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', textAlign: 'left', pl: 0 }}
+                      sx={{
+                        color: 'text.primary',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        textAlign: 'left',
+                        pl: 0,
+                      }}
                     >
                       {msg.text}
                     </Typography>

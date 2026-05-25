@@ -3,16 +3,18 @@ import { getAccountIdBySessionId, getAccountById, setAccountData } from './Accou
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function processQuest(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
-  const json = untypedJson as [{ requestClass: string; responseData: unknown; }];
+  const json = untypedJson as [{ requestClass: string; responseData: unknown }];
 
-  const seasonalEventsService = json.find((r) => r.requestClass === 'SeasonalEventsService')?.responseData as {
-    eventId: number;
-    type: string;
-    subType: string;
-    name: string;
-    state: string;
-    remainingTime: number;
-  }[] | undefined;
+  const seasonalEventsService = json.find((r) => r.requestClass === 'SeasonalEventsService')?.responseData as
+    | {
+        eventId: number;
+        type: string;
+        subType: string;
+        name: string;
+        state: string;
+        remainingTime: number;
+      }[]
+    | undefined;
 
   if (!seasonalEventsService) {
     console.warn('ElvenAssist: No SeasonalEventsService data found in the provided JSON.');
@@ -20,7 +22,7 @@ export async function processQuest(untypedJson: unknown, sharedInfo: ExtensionSh
   }
 
   const fa = seasonalEventsService.find(
-    (r) => r.type === 'multiplayerEvent' && r.subType === 'mpe_i' && r.state === 'running'
+    (r) => r.type === 'multiplayerEvent' && r.subType === 'mpe_i' && r.state === 'running',
   );
 
   const accountId = getAccountIdBySessionId(sharedInfo.sessionId);

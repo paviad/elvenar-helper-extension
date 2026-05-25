@@ -6,9 +6,8 @@ import { getAccountBySessionId } from './AccountManager';
 export const processCityMapServiceUpdate = async (untypedJson: unknown, sharedInfo: ExtensionSharedInfo) => {
   const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];
 
-  const cityMapServiceReset = json.find(
-    (r) => r.requestClass === 'CityMapService' && r.requestMethod === 'reset',
-  )?.responseData as CityEntity[] | undefined;
+  const cityMapServiceReset = json.find((r) => r.requestClass === 'CityMapService' && r.requestMethod === 'reset')
+    ?.responseData as CityEntity[] | undefined;
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
   if (accountData?.cityQuery?.cityEntities && cityMapServiceReset) {

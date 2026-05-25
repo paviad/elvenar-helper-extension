@@ -218,7 +218,13 @@ export const saveNewCityAs = async (
   await saveAllAccounts();
 };
 
-export const saveCurrentCityAs = async (currentAccountId: string, newAccountId: string, cityEntities: CityEntity[], chapter: number, name?: string) => {
+export const saveCurrentCityAs = async (
+  currentAccountId: string,
+  newAccountId: string,
+  cityEntities: CityEntity[],
+  chapter: number,
+  name?: string,
+) => {
   const currentAccount = getAccountById(currentAccountId);
   if (!currentAccount) {
     throw new Error('ElvenAssist: Current account not found');

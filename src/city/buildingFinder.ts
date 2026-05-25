@@ -52,7 +52,9 @@ export class BuildingFinder {
     const evolvingBuildings = await getEvolvingBuildings();
 
     this.hintsDictionary = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]));
-    this.hintsDictionaryLowerCase = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, '').toLowerCase(), h.section]));
+    this.hintsDictionaryLowerCase = Object.fromEntries(
+      premiumHints.map((h) => [h.id.replace(/_\d+$/, '').toLowerCase(), h.section]),
+    );
 
     this.buildingsDictionary = buildings.reduce(
       (acc, building) => {

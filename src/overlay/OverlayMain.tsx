@@ -1,4 +1,4 @@
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { Badge, Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
 import React from 'react';

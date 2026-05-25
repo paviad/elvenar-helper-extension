@@ -13,7 +13,13 @@ export const HelpPage = () => {
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
       <Box sx={{ p: 2 }}>
-        <Typography variant='h6' fontWeight='bold' color='primary.main'>
+        <Typography
+          variant='h6'
+          sx={{
+            fontWeight: 'bold',
+            color: 'primary.main',
+          }}
+        >
           Help Center
         </Typography>
       </Box>
@@ -38,8 +44,10 @@ export const HelpPage = () => {
               primary={section.title}
               slotProps={{
                 primary: {
-                  fontWeight: selectedId === section.id ? 600 : 400,
-                  color: selectedId === section.id ? 'primary.main' : 'text.primary',
+                  sx: {
+                    fontWeight: selectedId === section.id ? 600 : 400,
+                    color: selectedId === section.id ? 'primary.main' : 'text.primary',
+                  },
                 },
               }}
             />

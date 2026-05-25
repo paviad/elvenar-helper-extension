@@ -4,5 +4,6 @@
   "tabWidth": 2,
   "printWidth": 120,
   "trailingComma": "all",
-  "endOfLine": "crlf"
+  "endOfLine": "crlf",
+  "bracketSpacing": true
 }

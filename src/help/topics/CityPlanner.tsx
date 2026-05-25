@@ -13,7 +13,7 @@ export const CityPlanner = () => (
     <Typography variant='h4' gutterBottom>
       City Planner Guide
     </Typography>
-    <Typography component="p" variant="body1" gutterBottom>
+    <Typography component='p' variant='body1' gutterBottom>
       The City Planner is the core of ElvenAssist, allowing you to manipulate your city layout with live data. Below is
       a detailed guide to its capabilities.
     </Typography>
@@ -39,7 +39,11 @@ export const CityPlanner = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Building Management */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -57,11 +61,27 @@ export const CityPlanner = () => (
           primary='Smart Indicators'
           secondary={
             <React.Fragment>
-              <Box component='span' display='flex' alignItems='center' gap={0.5} mt={0.5}>
+              <Box
+                component='span'
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  mt: 0.5,
+                }}
+              >
                 <CheckCircleIcon sx={{ fontSize: 16, color: '#4caf50' }} />
                 <span>Green Check: Building is at max level for your current chapter.</span>
               </Box>
-              <Box component='span' display='flex' alignItems='center' gap={0.5} mt={0.5}>
+              <Box
+                component='span'
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  mt: 0.5,
+                }}
+              >
                 <BlockIcon sx={{ fontSize: 16, color: '#d32f2f' }} />
                 <span>No Entry Sign: Building level exceeds your current chapter limit.</span>
               </Box>
@@ -71,7 +91,11 @@ export const CityPlanner = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Advanced Tools */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -98,7 +122,11 @@ export const CityPlanner = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Hotkeys */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -116,7 +144,11 @@ export const CityPlanner = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Data & Saving */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

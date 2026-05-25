@@ -15,61 +15,71 @@ import { AccountData } from './Accounts';
 export async function processCityData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];
 
-  const startupService = json.find((r) => r.requestClass === 'StartupService')?.responseData as {
-    user_data: ElvenarUserData;
-    featureFlags: { feature: string }[];
-    city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
-    relic_boost_good: BoostedGoods[];
-    resources: { resources: Badges & Relics };
-    production_boost: { boost: number; relics_needed: number }[];
-    effects: {
-      actionId: string;
-      ownerId: string;
-      type: string;
-      owner: string;
-      remainingTime: number;
-    }[];
-    seasonal_events?: SeasonalEvent[];
-    army_details?: ArmyDetails;
-  } | undefined;
+  const startupService = json.find((r) => r.requestClass === 'StartupService')?.responseData as
+    | {
+        user_data: ElvenarUserData;
+        featureFlags: { feature: string }[];
+        city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
+        relic_boost_good: BoostedGoods[];
+        resources: { resources: Badges & Relics };
+        production_boost: { boost: number; relics_needed: number }[];
+        effects: {
+          actionId: string;
+          ownerId: string;
+          type: string;
+          owner: string;
+          remainingTime: number;
+        }[];
+        seasonal_events?: SeasonalEvent[];
+        army_details?: ArmyDetails;
+      }
+    | undefined;
 
   const cityResourcesService = json.find(
     (r) => r.requestClass === 'CityResourcesService' && r.requestMethod === 'getResources',
-  )?.responseData as {
-    resources: Record<string, number>;
-  } | undefined;
+  )?.responseData as
+    | {
+        resources: Record<string, number>;
+      }
+    | undefined;
 
   const { __class__, ...cityResources } = cityResourcesService?.resources || {};
 
   const questService = json.find((r) => r.requestClass === 'QuestService')?.responseData as Quest[] | undefined;
 
-  const faRequirements = questService ? Object.fromEntries(
-    questService
-      .filter((r) => r.rewards?.length > 0 && r.successConditions?.length > 0)
-      .map((r, idx) => [
-        r.rewards[0].iconType,
-        {
-          id: idx,
-          badge: r.rewards[0].iconType,
-          maxProgress: r.successConditions[0].maxProgress,
-          currentProgress: r.successConditions[0].totalProgress || 0,
-        } satisfies FaQuest,
-      ]),
-  ) : {};
+  const faRequirements = questService
+    ? Object.fromEntries(
+        questService
+          .filter((r) => r.rewards?.length > 0 && r.successConditions?.length > 0)
+          .map((r, idx) => [
+            r.rewards[0].iconType,
+            {
+              id: idx,
+              badge: r.rewards[0].iconType,
+              maxProgress: r.successConditions[0].maxProgress,
+              currentProgress: r.successConditions[0].totalProgress || 0,
+            } satisfies FaQuest,
+          ]),
+      )
+    : {};
 
   const effectsService = json.find((r) => r.requestClass === 'EffectsService' && r.requestMethod === 'getAllSources')
-    ?.responseData as {
-      name: string;
-      value: number;
-    }[] | undefined;
+    ?.responseData as
+    | {
+        name: string;
+        value: number;
+      }[]
+    | undefined;
 
   const squadSize = effectsService?.find((r) => r.name === 'squadSize')?.value || 0;
 
   const rankingService = json.find((r) => r.requestClass === 'RankingService' && r.requestMethod === 'newRank')
-    ?.responseData as {
-      rank: number;
-      points: number;
-    } | undefined;
+    ?.responseData as
+    | {
+        rank: number;
+        points: number;
+      }
+    | undefined;
 
   const rankingPoints = rankingService?.points || 0;
 
@@ -80,11 +90,10 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
-  const maxChapter = Number(
-    featureFlags?.find((r) => r.feature.startsWith('ch'))?.feature.replace('ch', ''),
-  );
+  const maxChapter = Number(featureFlags?.find((r) => r.feature.startsWith('ch'))?.feature.replace('ch', ''));
 
-  const boostedGoods = relic_boost_good?.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`) || [];
+  const boostedGoods =
+    relic_boost_good?.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`) || [];
 
   const chapter = user_data.technologySection.index;
 

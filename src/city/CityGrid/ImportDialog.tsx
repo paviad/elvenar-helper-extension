@@ -188,7 +188,6 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
                 )}
               </div>
             </div>
-
             {/* Footer */}
             <div style={styles.footer}>
               <button onClick={onClose} style={styles.secondaryButton}>
@@ -222,7 +221,6 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
                 Importing this data will overwrite the existing city layout. Are you sure?
               </p>
             </div>
-
             <div style={styles.footer}>
               <button onClick={handleCancelConfirmation} style={styles.secondaryButton}>
                 Back

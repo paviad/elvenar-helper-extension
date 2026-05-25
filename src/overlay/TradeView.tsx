@@ -57,13 +57,18 @@ export const TradeView = () => {
           <div style={{ padding: 10, color: '#666', fontStyle: 'italic' }}>No boosted ascended trades available</div>
         )}
       </div>
-
       {/* Settings Footer */}
       <Box sx={{ mt: 2, pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
         <FormControlLabel
           control={<Switch checked={autoOpen} onChange={(e) => setAutoOpen(e.target.checked)} size='small' />}
           label={
-            <Typography variant='body2' color='text.secondary' sx={{ fontSize: '13px' }}>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+                fontSize: '13px',
+              }}
+            >
               Auto-open when visiting Trader
             </Typography>
           }

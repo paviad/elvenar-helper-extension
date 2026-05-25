@@ -35,5 +35,5 @@ export const migrate = async (latestVersion: number) => {
 
   console.log('ElvenAssist: Migration completed, setting db_version to', latestVersion);
   await saveToStorage('db_version', latestVersion.toString());
-}; export const dbVersion = 2;
-
+};
+export const dbVersion = 2;

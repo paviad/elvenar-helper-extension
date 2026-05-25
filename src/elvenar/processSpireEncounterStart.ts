@@ -18,13 +18,15 @@ export async function processSpireEncounterStart(untypedJson: unknown, sharedInf
     if (!tab.id) {
       return;
     }
-    chrome.tabs.sendMessage(tab.id, {
-      type: 'spireEncounterStarted',
-      payload: {
-        encounterData,
-      },
-    }).catch((e) => {
-      /* ignore */
-    });
+    chrome.tabs
+      .sendMessage(tab.id, {
+        type: 'spireEncounterStarted',
+        payload: {
+          encounterData,
+        },
+      })
+      .catch((e) => {
+        /* ignore */
+      });
   });
 }

@@ -20,7 +20,10 @@ declare global {
 
 const requestMap = new Map<number, AggregateRequestResponse>();
 const responseSubject = new Subject<number>();
-const responseObservable = responseSubject.pipe(groupBy((requestId) => requestId), mergeMap((group) => group.pipe(debounceTime(300))));
+const responseObservable = responseSubject.pipe(
+  groupBy((requestId) => requestId),
+  mergeMap((group) => group.pipe(debounceTime(300))),
+);
 
 const addRequest = (request: ElvenarRequestResponseEntry, nonce: string, sharedInfo: ExtensionSharedInfo): void => {
   if (!request.requestId) {
@@ -45,11 +48,12 @@ export class GlobalHttpInterceptorService {
     responseObservable.subscribe((requestId) => {
       const entry = requestMap.get(requestId);
       if (entry) {
-
-        for (const matcher of playerSpecificMatchers.filter(r => r.responseSelector && r.local)) {
+        for (const matcher of playerSpecificMatchers.filter((r) => r.responseSelector && r.local)) {
           for (const response of entry.response) {
-            if (matcher.responseSelector!.requestClass === response.requestClass &&
-              matcher.responseSelector!.requestMethod === response.requestMethod) {
+            if (
+              matcher.responseSelector!.requestClass === response.requestClass &&
+              matcher.responseSelector!.requestMethod === response.requestMethod
+            ) {
               // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
 
               matcher.local!([response], entry.sharedInfo).catch((error) => {

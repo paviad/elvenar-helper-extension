@@ -18,13 +18,15 @@ export const processSpireDiplomacySubmit = async (untypedJson: unknown, sharedIn
     if (!tab.id) {
       return;
     }
-    chrome.tabs.sendMessage(tab.id, {
-      type: 'spireDiplomacySubmit',
-      payload: {
-        diplomacySubmitData,
-      },
-    }).catch((e) => {
-      /* ignore */
-    });
+    chrome.tabs
+      .sendMessage(tab.id, {
+        type: 'spireDiplomacySubmit',
+        payload: {
+          diplomacySubmitData,
+        },
+      })
+      .catch((e) => {
+        /* ignore */
+      });
   });
 };

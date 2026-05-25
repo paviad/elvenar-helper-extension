@@ -22,7 +22,12 @@ export const WorkingState: React.FC = () => {
 
         <Stack spacing={1}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant='body2' color='text.secondary'>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               Grid Position
             </Typography>
             <Typography variant='body2' sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
@@ -31,19 +36,39 @@ export const WorkingState: React.FC = () => {
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant='body2' color='text.secondary'>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               Highlighted Buildings
             </Typography>
-            <Typography variant='body2' fontWeight='bold'>
+            <Typography
+              variant='body2'
+              sx={{
+                fontWeight: 'bold',
+              }}
+            >
               {highlightedCount}
             </Typography>
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant='body2' color='text.secondary'>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               Empty Squares
             </Typography>
-            <Typography variant='body2' fontWeight='bold'>
+            <Typography
+              variant='body2'
+              sx={{
+                fontWeight: 'bold',
+              }}
+            >
               {emptySquares}
             </Typography>
           </Box>

@@ -11,12 +11,14 @@ import { AccountData } from './Accounts';
 export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; responseData: unknown }];
 
-  const startupService = json.find((r) => r.requestClass === 'OtherPlayerService')?.responseData as {
-    other_player: OtherPlayerClass;
-    city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
-    city_name: string;
-    technologySection: number;
-  } | undefined;
+  const startupService = json.find((r) => r.requestClass === 'OtherPlayerService')?.responseData as
+    | {
+        other_player: OtherPlayerClass;
+        city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
+        city_name: string;
+        technologySection: number;
+      }
+    | undefined;
 
   if (!startupService) {
     console.warn('ElvenAssist: No OtherPlayerService data found in the provided JSON.');

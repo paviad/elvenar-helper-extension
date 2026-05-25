@@ -27,8 +27,10 @@ export const setupAggregateRequestResponseListener = (): void => {
 
       for (const matcher of playerSpecificMatchers) {
         if (matcher.requestSelector) {
-          if (matcher.requestSelector.requestClass === requestClass &&
-            matcher.requestSelector.requestMethod === requestMethod) {
+          if (
+            matcher.requestSelector.requestClass === requestClass &&
+            matcher.requestSelector.requestMethod === requestMethod
+          ) {
             // console.log('AggregateRequestResponse matches playerSpecificMatcher', matcher.id, payload);
 
             const message = {
@@ -47,8 +49,10 @@ export const setupAggregateRequestResponseListener = (): void => {
 
         if (matcher.responseSelector) {
           for (const response of payload.response) {
-            if (matcher.responseSelector.requestClass === response.requestClass &&
-              matcher.responseSelector.requestMethod === response.requestMethod) {
+            if (
+              matcher.responseSelector.requestClass === response.requestClass &&
+              matcher.responseSelector.requestMethod === response.requestMethod
+            ) {
               // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
 
               const message = {

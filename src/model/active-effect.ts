@@ -19,25 +19,24 @@ export interface ResponseDatum {
   stage?: number;
 }
 
-export type Owner = "city_entity" | "spire";
+export type Owner = 'city_entity' | 'spire';
 
 export type Type =
-  | "academy"
-  | "ancient_wonder"
-  | "armory"
-  | "culture_residential"
-  | "expiring"
-  | "main_building"
-  | "neighborly_help"
-  | "spell"
-  | "spire"
-  | "trader";
+  | 'academy'
+  | 'ancient_wonder'
+  | 'armory'
+  | 'culture_residential'
+  | 'expiring'
+  | 'main_building'
+  | 'neighborly_help'
+  | 'spell'
+  | 'spire'
+  | 'trader';
 
 export type Action =
   // This is the important ones for EE, but we can capture more if needed in the future
   | 'neighbourly_help_boost_spell'
   | 'time_limited_help'
-
   | 'academy_production_time_reduction'
   | 'armory_training_slot_increase'
   | 'available_culture_bonus'

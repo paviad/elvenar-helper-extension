@@ -330,7 +330,7 @@ async function setup(tabId: number, contentDiv: HTMLDivElement) {
     generateOverlayStore(accountId);
     const store = getOverlayStore();
     store.persist.onFinishHydration((state) => {
-      const chapter = (getAccountById(accountId))?.cityQuery?.chapter || 0;
+      const chapter = getAccountById(accountId)?.cityQuery?.chapter || 0;
       state.setChapter(chapter);
 
       if (!state.lastSeenChat) {

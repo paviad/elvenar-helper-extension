@@ -132,7 +132,7 @@ export const sendInterceptedNonSpecificRequest = async (payload: NonSpecificMess
 };
 
 export const sendRefreshCityMessage = async (accountId: string): Promise<MessageResponse> => {
-  let resolveFn: (response: MessageResponse) => void = () => { };
+  let resolveFn: (response: MessageResponse) => void = () => {};
   const responsePromise = new Promise<MessageResponse>((resolve) => (resolveFn = resolve));
   chrome.runtime.sendMessage(
     {
@@ -187,7 +187,7 @@ export const sendTradeOpenedMessage = async () => {
 
 /** --- 2. Tab Senders (chrome.tabs) --- **/
 
-export const sendGenericResponse = async<T>(reqRespType: string, payload: T, tabId: number) => {
+export const sendGenericResponse = async <T>(reqRespType: string, payload: T, tabId: number) => {
   try {
     await chrome.tabs.sendMessage(tabId, {
       type: `genericResponse:${reqRespType}`,
@@ -240,7 +240,7 @@ export const sendMissingEeMessage = async (tabId: number, entityIds: number[]) =
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const callbackMap: Record<string, (...args: any[]) => any> = {};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const callbackMap2: Record<string, { messageType: string, callback: (...args: any[]) => any }> = {};
+const callbackMap2: Record<string, { messageType: string; callback: (...args: any[]) => any }> = {};
 
 const messageReceiver = (
   message: AllMessages,
@@ -249,10 +249,9 @@ const messageReceiver = (
   sendResponse: (response?: any) => void,
 ): boolean | undefined => {
   const callback1 = callbackMap[message.type];
-  const callbacks2 =
-    Object.values(callbackMap2)
-      .filter((entry) => entry.messageType === message.type)
-      .map((entry) => entry.callback);
+  const callbacks2 = Object.values(callbackMap2)
+    .filter((entry) => entry.messageType === message.type)
+    .map((entry) => entry.callback);
   const callbacks = callback1 ? [callback1, ...callbacks2] : callbacks2;
 
   let rc2: boolean | undefined = undefined;
@@ -288,7 +287,10 @@ export const setupInterceptedNonSpecificRequestListener = (
   callback: (message: InterceptedNonSpecificRequest) => void,
 ) => (callbackMap['interceptedNonSpecificRequest'] = callback);
 
-export const setupGenericResponseListener = <T>(reqRespType: string, callback: (message: GenericResponseMessage<T>) => void) => {
+export const setupGenericResponseListener = <T>(
+  reqRespType: string,
+  callback: (message: GenericResponseMessage<T>) => void,
+) => {
   const id = crypto.randomUUID();
   if (!callbackMap2[id]) {
     callbackMap2[id] = { messageType: `genericResponse:${reqRespType}`, callback };
@@ -306,15 +308,17 @@ export const clearGenericResponseListener = (id: string) => {
 export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
   (callbackMap['refreshCity'] = callback);
 
-export const setupCityEntitiesUpdatedListener = (callback: (message: CityEntitiesUpdatedMessage) => void | Promise<void>) =>
-  (callbackMap['cityEntitiesUpdated'] = callback);
+export const setupCityEntitiesUpdatedListener = (
+  callback: (message: CityEntitiesUpdatedMessage) => void | Promise<void>,
+) => (callbackMap['cityEntitiesUpdated'] = callback);
 
 export const clearCityEntitiesUpdatedListener = () => {
   delete callbackMap['cityEntitiesUpdated'];
 };
 
-export const setupOtherPlayerCityUpdatedListener = (callback: (message: OtherPlayerCityUpdatedMessage) => void | Promise<void>) =>
-  (callbackMap['otherPlayerCityUpdated'] = callback);
+export const setupOtherPlayerCityUpdatedListener = (
+  callback: (message: OtherPlayerCityUpdatedMessage) => void | Promise<void>,
+) => (callbackMap['otherPlayerCityUpdated'] = callback);
 
 export const setupCitySavedListener = (callback: (message: CitySavedMessage) => void) =>
   (callbackMap['citySaved'] = callback);
@@ -324,7 +328,6 @@ export const setupTradeOpenedListener = (callback: () => void) => (callbackMap['
 export const setupOpenExtensionTabListener = (
   callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void,
 ) => (callbackMap['openExtensionTab'] = callback);
-
 
 /** --- 2. Tab Listeners --- **/
 
@@ -338,11 +341,13 @@ export const clearTradeParsedListener = () => {
   delete callbackMap['tradeParsed'];
 };
 
-export const setupActiveEffectsUpdatedListener = (callback: (message: ActiveEffectsUpdatedMessage) => void | Promise<void>) =>
-  (callbackMap['activeEffectsUpdated'] = callback);
+export const setupActiveEffectsUpdatedListener = (
+  callback: (message: ActiveEffectsUpdatedMessage) => void | Promise<void>,
+) => (callbackMap['activeEffectsUpdated'] = callback);
 
 export const clearActiveEffectsUpdatedListener = () => {
   delete callbackMap['activeEffectsUpdated'];
 };
 
-export const setupMissingEeListener = (callback: (message: MissingEeMessage) => void) => (callbackMap['missingEe'] = callback);
+export const setupMissingEeListener = (callback: (message: MissingEeMessage) => void) =>
+  (callbackMap['missingEe'] = callback);

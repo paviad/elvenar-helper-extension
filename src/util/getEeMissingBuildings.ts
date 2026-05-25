@@ -28,16 +28,21 @@ export const getEeMissingBuildings = async (accountId: string): Promise<EeMissin
   const effects = await getEffects();
   const cultureBlocks = getCulturalBuildings(cityEntities, buildingFinder, effects, 2, 2);
 
-  const eeDictionary = eeData.eeEffects.reduce((acc, effect) => {
-    acc[effect.id] = effect;
-    return acc;
-  }, {} as Record<number, EnsorcelledEndowment>);
+  const eeDictionary = eeData.eeEffects.reduce(
+    (acc, effect) => {
+      acc[effect.id] = effect;
+      return acc;
+    },
+    {} as Record<number, EnsorcelledEndowment>,
+  );
 
-  const helpDictionary = eeData.neighborlyHelpEffects.reduce((acc, effect) => {
-    acc[effect.id] = effect;
-    return acc;
-  }, {} as Record<number, EnsorcelledEndowment>);
-
+  const helpDictionary = eeData.neighborlyHelpEffects.reduce(
+    (acc, effect) => {
+      acc[effect.id] = effect;
+      return acc;
+    },
+    {} as Record<number, EnsorcelledEndowment>,
+  );
 
   const eeMissing = cultureBlocks.filter((block) => {
     const hasEffect = eeDictionary[block.id];

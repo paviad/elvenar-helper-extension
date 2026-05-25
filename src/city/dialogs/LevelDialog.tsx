@@ -33,15 +33,31 @@ export const LevelDialog: React.FC<LevelDialogProps> = ({
     <Dialog open={open} onClose={onClose} slotProps={{ paper: { sx: { borderRadius: 2, p: 1 } } }}>
       <Stack spacing={3} sx={{ p: 2, minWidth: 320, alignItems: 'center' }}>
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant='h6' fontWeight='bold'>
+          <Typography
+            variant='h6'
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
             Change Level
           </Typography>
-          <Typography variant='body2' color='text.secondary'>
+          <Typography
+            variant='body2'
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             Max Level: {maxLevel}
           </Typography>
         </Box>
 
-        <Stack direction='row' alignItems='center' spacing={2}>
+        <Stack
+          direction='row'
+          spacing={2}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <IconButton
             onClick={() => setLevelInput((prev) => Math.max(1, prev - 1))}
             disabled={levelInput <= 1}
@@ -87,7 +103,13 @@ export const LevelDialog: React.FC<LevelDialogProps> = ({
           />
         </Box>
 
-        <Stack direction='row' spacing={2} width='100%'>
+        <Stack
+          direction='row'
+          spacing={2}
+          sx={{
+            width: '100%',
+          }}
+        >
           <Button fullWidth variant='outlined' onClick={onClose}>
             Cancel
           </Button>

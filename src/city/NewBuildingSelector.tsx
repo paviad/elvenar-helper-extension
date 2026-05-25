@@ -142,7 +142,6 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
           }}
         />
       </Box>
-
       {/* 2. Tabs (Hidden when searching) */}
       {!searchQuery && (
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -161,16 +160,19 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
           </Tabs>
         </Box>
       )}
-
       {/* 3. Search Result Header (Only visible when searching) */}
       {searchQuery && (
         <Box sx={{ px: 2, py: 1, bgcolor: 'action.hover' }}>
-          <Typography variant='subtitle2' color='text.secondary'>
+          <Typography
+            variant='subtitle2'
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             Search Results ({displayList.length})
           </Typography>
         </Box>
       )}
-
       {/* 4. Scrollable List */}
       <List sx={{ flexGrow: 1, overflowY: 'auto', p: 0 }}>
         {displayList.length > 0 ? (
@@ -190,14 +192,19 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
                 <ListItemText
                   primary={building.name}
                   secondary={`${building.getSizeAtLevel ? 'Variable' : `${building.width}x${building.length}`} • ${building.category}`}
-                  slotProps={{ primary: { fontWeight: 500 } }}
+                  slotProps={{ primary: { sx: { fontWeight: 500 } } }}
                 />
               </ListItemButton>
             </ListItem>
           ))
         ) : (
           <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant='body2' color='text.secondary'>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               No buildings found.
             </Typography>
           </Box>

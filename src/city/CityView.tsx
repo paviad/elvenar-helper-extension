@@ -178,12 +178,10 @@ function CityViewInner() {
         <CitySettings />
         <RenderMoveLog />
       </Box>
-
       {/* Center / Grid - Flex grow to fill space */}
       <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <RenderCityGrid />
       </Box>
-
       {/* Right Sidebar - Legend + Resource Summary */}
       <Box
         sx={{

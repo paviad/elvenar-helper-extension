@@ -368,8 +368,19 @@ export const InventoryMain = () => {
   };
 
   return (
-    <Box p={2}>
-      <Box display='flex' gap={2} mb={2} alignItems='center'>
+    <Box
+      sx={{
+        p: 2,
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          mb: 2,
+          alignItems: 'center',
+        }}
+      >
         <TextField
           label='Search (name, type)'
           value={search}
@@ -405,7 +416,12 @@ export const InventoryMain = () => {
           Copy Table
         </Button>
       </Box>
-      <Box mb={1} fontWeight='bold'>
+      <Box
+        sx={{
+          mb: 1,
+          fontWeight: 'bold',
+        }}
+      >
         Showing {displayRows.length} of {totalTypeFiltered} items
       </Box>
       {(inventory !== undefined && (
@@ -579,12 +595,35 @@ export const InventoryMain = () => {
           </Table>
         </TableContainer>
       )) || (
-        <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
-          <Box textAlign='center'>
-            <Box fontSize={28} fontWeight='bold' color='text.secondary' mb={1}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '200px',
+          }}
+        >
+          <Box
+            sx={{
+              textAlign: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                fontSize: 28,
+                fontWeight: 'bold',
+                color: 'text.secondary',
+                mb: 1,
+              }}
+            >
               Inventory not found
             </Box>
-            <Box fontSize={20} color='text.secondary'>
+            <Box
+              sx={{
+                fontSize: 20,
+                color: 'text.secondary',
+              }}
+            >
               Please open your inventory in Elvenar and switch to the "Summons" tab to load the data.
               <br />
               Then refresh this page.
@@ -592,7 +631,6 @@ export const InventoryMain = () => {
           </Box>
         </Box>
       )}
-
       {/* Copied Feedback Toast */}
       <Snackbar
         open={toastOpen}

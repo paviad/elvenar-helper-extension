@@ -72,13 +72,15 @@ export const EeView = () => {
   if (buildings.length === 0) {
     return (
       <Box
-        display='flex'
-        flexDirection='column'
-        alignItems='center'
-        justifyContent='center'
-        height='200px'
-        color='text.secondary'
-        gap={1}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '200px',
+          color: 'text.secondary',
+          gap: 1,
+        }}
       >
         <SentimentSatisfiedAltIcon fontSize='large' color='success' />
         <Typography variant='body1'>All optimal buildings are enchanted!</Typography>
@@ -89,12 +91,11 @@ export const EeView = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box sx={{ px: 2, py: 1.5, bgcolor: 'action.hover', borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant='subtitle2' fontWeight='bold' sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography variant='subtitle2' sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 'bold' }}>
           <AutoFixHighIcon fontSize='small' color='primary' />
           {buildings.length} building{buildings.length === 1 ? '' : 's'} missing Ensorcelled Endowment
         </Typography>
       </Box>
-
       <List disablePadding sx={{ flexGrow: 1, overflowY: 'auto' }}>
         {sortedBuildings.map((b, index) => (
           <React.Fragment key={b.id}>
@@ -114,19 +115,36 @@ export const EeView = () => {
             >
               <ListItemText
                 primary={
-                  <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
+                  <Typography
+                    variant='subtitle2'
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 500,
+                    }}
+                  >
                     {b.name}
                   </Typography>
                 }
                 secondary={
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
-                    <Typography variant='caption' color='text.secondary'>
+                    <Typography
+                      variant='caption'
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       Size: {b.length}x{b.height}
                     </Typography>
                     {b.helpEndTime && b.helpEndTime > now && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <VolunteerActivismIcon sx={{ fontSize: 14, color: 'success.main' }} />
-                        <Typography variant='caption' color='success.main' fontWeight='medium'>
+                        <Typography
+                          variant='caption'
+                          sx={{
+                            color: 'success.main',
+                            fontWeight: 'medium',
+                          }}
+                        >
                           Help received: {formatTimeLeft(b.helpEndTime, now)} left
                         </Typography>
                       </Box>

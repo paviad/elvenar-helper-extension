@@ -92,7 +92,7 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
           p: 2,
           borderBottom: '1px solid',
           borderColor: 'divider',
-          bgcolor: 'background.paper',
+          backgroundColor: 'background.paper',
           display: 'flex',
           alignItems: 'center',
           gap: 1,
@@ -105,17 +105,27 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
           Configure Building
         </Typography>
       </Box>
-
       <Box sx={{ p: 3, flexGrow: 1, overflowY: 'auto' }}>
         <Stack spacing={3}>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant='h6'>{building.name}</Typography>
-            <Typography variant='body2' color='text.secondary'>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               Size: {currentWidth} x {currentLength}
             </Typography>
           </Box>
 
-          <Stack direction='row' spacing={3} alignItems='flex-start'>
+          <Stack
+            direction='row'
+            spacing={3}
+            sx={{
+              alignItems: 'flex-start',
+            }}
+          >
             {/* Inputs Column */}
             <Stack spacing={2} sx={{ flex: 1 }}>
               {fields.includes('Level') && (
@@ -159,9 +169,10 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
                 justifyContent: 'center',
                 alignItems: 'center',
                 p: 2,
-                bgcolor: '#fafafa',
+                backgroundColor: 'background.default',
                 borderRadius: 1,
-                border: '1px solid #eee',
+                border: '1px solid',
+                borderColor: 'divider',
                 height: 260,
                 overflow: 'hidden',
               }}
@@ -191,13 +202,12 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
           </Stack>
         </Stack>
       </Box>
-
       <Box
         sx={{
           p: 2,
           borderTop: '1px solid',
           borderColor: 'divider',
-          bgcolor: 'background.paper',
+          backgroundColor: 'background.paper',
           display: 'flex',
           justifyContent: 'flex-end',
           gap: 1,

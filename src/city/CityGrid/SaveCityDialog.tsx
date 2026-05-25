@@ -132,7 +132,6 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
                 )}
               </div>
             </div>
-
             <div style={styles.footer}>
               <button onClick={onClose} style={styles.secondaryButton}>
                 Cancel
@@ -162,7 +161,6 @@ const SaveCityDialog: React.FC<SaveCityDialogProps> = ({
               </div>
               <p style={styles.confirmText}>Do you want to overwrite it? This action cannot be undone.</p>
             </div>
-
             <div style={styles.footer}>
               <button onClick={handleCancelConfirmation} style={styles.secondaryButton}>
                 Back

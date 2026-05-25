@@ -84,17 +84,35 @@ export const RuneShards = () => {
         sx={{ borderRadius: 2 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='legend-content' id='legend-header'>
-          <Typography fontWeight='bold'>Rune Shards</Typography>
+          <Typography
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
+            Rune Shards
+          </Typography>
         </AccordionSummary>
         <AccordionDetails>
           {sortedShards.length === 0 ? (
-            <Typography variant='body2' color='text.secondary'>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               No rune shards collected yet.
             </Typography>
           ) : (
             <>
               {/* Controls Header */}
-              <Box display='flex' justifyContent='space-between' alignItems='center' mb={1.5}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 1.5,
+                }}
+              >
                 <ToggleButtonGroup
                   value={sortBy}
                   exclusive
@@ -105,7 +123,12 @@ export const RuneShards = () => {
                   <Tooltip title='Sort by Name'>
                     <ToggleButton value='name' aria-label='sort by name'>
                       <SortByAlphaIcon fontSize='small' sx={{ mr: 0.5 }} />
-                      <Typography variant='caption' fontWeight='bold'>
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          fontWeight: 'bold',
+                        }}
+                      >
                         Name
                       </Typography>
                     </ToggleButton>
@@ -113,7 +136,12 @@ export const RuneShards = () => {
                   <Tooltip title='Sort by Amount'>
                     <ToggleButton value='amount' aria-label='sort by amount'>
                       <NumbersIcon fontSize='small' sx={{ mr: 0.5 }} />
-                      <Typography variant='caption' fontWeight='bold'>
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          fontWeight: 'bold',
+                        }}
+                      >
                         Amount
                       </Typography>
                     </ToggleButton>

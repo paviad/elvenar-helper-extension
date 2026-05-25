@@ -3,8 +3,11 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { TranscendenceResponse } from '../model/transcendence';
 import { getAccountBySessionId } from './AccountManager';
 
-// eslint-disable-next-line @typescript-eslint/require-await
-export const processTranscendenceService = async (untypedJson: unknown, sharedInfo: ExtensionSharedInfo): Promise<void> => {
+export const processTranscendenceService = async (
+  untypedJson: unknown,
+  sharedInfo: ExtensionSharedInfo,
+  // eslint-disable-next-line @typescript-eslint/require-await
+): Promise<void> => {
   const response = untypedJson as ElvenarRequestResponseEntry[];
 
   const transcendenceServiceResponse = response.find(

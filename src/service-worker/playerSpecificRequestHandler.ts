@@ -26,7 +26,11 @@ import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
 type Processors = Record<
   string,
-  (untypedResponseArray: ElvenarRequestResponseEntry[], sharedInfo: ExtensionSharedInfo, request: ElvenarRequestResponseEntry) => Promise<unknown>
+  (
+    untypedResponseArray: ElvenarRequestResponseEntry[],
+    sharedInfo: ExtensionSharedInfo,
+    request: ElvenarRequestResponseEntry,
+  ) => Promise<unknown>
 >;
 
 export const playerSpecificRequestHandler = async (

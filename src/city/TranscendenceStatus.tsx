@@ -46,7 +46,7 @@ export const TranscendenceStatus = (props: TranscendenceProps) => {
         sx={{ borderRadius: 2 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='legend-content' id='legend-header'>
-          <Typography fontWeight='bold'>Transcendence Status</Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Transcendence Status</Typography>
         </AccordionSummary>
         <AccordionDetails>
           {transcendenceData.length === 0 ? (
@@ -62,8 +62,8 @@ export const TranscendenceStatus = (props: TranscendenceProps) => {
 
                 return (
                   <Box key={`${item.buildingName}-${index}`}>
-                    <Box display='flex' justifyContent='space-between' alignItems='center' mb={0.5}>
-                      <Typography variant='subtitle1' fontWeight='bold' noWrap>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                      <Typography variant='subtitle1' noWrap sx={{ fontWeight: 'bold' }}>
                         {item.buildingName}
                       </Typography>
                       <Chip
@@ -78,7 +78,7 @@ export const TranscendenceStatus = (props: TranscendenceProps) => {
                     <Stack spacing={0.5}>
                       {/* Flex layout splits the date and the relative time to opposite edges */}
                       {(!isExpired || isActive) && (
-                        <Box display='flex' justifyContent='space-between' alignItems='center'>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Typography variant='body2' color='text.secondary' noWrap>
                             <strong>Ends:</strong>{' '}
                             {expiryDate.toLocaleString(navigator.languages, { dateStyle: 'short', timeStyle: 'short' })}
@@ -86,8 +86,7 @@ export const TranscendenceStatus = (props: TranscendenceProps) => {
                           <Typography
                             variant='body2'
                             color={isExpired ? 'error' : 'primary'}
-                            fontWeight='medium'
-                            sx={{ ml: 1 }}
+                            sx={{ ml: 1, fontWeight: 'medium' }}
                           >
                             {formatTimeLeft(item.endTime, now)}
                           </Typography>

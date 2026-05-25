@@ -58,7 +58,13 @@ export const NumericInputControl: React.FC<NumericInputControlProps> = ({
 
   return (
     <Box>
-      <Stack direction='row' alignItems='center' spacing={1}>
+      <Stack
+        direction='row'
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+        }}
+      >
         <IconButton onClick={handleDecrement} disabled={numericValue <= min} size='small'>
           <RemoveIcon fontSize='small' />
         </IconButton>

@@ -69,7 +69,8 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
       return;
     }
 
-    const outOfGrid = newX < 0 || newY < 0 || newX + blocks[dragIndex].width > GridMax || newY + blocks[dragIndex].length > GridMax;
+    const outOfGrid =
+      newX < 0 || newY < 0 || newX + blocks[dragIndex].width > GridMax || newY + blocks[dragIndex].length > GridMax;
 
     setBlocks((prev) => {
       if (!prev[dragIndex]) {

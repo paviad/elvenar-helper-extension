@@ -13,9 +13,11 @@ export const processCityResourcesUpdate = async (untypedJson: unknown, sharedInf
     (entry) => entry.requestClass === 'CityResourcesService' && entry.requestMethod === 'getResources',
   );
 
-  const cityResources = json?.responseData as {
-    resources: Record<string, number>;
-  } | undefined;
+  const cityResources = json?.responseData as
+    | {
+        resources: Record<string, number>;
+      }
+    | undefined;
 
   const { __class__, ...resources } = cityResources?.resources || {};
 

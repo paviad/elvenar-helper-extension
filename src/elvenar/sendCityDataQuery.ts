@@ -33,6 +33,6 @@ export async function sendCityDataQuery(sharedInfo: ExtensionSharedInfo) {
     );
   }
 
-  const untypedJson = await response.json() as ElvenarRequestResponseEntry[];
+  const untypedJson = (await response.json()) as ElvenarRequestResponseEntry[];
   await processCityData(untypedJson, sharedInfo);
 }

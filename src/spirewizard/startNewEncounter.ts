@@ -14,9 +14,7 @@ const apiStartNewEncounter = () => {
 
 const apiSelectResources = (encounterData: EncounterData) => {
   const resources = Object.keys(encounterData.diplomacy.costOptions.resources);
-  const mappedResources = resources
-    .map((resource) => backTranslations[resource])
-    .filter((res) => res !== undefined);
+  const mappedResources = resources.map((resource) => backTranslations[resource]).filter((res) => res !== undefined);
   SpireWizard.selectResources(mappedResources);
 };
 

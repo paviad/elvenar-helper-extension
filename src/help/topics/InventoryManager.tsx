@@ -11,7 +11,7 @@ export const InventoryManager = () => (
     <Typography variant='h4' gutterBottom>
       Inventory Manager Guide
     </Typography>
-    <Typography component="p" variant="body1" gutterBottom>
+    <Typography component='p' variant='body1' gutterBottom>
       The Inventory Manager transforms your cluttered inventory into a powerful, searchable database. It helps you make
       informed decisions about what to place, what to keep, and what to disenchant.
     </Typography>
@@ -37,7 +37,11 @@ export const InventoryManager = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Building Stats */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -58,7 +62,11 @@ export const InventoryManager = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Aggregation */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -73,7 +81,11 @@ export const InventoryManager = () => (
       </ListItem>
     </List>
 
-    <Box mt={2} />
+    <Box
+      sx={{
+        mt: 2,
+      }}
+    />
 
     {/* Resale & Disenchanting */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

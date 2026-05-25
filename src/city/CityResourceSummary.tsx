@@ -135,24 +135,35 @@ export const CityResourceSummary = () => {
 
     return (
       <Box sx={{ mb: 2 }}>
-        <Stack direction='row' alignItems='center' spacing={1} sx={{ mb: 0.5 }}>
+        <Stack
+          direction='row'
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+            mb: 0.5,
+          }}
+        >
           <Box sx={{ color, display: 'flex' }}>{icon}</Box>
-          <Typography variant='body2' fontWeight='bold'>
+          <Typography
+            variant='body2'
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
             {label}
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Typography
             variant='body2'
-            fontWeight='bold'
             sx={{
-              color: data.net >= 0 ? 'text.primary' : '#d32f2f', // Red 700
+              fontWeight: 'bold',
+              color: data.net >= 0 ? 'text.primary' : '#d32f2f',
             }}
           >
             {data.net >= 0 ? '+' : ''}
             {data.net.toLocaleString()}
           </Typography>{' '}
         </Stack>
-
         <LinearProgress
           variant='determinate'
           value={percent}
@@ -165,12 +176,27 @@ export const CityResourceSummary = () => {
             },
           }}
         />
-
-        <Stack direction='row' justifyContent='space-between' sx={{ mt: 0.5 }}>
-          <Typography variant='caption' color='text.secondary'>
+        <Stack
+          direction='row'
+          sx={{
+            justifyContent: 'space-between',
+            mt: 0.5,
+          }}
+        >
+          <Typography
+            variant='caption'
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             Total: {data.provided.toLocaleString()}
           </Typography>
-          <Typography variant='caption' color='text.secondary'>
+          <Typography
+            variant='caption'
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             Used: {data.required.toLocaleString()}
           </Typography>
         </Stack>
@@ -188,7 +214,13 @@ export const CityResourceSummary = () => {
         sx={{ borderRadius: 2 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='legend-content' id='legend-header'>
-          <Typography fontWeight='bold'>Resource Summary</Typography>
+          <Typography
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
+            Resource Summary
+          </Typography>
         </AccordionSummary>
         <AccordionDetails>
           {renderRow('Population', <PeopleIcon fontSize='small' />, summary.population, '#4caf50')}

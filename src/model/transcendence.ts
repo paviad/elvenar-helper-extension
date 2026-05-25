@@ -5,15 +5,15 @@ export interface TranscendenceResponse {
 }
 
 export interface TranscendenceRaw {
-  __class__:       string;
-  buildingId:      number;
-  costs:           Costs;
-  effectsIds:      number[];
-  remainingTime:   number;
+  __class__: string;
+  buildingId: number;
+  costs: Costs;
+  effectsIds: number[];
+  remainingTime: number;
   initialDuration: number;
   purchasableTime: number;
-  state:           'active' | 'inactive';
-  stageToUnlock:   number;
+  state: 'active' | 'inactive';
+  stageToUnlock: number;
 }
 
 export interface Transcendence extends TranscendenceRaw {
@@ -26,6 +26,6 @@ export interface Costs {
 }
 
 export interface Resources {
-  __class__:       string;
+  __class__: string;
   volatile_sigils: number;
 }

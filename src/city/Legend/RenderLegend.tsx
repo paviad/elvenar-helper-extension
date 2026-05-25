@@ -36,7 +36,13 @@ export function RenderLegend() {
         sx={{ borderRadius: 2 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='legend-content' id='legend-header'>
-          <Typography fontWeight='bold'>Color Legend</Typography>
+          <Typography
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
+            Color Legend
+          </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <ul style={{ listStyle: 'none', padding: 0, fontSize: 13, margin: 0 }}>

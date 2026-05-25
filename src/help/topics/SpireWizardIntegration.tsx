@@ -5,7 +5,7 @@ import SyncIcon from '@mui/icons-material/Sync';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import SecurityIcon from '@mui/icons-material/Security';
 import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutlined';
 
 export const SpireWizardIntegration = () => {
   const splitViewSrc =
@@ -18,44 +18,43 @@ export const SpireWizardIntegration = () => {
       <Typography variant='h4' gutterBottom>
         Spire Wizard Integration
       </Typography>
-      <Typography component="p" variant="body1" gutterBottom>
+      <Typography component='p' variant='body1' gutterBottom>
         ElvenAssist integrates seamlessly with the{' '}
         <Link href='https://javascriptorian.com/spire-wizard-mobile' target='_blank' rel='noopener'>
           Spire Wizard
         </Link>
         , a popular external tool for solving Spire of Eternity negotiations.
       </Typography>
-      <Typography component="p" variant="body1" gutterBottom>
+      <Typography component='p' variant='body1' gutterBottom>
         The extension is active on the Spire Wizard website as well as the game, allowing it to bridge data between the
         two in real-time.
       </Typography>
-
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
         <PlayCircleOutlineIcon color='primary' />
         <Link href='https://youtu.be/hKTn6fkTWMs' target='_blank' rel='noopener' sx={{ fontWeight: 'bold' }}>
           Watch Video Demonstration
         </Link>
       </Box>
-
       <Divider sx={{ my: 2 }} />
-
       {/* Setup */}
       <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <AutoFixHighIcon color='primary' fontSize='small' /> Automated Setup
       </Typography>
-      <Typography component="p" variant="body1" gutterBottom>
+      <Typography component='p' variant='body1' gutterBottom>
         When you initiate a negotiation encounter in the Spire (diplomacy option), ElvenAssist detects the available
         resources and context. It automatically updates the Spire Wizard tab, selecting the correct set of resources for
         the current encounter so you don't have to manually input them.
       </Typography>
-
-      <Box mt={2} />
-
+      <Box
+        sx={{
+          mt: 2,
+        }}
+      />
       {/* Syncing */}
       <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <SyncIcon color='primary' fontSize='small' /> Live Status Sync
       </Typography>
-      <Typography component="p" variant="body1" gutterBottom>
+      <Typography component='p' variant='body1' gutterBottom>
         As you play the negotiation minigame, the extension tracks your results:
       </Typography>
       <List dense disablePadding>
@@ -72,18 +71,19 @@ export const SpireWizardIntegration = () => {
           />
         </ListItem>
       </List>
-
-      <Box mt={2} />
-
+      <Box
+        sx={{
+          mt: 2,
+        }}
+      />
       {/* Recommended Setup */}
       <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <ViewSidebarIcon color='primary' fontSize='small' /> Recommended Setup: Split View
       </Typography>
-      <Typography component="p" variant="body1" gutterBottom>
+      <Typography component='p' variant='body1' gutterBottom>
         For the most efficient workflow, we recommend arranging your browser tabs side-by-side using Chrome's split view
         capabilities (or separate windows). This allows you to see the game and the wizard simultaneously.
       </Typography>
-
       <Paper
         variant='outlined'
         sx={{
@@ -109,26 +109,41 @@ export const SpireWizardIntegration = () => {
             minHeight: 150,
           }}
         />
-        <Typography variant='caption' color='text.secondary' sx={{ mt: 1 }}>
+        <Typography
+          variant='caption'
+          sx={{
+            color: 'text.secondary',
+            mt: 1,
+          }}
+        >
           Game on the left, Spire Wizard on the right
         </Typography>
       </Paper>
-
-      <Box mt={3} />
-
+      <Box
+        sx={{
+          mt: 3,
+        }}
+      />
       {/* Safety Alert */}
       <Alert severity='info' icon={<SecurityIcon fontSize='inherit' />}>
         <strong>Fair Play & Safety:</strong> The extension <em>never</em> performs automatic clicks inside the Elvenar
         game itself. It only automates the input on the external Spire Wizard website. You remain in full control of the
         game actions.
       </Alert>
-
-      <Box mt={2} />
-
+      <Box
+        sx={{
+          mt: 2,
+        }}
+      />
       <Typography
         variant='body2'
-        color='text.secondary'
-        sx={{ display: 'flex', alignItems: 'center', gap: 1, fontStyle: 'italic' }}
+        sx={{
+          color: 'text.secondary',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          fontStyle: 'italic',
+        }}
       >
         <HandshakeIcon fontSize='small' />
         This integration was developed in complete cooperation and agreement with the developer of Spire Wizard.

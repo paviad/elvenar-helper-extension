@@ -223,7 +223,12 @@ export function FellowshipAdventure() {
   // --- 3. Active FA Dashboard ---
   return (
     <Stack>
-      <Box display='flex' width='100%'>
+      <Box
+        sx={{
+          display: 'flex',
+          width: '100%',
+        }}
+      >
         <Stack sx={{ flex: '0 0 auto', alignSelf: 'flex-start' }}>
           <Box>
             <FaProgress spriteUrl={spriteUrl} items={faProgressItems} />

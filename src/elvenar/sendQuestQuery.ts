@@ -34,14 +34,16 @@ export async function sendQuestQuery(sharedInfo: ExtensionSharedInfo) {
 
   const json = (await response.json()) as { requestClass: string; responseData: unknown }[];
 
-  const seasonalEventsService = json.find((r) => r.requestClass === 'SeasonalEventsService')?.responseData as {
-    eventId: number;
-    type: string;
-    subType: string;
-    name: string;
-    state: string;
-    remainingTime: number;
-  }[] | undefined;
+  const seasonalEventsService = json.find((r) => r.requestClass === 'SeasonalEventsService')?.responseData as
+    | {
+        eventId: number;
+        type: string;
+        subType: string;
+        name: string;
+        state: string;
+        remainingTime: number;
+      }[]
+    | undefined;
 
   if (!seasonalEventsService) {
     console.warn('ElvenAssist: No SeasonalEventsService data found in the provided JSON.');
