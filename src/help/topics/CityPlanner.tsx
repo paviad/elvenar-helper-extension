@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { Typography, Box, Divider, List, ListItem, ListItemText, Badge } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import SearchIcon from '@mui/icons-material/Search';
@@ -134,10 +134,44 @@ export const CityPlanner = () => (
     </Typography>
     <List dense disablePadding>
       <ListItem>
-        <ListItemText primary='Plus (+)' secondary='Increase the level of the building you are holding.' />
+        <ListItemText primary='Plus (+)' secondary='Increase the level or chapter of the building you are holding.' />
       </ListItem>
       <ListItem>
-        <ListItemText primary='Minus (-)' secondary='Decrease the level of the building you are holding.' />
+        <ListItemText primary='Minus (-)' secondary='Decrease the level or chapter of the building you are holding.' />
+      </ListItem>
+      <ListItem>
+        <Badge
+          badgeContent='NEW'
+          color='secondary'
+          sx={{
+            ml: 3, // Margin right to ensure spacing after the badge
+            '& .MuiBadge-badge': {
+              fontSize: '0.6rem',
+              height: 16,
+              minWidth: 16,
+              px: 0.5,
+            },
+          }}
+        >
+          <ListItemText primary='Shift + Plus (+)' secondary='Increase the stage of an evolving building.' />
+        </Badge>
+      </ListItem>
+      <ListItem>
+        <Badge
+          badgeContent='NEW'
+          color='secondary'
+          sx={{
+            ml: 3, // Margin right to ensure spacing after the badge
+            '& .MuiBadge-badge': {
+              fontSize: '0.6rem',
+              height: 16,
+              minWidth: 16,
+              px: 0.5,
+            },
+          }}
+        >
+          <ListItemText primary='Shift + Minus (-)' secondary='Decrease the stage of an evolving building.' />
+        </Badge>
       </ListItem>
       <ListItem>
         <ListItemText primary='Delete (DEL)' secondary='Delete the building you are currently holding.' />

@@ -27,11 +27,13 @@ export async function processQuest(untypedJson: unknown, sharedInfo: ExtensionSh
 
   const accountId = getAccountIdBySessionId(sharedInfo.sessionId);
   if (!accountId) {
-    throw new Error('ElvenAssist: Account data not found for the given session ID.');
+    console.warn('ElvenAssist: Account data not found for the given session ID.');
+    return;
   }
   const accountData = getAccountById(accountId);
   if (!accountData) {
-    throw new Error('ElvenAssist: Account data not found for the given session ID.');
+    console.warn('ElvenAssist: Account data not found for the given session ID.');
+    return;
   }
   accountData.faEndTime = fa ? fa.remainingTime * 1000 + Date.now() : undefined;
 

@@ -31,7 +31,7 @@ export function getChapterFromEntity(
     return chapter;
   }
 
-  if (type === 'culture' || type === 'culture_residential') {
+  if (/culture(_[xy])?/.test(type) || /culture_residential(_[xy])?/.test(type)) {
     const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(cityentity_id);
     if (m1) {
       return Number(m1[1]);

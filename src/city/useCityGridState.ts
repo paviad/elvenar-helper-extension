@@ -90,38 +90,59 @@ export const useCityGridState = () => {
 
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Level up/down
-      if (event.key === '+' || event.key === '=' || event.key === '-') {
+      if (['Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract'].includes(event.code)) {
         event.preventDefault();
         const block = blocks[dragIndex];
         if (!block) return;
 
-        const maxLevel = getEntityMaxLevel(block.entity.cityentity_id, block.type, maxLevels);
-        if (maxLevel === 1) return;
-
         const finder = new BuildingFinder();
         await finder.ensureInitialized();
 
+        // const maxLevel = getEntityMaxLevel(block.entity.cityentity_id, block.type, maxLevels);
+        const maxStage = finder.getBuilding(block.entity.cityentity_id, block.entity.level || 1)?.maxStage || 0;
+        // if (maxLevel === 1) return;
+
+        let newStage = block.entity.stage;
         let newLevel = block.entity.level || 1;
-        if (event.key === '+' || event.key === '=') {
-          if (newLevel < maxLevel) newLevel++;
-        } else if (event.key === '-') {
-          if (newLevel > 1) newLevel--;
+        if (event.shiftKey) {
+          if (newStage !== undefined) {
+            if (['Equal', 'NumpadAdd'].includes(event.code)) {
+              if (newStage < maxStage) newStage++;
+            } else if (['Minus', 'NumpadSubtract'].includes(event.code)) {
+              if (newStage > 1) newStage--;
+            }
+          }
+        } else {
+          if (['Equal', 'NumpadAdd'].includes(event.code)) {
+            // if (newLevel < maxLevel)
+            newLevel++;
+          } else if (['Minus', 'NumpadSubtract'].includes(event.code)) {
+            if (newLevel > 1) newLevel--;
+          }
         }
 
         const originalPos = city.originalPos;
         if (originalPos) {
           // First level change during this drag
-          if (newLevel !== block.entity.level) {
+          if (newLevel !== block.entity.level || newStage !== block.entity.stage) {
             const newBuilding = finder.getBuilding(block.entity.cityentity_id, newLevel);
             if (!newBuilding) return;
+            const newChapter = getChapterFromEntity(undefined, newBuilding.id, block.type, newLevel);
 
             const newBlock = {
               ...block,
-              entity: { ...block.entity, level: newLevel },
+              gameId: block.gameId.replace(/_\d+$/, `_${newLevel}`),
+              entity: {
+                ...block.entity,
+                cityentity_id: block.entity.cityentity_id.replace(/_\d+$/, `_${newLevel}`),
+                level: newLevel,
+                stage: newStage,
+              },
               width: newBuilding.width,
               length: newBuilding.length,
               level: newLevel,
-              chapter: getChapterFromEntity(undefined, block.entity.cityentity_id, block.type, newLevel),
+              stage: newStage,
+              chapter: newChapter,
               label: `${newLevel}`,
               id: generateUniqueId(),
             } satisfies CityBlock;
@@ -151,14 +172,22 @@ export const useCityGridState = () => {
           // Subsequent level change
           const newBuilding = finder.getBuilding(block.entity.cityentity_id, newLevel);
           if (!newBuilding) return;
+          const newChapter = getChapterFromEntity(undefined, newBuilding.id, block.type, newLevel);
 
           setBlocks((prev) => ({
             ...prev,
             [dragIndex]: {
               ...prev[dragIndex],
-              entity: { ...prev[dragIndex].entity, level: newLevel },
+              gameId: block.gameId.replace(/_\d+$/, `_${newLevel}`),
+              entity: {
+                ...prev[dragIndex].entity,
+                cityentity_id: prev[dragIndex].entity.cityentity_id.replace(/_\d+$/, `_${newLevel}`),
+                level: newLevel,
+                stage: newStage,
+              },
               level: newLevel,
-              chapter: getChapterFromEntity(undefined, block.entity.cityentity_id, block.type, newLevel),
+              stage: newStage,
+              chapter: newChapter,
               width: newBuilding.width,
               length: newBuilding.length,
               label: `${newLevel}`,

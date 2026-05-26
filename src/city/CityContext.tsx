@@ -139,11 +139,11 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     isDetached = accountData?.isDetached ?? true;
   }
 
-  const previousAccountId = React.useRef<string | undefined>(undefined);
+  const previousAccountId = React.useRef<string | undefined>(accountId);
 
   React.useEffect(() => {
     // skip if it's the first load, we will load the city data in another effect
-    if (previousAccountId.current && previousAccountId.current !== accountId) {
+    if (previousAccountId.current !== accountId) {
       setReady(false);
       firstLoad.current = true;
       setModified(false);

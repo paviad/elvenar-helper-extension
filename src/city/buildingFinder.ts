@@ -111,6 +111,8 @@ export class BuildingFinder {
     if (building) {
       const bldg = building;
 
+      bldg.id = bldg.id.replace(/_\d+$/, `_${level}`);
+
       return this.getBuildingEx(bldg, hint);
     }
   }
@@ -143,6 +145,7 @@ export class BuildingFinder {
       spellFragments: bldg.spellFragments,
       chapter: (hint && parseInt(hint)) || undefined,
       sourceBuilding: bldg,
+      maxStage: this.getMaxStage([bldg])
     } satisfies BuildingEx;
   }
 
@@ -161,6 +164,14 @@ export class BuildingFinder {
     const chapter = building?.chapter;
 
     return { length, width, description, name, connectionStrategy, chapter } satisfies CityEntityExData;
+  }
+
+  getMaxStage(buildings: Building[]): number | undefined {
+    const baseName = buildings[0].base_name;
+    const evolvingBuilding = this.evolvingBuildingsDictionary[baseName];
+    if (evolvingBuilding) {
+      return evolvingBuilding.stages.reduce((max, stage) => (stage.id > max ? stage.id : max), 0);
+    }
   }
 
   getAllBuildingsByCategory(race: string): BuildingDefinition[] {
@@ -234,14 +245,6 @@ export class BuildingFinder {
       return rc;
     };
 
-    const getMaxStage = (buildings: Building[]): number | undefined => {
-      const baseName = buildings[0].base_name;
-      const evolvingBuilding = this.evolvingBuildingsDictionary[baseName];
-      if (evolvingBuilding) {
-        return evolvingBuilding.stages.reduce((max, stage) => (stage.id > max ? stage.id : max), 0);
-      }
-    };
-
     const getChapter = (building: Building): number | undefined => {
       if (/^([GPRHMODY]_|A_Evt_)/.test(building.base_name) || building.type === 'expiring') {
         return;
@@ -267,7 +270,7 @@ export class BuildingFinder {
           supportedFields: getSupportedFields(r),
           getSizeAtLevel: getGetSizeAtLevelFunction(r),
           maxLevel: getMaxLevelsLocal(r),
-          maxStage: getMaxStage(r),
+          maxStage: this.getMaxStage(r),
           type: getTypeFromEntity(r[0].requirements.connectionStrategyId, r[0].id, r[0].type),
         } satisfies BuildingDefinition;
       });

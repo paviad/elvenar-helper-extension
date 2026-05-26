@@ -22,6 +22,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'city-planner',
     title: 'City Planner',
     content: <CityPlanner />,
+    isNew: true,
   },
   {
     id: 'inventory',

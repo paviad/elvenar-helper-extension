@@ -16,4 +16,6 @@ export interface BuildingEx {
   production?: Record<string, number>;
 
   sourceBuilding: Building;
+
+  maxStage?: number;
 }

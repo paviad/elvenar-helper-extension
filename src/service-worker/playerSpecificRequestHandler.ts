@@ -1,3 +1,4 @@
+import { concatMap, from, Subject } from 'rxjs';
 import {
   InterceptedPlayerSpecificRequest,
   sendActiveEffectsUpdatedMessage,
@@ -33,7 +34,30 @@ type Processors = Record<
   ) => Promise<unknown>
 >;
 
+const handlerSubject = new Subject<{
+  msg: InterceptedPlayerSpecificRequest;
+  sender: chrome.runtime.MessageSender;
+}>();
+
+const subscription = handlerSubject.pipe(
+  concatMap(({ msg, sender }) => {
+    return from(playerSpecificRequestHandlerInternal(msg, sender));
+  }),
+).subscribe({
+  error: (err) => {
+    console.error('Error processing player specific request:', err);
+  },
+});
+
 export const playerSpecificRequestHandler = async (
+  msg: InterceptedPlayerSpecificRequest,
+  sender: chrome.runtime.MessageSender,
+  // eslint-disable-next-line @typescript-eslint/require-await
+): Promise<void> => {
+  handlerSubject.next({ msg, sender });
+};
+
+export const playerSpecificRequestHandlerInternal = async (
   msg: InterceptedPlayerSpecificRequest,
   sender: chrome.runtime.MessageSender,
 ): Promise<void> => {
