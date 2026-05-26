@@ -13,6 +13,7 @@ import {
   TableSortLabel,
   Button,
   Snackbar,
+  Badge,
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useCity } from '../../CityContext';
@@ -31,6 +32,11 @@ interface TableRowData {
   stage?: number;
   provisions: Record<string, number>;
   production: Record<string, number>;
+  isMaxed: boolean;
+  nextWidth?: number;
+  nextLength?: number;
+  nextProvisions?: Record<string, number>;
+  nextProduction?: Record<string, number>;
 }
 
 type Order = 'asc' | 'desc';
@@ -41,6 +47,7 @@ export const TableCityView = () => {
   const [tableData, setTableData] = React.useState<TableRowData[]>([]);
   const [allResourceKeys, setAllResourceKeys] = React.useState<string[]>([]);
   const [showPerSquare, setShowPerSquare] = React.useState(false);
+  const [showUpgrades, setShowUpgrades] = React.useState(false);
   const [toastOpen, setToastOpen] = React.useState(false);
 
   // Sorting State
@@ -77,10 +84,11 @@ export const TableCityView = () => {
           stage: block.stage,
           provisions: {},
           production: {},
+          isMaxed: true,
         };
 
         if (building) {
-          // A. Provisions (Static)
+          // A. Current Provisions & Production
           const { provisions, production } = getBuildingProvisionsAndProduction(
             building,
             keysSet,
@@ -89,6 +97,23 @@ export const TableCityView = () => {
           );
           row.provisions = provisions;
           row.production = production;
+
+          // B. Next Level/Chapter Provisions & Production
+          const nextBuilding = finder.getBuilding(block.gameId, block.level + 1);
+          if (nextBuilding) {
+            row.isMaxed = false;
+            row.nextWidth = nextBuilding.width;
+            row.nextLength = nextBuilding.length;
+
+            const nextResult = getBuildingProvisionsAndProduction(
+              nextBuilding,
+              keysSet,
+              city.evolvingBuildings,
+              block.stage,
+            );
+            row.nextProvisions = nextResult.provisions;
+            row.nextProduction = nextResult.production;
+          }
         }
 
         if (Object.keys(row.provisions).length === 0 && Object.keys(row.production).length === 0) continue;
@@ -110,14 +135,14 @@ export const TableCityView = () => {
       setAllResourceKeys(sortedKeys);
     }
     void buildData();
-  }, [blocks, race]);
+  }, [blocks, race, city.evolvingBuildings]);
 
   const handleRequestSort = (property: string) => {
     const isAsc = orderBy === property && order === 'asc';
     if (orderBy === property) {
       setOrder(isAsc ? 'desc' : 'asc');
     } else {
-      // Name defaults to ascending, all others default to descending (quantities/levels)
+      // Name defaults to ascending, all others default to descending
       setOrder(property === 'name' ? 'asc' : 'desc');
     }
     setOrderBy(property);
@@ -148,6 +173,12 @@ export const TableCityView = () => {
 
   const sortedRows = React.useMemo(() => {
     const comparator = (a: TableRowData, b: TableRowData) => {
+      // Push maxed buildings to the bottom if showUpgrades is active
+      if (showUpgrades) {
+        if (a.isMaxed && !b.isMaxed) return order === 'asc' ? 1 : -1;
+        if (!a.isMaxed && b.isMaxed) return order === 'asc' ? -1 : 1;
+      }
+
       let aValue: number | string;
       let bValue: number | string;
 
@@ -162,29 +193,40 @@ export const TableCityView = () => {
       } else {
         // Resource columns
         const getResourceVal = (r: TableRowData) => {
-          const rawVal = (r.provisions[orderBy] || 0) + (r.production[orderBy] || 0);
-          if (showPerSquare) {
-            return rawVal / (r.width * r.length);
+          const oldVal = (r.provisions[orderBy] || 0) + (r.production[orderBy] || 0);
+          const oldArea = r.width * r.length;
+
+          if (showUpgrades) {
+            if (r.isMaxed) return Number.MIN_SAFE_INTEGER;
+
+            const newVal = (r.nextProvisions?.[orderBy] || 0) + (r.nextProduction?.[orderBy] || 0);
+            const newArea = (r.nextWidth || r.width) * (r.nextLength || r.length);
+
+            if (showPerSquare) {
+              return newVal / newArea - oldVal / oldArea;
+            }
+            return newVal - oldVal;
+          } else {
+            if (showPerSquare) {
+              return oldVal / oldArea;
+            }
+            return oldVal;
           }
-          return rawVal;
         };
+
         aValue = getResourceVal(a);
         bValue = getResourceVal(b);
       }
 
-      if (aValue < bValue) {
-        return -1;
-      }
-      if (aValue > bValue) {
-        return 1;
-      }
+      if (aValue < bValue) return -1;
+      if (aValue > bValue) return 1;
       return 0;
     };
 
     return [...filteredRows].sort((a, b) => {
       return order === 'desc' ? -comparator(a, b) : comparator(a, b);
     });
-  }, [filteredRows, order, orderBy, showPerSquare]);
+  }, [filteredRows, order, orderBy, showPerSquare, showUpgrades]);
 
   const handleCopyToClipboard = () => {
     // 1. Prepare Headers
@@ -193,7 +235,8 @@ export const TableCityView = () => {
       'Chapter',
       'Size',
       ...allResourceKeys.map(
-        (k) => `${formatResourceName(city.goodsNames, city.boostedGoods, k)}${showPerSquare ? '/sq' : ''}`,
+        (k) =>
+          `${formatResourceName(city.goodsNames, city.boostedGoods, k)}${showPerSquare ? '/sq' : ''}${showUpgrades ? ' (Upgrade Delta)' : ''}`,
       ),
     ];
 
@@ -201,22 +244,42 @@ export const TableCityView = () => {
     const rows = sortedRows.map((row) => {
       const name = `${row.name}${row.stage ? ` (Stage ${row.stage})` : ''}`;
       const chapter = row.chapter ? String(row.chapter) : '-';
-      const size = `${row.width}x${row.length}`;
+
+      let size = `${row.width}x${row.length}`;
+      if (showUpgrades && !row.isMaxed && (row.width !== row.nextWidth || row.length !== row.nextLength)) {
+        size = `${row.width}x${row.length} -> ${row.nextWidth}x${row.nextLength}`;
+      }
 
       const resCols = allResourceKeys.map((key) => {
-        const provVal = row.provisions[key];
-        const prodVal = row.production[key];
+        const oldVal = (row.provisions[key] || 0) + (row.production[key] || 0);
 
-        const val = (provVal || 0) + (prodVal || 0);
+        if (showUpgrades) {
+          if (row.isMaxed) return oldVal > 0 ? 'Maxed' : '';
 
-        if (val > 0) {
-          const num = showPerSquare ? val / (row.width * row.length) : val;
-          // Format for clipboard (US locale for consistent decimals, no grouping for parsing)
-          return num.toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: showPerSquare ? 1 : 0,
-            useGrouping: false,
-          });
+          const newVal = (row.nextProvisions?.[key] || 0) + (row.nextProduction?.[key] || 0);
+          if (oldVal > 0 || newVal > 0) {
+            const oldArea = row.width * row.length;
+            const newArea = (row.nextWidth || row.width) * (row.nextLength || row.length);
+            const delta = showPerSquare ? newVal / newArea - oldVal / oldArea : newVal - oldVal;
+
+            if (Math.abs(delta) < 0.001) return '0';
+
+            return delta.toLocaleString('en-US', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: showPerSquare ? 1 : 0,
+              useGrouping: false,
+            });
+          }
+          return '';
+        } else {
+          if (oldVal > 0) {
+            const num = showPerSquare ? oldVal / (row.width * row.length) : oldVal;
+            return num.toLocaleString('en-US', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: showPerSquare ? 1 : 0,
+              useGrouping: false,
+            });
+          }
         }
         return '';
       });
@@ -241,6 +304,13 @@ export const TableCityView = () => {
     document.body.removeChild(textArea);
   };
 
+  const onChangeShowUpgrades = (e: React.ChangeEvent<HTMLInputElement, Element>): void => {
+    if (e.target.checked) {
+      setShowPerSquare(true);
+    }
+    setShowUpgrades(e.target.checked);
+  };
+
   return (
     <Paper sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box
@@ -255,6 +325,27 @@ export const TableCityView = () => {
           gap: 2,
         }}
       >
+        <Badge
+          badgeContent='NEW'
+          color='secondary'
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          sx={{
+            '& .MuiBadge-badge': {
+              fontSize: '0.6rem',
+              height: 16,
+              minWidth: 16,
+              px: 0.5,
+              mt: -0.5,
+            },
+          }}
+        >
+          <FormControlLabel
+            control={<Switch checked={showUpgrades} onChange={onChangeShowUpgrades} size='small' color='secondary' />}
+            label={
+              <span style={{ fontSize: '0.875rem', fontWeight: showUpgrades ? 'bold' : 'normal' }}>Show Upgrades</span>
+            }
+          />
+        </Badge>
         <FormControlLabel
           control={<Switch checked={showPerSquare} onChange={(e) => setShowPerSquare(e.target.checked)} size='small' />}
           label={<span style={{ fontSize: '0.875rem' }}>Show per square</span>}
@@ -316,24 +407,63 @@ export const TableCityView = () => {
                 </TableCell>
                 <TableCell align='right'>{row.chapter ?? '-'}</TableCell>
                 <TableCell align='center'>
-                  {row.width}x{row.length}
+                  {showUpgrades && !row.isMaxed && (row.width !== row.nextWidth || row.length !== row.nextLength) ? (
+                    <Box component='span' sx={{ color: 'warning.main', fontWeight: 'bold' }}>
+                      {row.width}x{row.length} ➔ {row.nextWidth}x{row.nextLength}
+                    </Box>
+                  ) : (
+                    `${row.width}x${row.length}`
+                  )}
                 </TableCell>
                 {allResourceKeys.map((key) => {
-                  const provVal = row.provisions[key];
-                  const prodVal = row.production[key];
+                  const oldVal = (row.provisions[key] || 0) + (row.production[key] || 0);
+                  let displayNode: React.ReactNode = '-';
 
-                  const val = (provVal || 0) + (prodVal || 0);
+                  if (showUpgrades) {
+                    if (row.isMaxed) {
+                      displayNode =
+                        oldVal > 0 ? (
+                          <Box
+                            component='span'
+                            sx={{ color: 'text.disabled', fontStyle: 'italic', fontSize: '0.75rem' }}
+                          >
+                            Maxed
+                          </Box>
+                        ) : (
+                          '-'
+                        );
+                    } else {
+                      const newVal = (row.nextProvisions?.[key] || 0) + (row.nextProduction?.[key] || 0);
+                      if (oldVal > 0 || newVal > 0) {
+                        const oldArea = row.width * row.length;
+                        const newArea = (row.nextWidth || row.width) * (row.nextLength || row.length);
+                        const delta = showPerSquare ? newVal / newArea - oldVal / oldArea : newVal - oldVal;
 
-                  let displayVal = '-';
-
-                  if (val > 0) {
-                    const num = showPerSquare ? val / (row.width * row.length) : val;
-                    displayVal = `${num.toLocaleString(undefined, { maximumFractionDigits: showPerSquare ? 1 : 0 })}`;
+                        if (Math.abs(delta) < 0.001) {
+                          displayNode = '0';
+                        } else {
+                          const isPositive = delta > 0;
+                          const color = isPositive ? 'success.main' : 'error.main';
+                          const sign = isPositive ? '+' : '';
+                          displayNode = (
+                            <Box component='span' sx={{ color, fontWeight: 'bold' }}>
+                              {sign}
+                              {delta.toLocaleString(undefined, { maximumFractionDigits: showPerSquare ? 1 : 0 })}
+                            </Box>
+                          );
+                        }
+                      }
+                    }
+                  } else {
+                    if (oldVal > 0) {
+                      const num = showPerSquare ? oldVal / (row.width * row.length) : oldVal;
+                      displayNode = num.toLocaleString(undefined, { maximumFractionDigits: showPerSquare ? 1 : 0 });
+                    }
                   }
 
                   return (
                     <TableCell key={key} align='right'>
-                      {displayVal}
+                      {displayNode}
                     </TableCell>
                   );
                 })}

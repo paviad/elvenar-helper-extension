@@ -143,13 +143,14 @@ export const CityPlanner = () => (
         <Badge
           badgeContent='NEW'
           color='secondary'
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
           sx={{
-            ml: 3, // Margin right to ensure spacing after the badge
             '& .MuiBadge-badge': {
               fontSize: '0.6rem',
               height: 16,
               minWidth: 16,
               px: 0.5,
+              ml: -2,
             },
           }}
         >
@@ -160,13 +161,14 @@ export const CityPlanner = () => (
         <Badge
           badgeContent='NEW'
           color='secondary'
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
           sx={{
-            ml: 3, // Margin right to ensure spacing after the badge
             '& .MuiBadge-badge': {
               fontSize: '0.6rem',
               height: 16,
               minWidth: 16,
               px: 0.5,
+              ml: -2,
             },
           }}
         >

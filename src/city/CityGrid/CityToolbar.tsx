@@ -1,7 +1,7 @@
 import GridViewIcon from '@mui/icons-material/GridView';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
-import { Button, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import { Badge, Button, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import React from 'react';
 
 interface CityToolbarProps {
@@ -153,7 +153,23 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
               </ToggleButton>
               <ToggleButton value='table' aria-label='table view'>
                 <Tooltip title='List/Table view'>
-                  <TableRowsIcon fontSize='small' />
+                  <Badge
+                    badgeContent='NEW'
+                    color='secondary'
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    sx={{
+                      '& .MuiBadge-badge': {
+                        fontSize: '0.6rem',
+                        height: 16,
+                        minWidth: 16,
+                        px: 0.5,
+                        mr: 1,
+                        mt: -0.7,
+                      },
+                    }}
+                  >
+                    <TableRowsIcon fontSize='small' />
+                  </Badge>
                 </Tooltip>
               </ToggleButton>
             </ToggleButtonGroup>
