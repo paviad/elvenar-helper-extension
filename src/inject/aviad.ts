@@ -1,3 +1,5 @@
+type DecorationEvent = unknown;
+
 declare global {
   interface Window {
     WebSocketUnchanged: typeof WebSocket;
@@ -59,6 +61,15 @@ declare global {
       };
       'de.innogames.onyx.worldmap.service.UnlockEncounterService': new () => {
         unlockEncounter: (q: number, r: number, encounterIndex: number, callback: (response: unknown) => void) => void;
+      };
+      'de.innogames.onyx.city.engine.events.IsoDecorationEvent': new (type: string, id: string) => DecorationEvent;
+    };
+    aviad_tv: {
+      getTreasures: (type: string) => { id: string }[];
+    };
+    aviad_silm: {
+      isoEngine: {
+        dispatchEvent: (event: DecorationEvent) => void;
       };
     };
   }

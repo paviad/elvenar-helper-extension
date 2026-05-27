@@ -1,5 +1,6 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { localCollectEventTreasure } from './local/localCollectEventTreasure';
 import { localProcessGuildData } from './local/localProcessGuildData';
 import { localProcessRankingsData } from './local/localProcessRankingsData';
 import { localProcessSpireDiplomacyGetData } from './local/localProcessSpireDiplomacyGetData';
@@ -250,5 +251,12 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'ArmyService',
       requestMethod: 'addUnit',
     },
+  },
+  {
+    responseSelector: {
+      requestClass: 'TreasureService',
+      requestMethod: 'spawnTreasure',
+    },
+    local: localCollectEventTreasure,
   },
 ];

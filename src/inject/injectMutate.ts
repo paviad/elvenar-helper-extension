@@ -178,8 +178,28 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
     );
 
     // de.innogames.onyx.spire.wrappers.SpireEncounter
-    // problem: constructor has arguments
     scriptText = patchCtorRegistryAssignment(scriptText, 'de.innogames.onyx.spire.wrappers.SpireEncounter', 'aviad_se');
+
+    // de.innogames.onyx.networking.services.TreasureService
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.networking.services.TreasureService',
+      'aviad_ts',
+    );
+
+    // de.innogames.onyx.city.treasure.model.TreasureViewModel
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.city.treasure.model.TreasureViewModel',
+      'aviad_tv',
+    );
+
+    // de.innogames.onyx.city.engine.snake.components.layers.SnakeInteractiveLayerMediator
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.city.engine.snake.components.layers.SnakeInteractiveLayerMediator',
+      'aviad_silm',
+    );
 
     const newScript = document.createElement('script');
     newScript.type = 'text/javascript';
