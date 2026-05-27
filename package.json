@@ -1,6 +1,6 @@
 {
   "name": "elven-assist",
-  "version": "8.1.0",
+  "version": "8.1.1",
   "description": "Unofficial extension to help with Elvenar city planning",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
@@ -53,7 +53,7 @@
     "ts-loader": "^9.5.7",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.4",
-    "web-ext": "^10.2.0",
+    "web-ext": "^0.0.1",
     "webpack": "^5.107.2",
     "webpack-cli": "^7.0.2",
     "webpack-manifest-plugin": "^6.0.1"
