@@ -1,25 +1,26 @@
-import React from 'react';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
+  Badge,
+  Box,
+  Button,
+  FormControlLabel,
+  Paper,
+  Snackbar,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Box,
-  FormControlLabel,
-  Switch,
   TableSortLabel,
-  Button,
-  Snackbar,
-  Badge,
 } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import React from 'react';
+import { formatResourceName } from '../../../util/formatResourceName';
+import { getBuildingProvisionsAndProduction } from '../../../util/getBuildingProvisionsAndProduction';
+import { useTabStore } from '../../../util/tabStore';
 import { useCity } from '../../CityContext';
 import { BuildingFinder } from '../../buildingFinder';
-import { getBuildingProvisionsAndProduction } from '../../../util/getBuildingProvisionsAndProduction';
-import { formatResourceName } from '../../../util/formatResourceName';
 
 interface TableRowData {
   id: number | string;
@@ -46,14 +47,20 @@ export const TableCityView = () => {
   const { blocks, race, searchTerm } = city;
   const [tableData, setTableData] = React.useState<TableRowData[]>([]);
   const [allResourceKeys, setAllResourceKeys] = React.useState<string[]>([]);
-  const [showPerSquare, setShowPerSquare] = React.useState(false);
-  const [showUpgrades, setShowUpgrades] = React.useState(false);
+
+  const showPerSquare = useTabStore((state) => state.showPerSquare);
+  const setShowPerSquare = useTabStore((state) => state.setShowPerSquare);
+
+  const showUpgrades = useTabStore((state) => state.showUpgrades);
+  const setShowUpgrades = useTabStore((state) => state.setShowUpgrades);
+
+  const orderBy = useTabStore((state) => state.tableOrderBy);
+  const setOrderBy = useTabStore((state) => state.setTableOrderBy);
+
+  const order = useTabStore((state) => state.tableOrder);
+  const setOrder = useTabStore((state) => state.setTableOrder);
+
   const [toastOpen, setToastOpen] = React.useState(false);
-
-  // Sorting State
-  const [orderBy, setOrderBy] = React.useState<string>('name');
-  const [order, setOrder] = React.useState<Order>('asc');
-
   React.useEffect(() => {
     async function buildData() {
       const finder = new BuildingFinder();
@@ -101,7 +108,7 @@ export const TableCityView = () => {
           // B. Next Level/Chapter Provisions & Production
           const nextBuilding = finder.getBuilding(block.gameId, block.level + 1);
           if (nextBuilding) {
-            row.isMaxed = false;
+            row.isMaxed = block.level === city.chapter;
             row.nextWidth = nextBuilding.width;
             row.nextLength = nextBuilding.length;
 
@@ -177,6 +184,16 @@ export const TableCityView = () => {
       if (showUpgrades) {
         if (a.isMaxed && !b.isMaxed) return order === 'asc' ? 1 : -1;
         if (!a.isMaxed && b.isMaxed) return order === 'asc' ? -1 : 1;
+      }
+
+      // Push 1xN or Nx1 buildings to the bottom if sorting by a resource other than population
+      const isResourceColumn = !['name', 'chapter', 'size'].includes(orderBy);
+      if (isResourceColumn && orderBy !== 'population') {
+        const aIsUnhelpable = a.width === 1 || a.length === 1;
+        const bIsUnhelpable = b.width === 1 || b.length === 1;
+
+        if (aIsUnhelpable && !bIsUnhelpable) return order === 'asc' ? 1 : -1;
+        if (!aIsUnhelpable && bIsUnhelpable) return order === 'asc' ? -1 : 1;
       }
 
       let aValue: number | string;

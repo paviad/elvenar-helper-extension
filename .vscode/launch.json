@@ -11,10 +11,10 @@
       "port": 9222,
       "webRoot": "${workspaceFolder}",
       "urlFilter": "chrome-extension://*",
-      "sourceMaps": true,
-      "pathMapping": {
-        "/": "${workspaceFolder}/"
-      }
+      "sourceMaps": true
+      // "pathMapping": {
+      //   "/": "${workspaceFolder}/"
+      // }
     }
   ]
 }

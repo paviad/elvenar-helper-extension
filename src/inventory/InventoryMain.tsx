@@ -60,20 +60,28 @@ function isAggregatedRowDisplay(row: InventoryItemWithStats | AggregatedRowDispl
 
 export const InventoryMain = () => {
   const [inventory, setInventory] = React.useState<InventoryItemWithStats[] | undefined>([]);
-  const [search, setSearch] = React.useState('');
-  const [typeFilter, setTypeFilter] = React.useState('');
-  const [sortBy, setSortBy] = React.useState<string>('');
-  const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
-  const [aggregate, setAggregate] = React.useState(false);
   const [toastOpen, setToastOpen] = React.useState(false);
   const [allResourceKeys, setAllResourceKeys] = React.useState<string[]>([]);
   const [goodsNames, setGoodsNames] = React.useState<Record<string, string>>({});
   const [boostedGoods, setBoostedGoods] = React.useState<string[]>([]);
-  const [showPerSquare, setShowPerSquare] = React.useState(false);
   const [finder, setFinder] = React.useState<BuildingFinder | null>(null);
 
   const accountId = useTabStore((state) => state.accountId);
   const navigate = useNavigate();
+
+  // Zustand Store UI State
+  const search = useTabStore((state) => state.invSearch);
+  const setSearch = useTabStore((state) => state.setInvSearch);
+  const typeFilter = useTabStore((state) => state.invTypeFilter);
+  const setTypeFilter = useTabStore((state) => state.setInvTypeFilter);
+  const sortBy = useTabStore((state) => state.invSortBy);
+  const setSortBy = useTabStore((state) => state.setInvSortBy);
+  const sortDir = useTabStore((state) => state.invSortDir);
+  const setSortDir = useTabStore((state) => state.setInvSortDir);
+  const aggregate = useTabStore((state) => state.invAggregate);
+  const setAggregate = useTabStore((state) => state.setInvAggregate);
+  const showPerSquare = useTabStore((state) => state.invShowPerSquare);
+  const setShowPerSquare = useTabStore((state) => state.setInvShowPerSquare);
 
   React.useEffect(() => {
     async function initializeFinder() {
