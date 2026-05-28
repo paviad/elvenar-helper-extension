@@ -1,3 +1,6 @@
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
+import { parseSocketMessageRaw } from '../overlay/parseSocketMessage';
+import { playerSpecificMatchers } from './playerSpecificMatchers';
 import { ReceivedWebsocketMessage } from './websocketMessages';
 
 let globalSendHook: ((message: string) => void) | null = null;
@@ -23,7 +26,11 @@ export class CustomWebSocket extends WebSocket {
     });
 
     super.onmessage = (event: MessageEvent) => {
-      this.interceptReceivedMessage(event);
+      try {
+        this.interceptReceivedMessage(event);
+      } catch (error) {
+        console.warn('ElvenAssist: Error in intercepting WebSocket message', error);
+      }
       this.onmessageListenerCallbackOriginal(event);
     };
   }
@@ -39,6 +46,11 @@ export class CustomWebSocket extends WebSocket {
     // Send the message to the window, where the content script can pick it up
     if (data.payload.value === '\n') {
       return;
+    }
+
+    if (typeof data.payload.value === 'string') {
+      const { body } = parseSocketMessageRaw(data.payload.value) || {};
+      matchAgainstLocalHandlers(body);
     }
 
     window.postMessage(data, '*');
@@ -79,3 +91,27 @@ export class CustomWebSocket extends WebSocket {
 export function getWebSocketSendHook(): ((message: string) => void) | null {
   return globalSendHook;
 }
+
+const matchAgainstLocalHandlers = (body: unknown) => {
+  const respArr = body as ElvenarRequestResponseEntry[];
+  if (!Array.isArray(respArr)) {
+    return;
+  }
+  for (const resp of respArr) {
+    if (resp?.__class__) {
+      const requestClass = resp.requestClass;
+      const requestMethod = resp.requestMethod;
+      const matchers = playerSpecificMatchers.filter((r) => r.responseSelector && r.local);
+      for (const matcher of matchers) {
+        if (
+          matcher.responseSelector!.requestClass === requestClass &&
+          matcher.responseSelector!.requestMethod === requestMethod
+        ) {
+          matcher.local!([resp]).catch((error) => {
+            console.error('Error in local handler for messageType', matcher, error);
+          });
+        }
+      }
+    }
+  }
+};

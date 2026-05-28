@@ -8,17 +8,17 @@ export interface SocketMessageBase {
 }
 
 export interface SocketMessageChatHistory extends SocketMessageBase {
-  type: 'ChatHistory';
+  type: 'chat/rpc/get-history';
   body: { event: string; payload: ChatPayload };
 }
 
 export interface SocketMessageWho extends SocketMessageBase {
-  type: 'Who';
+  type: 'chat/who';
   body: { event: string; payload: WhoPayload };
 }
 
 export interface SocketMessageSend extends SocketMessageBase {
-  type: 'SendMessage';
+  type: 'chat/send';
   body: SendPayload;
 }
 

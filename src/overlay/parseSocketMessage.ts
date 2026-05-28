@@ -6,6 +6,26 @@ import {
 } from '../model/socketMessages/socketMessage';
 
 export const parseSocketMessage = (data: string): SocketMessage | null => {
+  const { combinedType, headers, body } = parseSocketMessageRaw(data) || {};
+  switch (combinedType) {
+    case 'chat/rpc/get-history':
+      return { type: combinedType, headers, body } as SocketMessageChatHistory;
+    case 'chat/who':
+      return { type: combinedType, headers, body } as SocketMessageWho;
+    case 'chat/send':
+      return { type: combinedType, headers, body } as SocketMessageSend;
+    default:
+      return null;
+  }
+};
+
+interface ParsedSocketMessage {
+  combinedType: string | null;
+  headers: Record<string, string>;
+  body: unknown;
+}
+
+export const parseSocketMessageRaw = (data: string): ParsedSocketMessage | null => {
   /*
     Example data:
     -------------------
@@ -62,14 +82,5 @@ X-Correlation:848933052
   const method = headers['X-SocketServer-Method'];
   const combinedType = plugin && method ? `${plugin}/${method}` : null;
 
-  switch (combinedType) {
-    case 'chat/rpc/get-history':
-      return { type: 'ChatHistory', headers, body } as SocketMessageChatHistory;
-    case 'chat/who':
-      return { type: 'Who', headers, body } as SocketMessageWho;
-    case 'chat/send':
-      return { type: 'SendMessage', headers, body } as SocketMessageSend;
-    default:
-      return null;
-  }
+  return { combinedType, headers, body };
 };

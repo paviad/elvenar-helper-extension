@@ -82,7 +82,7 @@ export function OverlayMain() {
 
     if (!socketMessage) return;
 
-    if (socketMessage?.type === 'ChatHistory') {
+    if (socketMessage?.type === 'chat/rpc/get-history') {
       userMap.current =
         socketMessage.body.payload.users.reduce<Record<string, string>>((map, user) => {
           map[user.id] = user.metadata.public_name;
@@ -94,11 +94,11 @@ export function OverlayMain() {
       setChatMessages(socketMessage.body.payload.messages);
     }
 
-    if (socketMessage?.type === 'Who') {
+    if (socketMessage?.type === 'chat/who') {
       const userNames = socketMessage.body.payload.userIds.map((id) => userMap.current[id] || 'Unknown');
     }
 
-    if (socketMessage?.type === 'SendMessage') {
+    if (socketMessage?.type === 'chat/send') {
       const user = userMap.current[socketMessage.body.user] || 'Unknown';
       const msg = socketMessage.body.message;
       const uuid = socketMessage.headers['X-UUID'] || new Date().getTime().toString();

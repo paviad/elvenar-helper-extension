@@ -10,7 +10,7 @@ export interface PlayerSpecificMatcherSpecification {
     requestClass: string;
     requestMethod: string;
   };
-  local?: (response: ElvenarRequestResponseEntry[], sharedInfo: ExtensionSharedInfo) => Promise<unknown>; // local handling, don't propagate to overlay / service worker
+  local?: (response: ElvenarRequestResponseEntry[]) => Promise<unknown>; // local handling, don't propagate to overlay / service worker
 }
 
 export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [

@@ -56,7 +56,7 @@ export class GlobalHttpInterceptorService {
             ) {
               // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
 
-              matcher.local!([response], entry.sharedInfo).catch((error) => {
+              matcher.local!([response]).catch((error) => {
                 console.error('Error in local handler for messageType', matcher, error);
               });
             }
