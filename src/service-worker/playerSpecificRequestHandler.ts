@@ -16,7 +16,8 @@ import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdat
 import { processInventory } from '../elvenar/processInventory';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
-import { processQuest } from '../elvenar/processQuest';
+import { processQuestUpdates } from '../elvenar/processQuestUpdates';
+import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
 import { processTradeData } from '../elvenar/processTradeData';
@@ -83,13 +84,15 @@ export const playerSpecificRequestHandlerInternal = async (
     'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
     'Q:SpireService/getEncounter': processSpireEncounterStart,
     'Q:SpireDiplomacyService/submit': processSpireDiplomacySubmit,
-    'Q:QuestService/getUpdates': processQuest,
+    'R:SeasonalEventsService/getEvents': processSeasonalEvents,
 
     'R:CityResourcesService/getResources': processCityResourcesUpdate,
     'R:InventoryService/updateItems': processInventory,
     'R:CityMapService/reset': processCityMapServiceUpdate,
     'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
     'R:EffectsService/update': processActiveEffectsUpdate,
+
+    'R:QuestService/getUpdates': processQuestUpdates,
   };
 
   const processorFunction = processors[msg.payload.type];

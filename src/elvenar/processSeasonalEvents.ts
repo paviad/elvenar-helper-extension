@@ -2,7 +2,7 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountIdBySessionId, getAccountById, setAccountData } from './AccountManager';
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function processQuest(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
+export async function processSeasonalEvents(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; responseData: unknown }];
 
   const seasonalEventsService = json.find((r) => r.requestClass === 'SeasonalEventsService')?.responseData as

@@ -17,10 +17,9 @@ export interface Quest {
   args: Args;
 }
 
-export enum Args {
-  NoRewardWindowShowRewardBlimpsOverspill = 'no-reward-window, show-reward-blimps, overspill',
-  ShowInfoScreenNoReshowInfoScreen = 'show-info-screen, no-reshow-info-screen',
-}
+export type Args =
+  | 'no-reward-window, show-reward-blimps, overspill'
+  | 'show-info-screen, no-reshow-info-screen';
 
 export type Race = 'humans' | 'elves';
 
@@ -56,18 +55,11 @@ export interface ResourcesResources {
   ghost_in_a_bottle?: number;
 }
 
-export enum RewardType {
-  Good = 'good',
-  RewardSelectionKit = 'reward_selection_kit',
-}
+export type RewardType = 'good' | 'reward_selection_kit';
 
-export enum State {
-  Accepted = 'accepted',
-}
+export type State = 'accepted';
 
-export enum SubType {
-  MpeI = 'mpe_i',
-}
+export type SubType = 'mpe_i';
 
 export interface SuccessCondition {
   id: number;
@@ -79,12 +71,6 @@ export interface SuccessCondition {
   progress?: number;
 }
 
-export enum Title {
-  FellowshipAdventures = 'Fellowship Adventures',
-  Tensions = 'Tensions',
-}
+export type Title = 'Fellowship Adventures' | 'Tensions';
 
-export enum QuestType {
-  Repeating = 'repeating',
-  Story = 'story',
-}
+export type QuestType = 'repeating' | 'story';

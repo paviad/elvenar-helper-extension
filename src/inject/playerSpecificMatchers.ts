@@ -87,9 +87,9 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
     },
   },
   {
-    requestSelector: {
-      requestClass: 'QuestService',
-      requestMethod: 'getUpdates',
+    responseSelector: {
+      requestClass: 'SeasonalEventsService',
+      requestMethod: 'getEvents',
     },
   },
   {
@@ -110,4 +110,10 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'update',
     },
   },
+  {
+    responseSelector: {
+      requestClass: 'QuestService',
+      requestMethod: 'getUpdates',
+    },
+  }
 ];
