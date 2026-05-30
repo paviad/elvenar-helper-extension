@@ -17,9 +17,7 @@ export interface Quest {
   args: Args;
 }
 
-export type Args =
-  | 'no-reward-window, show-reward-blimps, overspill'
-  | 'show-info-screen, no-reshow-info-screen';
+export type Args = 'no-reward-window, show-reward-blimps, overspill' | 'show-info-screen, no-reshow-info-screen';
 
 export type Race = 'humans' | 'elves';
 

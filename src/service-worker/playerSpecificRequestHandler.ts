@@ -16,6 +16,7 @@ import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdat
 import { processInventory } from '../elvenar/processInventory';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
+import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
 import { processQuestUpdates } from '../elvenar/processQuestUpdates';
 import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
@@ -40,15 +41,17 @@ const handlerSubject = new Subject<{
   sender: chrome.runtime.MessageSender;
 }>();
 
-const subscription = handlerSubject.pipe(
-  concatMap(({ msg, sender }) => {
-    return from(playerSpecificRequestHandlerInternal(msg, sender));
-  }),
-).subscribe({
-  error: (err) => {
-    console.error('Error processing player specific request:', err);
-  },
-});
+const subscription = handlerSubject
+  .pipe(
+    concatMap(({ msg, sender }) => {
+      return from(playerSpecificRequestHandlerInternal(msg, sender));
+    }),
+  )
+  .subscribe({
+    error: (err) => {
+      console.error('Error processing player specific request:', err);
+    },
+  });
 
 export const playerSpecificRequestHandler = async (
   msg: InterceptedPlayerSpecificRequest,
@@ -91,6 +94,8 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:CityMapService/reset': processCityMapServiceUpdate,
     'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
     'R:EffectsService/update': processActiveEffectsUpdate,
+
+    'R:QuestMilestoneService/updateQuestMilestone': processQuestMilestoneUpdate,
 
     'R:QuestService/getUpdates': processQuestUpdates,
   };

@@ -1,11 +1,13 @@
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
 import SearchIcon from '@mui/icons-material/Search';
-import { Badge, Box, IconButton, Tab, Tabs, TextField } from '@mui/material';
-import React from 'react';
+import { Badge, Box, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material';
+import React, { useEffect } from 'react';
 import {
   clearActiveEffectsUpdatedListener,
+  clearGenericResponseListener,
   clearTradeParsedListener,
   setupActiveEffectsUpdatedListener,
+  setupGenericResponseListener,
   setupTradeParsedListener,
   TradeParsedMessage,
 } from '../chrome/messages';
@@ -19,6 +21,8 @@ import { parseSocketMessage } from './parseSocketMessage';
 import { TradeView } from './TradeView';
 import { DiscordButton } from '../widgets/DiscordButton';
 import { EeView } from './EeView';
+import { QuestJournal } from './QuestJournal';
+import { parseQuestExport } from '../util/parseQuestExport';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -29,15 +33,21 @@ export function OverlayMain() {
   const userMap = React.useRef<Record<string, string>>({});
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
   const tabRef = React.useRef<number>(tab);
+  const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
 
   const useOverlayStore = getOverlayStore();
   const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
-
   const chapter = useOverlayStore((state) => state.chapter);
+
+  // Connect Quests from Zustand Store
+  const quests = useOverlayStore((state) => state.quests);
+  const setQuests = useOverlayStore((state) => state.setQuests);
+  const [dropError, setDropError] = React.useState<string | undefined>(undefined);
 
   const chatTab = 0;
   const tradeTab = chapter >= 18 ? 1 : -1;
   const eeTab = chapter >= 18 ? 2 : 1;
+  const questsTab = chapter >= 18 ? 3 : 2;
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
   const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
@@ -148,6 +158,68 @@ export function OverlayMain() {
     setTab(newValue);
   };
 
+  useEffect(() => {
+    const listenerIds: string[] = [];
+
+    listenerIds.push(
+      setupGenericResponseListener<number | undefined>('R:QuestMilestoneService/updateQuestMilestone', (msg) => {
+        const progress = msg.payload;
+        setInitialQuestIndex(progress);
+        if (progress === undefined) {
+          setQuests(undefined);
+        }
+      }),
+    );
+
+    return () => {
+      listenerIds.forEach((id) => {
+        clearGenericResponseListener(id);
+      });
+    };
+  }, []);
+
+  // Handlers for the file drop area
+  const processFile = (file: File | undefined | null) => {
+    setDropError(undefined); // Clear previous errors on new attempt
+    if (!file) return;
+
+    if (file.type !== 'text/plain' && !file.name.endsWith('.txt')) {
+      setDropError('Invalid file type. Please drop a valid .txt file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const parsedQuests = parseQuestExport(content);
+        setQuests(parsedQuests);
+      } catch (error) {
+        if (error instanceof Error) {
+          setDropError(error.message);
+        } else {
+          setDropError('An unknown error occurred while parsing the quest file.');
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    processFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Required to allow dropping
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    processFile(file);
+  };
+
   return (
     <div style={{ height: '100%' }}>
       <Box
@@ -165,6 +237,7 @@ export function OverlayMain() {
           <Tab label='Chat' />
           {chapter >= 18 && <Tab label='Trade' />}
           <Tab label='EE' />
+          <Tab label='Quests' />
         </Tabs>
         {tab === chatTab && (
           <>
@@ -207,6 +280,87 @@ export function OverlayMain() {
       )}
       {chapter >= 18 && tab === tradeTab && <TradeView />}
       {tab == eeTab && <EeView />}
+      {tab === questsTab &&
+        (quests === undefined ? (
+          <Box
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onClick={() => document.getElementById('quest-file-upload')?.click()}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexGrow: 1,
+              boxSizing: 'border-box',
+              minHeight: 300,
+              p: 4,
+              m: 2,
+              textAlign: 'center',
+              border: '2px dashed',
+              borderColor: dropError ? 'error.main' : 'divider',
+              borderRadius: 2,
+              bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
+              cursor: 'pointer',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
+              },
+            }}
+          >
+            <input
+              type='file'
+              id='quest-file-upload'
+              accept='.txt'
+              style={{ display: 'none' }}
+              onChange={handleFileInput}
+            />
+
+            {dropError ? (
+              <>
+                <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
+                  Upload Failed
+                </Typography>
+                <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
+                  {dropError}
+                </Typography>
+                <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+                  Click or drag a new file to try again.
+                </Typography>
+              </>
+            ) : (
+              <>
+                <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
+                  No quests loaded
+                </Typography>
+                <Typography variant='body2' sx={{ color: 'text.disabled' }}>
+                  Drag and drop a .txt quest export file here, or click to browse.
+                </Typography>
+              </>
+            )}
+          </Box>
+        ) : initialQuestIndex === undefined ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexGrow: 1,
+              p: 4,
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant='h6' sx={{ color: 'text.secondary' }}>
+              There is no event currently in progress.
+            </Typography>
+          </Box>
+        ) : (
+          <QuestJournal
+            quests={quests}
+            initialQuestIndex={initialQuestIndex}
+            onClearQuests={() => setQuests(undefined)}
+          />
+        ))}{' '}
     </div>
   );
 }

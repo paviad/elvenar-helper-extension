@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
+import { ParsedQuestExport } from '../util/parseQuestExport';
 
 interface OverlayState {
   offeredGoods: string[];
@@ -22,6 +23,8 @@ interface OverlayState {
   setAutoOpenTrade: (autoOpen: boolean) => void;
   eeUpdate: number;
   triggerEeUpdate: () => void;
+  quests: ParsedQuestExport | undefined;
+  setQuests: (quests: ParsedQuestExport | undefined) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -50,6 +53,8 @@ export const generateOverlayStore = (accountId: string) => {
         setAutoOpenTrade: (autoOpen) => set({ autoOpenTrade: autoOpen }),
         eeUpdate: 0,
         triggerEeUpdate: () => set((state) => ({ eeUpdate: state.eeUpdate + 1 })),
+        quests: undefined,
+        setQuests: (quests) => set({ quests }),
       }),
       {
         name: `overlay-store-${accountId}`,

@@ -145,7 +145,7 @@ export class BuildingFinder {
       spellFragments: bldg.spellFragments,
       chapter: (hint && parseInt(hint)) || undefined,
       sourceBuilding: bldg,
-      maxStage: this.getMaxStage([bldg])
+      maxStage: this.getMaxStage([bldg]),
     } satisfies BuildingEx;
   }
 

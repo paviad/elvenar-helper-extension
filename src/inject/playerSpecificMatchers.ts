@@ -115,5 +115,11 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'QuestService',
       requestMethod: 'getUpdates',
     },
-  }
+  },
+  {
+    responseSelector: {
+      requestClass: 'QuestMilestoneService',
+      requestMethod: 'updateQuestMilestone',
+    },
+  },
 ];
