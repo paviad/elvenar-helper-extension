@@ -1,3 +1,4 @@
+import React from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
   Badge,
@@ -15,12 +16,11 @@ import {
   TableRow,
   TableSortLabel,
 } from '@mui/material';
-import React from 'react';
 import { formatResourceName } from '../../../util/formatResourceName';
 import { getBuildingProvisionsAndProduction } from '../../../util/getBuildingProvisionsAndProduction';
 import { useTabStore } from '../../../util/tabStore';
-import { useCity } from '../../CityContext';
 import { BuildingFinder } from '../../buildingFinder';
+import { useCity } from '../../CityContext';
 
 interface TableRowData {
   id: number | string;

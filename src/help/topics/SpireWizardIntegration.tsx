@@ -1,11 +1,11 @@
 import React from 'react';
-import { Typography, Box, Divider, List, ListItem, ListItemText, Alert, Link, Paper } from '@mui/material';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import SyncIcon from '@mui/icons-material/Sync';
 import HandshakeIcon from '@mui/icons-material/Handshake';
-import SecurityIcon from '@mui/icons-material/Security';
-import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutlined';
+import SecurityIcon from '@mui/icons-material/Security';
+import SyncIcon from '@mui/icons-material/Sync';
+import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
+import { Alert, Box, Divider, Link, List, ListItem, ListItemText, Paper, Typography } from '@mui/material';
 
 export const SpireWizardIntegration = () => {
   const splitViewSrc =

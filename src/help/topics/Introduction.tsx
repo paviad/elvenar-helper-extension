@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box, Paper, Button, SvgIcon, Chip } from '@mui/material';
+import { Box, Button, Chip, Paper, SvgIcon, Typography } from '@mui/material';
 
 export const Introduction = () => (
   <Box>

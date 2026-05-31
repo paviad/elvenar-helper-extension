@@ -1,5 +1,6 @@
-import { Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { Box } from '@mui/material';
+import { getAccountById } from '../elvenar/AccountManager';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { State } from '../model/cityEntity';
 import { formatResourceName } from '../util/formatResourceName';
@@ -11,9 +12,8 @@ import { RenderLegend } from './Legend/RenderLegend';
 import { RenderMoveLog } from './MoveLog/RenderMoveLog';
 import { RuneShards } from './RuneShards';
 import { SwitchableProduction, SwitchableProductionViewModel } from './SwitchableProduction';
-import { WorkingState } from './WorkingState';
-import { getAccountById } from '../elvenar/AccountManager';
 import { TranscendenceStatus, TranscendenceViewModel } from './TranscendenceStatus';
+import { WorkingState } from './WorkingState';
 
 export function CityView() {
   return (

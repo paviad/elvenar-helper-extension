@@ -1,10 +1,10 @@
+import React from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material';
-import React from 'react';
+import { getFromStorage, saveToStorage } from '../../chrome/storage';
 import { useCity } from '../CityContext';
 import { colorDescriptions } from './colorDescriptions';
 import { getTypeColor } from './getTypeColor';
-import { getFromStorage, saveToStorage } from '../../chrome/storage';
 
 export function RenderLegend() {
   const s = useCity();

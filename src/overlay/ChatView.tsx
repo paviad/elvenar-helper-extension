@@ -1,10 +1,10 @@
+import React from 'react';
 import { IconButton } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import React from 'react';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import { getOverlayStore } from './overlayStore';

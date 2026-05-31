@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Divider, Stack, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
 import { formatTimeLeft } from '../util/formatTimeLeft';
 
 export interface TranscendenceViewModel {

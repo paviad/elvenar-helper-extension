@@ -40,9 +40,7 @@ export const parseQuestExport = (content: string): ParsedQuestExport => {
 
   // Validation: Ensure the file actually looks like a quest export
   if (tasks.length < 20) {
-    throw new Error(
-      `Invalid quest file format. Please ensure you are uploading the correct .txt export.`
-    );
+    throw new Error(`Invalid quest file format. Please ensure you are uploading the correct .txt export.`);
   }
 
   return tasks;

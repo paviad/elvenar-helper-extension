@@ -1,6 +1,6 @@
 import { EncounterData } from '../model/spire';
-import { sleep } from './spirewizard-inject';
 import { backTranslations } from './backTranslations';
+import { sleep } from './spirewizard-inject';
 
 export const clickSelectResources = async (encounterData: EncounterData) => {
   const resources = Object.keys(encounterData.diplomacy.costOptions.resources);

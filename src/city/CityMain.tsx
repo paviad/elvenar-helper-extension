@@ -1,5 +1,5 @@
-import { Box, Container, Stack } from '@mui/material';
 import React from 'react';
+import { Box, Container, Stack } from '@mui/material';
 import { CityView } from './CityView';
 import { UnsavedChangesGuard } from './UnsavedChangesGuard';
 

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PeopleIcon from '@mui/icons-material/People';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
@@ -14,10 +15,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
 import { Building } from '../model/building';
-import { useCity } from './CityContext';
 import { calculateCityBonuses } from './calculateCityBonuses';
+import { useCity } from './CityContext';
 
 export const CityResourceSummary = () => {
   const city = useCity();

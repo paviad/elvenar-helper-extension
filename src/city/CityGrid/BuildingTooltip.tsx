@@ -1,11 +1,11 @@
+import React from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Box, Divider, Typography } from '@mui/material';
-import React from 'react';
 import { BuildingEx } from '../../model/buildingEx';
 import { formatBuildingType } from '../../util/formatBuildingType';
 import { formatResourceName } from '../../util/formatResourceName';
-import { useCity } from '../CityContext';
 import { calculateCityBonuses } from '../calculateCityBonuses';
+import { useCity } from '../CityContext';
 
 interface BuildingTooltipProps {
   building: BuildingEx;

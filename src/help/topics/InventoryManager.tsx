@@ -1,10 +1,11 @@
 import React from 'react';
-import { Typography, Box, Divider, List, ListItem, ListItemText, Badge } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import AssessmentIcon from '@mui/icons-material/Assessment'; // For stats/analysis
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'; // For resale/value
-import GroupWorkIcon from '@mui/icons-material/GroupWork'; // For grouping/aggregation
 import AddLocationIcon from '@mui/icons-material/AddLocation'; // For placing buildings
+import AssessmentIcon from '@mui/icons-material/Assessment'; // For stats/analysis
+
+import GroupWorkIcon from '@mui/icons-material/GroupWork'; // For grouping/aggregation
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'; // For resale/value
+import SearchIcon from '@mui/icons-material/Search';
+import { Badge, Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
 
 export const InventoryManager = () => (
   <Box>

@@ -1,18 +1,17 @@
-import { Box, Stack } from '@mui/material';
 import React from 'react';
+import { Box, Stack } from '@mui/material';
+import { getFromStorage, saveToStorage } from '../chrome/storage';
 import { generateCity } from '../city/generateCity';
 import { getAccountById } from '../elvenar/AccountManager';
-import { FaQuest } from '../elvenar/Accounts';
-import { AccountData } from '../elvenar/Accounts';
+import { AccountData, FaQuest } from '../elvenar/Accounts';
 import { getEffects } from '../elvenar/getEffects';
 import { Badges } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
+import { badgeSpriteInfo } from './badgeSpriteInfo';
+import { extractBadgesInProduction } from './extractBadgesInProduction';
 import FaControlPanel from './FaControlPanel';
 import FaProgress from './FaProgress';
 import { ProductionTimeline } from './ProductionTimeline';
-import { badgeSpriteInfo } from './badgeSpriteInfo';
-import { extractBadgesInProduction } from './extractBadgesInProduction';
-import { getFromStorage, saveToStorage } from '../chrome/storage';
 
 export function FellowshipAdventure() {
   const [badgesInProduction, setBadgesInProduction] = React.useState<Record<string, Record<number, number>>>({});

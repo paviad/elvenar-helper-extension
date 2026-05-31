@@ -1,4 +1,7 @@
 import React from 'react';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import LockClockIcon from '@mui/icons-material/LockClock';
 import {
   Box,
   Card,
@@ -12,9 +15,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import LockClockIcon from '@mui/icons-material/LockClock';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { ParsedQuestExport, QuestTaskPart } from '../util/parseQuestExport';
 
 interface QuestJournalProps {
@@ -29,7 +29,16 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({ quests, initialQuest
   const renderTaskPart = (part: QuestTaskPart) => {
     if (Array.isArray(part)) {
       return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', alignSelf: 'center', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flexWrap: 'wrap',
+            alignSelf: 'center',
+            justifyContent: 'center',
+          }}
+        >
           {part.map((orOption, i) => (
             <React.Fragment key={i}>
               <Typography variant='body2' sx={{ fontWeight: 600 }}>

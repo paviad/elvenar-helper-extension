@@ -1,6 +1,6 @@
 import { DiplomacySubmitData } from '../model/spire';
 import { backTranslations } from './backTranslations';
-import { sleep, resultColors } from './spirewizard-inject';
+import { resultColors, sleep } from './spirewizard-inject';
 
 export const clickSubmitDiplomacy = async (diplomacySubmitData: DiplomacySubmitData) => {
   const turn = diplomacySubmitData.turn;

@@ -1,6 +1,6 @@
 import React from 'react';
-import { MarkerData, MarkerTimeline } from './MarkerTimeline';
 import { badgeSpriteInfo } from './badgeSpriteInfo';
+import { MarkerData, MarkerTimeline } from './MarkerTimeline';
 
 export function ProductionTimeline(props: {
   badgesInProduction: Record<string, Record<number, number>>;

@@ -1,19 +1,19 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import React, { useEffect, useMemo, useState } from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import SortByAlphaIcon from '@mui/icons-material/SortByAlpha';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import NumbersIcon from '@mui/icons-material/Numbers';
+import SortByAlphaIcon from '@mui/icons-material/SortByAlpha';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
-  Typography,
+  Divider,
   IconButton,
-  Tooltip,
   ToggleButton,
   ToggleButtonGroup,
-  Divider,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import { useCity } from './CityContext';
 

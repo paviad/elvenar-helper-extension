@@ -1,7 +1,7 @@
+import React, { useEffect } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { Badge, Box, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material';
-import React, { useEffect } from 'react';
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
@@ -14,15 +14,15 @@ import {
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { expandPanel } from '../overlay';
+import { parseQuestExport } from '../util/parseQuestExport';
+import { DiscordButton } from '../widgets/DiscordButton';
 import { ChatView } from './ChatView';
+import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
-import { TradeView } from './TradeView';
-import { DiscordButton } from '../widgets/DiscordButton';
-import { EeView } from './EeView';
 import { QuestJournal } from './QuestJournal';
-import { parseQuestExport } from '../util/parseQuestExport';
+import { TradeView } from './TradeView';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);

@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import BusinessIcon from '@mui/icons-material/Business'; // Fallback icon
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
@@ -17,9 +18,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React, { useMemo } from 'react';
-import { BuildingConfig, BuildingDefinition, CATEGORIES } from './CATEGORIES';
 import { BuildingConfiguration } from './BuildingConfiguration';
+import { BuildingConfig, BuildingDefinition, CATEGORIES } from './CATEGORIES';
 
 interface NewBuildingSelectorProps {
   onSelectBuilding: (building: BuildingDefinition, config: BuildingConfig) => void | Promise<void>;

@@ -1,8 +1,8 @@
+import React from 'react';
 import GridViewIcon from '@mui/icons-material/GridView';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import { Badge, Button, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
-import React from 'react';
 
 interface CityToolbarProps {
   isDetached: boolean;

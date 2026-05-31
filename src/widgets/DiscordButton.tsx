@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconButton, Tooltip, SvgIcon, IconButtonProps } from '@mui/material';
+import { IconButton, IconButtonProps, SvgIcon, Tooltip } from '@mui/material';
 
 interface DiscordButtonProps extends IconButtonProps {
   discordUrl: string;

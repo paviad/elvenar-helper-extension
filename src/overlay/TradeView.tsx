@@ -1,5 +1,5 @@
-import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import React from 'react';
+import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import { getOverlayStore } from './overlayStore';
 
 const goodNames: Record<string, { name: string; x: number; y: number }> = {

@@ -25,7 +25,6 @@ const keyHandler = (event: KeyboardEvent) => {
 
   // 2. Handle KeyDown
   if (event.type === 'keydown') {
-
     // -- STATE: Waiting for the second key in the sequence --
     if (waitingForSecondKey) {
       // Ignore modifier keys so holding/releasing Alt doesn't break the sequence
@@ -42,7 +41,7 @@ const keyHandler = (event: KeyboardEvent) => {
 
       resetSequence(); // Any standard keypress terminates the wait
 
-      // We intercepted a second key. Always swallow its down-stroke AND up-stroke, 
+      // We intercepted a second key. Always swallow its down-stroke AND up-stroke,
       // regardless of whether it's valid or invalid.
       event.preventDefault();
       event.stopPropagation();
@@ -52,7 +51,7 @@ const keyHandler = (event: KeyboardEvent) => {
         sequence: `Alt+C -> ${event.code}`,
         code: event.code,
         altKey: event.altKey,
-        type: event.type
+        type: event.type,
       };
 
       window.postMessage({

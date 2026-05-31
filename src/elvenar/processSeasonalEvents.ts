@@ -1,5 +1,5 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { getAccountIdBySessionId, getAccountById, setAccountData } from './AccountManager';
+import { getAccountById, getAccountIdBySessionId, setAccountData } from './AccountManager';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function processSeasonalEvents(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Typography, Box, Divider, List, ListItem, ListItemText } from '@mui/material';
-import TimelineIcon from '@mui/icons-material/Timeline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import { Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
 
 export const FellowshipAdventure = () => (
   <Box>

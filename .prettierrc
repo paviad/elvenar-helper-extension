@@ -5,5 +5,19 @@
   "printWidth": 120,
   "trailingComma": "all",
   "endOfLine": "crlf",
-  "bracketSpacing": true
+  "bracketSpacing": true,
+  "plugins": [
+    "@ianvs/prettier-plugin-sort-imports"
+  ],
+  "importOrder": [
+    "<BUILTIN_MODULES>",
+    "^react$",
+    "<THIRD_PARTY_MODULES>",
+    "^@/(.*)$",
+    "^[./]"
+  ],
+  "importOrderParserPlugins": [
+    "typescript",
+    "jsx"
+  ]
 }

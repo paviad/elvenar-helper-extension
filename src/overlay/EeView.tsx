@@ -1,12 +1,12 @@
+import React, { useEffect, useMemo, useState } from 'react';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'; // Represents enchantment
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import { Box, Chip, CircularProgress, Divider, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
-import React, { useEffect, useMemo, useState } from 'react';
 import { loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { formatTimeLeft } from '../util/formatTimeLeft';
 import { EeMissingBuilding, getEeMissingBuildings } from '../util/getEeMissingBuildings';
 import { getAccountId, getOverlayStore } from './overlayStore';
-import { formatTimeLeft } from '../util/formatTimeLeft';
 
 export const EeView = () => {
   const overlayStore = getOverlayStore();

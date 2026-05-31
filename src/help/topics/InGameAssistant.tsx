@@ -1,9 +1,9 @@
 import React from 'react';
-import { Typography, Box, Divider, List, ListItem, ListItemText, ListItemIcon, Chip } from '@mui/material';
-import KeyboardIcon from '@mui/icons-material/Keyboard';
-import ChatIcon from '@mui/icons-material/Chat';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import ChatIcon from '@mui/icons-material/Chat';
+import KeyboardIcon from '@mui/icons-material/Keyboard';
+import { Box, Chip, Divider, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 
 export const InGameAssistant = () => (
   <Box>

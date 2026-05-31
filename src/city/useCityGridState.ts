@@ -10,6 +10,7 @@ import {
 } from '../elvenar/AccountManager';
 import { getBuildings } from '../elvenar/getBuildings';
 import { useHelper } from '../helper/HelperContext';
+import { generateInventory } from '../inventory/generateInventory';
 import { CityEntity, CityEntityEx } from '../model/cityEntity';
 import { UnlockedArea } from '../model/unlockedArea';
 import { generateUniqueId } from '../util/generateUniqueId';
@@ -23,7 +24,6 @@ import { getEntityMaxLevel } from './CityGrid/getEntityMaxLevel';
 import { resetMovedInPlace, saveBack } from './generateCity';
 import { getChapterFromEntity, getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
-import { generateInventory } from '../inventory/generateInventory';
 
 interface ShowLevelDialogData {
   open: boolean;

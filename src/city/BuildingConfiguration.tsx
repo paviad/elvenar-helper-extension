@@ -1,10 +1,10 @@
+import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, IconButton, Paper, Stack, Typography } from '@mui/material';
-import React from 'react';
+import { getMaxChapter } from '../elvenar/getMaxChapter';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { knownTypes } from './Legend/knownTypes';
 import { NumericInputControl } from './NumericInputControl';
-import { getMaxChapter } from '../elvenar/getMaxChapter';
 
 interface BuildingConfigurationProps {
   building: BuildingDefinition;

@@ -1,10 +1,10 @@
+import React, { useEffect, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { useCity } from './CityContext';
-import { formatResourceName } from '../util/formatResourceName';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { State } from '../model/cityEntity';
+import { formatResourceName } from '../util/formatResourceName';
+import { useCity } from './CityContext';
 
 export interface SwitchableProductionViewModel {
   title: string;

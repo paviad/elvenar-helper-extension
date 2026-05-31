@@ -1,8 +1,8 @@
 import React from 'react';
 import { useCity } from '../../CityContext';
-import { IsometricBlockRect } from './IsometricBlockRect';
 import { handleIsoMouseMove } from './handleIsoMouseMove';
 import { handleIsoMouseUp } from './handleIsoMouseUp';
+import { IsometricBlockRect } from './IsometricBlockRect';
 
 const darken = (color: string, amount: number) => {
   if (!color.startsWith('#')) return 'gray';

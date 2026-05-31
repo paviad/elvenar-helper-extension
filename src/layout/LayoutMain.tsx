@@ -1,15 +1,15 @@
-import MenuIcon from '@mui/icons-material/Menu';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
-import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography, Badge } from '@mui/material';
 import React from 'react';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
+import MenuIcon from '@mui/icons-material/Menu';
+import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
 import { getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
 import HelperAvatar from '../helper/HelperAvatar';
 import { useHelper } from '../helper/HelperContext';
 import { useTabStore } from '../util/tabStore';
-import { AboutDialog } from './AboutDialog';
 import { DiscordButton } from '../widgets/DiscordButton';
+import { AboutDialog } from './AboutDialog';
 
 const ERROR_BAR_HEIGHT = 48; // px
 

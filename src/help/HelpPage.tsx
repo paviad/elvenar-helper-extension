@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, List, ListItemButton, ListItemText, Typography, Divider, Drawer, Chip } from '@mui/material';
+import { Box, Chip, Divider, Drawer, List, ListItemButton, ListItemText, Typography } from '@mui/material';
 import { HELP_SECTIONS } from './helpData';
 import { HelpTopic } from './HelpTopic';
 

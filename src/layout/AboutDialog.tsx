@@ -1,5 +1,5 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Typography } from '@mui/material';
 import React from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Typography } from '@mui/material';
 import { EXTENSION_DATE, EXTENSION_NAME, EXTENSION_VERSION } from './extensionAboutInfo';
 
 export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => void }) {

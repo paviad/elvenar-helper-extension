@@ -9,8 +9,7 @@ import { SeasonalEvent } from '../model/seasonalEvent';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 import { generateAccountId, getAccountBySessionId, setAccountData } from './AccountManager';
-import { FaQuest } from './Accounts';
-import { AccountData } from './Accounts';
+import { AccountData, FaQuest } from './Accounts';
 
 export async function processCityData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];
