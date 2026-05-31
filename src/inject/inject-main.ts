@@ -1,4 +1,5 @@
 import { CustomWebSocket } from './customWebSocket';
+import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
@@ -20,3 +21,5 @@ console.log('ElvenAssist: Finished adding interceptor to WebSocket');
 
 const xhrInterceptor = new GlobalHttpInterceptorService();
 console.log('ElvenAssist: Finished adding interceptor to XMLHttpRequest');
+
+setupKeyHandlers();

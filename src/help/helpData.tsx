@@ -1,8 +1,9 @@
 import React from 'react';
-import { Introduction } from './topics/Introduction';
 import { CityPlanner } from './topics/CityPlanner';
-import { InventoryManager } from './topics/InventoryManager';
 import { FellowshipAdventure } from './topics/FellowshipAdventure';
+import { InGameAssistant } from './topics/InGameAssistant';
+import { Introduction } from './topics/Introduction';
+import { InventoryManager } from './topics/InventoryManager';
 import { SpireWizardIntegration } from './topics/SpireWizardIntegration';
 
 export interface HelpSection {
@@ -17,6 +18,12 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'intro',
     title: 'Introduction',
     content: <Introduction />,
+  },
+  {
+    id: 'in-game-assistant',
+    title: 'In-Game Assistant',
+    content: <InGameAssistant />,
+    isNew: true,
   },
   {
     id: 'city-planner',

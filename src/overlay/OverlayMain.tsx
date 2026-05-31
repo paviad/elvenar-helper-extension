@@ -57,19 +57,31 @@ export function OverlayMain() {
 
   // Keyboard shortcut: 'C' expands overlay and goes to chat tab
   React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyC = (event: MessageEvent) => {
+      if (event.source !== window || event.data.type !== 'capturedAltC') {
+        return;
+      }
+      const code = event.data.payload.code;
+      const tabDic = {
+        KeyC: chatTab,
+        KeyE: eeTab,
+        KeyQ: questsTab,
+      };
+      if (!(code in tabDic)) {
+        return;
+      }
       const overlayExpanded = useOverlayStore.getState().overlayExpanded;
-      if (event.code === 'KeyC' && event.altKey && !event.repeat && !event.ctrlKey && !event.metaKey) {
-        if (overlayExpanded && tabRef.current === 0) {
-          expandPanel(false);
-        } else {
-          expandPanel(true);
-          setTab(0); // 0 is the Chat tab
-        }
+      const requestedTab = tabDic[code as keyof typeof tabDic];
+      if (overlayExpanded && tabRef.current === requestedTab) {
+        expandPanel(false);
+      } else {
+        expandPanel(true);
+        setTab(requestedTab); // Set the tab based on the captured key
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    window.addEventListener('message', handleKeyC);
+    return () => window.removeEventListener('message', handleKeyC);
   }, []);
 
   React.useEffect(() => {

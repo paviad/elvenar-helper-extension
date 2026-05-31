@@ -1,6 +1,6 @@
+import React from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal, Paper, Typography } from '@mui/material';
-import React from 'react';
 import { EXTENSION_NAME, EXTENSION_VERSION } from '../layout/extensionAboutInfo';
 
 interface HelpDialogProps {
@@ -18,8 +18,8 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 650,
-          height: 410,
+          width: 700,
+          height: 450,
           p: 0,
           outline: 'none',
           display: 'flex',
@@ -92,9 +92,9 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
                 <br />
                 Press{' '}
                 <span style={{ fontFamily: 'monospace', background: '#333', padding: '2px 6px', borderRadius: 4 }}>
-                  Alt+C
+                  Alt+C, C
                 </span>{' '}
-                to quickly toggle the chat view.
+                to quickly toggle the chat view. (The 2nd keystroke may be E or Q to open other panels.)
               </li>
             </Box>
           </Typography>
