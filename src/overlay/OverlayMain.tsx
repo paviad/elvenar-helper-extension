@@ -15,7 +15,12 @@ import {
   setupTradeParsedListener,
   TradeParsedMessage,
 } from '../chrome/messages';
-import { getAccountById, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
+import {
+  getAccountById,
+  loadAccountManagerFromStorage,
+  loadSingleAccountFromStorage,
+  saveAllAccounts,
+} from '../elvenar/AccountManager';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { KpHuntData } from '../model/kpHuntData';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
@@ -27,13 +32,14 @@ import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { KpHuntOpportunities } from './KpHuntOpportunities';
 import { MessagesView } from './MessagesView';
+import { NeighbourlyHelp } from './NeighbourlyHelp';
 import { getAccountId, getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
 import { SwapsView } from './SwapsView';
 import { TradeView } from './TradeView';
 
-type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'swaps' | 'kphunt';
+type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'swaps' | 'kphunt' | 'nhelp';
 
 interface OverlayTab {
   key: OverlayTabKey;
@@ -60,6 +66,8 @@ export function OverlayMain() {
   const useOverlayStore = getOverlayStore();
   const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
   const chapter = useOverlayStore((state) => state.chapter);
+
+  const [refreshNeighborlyHelp, triggerRefreshNeighborlyHelp] = React.useReducer((x) => x + 1, 0);
 
   // Connect Quests from Zustand Store
   const quests = useOverlayStore((state) => state.quests);
@@ -96,6 +104,7 @@ export function OverlayMain() {
       { key: 'messages', label: 'Messages', shortcut: 'KeyM' },
       { key: 'swaps', label: 'Swaps', shortcut: 'KeyS', isNew: true },
       { key: 'kphunt', label: 'KP Hunt' },
+      { key: 'nhelp', label: 'N.Help' },
     ],
     [chapter],
   );
@@ -323,6 +332,16 @@ export function OverlayMain() {
         if (progress === undefined) {
           setQuests(undefined);
         }
+      }),
+    );
+
+    listenerIds.push(
+      setupGenericResponseListener<Record<string, number>>('R:CityResourcesService/getResources', (msg) => {
+        async function Do() {
+          await loadSingleAccountFromStorage(getAccountId()!);
+          triggerRefreshNeighborlyHelp();
+        }
+        void Do();
       }),
     );
 
@@ -563,6 +582,7 @@ export function OverlayMain() {
             kpInstantsInventory={kpInstantsInventory}
           />
         )}
+        {tabKey === 'nhelp' && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
       </div>
       {retrievingCounter > 0 && (
         <Box

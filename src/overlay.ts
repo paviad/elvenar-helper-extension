@@ -1,8 +1,12 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import {
   setupCityDataUpdatedListener,
+  setupHelpPerformedUpdateProvinceListener,
+  setupInitialWorldMapDataListener,
   setupMessageListener,
+  setupNeighbourHelpDataListener,
   setupRetrievingCounterUpdateListener,
+  setupWorldNeighborsUpdatedListener,
 } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
@@ -331,6 +335,25 @@ const initFunc = () => {
   setupRetrievingCounterUpdateListener(({ tabId, retrievingCounter }) => {
     const store = getOverlayStore();
     store.getState().setRetrievingCounter(retrievingCounter);
+  });
+  setupWorldNeighborsUpdatedListener(({ worldNeighbors }) => {
+    console.log('Received worldNeighborsUpdated message:', worldNeighbors);
+    const store = getOverlayStore();
+    console.log('received world neighbors', worldNeighbors.filter(r=>r.cool_down).length);
+    store.getState().setWorldNeighbors(worldNeighbors);
+  });
+  setupInitialWorldMapDataListener(({ initialWorldMapData }) => {
+    console.log('Received initialWorldMapData message:', initialWorldMapData);
+    const store = getOverlayStore();
+    store.getState().setInitialWorldMapData(initialWorldMapData);
+  });
+  setupNeighbourHelpDataListener(({ neighbourHelpData }) => {
+    console.log('Received neighbourHelpData message:', neighbourHelpData);
+    const store = getOverlayStore();
+    store.getState().setNeighbourHelpData(neighbourHelpData);
+  });
+  setupHelpPerformedUpdateProvinceListener(({ updatedProvince }) => {
+    console.log('Received helpPerformedUpdateProvince message:', updatedProvince);
   });
 };
 

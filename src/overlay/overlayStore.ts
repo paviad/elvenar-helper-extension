@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
 
@@ -44,7 +47,13 @@ interface OverlayState {
   swapsClearedAt?: number;
   setSwapsClearedAt: (at: number) => void;
   retrievingCounter: number;
-  setRetrievingCounter: (count: number) => void;
+  setRetrievingCounter: (counter: number) => void;
+  initialWorldMapData: InitialWorldMapData | null;
+  setInitialWorldMapData: (data: InitialWorldMapData) => void;
+  worldNeighbors: WorldNeighbor[];
+  setWorldNeighbors: (neighbors: WorldNeighbor[]) => void;
+  neighbourHelpData?: NeighbourHelpData;
+  setNeighbourHelpData: (data: NeighbourHelpData) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -107,15 +116,32 @@ export const generateOverlayStore = (accountId: string) => {
         swapsClearedAt: undefined,
         setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
         retrievingCounter: 0,
-        setRetrievingCounter: (count) => set({ retrievingCounter: count }),
+        setRetrievingCounter: (counter) => set({ retrievingCounter: counter }),
+        initialWorldMapData: null,
+        setInitialWorldMapData: (data) => set({ initialWorldMapData: data }),
+        worldNeighbors: [],
+        setWorldNeighbors: (neighbors) => set({ worldNeighbors: neighbors }),
+        neighbourHelpData: undefined,
+        setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
       }),
       {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
           // Exclude certain states from being persisted
-          const { offeredGoods, forceUpdate, overlayExpanded, eeUpdate, messagesUpdate, messagesDetailsReceived, ...toPersist } =
-            state;
+          const {
+            offeredGoods,
+            forceUpdate,
+            overlayExpanded,
+            eeUpdate,
+            messagesUpdate,
+            messagesDetailsReceived,
+            retrievingCounter,
+            initialWorldMapData,
+            worldNeighbors,
+            neighbourHelpData,
+            ...toPersist
+          } = state;
           // avatarPosition remains in `toPersist` automatically
           return toPersist;
         },

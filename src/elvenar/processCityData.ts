@@ -71,6 +71,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     | undefined;
 
   const squadSize = effectsService?.find((r) => r.name === 'squadSize')?.value || 0;
+  const coinsCap = effectsService?.find((r) => r.name === 'coinsCap')?.value || 0;
+  const suppliesCap = effectsService?.find((r) => r.name === 'suppliesCap')?.value || 0;
 
   const expirationsEnd =
     startupService?.effects
@@ -189,6 +191,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       faRequirements,
       relicBoosts,
       squadSize,
+      coinsCap,
+      suppliesCap,
       rankingPoints,
       cityResources,
       armyDetails: startupService.army_details,

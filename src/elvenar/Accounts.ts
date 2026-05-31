@@ -46,6 +46,8 @@ export interface CityQuery {
   faRequirements: Record<string, FaQuest>;
   relicBoosts: Record<keyof Relics, number>;
   squadSize: number;
+  coinsCap: number;
+  suppliesCap: number;
   rankingPoints: number;
   cityResources?: Record<string, number>;
   armyDetails?: ArmyDetails;

@@ -188,4 +188,28 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   //   messageType: 'GUILD_DATA_PROCESSED',
   //   local: localProcessGuildData,
   // },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'fetchInitialWorldMapData',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'getDiscoveredPlayerProvinces',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'OtherPlayerService',
+      requestMethod: 'getNeighbourlyHelpBuildings',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'updateProvince',
+    },
+  },
 ];
