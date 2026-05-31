@@ -19,7 +19,7 @@ const parseQuestLine = (line: string): QuestTaskPart[] | null => {
 
   return andParts.map((part) => {
     const orParts = part
-      .split(/\s+OR\s+/i)
+      .split(/\s+OR\s+/)
       .map((item) => item.trim())
       .filter(Boolean);
 
