@@ -118,6 +118,9 @@ export function OverlayMain() {
         KeyE: eeTab,
         KeyQ: questsTab,
         KeyM: messagesTab,
+        KeyK: kpHuntTab,
+        KeyN: neighbourlyHelpTab,
+        KeyT: tournyTab,
       };
       if (!(code in tabDic)) {
         return;
