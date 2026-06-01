@@ -62,6 +62,12 @@ export function OverlayMain() {
         return;
       }
       const code = event.data.payload.code;
+
+      if (code === 'KeyX') {
+        expandPanel(false);
+        return;
+      }
+
       const tabDic = {
         KeyC: chatTab,
         KeyE: eeTab,

@@ -9,7 +9,8 @@
     "outDir": "./build-jest",
     "sourceMap": true,
     "skipLibCheck": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "rootDir": "."
   },
   "include": [
     "src/**/*.spec.ts"
