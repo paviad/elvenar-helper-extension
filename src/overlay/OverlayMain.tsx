@@ -232,6 +232,16 @@ export function OverlayMain() {
     processFile(file);
   };
 
+  const renderLabel = (text: string) => {
+    const tooltip = `Alt+C, ${text[0]}`;
+    return (
+      <span title={tooltip}>
+        <span style={{ fontSize: '1.2em', fontWeight: 700, textDecoration: 'underline' }}>{text[0]}</span>
+        {text.slice(1)}
+      </span>
+    );
+  };
+
   return (
     <div style={{ height: '100%' }}>
       <Box
@@ -246,10 +256,10 @@ export function OverlayMain() {
         }}
       >
         <Tabs value={tab} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
-          <Tab label='Chat' />
+          <Tab label={renderLabel('Chat')} />
           {chapter >= 18 && <Tab label='Trade' />}
-          <Tab label='EE' />
-          <Tab label='Quests' />
+          <Tab label={renderLabel('EE')} />
+          <Tab label={renderLabel('Quests')} />
         </Tabs>
         {tab === chatTab && (
           <>
