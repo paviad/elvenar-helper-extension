@@ -88,7 +88,14 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
       )}
       {building && (
         <Tooltip
-          title={<BuildingTooltip building={building} stage={block.stage} isMaxLevel={isMaxLevelForChapter} />}
+          title={
+            <BuildingTooltip
+              building={building}
+              stage={block.stage}
+              expirationEnd={block.expirationEnd}
+              isMaxLevel={isMaxLevelForChapter}
+            />
+          }
           disableHoverListener={dragging}
           arrow
           followCursor

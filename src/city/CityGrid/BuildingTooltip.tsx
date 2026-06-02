@@ -11,9 +11,10 @@ interface BuildingTooltipProps {
   building: BuildingEx;
   isMaxLevel?: boolean;
   stage?: number;
+  expirationEnd?: number;
 }
 
-export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMaxLevel, stage }) => {
+export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMaxLevel, stage, expirationEnd }) => {
   const city = useCity();
   const currentChapter = city.chapter;
   const source = building.sourceBuilding;
@@ -85,6 +86,14 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   }
   const hasProduction = productionResources.size > 0;
 
+  const formatExpirationleft = (expirationEnd?: number) => {
+    if (expirationEnd) {
+      const expirationLeft = Math.round((expirationEnd - Date.now()) / 86400000); // Convert seconds to days
+      return expirationLeft;
+    }
+    return 0;
+  };
+
   return (
     <Box sx={{ p: 0.5, maxWidth: 280 }}>
       {/* Header */}
@@ -112,6 +121,9 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
         {building.width}x{building.length}
         {building.chapter ? ` • Chapter ${building.chapter}` : ''}
         {source?.type ? ` • ${formatBuildingType(source.type)}` : ''}
+        {building.expiration
+          ? ` (${building.expiration / 86400} days, ${formatExpirationleft(expirationEnd)} left)`
+          : ''}
       </Typography>
       {/* Description */}
       {building.description && (

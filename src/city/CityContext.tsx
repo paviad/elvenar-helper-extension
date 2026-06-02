@@ -3,6 +3,7 @@ import { getAccountById, saveCityInPlace, saveCurrentCityAs } from '../elvenar/A
 import { getEffects } from '../elvenar/getEffects';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
+import { getMaxChapter } from '../elvenar/getMaxChapter';
 import { getMaxLevels } from '../elvenar/getMaxLevels';
 import { CityEntityEx } from '../model/cityEntity';
 import { Effect } from '../model/effect';
@@ -15,7 +16,6 @@ import { generateCity, saveBack } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
-import { getMaxChapter } from '../elvenar/getMaxChapter';
 
 export interface CityContextType {
   moveLog: MoveLogInterface[];

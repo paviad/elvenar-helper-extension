@@ -72,6 +72,18 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   const squadSize = effectsService?.find((r) => r.name === 'squadSize')?.value || 0;
 
+  const expirationsEnd =
+    startupService?.effects
+      ?.filter((r) => r.type === 'expiring' && r.owner === 'city_entity' && r.remainingTime !== undefined)
+      ?.map((z) => ({ ownerId: z.ownerId, endTime: Date.now() + z.remainingTime * 1000, actionId: z.actionId }))
+      ?.reduce(
+        (acc: Record<string, number>, curr) => ({
+          ...acc,
+          [curr.ownerId]: Math.max(acc[curr.ownerId] || 0, curr.endTime),
+        }),
+        {},
+      ) || {};
+
   const rankingService = json.find((r) => r.requestClass === 'RankingService' && r.requestMethod === 'newRank')
     ?.responseData as
     | {
@@ -180,6 +192,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       cityResources,
       armyDetails: startupService.army_details,
       tournaments,
+      expirationsEnd,
     },
     sharedInfo,
     isDetached: false,

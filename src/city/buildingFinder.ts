@@ -1,5 +1,6 @@
 import { getBuildings } from '../elvenar/getBuildings';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
+import { getExpirations } from '../elvenar/getExpirations';
 import { getPremiumBuildingHints } from '../elvenar/getPremiumBuildingHints';
 import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
@@ -20,6 +21,7 @@ export class BuildingFinder {
   private hintsDictionary!: Record<string, string>;
   private hintsDictionaryLowerCase!: Record<string, string>;
   private evolvingBuildingsDictionary!: Record<string, StageProvision>;
+  private expirations!: Record<string, number>;
 
   private getBaseName(goodsId: string): bAndC {
     const baseNameRex = /(.*?)(_\d+)?$/;
@@ -50,6 +52,8 @@ export class BuildingFinder {
     const buildings = await getBuildings();
     const premiumHints = await getPremiumBuildingHints();
     const evolvingBuildings = await getEvolvingBuildings();
+
+    this.expirations = await getExpirations();
 
     this.hintsDictionary = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]));
     this.hintsDictionaryLowerCase = Object.fromEntries(
@@ -146,6 +150,7 @@ export class BuildingFinder {
       chapter: (hint && parseInt(hint)) || undefined,
       sourceBuilding: bldg,
       maxStage: this.getMaxStage([bldg]),
+      expiration: bldg.type === 'expiring' ? this.expirations[bldg.base_name] : undefined,
     } satisfies BuildingEx;
   }
 
@@ -162,8 +167,18 @@ export class BuildingFinder {
     const name = building?.name || id;
     const connectionStrategy = building?.connectionStrategy || 'unknown';
     const chapter = building?.chapter;
+    const expiration = building?.expiration;
 
-    return { length, width, description, name, connectionStrategy, chapter } satisfies CityEntityExData;
+    return {
+      length,
+      width,
+      description,
+      name,
+      connectionStrategy,
+      chapter,
+      expiration,
+      expirationEnd: 0,
+    } satisfies CityEntityExData;
   }
 
   getMaxStage(buildings: Building[]): number | undefined {

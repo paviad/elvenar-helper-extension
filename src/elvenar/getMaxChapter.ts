@@ -5,6 +5,6 @@ export const getMaxChapter = async (): Promise<number> => {
   if (maxChapterRaw) {
     return parseInt(maxChapterRaw, 10);
   } else {
-    return 24;
+    return 25; // Default max chapter if not set
   }
 };

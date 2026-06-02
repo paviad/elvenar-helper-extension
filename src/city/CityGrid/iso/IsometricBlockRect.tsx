@@ -117,7 +117,13 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
 
       {building ? (
         <Tooltip
-          title={<BuildingTooltip building={building} isMaxLevel={isMaxLevelForChapter} />}
+          title={
+            <BuildingTooltip
+              building={building}
+              isMaxLevel={isMaxLevelForChapter}
+              expirationEnd={block.expirationEnd}
+            />
+          }
           disableHoverListener={dragging}
           arrow
           followCursor

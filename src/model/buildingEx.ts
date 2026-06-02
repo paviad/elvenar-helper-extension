@@ -18,4 +18,6 @@ export interface BuildingEx {
   sourceBuilding: Building;
 
   maxStage?: number;
+
+  expiration?: number;
 }

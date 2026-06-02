@@ -19,7 +19,9 @@ export interface CityEntityExData {
   description: string;
   name: string;
   connectionStrategy: string;
+  expiration?: number;
   chapter?: number;
+  expirationEnd?: number;
 }
 
 export type CityEntityEx = CityEntity & CityEntityExData;

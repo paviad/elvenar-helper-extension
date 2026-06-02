@@ -18,6 +18,8 @@ export interface CityBlock {
   stage?: number;
   chapter?: number;
   highlighted: boolean;
+  expiration?: number;
+  expirationEnd?: number;
 
   outOfGrid?: boolean;
 }

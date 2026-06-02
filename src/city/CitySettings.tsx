@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Grid, Input, Slider, Typography } from '@mui/material';
 import { useCity } from './CityContext';
-import { getMaxChapter } from '../elvenar/getMaxChapter';
 
 export const CitySettings: React.FC = () => {
   const { chapter, setChapter, squadSize, setSquadSize, rankingPoints, setRankingPoints, maxChapter } = useCity();
@@ -32,8 +31,8 @@ export const CitySettings: React.FC = () => {
   const handleBlur = () => {
     if (value < 1) {
       setChapter(1);
-    } else if (value > 24) {
-      setChapter(24);
+    } else if (value > maxChapter) {
+      setChapter(maxChapter);
     }
   };
 
@@ -90,7 +89,7 @@ export const CitySettings: React.FC = () => {
               inputProps={{
                 step: 1,
                 min: 1,
-                max: 24,
+                max: maxChapter,
                 type: 'number',
                 'aria-labelledby': 'input-slider',
                 style: { textAlign: 'center' },

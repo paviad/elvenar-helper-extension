@@ -9,6 +9,7 @@ import {
   saveNewCityAs,
 } from '../elvenar/AccountManager';
 import { getBuildings } from '../elvenar/getBuildings';
+import { getExpirations } from '../elvenar/getExpirations';
 import { useHelper } from '../helper/HelperContext';
 import { generateInventory } from '../inventory/generateInventory';
 import { CityEntity, CityEntityEx } from '../model/cityEntity';
@@ -398,6 +399,8 @@ export const useCityGridState = () => {
       width: newBuilding.width,
       description: newBuilding.description,
       name: newBuilding.name,
+      expiration: item.building.expiration,
+      expirationEnd: item.building.expiration ? item.building.expiration * 1000 + Date.now() : undefined,
     } satisfies CityEntityEx;
 
     const newBlock = {
@@ -413,6 +416,7 @@ export const useCityGridState = () => {
 
   async function onSelectBuilding(building: BuildingDefinition, config: BuildingConfig) {
     const allBuildings = await getBuildings();
+    const expirations = await getExpirations();
     const qual = config.level || config.chapter || '';
     const id1 = `${building.id}_${qual}`.replace(/_$/, '');
     const id2 = building.id;
@@ -426,6 +430,7 @@ export const useCityGridState = () => {
 
     const newLevel = newBuilding.level || 1;
     const chapter = newBuilding.requirements.worker && newBuilding.requirements.chapter;
+    const expiration = expirations[newBuilding.base_name];
 
     const newEntity = {
       id: generateUniqueId(),
@@ -443,6 +448,8 @@ export const useCityGridState = () => {
       width: newBuilding.width,
       description: newBuilding.description,
       name: newBuilding.name,
+      expiration,
+      expirationEnd: expiration ? expiration * 1000 + Date.now() : undefined,
     } satisfies CityEntityEx;
 
     const newBlock = {

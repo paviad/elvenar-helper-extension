@@ -31,7 +31,7 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
     ...defaultConfig,
   });
 
-  const [maxChapter, setMaxChapter] = React.useState(24); // Default max chapter
+  const [maxChapter, setMaxChapter] = React.useState(25); // Default max chapter
 
   React.useEffect(() => {
     // Fetch max chapter from storage or other source if needed

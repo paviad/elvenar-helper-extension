@@ -47,6 +47,7 @@ export interface CityQuery {
   cityResources?: Record<string, number>;
   armyDetails?: ArmyDetails;
   tournaments?: SeasonalEvent[];
+  expirationsEnd: Record<string, number>;
 }
 
 export interface AccountData {

@@ -212,6 +212,7 @@ export const saveNewCityAs = async (
       },
       squadSize,
       rankingPoints,
+      expirationsEnd: {},
     },
   };
   accounts[accountId] = accountData;

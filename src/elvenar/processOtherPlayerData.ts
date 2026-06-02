@@ -128,6 +128,7 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
       },
       squadSize,
       rankingPoints,
+      expirationsEnd: {},
     },
     sharedInfo,
     isDetached: true,
@@ -187,7 +188,9 @@ const squadSizeIncrementByUpgrade = [
   // Chapter 23
   800, 800, 800, 900,
   // Chapter 24
-  1000, 1000, 1000, 1300,
+  1000, 1000, 1100, 1200,
+  // Chapter 25
+  1200, 1200, 1300, 1300,
 ];
 
 function guessSquadSizeFromChapter(chapter: number): number {

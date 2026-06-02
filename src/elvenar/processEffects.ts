@@ -4,6 +4,17 @@ import { Effect } from '../model/effect';
 export const processEffects = async (responseText: string) => {
   const effectsRaw = JSON.parse(responseText) as Effect[];
 
+  const expirations = effectsRaw
+    .filter((r) => r.origins && r.duration)
+    .map((r) => ({ origins: r.origins, duration: r.duration }))
+    .flatMap((z) => z.origins!.map((o) => ({ origin: o, duration: z.duration })))
+    .reduce(
+      (acc, v) => ({ ...acc, [v.origin]: Math.max(acc[v.origin] || 0, v.duration!) }),
+      {} as Record<string, number>,
+    );
+
+  await setExpirations(expirations);
+
   const captureEffects = [
     'manufactories_production_boost',
     'residential_population_boost',
@@ -21,4 +32,9 @@ export const processEffects = async (responseText: string) => {
 async function setEffects(items: Effect[]) {
   const plain = JSON.stringify(items);
   await saveToStorage('effects', plain);
+}
+
+async function setExpirations(items: Record<string, number>) {
+  const plain = JSON.stringify(items);
+  await saveToStorage('expirations', plain);
 }

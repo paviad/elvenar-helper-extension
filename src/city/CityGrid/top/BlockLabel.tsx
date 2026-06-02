@@ -77,6 +77,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
 
   // 1. Simple Text Label (No Sprite or insufficient space)
   if (typeof block.chapter === 'undefined' || !isSufficientSpace || !sprite) {
+    const scale = block.label.length < 3 ? 1 : 0.75;
     const transform =
       block.length > 1 && block.width > 1
         ? `scale(2,2) translate(${-(block.x + block.width / 2) * GridSize * 0.5},${
@@ -93,7 +94,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
             y={centerY}
             textAnchor='middle'
             alignmentBaseline={block.stage ? 'baseline' : 'middle'}
-            fontSize={fontSize}
+            fontSize={fontSize * scale}
             fill={textColor}
             style={{ userSelect: 'none' }}
           >
@@ -137,7 +138,7 @@ export const BlockLabel: React.FC<BlockLabelProps> = ({
   const groupStartX = centerX - groupWidth / 2;
 
   // Scale the group slightly to fit content nicely
-  const scale = 0.75;
+  const scale = block.label.length < 3 ? 0.75 : 0.7;
   const groupTransform = `translate(${centerX},${centerY}) scale(${scale}) translate(${-centerX},${-centerY})`;
 
   return (

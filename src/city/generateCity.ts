@@ -9,10 +9,12 @@ export async function generateCity(accountData: AccountData) {
 
   const cityEntities = accountData.cityQuery!.cityEntities;
   const unlockedAreas = accountData.cityQuery!.unlockedAreas;
+  const expirationsEnd = accountData.cityQuery!.expirationsEnd;
 
   const q = cityEntities.map((entity) => ({
     ...entity,
     ...finder.getCityEntityExtraData(entity.cityentity_id, entity.level),
+    expirationEnd: expirationsEnd?.[entity.id],
   })) satisfies CityEntityEx[];
 
   return { q, unlockedAreas };

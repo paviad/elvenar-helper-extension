@@ -48,7 +48,7 @@ export function getChapterFromEntity(
   }
 }
 
-function getLabel(entity: CityEntity): string | undefined {
+function getLabel(entity: CityEntityEx): string | undefined {
   if (entity.type === 'culture' || entity.type === 'culture_residential') {
     const m1 = /^[a-zA-Z]_Ch(\d+)_/.exec(entity.cityentity_id);
     if (m1) {
@@ -63,6 +63,11 @@ function getLabel(entity: CityEntity): string | undefined {
 
   if (/^[GPRHMOYDBZ]_/.test(entity.cityentity_id)) {
     return `${entity.level}`;
+  }
+
+  if (entity.type === 'expiring' && entity.expirationEnd) {
+    const expirationLeft = Math.round((entity.expirationEnd - Date.now()) / 86400000); // Convert milliseconds to days
+    return `${expirationLeft}d`;
   }
 
   return undefined;
@@ -87,5 +92,7 @@ export function getCityBlockFromCityEntity(entity: CityEntityEx): CityBlock {
     stage: entity.stage,
     chapter: getChapter(entity),
     highlighted: false,
+    expiration: entity.expiration,
+    expirationEnd: entity.expirationEnd,
   } satisfies CityBlock;
 }
