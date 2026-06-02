@@ -15,6 +15,7 @@ import { generateCity, saveBack } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
+import { getMaxChapter } from '../elvenar/getMaxChapter';
 
 export interface CityContextType {
   moveLog: MoveLogInterface[];
@@ -78,6 +79,7 @@ export interface CityContextType {
   resources: Record<string, number>;
   emptySquares: number;
   modified: boolean;
+  maxChapter: number;
 }
 
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
@@ -114,6 +116,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [chapter, setChapter] = React.useState<number>(100);
   const [squadSize, setSquadSize] = React.useState<number>(0);
+  const [maxChapter, setMaxChapter] = React.useState<number>(25);
 
   const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntityEx[], UnlockedArea[]]);
   const [unlockedAreas, setUnlockedAreas] = React.useState([] as UnlockedArea[]);
@@ -140,6 +143,14 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const previousAccountId = React.useRef<string | undefined>(accountId);
+
+  React.useEffect(() => {
+    async function fetchMaxChapter() {
+      const maxChapter = await getMaxChapter();
+      setMaxChapter(maxChapter);
+    }
+    void fetchMaxChapter();
+  }, []);
 
   React.useEffect(() => {
     // skip if it's the first load, we will load the city data in another effect
@@ -479,6 +490,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     resources,
     emptySquares,
     modified,
+    maxChapter,
   };
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;

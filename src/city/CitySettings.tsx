@@ -1,9 +1,10 @@
 import React from 'react';
 import { Card, CardContent, Grid, Input, Slider, Typography } from '@mui/material';
 import { useCity } from './CityContext';
+import { getMaxChapter } from '../elvenar/getMaxChapter';
 
 export const CitySettings: React.FC = () => {
-  const { chapter, setChapter, squadSize, setSquadSize, rankingPoints, setRankingPoints } = useCity();
+  const { chapter, setChapter, squadSize, setSquadSize, rankingPoints, setRankingPoints, maxChapter } = useCity();
   const value = chapter || 1;
   const currentSquadSize = squadSize || 0;
   const currentRankingPoints = rankingPoints || 0;
@@ -76,7 +77,7 @@ export const CitySettings: React.FC = () => {
               aria-labelledby='input-slider'
               step={1}
               min={1}
-              max={24}
+              max={maxChapter}
               valueLabelDisplay='auto'
             />
           </Grid>
