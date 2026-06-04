@@ -79,7 +79,31 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
     const normalizedQuery = searchQuery.toLowerCase().trim();
 
     if (normalizedQuery) {
-      return buildings.filter((b) => b.name.toLowerCase().includes(normalizedQuery));
+      // Detect if query is in the format "number x number" (e.g., "6x4", "6 x 4")
+      const dimensionMatch = normalizedQuery.match(/^(\d+)\s*x\s*(\d+)$/);
+      let searchWidth: number | null = null;
+      let searchLength: number | null = null;
+
+      if (dimensionMatch) {
+        searchWidth = parseInt(dimensionMatch[1], 10);
+        searchLength = parseInt(dimensionMatch[2], 10);
+      }
+
+      return buildings.filter((b) => {
+        // 1. Match by building name
+        if (b.name.toLowerCase().includes(normalizedQuery)) {
+          return true;
+        }
+
+        // 2. Match by dimensions (checking both WxL and LxW)
+        if (searchWidth !== null && searchLength !== null) {
+          if (b.width === searchWidth && b.length === searchLength) {
+            return true;
+          }
+        }
+
+        return false;
+      });
     } else {
       const currentCategory = CATEGORIES[activeTab];
       return buildings.filter((b) => b.category === currentCategory);
@@ -119,7 +143,7 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
         <TextField
           fullWidth
           variant='outlined'
-          placeholder='Search buildings...'
+          placeholder='Search name or size (e.g., 6x4)...'
           size='small'
           value={searchQuery}
           autoFocus
