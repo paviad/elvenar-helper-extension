@@ -101,7 +101,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
 
-  const maxChapter = Number(featureFlags?.find((r) => r.feature.startsWith('ch'))?.feature.replace('ch', ''));
+  // const maxChapter = Number(featureFlags?.find((r) => r.feature.startsWith('ch'))?.feature.replace('ch', ''));
+  const maxChapter = 25; // Temporarily hardcoded until we can reliably extract it from game data
 
   const boostedGoods =
     relic_boost_good?.map((bg) => `${bg.good_type === 'common' ? '' : bg.good_type}${bg.good_id}`) || [];
