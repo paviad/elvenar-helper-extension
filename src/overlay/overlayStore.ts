@@ -7,6 +7,7 @@ import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
 import { TournyData } from './tournyData';
+import { StrengthModifier } from './counterCalculation';
 
 interface OverlayState {
   offeredGoods: string[];
@@ -57,6 +58,8 @@ interface OverlayState {
   setNeighbourHelpData: (data: NeighbourHelpData) => void;
   tournyData?: TournyData;
   setTournyData: (data: TournyData) => void;
+  modifiers?: StrengthModifier[];
+  setModifiers: (modifiers: StrengthModifier[]) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -128,6 +131,8 @@ export const generateOverlayStore = (accountId: string) => {
         setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
         tournyData: undefined,
         setTournyData: (data) => set({ tournyData: data }),
+        modifiers: [],
+        setModifiers: (modifiers) => set({ modifiers }),
       }),
       {
         name: `overlay-store-${accountId}`,

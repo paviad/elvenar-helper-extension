@@ -11,8 +11,8 @@ export interface ArmyDetails {
   premiumTrainingCosts: number;
 }
 
-type TrainingBuilding = 'hb' | 'eb' | 'mc' | 'tg';
-type TroopType = 'hm' | 'hr' | 'lm' | 'lr' | 'ma';
+export type TrainingBuilding = 'hb' | 'eb' | 'mc' | 'tg';
+export type TroopType = 'hm' | 'hr' | 'lm' | 'lr' | 'ma';
 
 export type FriendlyUnitBaseName = `${TrainingBuilding}_${TroopType}`;
 export type EnemyUnitBaseName = `mob_${TrainingBuilding}${TroopType}`;
