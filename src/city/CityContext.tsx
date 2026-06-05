@@ -251,6 +251,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     const blocks = Object.fromEntries(blocksArr.map((b) => [b.id, b]));
     setBlocks(blocks);
     setUnlockedAreas(unlockedAreas);
+    setDragIndex(null);
     setReady(true);
   }, [cityEntities]);
 

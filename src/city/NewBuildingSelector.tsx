@@ -25,14 +25,12 @@ interface NewBuildingSelectorProps {
   onSelectBuilding: (building: BuildingDefinition, config: BuildingConfig) => void | Promise<void>;
   buildings: BuildingDefinition[];
   currentCityChapter: number;
-  maxChapter: number;
 }
 
 export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
   onSelectBuilding,
   buildings,
   currentCityChapter,
-  maxChapter,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeTab, setActiveTab] = React.useState(0);
@@ -83,12 +81,20 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
     if (normalizedQuery) {
       // Detect if query is in the format "number x number" (e.g., "6x4", "6 x 4")
       const dimensionMatch = normalizedQuery.match(/^(\d+)\s*x\s*(\d+)$/);
+      const widthOnlyMatch = normalizedQuery.match(/^(\d+)\s*x$/);
+      const lengthOnlyMatch = normalizedQuery.match(/^x\s*(\d+)$/);
       let searchWidth: number | null = null;
       let searchLength: number | null = null;
 
       if (dimensionMatch) {
         searchWidth = parseInt(dimensionMatch[1], 10);
         searchLength = parseInt(dimensionMatch[2], 10);
+      }
+      if (widthOnlyMatch) {
+        searchWidth = parseInt(widthOnlyMatch[1], 10);
+      }
+      if (lengthOnlyMatch) {
+        searchLength = parseInt(lengthOnlyMatch[1], 10);
       }
 
       return buildings.filter((b) => {
@@ -98,16 +104,17 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
         }
 
         // 2. Match by dimensions (checking both WxL and LxW)
-        if (searchWidth !== null && searchLength !== null) {
-          if (b.width === searchWidth && b.length === searchLength) {
+        if (searchWidth !== null || searchLength !== null) {
+          if ((!searchWidth || b.width === searchWidth) && (!searchLength || b.length === searchLength)) {
             return true;
           }
 
           if (b.getSizeAtLevel) {
             // size might shrink per level
-            for (let level = 1; level <= maxChapter; level++) {
+            const maxLevel = b.maxLevel || 100; // Arbitrary high number if not defined
+            for (let level = 1; level <= maxLevel; level++) {
               const size = b.getSizeAtLevel(level);
-              if (size.width === searchWidth && size.length === searchLength) {
+              if ((!searchWidth || size.width === searchWidth) && (!searchLength || size.length === searchLength)) {
                 return true;
               }
             }
