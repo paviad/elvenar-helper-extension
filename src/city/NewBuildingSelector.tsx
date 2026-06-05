@@ -25,12 +25,14 @@ interface NewBuildingSelectorProps {
   onSelectBuilding: (building: BuildingDefinition, config: BuildingConfig) => void | Promise<void>;
   buildings: BuildingDefinition[];
   currentCityChapter: number;
+  maxChapter: number;
 }
 
 export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
   onSelectBuilding,
   buildings,
   currentCityChapter,
+  maxChapter,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeTab, setActiveTab] = React.useState(0);
@@ -99,6 +101,16 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
         if (searchWidth !== null && searchLength !== null) {
           if (b.width === searchWidth && b.length === searchLength) {
             return true;
+          }
+
+          if (b.getSizeAtLevel) {
+            // size might shrink per level
+            for (let level = 1; level <= maxChapter; level++) {
+              const size = b.getSizeAtLevel(level);
+              if (size.width === searchWidth && size.length === searchLength) {
+                return true;
+              }
+            }
           }
         }
 
