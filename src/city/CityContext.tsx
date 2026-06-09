@@ -256,6 +256,16 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }, [cityEntities]);
 
   React.useEffect(() => {
+    for (const block of Object.values(blocks)) {
+      const isVestigeOfEternity = block.name === 'Vestige of Eternity';
+      const outOfGrid =
+        !isVestigeOfEternity &&
+        (block.x < 0 || block.y < 0 || block.x + block.width > GridMax || block.y + block.length > GridMax);
+      block.outOfGrid = outOfGrid;
+    }
+  }, [blocks, unlockedAreas, dragIndex]);
+
+  React.useEffect(() => {
     // don't calculate while dragging to avoid performance issues
     if (dragIndex !== null) {
       return;
