@@ -66,12 +66,10 @@ console.log(`Target:  ${secrets.CHROME_EXTENSION_ID}\n`);
 
 // 4. Execute Upload
 try {
-  const command =
-    `npx chrome-webstore-upload-cli upload ` +
+const command =
+    `npx chrome-webstore-upload-cli ` +
     `--source "${zipFile}" ` +
-    `--extension-id "${secrets.CHROME_EXTENSION_ID}" ` +
-    `--auto-publish`;
-
+    `--extension-id "${secrets.CHROME_EXTENSION_ID}"`;
   // Pass secrets and Publisher ID via environment variables
   execSync(command, {
     stdio: 'inherit',
