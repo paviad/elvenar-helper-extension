@@ -23,9 +23,12 @@ import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySub
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
 import { processTradeData } from '../elvenar/processTradeData';
 import { processTranscendenceService } from '../elvenar/processTranscendenceService';
+import { processUpdateChestPayInProgress } from '../elvenar/processUpdateChestPayInProgress';
+import { processUpdateWaypoints } from '../elvenar/processUpdateWaypoints';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
+import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
 
 type Processors = Record<
   string,
@@ -98,6 +101,10 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:QuestMilestoneService/updateQuestMilestone': processQuestMilestoneUpdate,
 
     'R:QuestService/getUpdates': processQuestUpdates,
+
+    'R:MultiplayerEventService/updateWaypoints': processUpdateWaypoints,
+    'R:ChestsService/updateChestPayInProgress': processUpdateChestPayInProgress,
+    'R:MultiplayerEventService/updateOverview': processUpdateWaypointsOverview,
   };
 
   const processorFunction = processors[msg.payload.type];

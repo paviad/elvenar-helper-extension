@@ -58,7 +58,8 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
     }
 
     const isVestigeOfEternity = blocks[dragIndex].name === 'Vestige of Eternity';
-    const outOfGrid = !isVestigeOfEternity &&
+    const outOfGrid =
+      !isVestigeOfEternity &&
       (newX < 0 || newY < 0 || newX + blocks[dragIndex].width > GridMax || newY + blocks[dragIndex].length > GridMax);
 
     setBlocks((prev) => {

@@ -53,3 +53,4 @@ temp_firefox_sign/
 crx/
 build/
 build-jest/
+util/fa-constants-scrape.js

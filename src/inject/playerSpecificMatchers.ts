@@ -122,4 +122,22 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'updateQuestMilestone',
     },
   },
+  {
+    responseSelector: {
+      requestClass: 'MultiplayerEventService',
+      requestMethod: 'updateWaypoints',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'ChestsService',
+      requestMethod: 'updateChestPayInProgress',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'MultiplayerEventService',
+      requestMethod: 'updateOverview',
+    },
+  }
 ];

@@ -11,6 +11,7 @@ import { badgeSpriteInfo } from './badgeSpriteInfo';
 import { extractBadgesInProduction } from './extractBadgesInProduction';
 import FaControlPanel from './FaControlPanel';
 import FaProgress from './FaProgress';
+import { FaSummary } from './FASummary';
 import { ProductionTimeline } from './ProductionTimeline';
 
 export function FellowshipAdventure() {
@@ -241,9 +242,12 @@ export function FellowshipAdventure() {
             />
           </Box>
         </Stack>
-        <Box sx={{ flex: '1 1 0%', minWidth: 0 }}>
-          <ProductionTimeline badgesInProduction={badgesInProduction} timestamp={timestamp} endTime={endTime} />
-        </Box>
+        <Stack sx={{ flex: '1 1 0%', minWidth: 0 }}>
+          <Box>
+            <ProductionTimeline badgesInProduction={badgesInProduction} timestamp={timestamp} endTime={endTime} />
+          </Box>
+          <FaSummary badges={badges} badgesInProduction={badgesInProduction || {}}></FaSummary>
+        </Stack>
       </Box>
     </Stack>
   );

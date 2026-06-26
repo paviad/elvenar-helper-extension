@@ -4,6 +4,7 @@ import { Badges, Relics } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { FAStoreData } from '../model/faStageProgress';
 import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
 import { PotionEffect } from '../model/potionEffect';
@@ -71,6 +72,8 @@ export interface AccountData {
     eeEffects: EnsorcelledEndowment[];
     neighborlyHelpEffects: EnsorcelledEndowment[];
   };
+
+  faDataStore?: FAStoreData;
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};
