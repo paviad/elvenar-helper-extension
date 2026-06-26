@@ -128,7 +128,7 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
     }
 
     navigator.clipboard.writeText(finalLines.join('\n')).catch((err) => {
-      console.error('Failed to copy to clipboard:', err);
+      console.error('ElvenAssist: Failed to copy to clipboard:', err);
     });
   };
 
@@ -190,10 +190,6 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
 
     const isComplete = totalEffectiveCurrent >= data.max;
     const needed = Math.max(0, data.max - totalEffectiveCurrent);
-
-    if (isNaN(needed)) {
-      console.log('NaN detected in badge progress:', badgeName, data);
-    }
 
     return (
       <Box

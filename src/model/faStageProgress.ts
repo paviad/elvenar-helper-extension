@@ -125,8 +125,6 @@ export const processFaMapOverview = (faDataStore: FAStoreData, overviewData: Way
       }
     });
   });
-
-  console.log(`Processed FA Overview: ${overviewData.length} waypoints updated.`);
 };
 
 /**
@@ -180,8 +178,4 @@ export const processFaNodeDetails = (faDataStore: FAStoreData, nodeDetailsData: 
       faDataStore.waypoints[wpId].lastUpdatedDetailsAt = now;
     }
   });
-
-  console.log(
-    `Processed FA Node Details: ${nodeDetailsData.length - ignoredCount} chests updated. Ignored ${ignoredCount} unrelated chests.`
-  );
 };

@@ -34,7 +34,5 @@ export async function processUpdateWaypointsOverview(
 
   accountData.faDataStore = faDataStore; // Update the account data with the modified faDataStore
 
-  console.log('difficulty', faDataStore);
-
   return faDataStore;
 }

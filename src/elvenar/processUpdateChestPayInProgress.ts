@@ -33,7 +33,5 @@ export async function processUpdateChestPayInProgress(
 
   accountData.faDataStore = faDataStore; // Update the account data with the modified faDataStore
 
-  console.log('node progress', faDataStore);
-
   return faDataStore;
 }
