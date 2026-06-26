@@ -99,7 +99,7 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
         const badgeKey = badge as keyof Badges;
         const myAvailable = badges?.[badgeKey] || 0;
         const myProducing = badgesInProduction[badgeKey]
-          ? Object.values(badgesInProduction[badgeKey]).reduce((a, b) => a + b, 0) / 10
+          ? Object.values(badgesInProduction[badgeKey]).reduce((a, b) => a + b, 0) / 100
           : 0;
         const totalEffectiveCurrent = Math.trunc(d.current + myAvailable + myProducing);
         const needed = Math.max(0, d.max - totalEffectiveCurrent);
@@ -184,7 +184,7 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
     // Treat available player stock + working queues as already virtually "delivered"
     const myAvailable = badges?.[badgeName] || 0;
     const myProducing = badgesInProduction[badgeName]
-      ? Object.values(badgesInProduction[badgeName]).reduce((a, b) => a + b, 0) / 10
+      ? Object.values(badgesInProduction[badgeName]).reduce((a, b) => a + b, 0) / 100
       : 0;
     const totalEffectiveCurrent = Math.trunc(data.current + myAvailable + myProducing);
 
