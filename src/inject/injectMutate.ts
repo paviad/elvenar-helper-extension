@@ -121,7 +121,7 @@ function patchCtorRegistryAssignment(scriptText: string, registryPath: string, w
 
   registryRegex.lastIndex = 0;
   scriptText = scriptText.replace(registryRegex, (_match, registry: string, ctor: string) => {
-    const replacement = `${ctor}=function(${argumentList}){${ctor}2.call(this,${argumentList});console.log('${windowField} = ${registryPath}');window['${windowField}']=this};\n      ${registry}['${registryPath}']=${ctor};`;
+    const replacement = `${ctor}=function(${argumentList}){${ctor}2.call(this,${argumentList});console.error('${windowField} = ${registryPath}', this);window['${windowField}']=this;window['${windowField}_a']=window['${windowField}_a']||[];window['${windowField}_a'].push(this)};\n      ${registry}['${registryPath}']=${ctor};`;
     console.log(`Applied ${registryPath} replacement:`, replacement);
     ctorFound ??= ctor;
     return replacement;
@@ -201,6 +201,13 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
       'aviad_silm',
     );
 
+    // de.innogames.onyx.city.ui.windows.construction.renderer.BuildingItemRendererMediator
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.city.ui.windows.construction.renderer.BuildingItemRendererMediator',
+      'aviad_birm',
+    );
+
     const newScript = document.createElement('script');
     newScript.type = 'text/javascript';
     newScript.textContent = scriptText;
@@ -216,3 +223,41 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
     console.error('Failed to fetch script:', error);
   }
 }
+
+
+
+/*
+acs = aviad['de.innogames.shared.networking.AbstractConnectionService']
+cms = new acs()
+cms.get_serviceName = ()=>'CityMapService';
+z=(x,y)=>cms.request('placeBuilding').withData(['G_Humans_FactoryStone_1',x,y]).call()
+fy=async (x,y,c)=>{
+  for(let i=0;i<c;i++){
+    z(x,y+i);
+    console.log('placed',x,y+i);
+    await new Promise(r=>setTimeout(r,1000));
+  }
+  console.log('waiting 60 seconds');
+  await new Promise(r=>setTimeout(r,60 * 1000));
+}
+w=async(x,y1,y2) => {
+  for(let y = y1; y <= y2; y+=5){
+    let countleft = y2 - y + 1;
+    let actualcount = Math.min(countleft, 5);
+    console.log('placing',x,y,actualcount);
+    await fy(x,y,actualcount);
+  }
+}
+
+
+// 453289
+
+
+tmp = aviad['de.innogames.onyx.city.modes.BuildBuildingSectorMode']
+tmp2 = tmp.prototype.placeBuilding
+tmp.prototype.placeBuilding = function(e){console.log('calling placebuilding',e); return tmp2.call(this, e);}
+
+
+
+// de_innogames_strategycity_main_controller_StartBuildEntityCommand
+*/
