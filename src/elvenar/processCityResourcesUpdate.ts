@@ -56,5 +56,7 @@ export const processCityResourcesUpdate = async (untypedJson: unknown, sharedInf
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
   if (accountData?.cityQuery) {
     accountData.cityQuery.cityResources = resources;
+    accountData.cityQuery.badges = badges;
+    accountData.cityQuery.relics = relics;
   }
 };
