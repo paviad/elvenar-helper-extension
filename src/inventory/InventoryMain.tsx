@@ -67,6 +67,7 @@ export const InventoryMain = () => {
   const [finder, setFinder] = React.useState<BuildingFinder | null>(null);
 
   const accountId = useTabStore((state) => state.accountId);
+  const accountData = useTabStore((state) => state.accountData);
   const navigate = useNavigate();
 
   // Zustand Store UI State
@@ -97,7 +98,6 @@ export const InventoryMain = () => {
       if (!accountId) {
         return;
       }
-      const accountData = getAccountById(accountId);
       if (!accountData?.cityQuery) {
         return;
       }
@@ -162,7 +162,7 @@ export const InventoryMain = () => {
       setBoostedGoods(boostedGoods);
     }
     void fetchInventory();
-  }, [accountId]);
+  }, [accountId, accountData]);
 
   const types = React.useMemo(() => Array.from(new Set((inventory || []).map((i) => i.type))).sort(), [inventory]);
 

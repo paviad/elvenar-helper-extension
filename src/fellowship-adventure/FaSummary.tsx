@@ -1,7 +1,6 @@
 // src/fellowship-adventure/FaSummary.tsx
 import React, { useMemo } from 'react';
 import { Box, Button, Chip, IconButton, Paper, Tooltip, Typography } from '@mui/material';
-import { getAccountById } from '../elvenar/AccountManager';
 import { Badges, getBadgeMap } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
 
@@ -24,12 +23,13 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
   const removeImportedStock = useTabStore((state) => state.removeImportedStock);
   const clearImportedStock = useTabStore((state) => state.clearImportedStock);
 
-  const accountData = getAccountById(accountId);
+  const accountData = useTabStore((state) => state.accountData);
   if (!accountData) return <Typography>Account data not found.</Typography>;
-  const { waypoints, chests, currentStage } = accountData.faDataStore || { waypoints: {}, chests: {}, currentStage: 1 };
 
   // Fetch our own readable name so we don't accidentally import our own clipboard export
   const myOwnerName = accountData?.cityQuery?.userData?.user_name || accountId;
+
+  const [currentStage, setCurrentStage] = React.useState<number>(1);
 
   React.useEffect(() => {
     async function fetchBadgeMap() {
@@ -40,7 +40,14 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
   }, []);
 
   const stats = useMemo(() => {
+    const { chests, currentStage } = accountData.faDataStore || {
+      waypoints: {},
+      chests: {},
+      currentStage: 1,
+    };
     const chestList = Object.values(chests);
+
+    setCurrentStage(currentStage);
 
     const getBadgeTotals = (chestSubset: typeof chestList) => {
       const totals: Record<string, { current: number; max: number }> = {};
@@ -82,7 +89,7 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
       ),
       total: getBadgeTotals(stageChests),
     };
-  }, [waypoints, chests, currentStage]);
+  }, [accountData]);
 
   // Ignore items matching either our raw ID or our friendly name
   const importedIds = Object.keys(importedStock).filter((id) => id !== accountId && id !== myOwnerName);

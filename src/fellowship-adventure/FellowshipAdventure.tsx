@@ -31,6 +31,7 @@ export function FellowshipAdventure() {
   const [enchantmentBonus, setEnchantmentBonus] = React.useState<number>(50);
 
   const accountId = useTabStore((state) => state.accountId);
+  const accountData = useTabStore((state) => state.accountData);
   const forceUpdate = useTabStore((state) => state.forceUpdate);
 
   // Access the scoped store and actions
@@ -69,7 +70,6 @@ export function FellowshipAdventure() {
       return;
     }
 
-    const accountData = getAccountById(accountId);
     if (!accountData) {
       return;
     }
@@ -128,7 +128,7 @@ export function FellowshipAdventure() {
       setEndTime(accountData.faEndTime);
     }
     void fetchCityData(accountData);
-  }, [accountId, mmEnchantmentEnabled, enchantmentBonus, forceUpdate]);
+  }, [accountId, accountData, mmEnchantmentEnabled, enchantmentBonus, forceUpdate]);
 
   const setMmEnchantmentEnabled2 = React.useCallback(
     (enabled: boolean) => {

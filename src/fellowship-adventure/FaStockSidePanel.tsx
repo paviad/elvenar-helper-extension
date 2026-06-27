@@ -13,7 +13,7 @@ export const FaStockSidePanel: React.FC<FaStockSidePanelProps> = ({ badges = {} 
   const [BADGE_MAP, setBadgeMap] = React.useState<Record<string, string>>({});
 
   const accountId = useTabStore((state) => state.accountId);
-  const accountData = accountId ? getAccountById(accountId) : null;
+  const accountData = useTabStore((state) => state.accountData);
 
   // Safely extract the human-readable name, falling back to the ID if missing
   const ownerName = accountData?.cityQuery?.userData?.user_name || accountId;

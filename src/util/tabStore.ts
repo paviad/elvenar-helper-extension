@@ -2,10 +2,14 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { Badges } from '../model/badges';
+import { AccountData } from '../elvenar/Accounts';
+import { getAccountById } from '../elvenar/AccountManager';
 
 interface TabState {
   accountId: string | undefined;
   setAccountId: (id: string | undefined) => void;
+  accountData: AccountData | undefined;
+  setAccountData: (data: AccountData | undefined) => void;
   globalError: string | undefined | null;
   setGlobalError: (error: string | undefined | null) => void;
   techSprite: { url: string; width: number; height: number } | undefined;
@@ -56,7 +60,16 @@ export const useTabStore = create<TabState>()(
   persist(
     (set) => ({
       accountId: undefined,
-      setAccountId: (id) => set({ accountId: id }),
+      setAccountId: (id) => {
+        if (id) {
+          const accountData = getAccountById(id);
+          set({ accountId: id, accountData });
+        } else {
+          return set({ accountId: id, accountData: undefined });
+        }
+      },
+      accountData: undefined,
+      setAccountData: (data) => set({ accountData: data }),
       globalError: undefined,
       setGlobalError: (error) => set({ globalError: error }),
       techSprite: undefined,

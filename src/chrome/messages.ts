@@ -23,6 +23,11 @@ export interface GenericResponseMessage<T> {
   payload: T;
 }
 
+export interface AccountsSavedRuntimeMessage {
+  type: `accountsSavedRuntime`;
+  tabId: number;
+}
+
 export interface RefreshCityMessage {
   type: 'refreshCity';
   accountId: string;
@@ -194,6 +199,7 @@ export const sendGenericResponse = async <T>(reqRespType: string, payload: T, ta
       reqRespType,
       payload,
     } satisfies GenericResponseMessage<T>);
+    await chrome.runtime.sendMessage({ type: 'accountsSavedRuntime', tabId } satisfies AccountsSavedRuntimeMessage);
   } catch (e) {
     console.log('ElvenAssist: Error sending genericResponse message:', e);
   }
@@ -292,14 +298,23 @@ export const setupGenericResponseListener = <T>(
   callback: (message: GenericResponseMessage<T>) => void,
 ) => {
   const id = crypto.randomUUID();
-  if (!callbackMap2[id]) {
-    callbackMap2[id] = { messageType: `genericResponse:${reqRespType}`, callback };
-  }
   callbackMap2[id] = { messageType: `genericResponse:${reqRespType}`, callback };
   return id;
 };
 
 export const clearGenericResponseListener = (id: string) => {
+  if (callbackMap2[id]) {
+    delete callbackMap2[id];
+  }
+};
+
+export const setupAccountsSavedRuntimeListener = (callback: (message: AccountsSavedRuntimeMessage) => Promise<void>) => {
+  const id = crypto.randomUUID();
+  callbackMap2[id] = { messageType: `accountsSavedRuntime`, callback };
+  return id;
+};
+
+export const clearAccountsSavedRuntimeListener = (id: string) => {
   if (callbackMap2[id]) {
     delete callbackMap2[id];
   }
