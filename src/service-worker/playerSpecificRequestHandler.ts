@@ -29,7 +29,6 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
-import { processQuestAdvance } from '../elvenar/processQuestAdvance';
 
 type Processors = Record<
   string,
@@ -106,7 +105,6 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:MultiplayerEventService/updateWaypoints': processUpdateWaypoints,
     'R:ChestsService/updateChestPayInProgress': processUpdateChestPayInProgress,
     'R:MultiplayerEventService/updateOverview': processUpdateWaypointsOverview,
-    'R:QuestService/advanceQuest': processQuestAdvance,
   };
 
   const processorFunction = processors[msg.payload.type];

@@ -139,11 +139,5 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'MultiplayerEventService',
       requestMethod: 'updateOverview',
     },
-  },
-  {
-    responseSelector: {
-      requestClass: 'QuestService',
-      requestMethod: 'advanceQuest',
-    }
   }
 ];
