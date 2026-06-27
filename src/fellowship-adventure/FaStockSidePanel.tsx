@@ -2,38 +2,29 @@
 import React from 'react';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { getAccountById } from '../elvenar/AccountManager';
-import { Badges } from '../model/badges';
+import { Badges, getBadgeMap } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
-
-const BADGE_MAP: Record<string, string> = {
-  arcane_residue: 'Arcane Residue',
-  badge_blacksmith: 'Blacksmiths',
-  badge_brewery: 'Breweries',
-  badge_carpenters: 'Carpenters',
-  badge_farmers: 'Farmers',
-  badge_unit: 'Elvarian',
-  badge_wonderhelper: 'Wonder Society',
-  diamond_necklace: 'Diamond Necklace',
-  druid_staff: 'Druid Staff',
-  elegant_statue: 'Elegant Statue',
-  enchanted_tiara: 'Enchanted Tiara',
-  ghost_in_a_bottle: 'Ghost in a bottle',
-  golden_bracelet: 'Golden Bracelet',
-  money_sack: 'Sack of Coins',
-  recycled_potion: 'Recycled Potion',
-  witch_hat: 'Witch Hat',
-};
 
 interface FaStockSidePanelProps {
   badges: Badges | undefined;
 }
 
 export const FaStockSidePanel: React.FC<FaStockSidePanelProps> = ({ badges = {} as Badges }) => {
+  const [BADGE_MAP, setBadgeMap] = React.useState<Record<string, string>>({});
+
   const accountId = useTabStore((state) => state.accountId);
   const accountData = accountId ? getAccountById(accountId) : null;
 
   // Safely extract the human-readable name, falling back to the ID if missing
   const ownerName = accountData?.cityQuery?.userData?.user_name || accountId;
+
+  React.useEffect(() => {
+    async function fetchBadgeMap() {
+      const badgeMap = await getBadgeMap();
+      setBadgeMap(badgeMap);
+    }
+    void fetchBadgeMap();
+  }, []);
 
   // Filter and sort badges that have a count greater than 0
   const activeStock = Object.entries(badges)
