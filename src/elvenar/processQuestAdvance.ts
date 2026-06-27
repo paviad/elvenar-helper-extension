@@ -1,4 +1,4 @@
-import { Badges } from '../model/badges';
+import { Badges, badgeTypes } from '../model/badges';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Quest, Reward } from '../model/quest';
@@ -22,25 +22,6 @@ export const processQuestAdvance = async (response: ElvenarRequestResponseEntry[
   ) as { responseData: Reward[] } | undefined;
 
   const badges = accountData.cityQuery?.badges || ({} as Badges);
-
-  const badgeTypes: (keyof Badges)[] = [
-    'badge_brewery',
-    'badge_carpenters',
-    'badge_farmers',
-    'badge_blacksmith',
-    'golden_bracelet',
-    'diamond_necklace',
-    'elegant_statue',
-    'witch_hat',
-    'druid_staff',
-    'badge_wonderhelper',
-    'badge_unit',
-    'money_sack',
-    'arcane_residue',
-    'recycled_potion',
-    'enchanted_tiara',
-    'ghost_in_a_bottle',
-  ];
 
   if (rewards && Array.isArray(rewards.responseData)) {
     for (const reward of rewards.responseData) {

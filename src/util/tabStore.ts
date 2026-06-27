@@ -1,5 +1,7 @@
+// src/util/tabStore.ts
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { Badges } from '../model/badges';
 
 interface TabState {
   accountId: string | undefined;
@@ -42,6 +44,10 @@ interface TabState {
   setInvAggregate: (b: boolean) => void;
   invShowPerSquare: boolean;
   setInvShowPerSquare: (b: boolean) => void;
+
+  // --- FA Persisted Settings ---
+  importedStock: Record<string, Partial<Badges>>;
+  addImportedStock: (accountId: string, badges: Partial<Badges>) => void;
 }
 
 export const useTabStore = create<TabState>()(
@@ -52,13 +58,13 @@ export const useTabStore = create<TabState>()(
       globalError: undefined,
       setGlobalError: (error) => set({ globalError: error }),
       techSprite: undefined,
-      setTechSprite: (size: { url: string; width: number; height: number } | undefined) => set({ techSprite: size }),
+      setTechSprite: (size) => set({ techSprite: size }),
       forceUpdate: 0,
       triggerForceUpdate: () => set((state) => ({ forceUpdate: state.forceUpdate + 1 })),
       otherCityUpdated: false,
-      setOtherCityUpdated: (updated: boolean) => set({ otherCityUpdated: updated }),
+      setOtherCityUpdated: (updated) => set({ otherCityUpdated: updated }),
       legendCollapsed: false,
-      setLegendCollapsed: (collapsed: boolean) => set({ legendCollapsed: collapsed }),
+      setLegendCollapsed: (collapsed) => set({ legendCollapsed: collapsed }),
       viewMode: 'top',
       setViewMode: (mode) => set({ viewMode: mode }),
       avatarPosition: { x: 0, y: 0 },
@@ -87,6 +93,15 @@ export const useTabStore = create<TabState>()(
       setInvAggregate: (b) => set({ invAggregate: b }),
       invShowPerSquare: false,
       setInvShowPerSquare: (b) => set({ invShowPerSquare: b }),
+
+      // --- FA Persisted Settings Defaults ---
+      importedStock: {},
+      addImportedStock: (accountId, badges) => set((state) => ({
+        importedStock: {
+          ...state.importedStock,
+          [accountId]: badges,
+        }
+      })),
     }),
     {
       name: 'tab-store',

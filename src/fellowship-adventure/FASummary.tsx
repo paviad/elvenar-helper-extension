@@ -1,39 +1,39 @@
+// src/fellowship-adventure/FaSummary.tsx
 import React, { useMemo } from 'react';
-import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { getAccountById } from '../elvenar/AccountManager';
-import { Badges } from '../model/badges';
+import { Badges, getBadgeMap } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
-
-const BADGE_MAP: Record<string, string> = {
-  arcane_residue: 'Arcane Residue',
-  badge_blacksmith: 'Blacksmiths',
-  badge_brewery: 'Breweries',
-  badge_carpenters: 'Carpenters',
-  badge_farmers: 'Farmers',
-  badge_unit: 'Elvarian',
-  badge_wonderhelper: 'Wonder Society',
-  diamond_necklace: 'Diamond Necklace',
-  druid_staff: 'Druid Staff',
-  elegant_statue: 'Elegant Statue',
-  enchanted_tiara: 'Enchanted Tiara',
-  ghost_in_a_bottle: 'Ghost in a bottle',
-  golden_bracelet: 'Golden Bracelet',
-  money_sack: 'Sack of Coins',
-  recycled_potion: 'Recycled Potion',
-  witch_hat: 'Witch Hat',
-};
 
 interface FaSummaryProps {
   badges: Badges | undefined;
   badgesInProduction: Record<string, Record<number, number>>;
+  importedStock?: Record<string, Partial<Badges>>;
 }
 
-export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, badgesInProduction = {} }) => {
+export const FaSummary: React.FC<FaSummaryProps> = ({
+  badges = {} as Badges,
+  badgesInProduction = {},
+  importedStock = {},
+}) => {
+  const [BADGE_MAP, setBadgeMap] = React.useState<Record<string, string>>({});
+
   const accountId = useTabStore((state) => state.accountId);
   if (!accountId) return <Typography>No account selected.</Typography>;
   const accountData = getAccountById(accountId);
   if (!accountData) return <Typography>Account data not found.</Typography>;
   const { waypoints, chests, currentStage } = accountData.faDataStore || { waypoints: {}, chests: {}, currentStage: 1 };
+
+  // Fetch our own readable name so we don't accidentally import our own clipboard export
+  const myOwnerName = accountData?.cityQuery?.userData?.user_name || accountId;
+
+  React.useEffect(() => {
+    async function fetchBadgeMap() {
+      const badgeMap = await getBadgeMap();
+      setBadgeMap(badgeMap);
+    }
+    void fetchBadgeMap();
+  }, []);
 
   const stats = useMemo(() => {
     const chestList = Object.values(chests);
@@ -55,15 +55,12 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
     const greenChests = stageChests.filter((c) => c.color === 'green');
     const multiChests = stageChests.filter((c) => c.isMultiColored);
 
-    // Merge helper
     const merge = (...args: (typeof chestList)[]) => getBadgeTotals(args.flat());
 
     return {
-      // 1-3: Single Color + Start
       orangeOnly: merge(startChests, orangeChests),
       blueOnly: merge(startChests, blueChests),
       greenOnly: merge(startChests, greenChests),
-      // 4-6: Single Color + Start + Other Multis
       orangeFull: merge(
         startChests,
         orangeChests,
@@ -79,12 +76,25 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
         greenChests,
         multiChests.filter((c) => c.color !== 'green'),
       ),
-      // 7: Total
       total: getBadgeTotals(stageChests),
     };
   }, [waypoints, chests, currentStage]);
 
-  // Helper to construct and copy badge text summaries to the clipboard
+  // Ignore items matching either our raw ID or our friendly name
+  const importedIds = Object.keys(importedStock).filter((id) => id !== accountId && id !== myOwnerName);
+
+  const removeImportedAccount = (idToRemove: string) => {
+    useTabStore.setState((state) => {
+      const nextStock = { ...state.importedStock };
+      delete nextStock[idToRemove];
+      return { importedStock: nextStock };
+    });
+  };
+
+  const clearAllImports = () => {
+    useTabStore.setState({ importedStock: {} });
+  };
+
   const handleCopyNeeded = (title: string, data: Record<keyof Badges, { current: number; max: number }>) => {
     const neededLines: string[] = [];
     const completedLines: string[] = [];
@@ -101,7 +111,13 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
         const myProducing = badgesInProduction[badgeKey]
           ? Object.values(badgesInProduction[badgeKey]).reduce((a, b) => a + b, 0) / 100
           : 0;
-        const totalEffectiveCurrent = Math.trunc(d.current + myAvailable + myProducing);
+
+        const importedAvailable = Object.entries(importedStock).reduce(
+          (sum, [id, memberBadges]) => sum + (id !== accountId && id !== myOwnerName ? memberBadges[badgeKey] || 0 : 0),
+          0,
+        );
+
+        const totalEffectiveCurrent = Math.trunc(d.current + myAvailable + myProducing + importedAvailable);
         const needed = Math.max(0, d.max - totalEffectiveCurrent);
         const displayName = BADGE_MAP[badge] || badge.replace(/_/g, ' ');
 
@@ -127,9 +143,9 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
       finalLines.push(...completedLines);
     }
 
-    navigator.clipboard.writeText(finalLines.join('\n')).catch((err) => {
-      console.error('ElvenAssist: Failed to copy to clipboard:', err);
-    });
+    navigator.clipboard
+      .writeText(finalLines.join('\n'))
+      .catch((err) => console.error('ElvenAssist: Failed to copy to clipboard:', err));
   };
 
   const renderPanel = (title: string, data: Record<keyof Badges, { current: number; max: number }>, width: string) => (
@@ -142,15 +158,8 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
           <IconButton
             size='small'
             onClick={() => handleCopyNeeded(title, data)}
-            sx={{
-              color: 'text.secondary',
-              '&:hover': {
-                color: 'primary.main',
-                bgcolor: 'action.hover',
-              },
-            }}
+            sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main', bgcolor: 'action.hover' } }}
           >
-            {/* Minimalist SVG Copy Icon */}
             <svg
               xmlns='http://www.w3.org/2000/svg'
               width='18'
@@ -169,7 +178,6 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
         </Tooltip>
       </Box>
 
-      {/* Sort entries alphabetically by their DISPLAY name mapping */}
       {Object.entries(data)
         .sort(([badgeA], [badgeB]) => {
           const nameA = BADGE_MAP[badgeA] || badgeA;
@@ -181,13 +189,17 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
   );
 
   const renderBadgeProgress = (badgeName: keyof Badges, data: { current: number; max: number }) => {
-    // Treat available player stock + working queues as already virtually "delivered"
     const myAvailable = badges?.[badgeName] || 0;
     const myProducing = badgesInProduction[badgeName]
       ? Object.values(badgesInProduction[badgeName]).reduce((a, b) => a + b, 0) / 100
       : 0;
-    const totalEffectiveCurrent = Math.trunc(data.current + myAvailable + myProducing);
 
+    const importedAvailable = Object.entries(importedStock).reduce(
+      (sum, [id, memberBadges]) => sum + (id !== accountId && id !== myOwnerName ? memberBadges[badgeName] || 0 : 0),
+      0,
+    );
+
+    const totalEffectiveCurrent = Math.trunc(data.current + myAvailable + myProducing + importedAvailable);
     const isComplete = totalEffectiveCurrent >= data.max;
     const needed = Math.max(0, data.max - totalEffectiveCurrent);
 
@@ -218,7 +230,6 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
           >
             {BADGE_MAP[badgeName] || badgeName.replace(/_/g, ' ')}
           </Typography>
-
           <Typography variant='caption' sx={{ fontWeight: 800, fontSize: '0.85rem' }}>
             {isComplete ? '✔' : `Need: ${needed}`}
           </Typography>
@@ -227,11 +238,68 @@ export const FaSummary: React.FC<FaSummaryProps> = ({ badges = {} as Badges, bad
     );
   };
 
+  // Helper to generate the content for the chip tooltip
+  const renderTooltipContent = (id: string) => {
+    const memberStock = importedStock[id] || {};
+    const stockEntries = Object.entries(memberStock)
+      .filter(([_, count]) => count !== undefined && count > 0)
+      .sort(([badgeA], [badgeB]) => {
+        const nameA = BADGE_MAP[badgeA] || badgeA;
+        const nameB = BADGE_MAP[badgeB] || badgeB;
+        return nameA.localeCompare(nameB);
+      });
+
+    if (stockEntries.length === 0) return 'No badges contributed';
+
+    return (
+      <Box sx={{ p: 0.5 }}>
+        {stockEntries.map(([badge, count]) => (
+          <Box key={badge} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+            <Typography variant='caption'>{BADGE_MAP[badge] || badge.replace(/_/g, ' ')}</Typography>
+            <Typography variant='caption' sx={{ fontWeight: 'bold' }}>
+              {count}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    );
+  };
+
   return (
     <Box sx={{ p: 3, mx: '10%' }}>
-      <Typography variant='h4' sx={{ mb: 3, fontWeight: 'bold' }}>
+      <Typography variant='h4' sx={{ mb: importedIds.length > 0 ? 1 : 3, fontWeight: 'bold' }}>
         Fellowship Adventure: Stage {currentStage}
       </Typography>
+
+      {/* Imported Accounts Bar */}
+      {importedIds.length > 0 && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+          <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600 }}>
+            Factoring {importedIds.length} member{importedIds.length > 1 ? 's' : ''}:
+          </Typography>
+          {importedIds.map((id) => (
+            <Tooltip key={id} title={renderTooltipContent(id)} arrow placement='top'>
+              <Chip
+                label={id}
+                size='small'
+                onDelete={() => removeImportedAccount(id)}
+                color='primary'
+                variant='outlined'
+              />
+            </Tooltip>
+          ))}
+          {importedIds.length > 1 && (
+            <Button
+              size='small'
+              color='error'
+              onClick={clearAllImports}
+              sx={{ textTransform: 'none', ml: 1, minWidth: 'auto', py: 0 }}
+            >
+              Clear All
+            </Button>
+          )}
+        </Box>
+      )}
 
       {/* Row 1: 3 Panels */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>

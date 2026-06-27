@@ -1,3 +1,4 @@
+// src/fellowship-adventure/FellowshipAdventure.tsx
 import React from 'react';
 import { Box, Stack } from '@mui/material';
 import { getFromStorage, saveToStorage } from '../chrome/storage';
@@ -11,7 +12,9 @@ import { badgeSpriteInfo } from './badgeSpriteInfo';
 import { extractBadgesInProduction } from './extractBadgesInProduction';
 import FaControlPanel from './FaControlPanel';
 import FaProgress from './FaProgress';
-import { FaSummary } from './FASummary';
+import { FaStockImport } from './FaStockImport';
+import { FaStockSidePanel } from './FaStockSidePanel';
+import { FaSummary } from './FaSummary';
 import { ProductionTimeline } from './ProductionTimeline';
 
 export function FellowshipAdventure() {
@@ -26,6 +29,9 @@ export function FellowshipAdventure() {
 
   const [mmEnchantmentEnabled, setMmEnchantmentEnabled] = React.useState<boolean>(false);
   const [enchantmentBonus, setEnchantmentBonus] = React.useState<number>(50);
+
+  const importedStock = useTabStore((state) => state.importedStock);
+  const addImportedStock = useTabStore((state) => state.addImportedStock);
 
   const accountId = useTabStore((state) => state.accountId);
   const forceUpdate = useTabStore((state) => state.forceUpdate);
@@ -188,7 +194,6 @@ export function FellowshipAdventure() {
       };
     });
 
-  // --- 1. Detached / Saved City State ---
   if (isDetached) {
     return (
       <div style={styles.emptyStateContainer}>
@@ -205,7 +210,6 @@ export function FellowshipAdventure() {
     );
   }
 
-  // --- 2. Live City but No Active FA ---
   if (!endTime) {
     return (
       <div style={styles.emptyStateContainer}>
@@ -220,7 +224,6 @@ export function FellowshipAdventure() {
     );
   }
 
-  // --- 3. Active FA Dashboard ---
   return (
     <Stack>
       <Box
@@ -236,17 +239,23 @@ export function FellowshipAdventure() {
           <Box>
             <FaControlPanel
               mmEnchantmentEnabled={mmEnchantmentEnabled}
-              onToggleMmEnchantment={setMmEnchantmentEnabled2}
+              onToggleMmEnchantment={setMmEnchantmentEnabled}
               enchantmentBonus={enchantmentBonus}
-              onEnchantmentBonusChange={setEnchantmentBonus2}
+              onEnchantmentBonusChange={setEnchantmentBonus}
             />
+          </Box>
+          <Box>
+            <FaStockSidePanel badges={badges}></FaStockSidePanel>
+          </Box>
+          <Box>
+            <FaStockImport onImportSuccess={addImportedStock}></FaStockImport>
           </Box>
         </Stack>
         <Stack sx={{ flex: '1 1 0%', minWidth: 0 }}>
           <Box>
             <ProductionTimeline badgesInProduction={badgesInProduction} timestamp={timestamp} endTime={endTime} />
           </Box>
-          <FaSummary badges={badges} badgesInProduction={badgesInProduction || {}}></FaSummary>
+          <FaSummary badges={badges} badgesInProduction={badgesInProduction || {}} importedStock={importedStock} />
         </Stack>
       </Box>
     </Stack>
