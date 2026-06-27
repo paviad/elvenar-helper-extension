@@ -45,9 +45,11 @@ interface TabState {
   invShowPerSquare: boolean;
   setInvShowPerSquare: (b: boolean) => void;
 
-  // --- FA Persisted Settings ---
-  importedStock: Record<string, Partial<Badges>>;
-  addImportedStock: (accountId: string, badges: Partial<Badges>) => void;
+  // --- FA Persisted Settings Defaults ---
+  importedStockByAccount: Record<string, Record<string, Partial<Badges>>>;
+  addImportedStock: (accountId: string, memberName: string, badges: Partial<Badges>) => void;
+  removeImportedStock: (accountId: string, memberName: string) => void;
+  clearImportedStock: (accountId: string) => void;
 }
 
 export const useTabStore = create<TabState>()(
@@ -95,11 +97,30 @@ export const useTabStore = create<TabState>()(
       setInvShowPerSquare: (b) => set({ invShowPerSquare: b }),
 
       // --- FA Persisted Settings Defaults ---
-      importedStock: {},
-      addImportedStock: (accountId, badges) => set((state) => ({
-        importedStock: {
-          ...state.importedStock,
-          [accountId]: badges,
+      importedStockByAccount: {},
+      addImportedStock: (accountId, memberName, badges) => set((state) => ({
+        importedStockByAccount: {
+          ...state.importedStockByAccount,
+          [accountId]: {
+            ...(state.importedStockByAccount[accountId] || {}),
+            [memberName]: badges,
+          }
+        }
+      })),
+      removeImportedStock: (accountId, memberName) => set((state) => {
+        const accountStock = { ...(state.importedStockByAccount[accountId] || {}) };
+        delete accountStock[memberName];
+        return {
+          importedStockByAccount: {
+            ...state.importedStockByAccount,
+            [accountId]: accountStock,
+          }
+        };
+      }),
+      clearImportedStock: (accountId) => set((state) => ({
+        importedStockByAccount: {
+          ...state.importedStockByAccount,
+          [accountId]: {},
         }
       })),
     }),

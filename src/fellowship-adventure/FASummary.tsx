@@ -20,6 +20,10 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
 
   const accountId = useTabStore((state) => state.accountId);
   if (!accountId) return <Typography>No account selected.</Typography>;
+
+  const removeImportedStock = useTabStore((state) => state.removeImportedStock);
+  const clearImportedStock = useTabStore((state) => state.clearImportedStock);
+
   const accountData = getAccountById(accountId);
   if (!accountData) return <Typography>Account data not found.</Typography>;
   const { waypoints, chests, currentStage } = accountData.faDataStore || { waypoints: {}, chests: {}, currentStage: 1 };
@@ -84,15 +88,11 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
   const importedIds = Object.keys(importedStock).filter((id) => id !== accountId && id !== myOwnerName);
 
   const removeImportedAccount = (idToRemove: string) => {
-    useTabStore.setState((state) => {
-      const nextStock = { ...state.importedStock };
-      delete nextStock[idToRemove];
-      return { importedStock: nextStock };
-    });
+    if (accountId) removeImportedStock(accountId, idToRemove);
   };
 
   const clearAllImports = () => {
-    useTabStore.setState({ importedStock: {} });
+    if (accountId) clearImportedStock(accountId);
   };
 
   const handleCopyNeeded = (title: string, data: Record<keyof Badges, { current: number; max: number }>) => {

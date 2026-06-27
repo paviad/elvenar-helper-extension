@@ -30,11 +30,15 @@ export function FellowshipAdventure() {
   const [mmEnchantmentEnabled, setMmEnchantmentEnabled] = React.useState<boolean>(false);
   const [enchantmentBonus, setEnchantmentBonus] = React.useState<number>(50);
 
-  const importedStock = useTabStore((state) => state.importedStock);
-  const addImportedStock = useTabStore((state) => state.addImportedStock);
-
   const accountId = useTabStore((state) => state.accountId);
   const forceUpdate = useTabStore((state) => state.forceUpdate);
+
+  // Access the scoped store and actions
+  const importedStockByAccount = useTabStore((state) => state.importedStockByAccount);
+  const addImportedStock = useTabStore((state) => state.addImportedStock);
+
+  // Extract ONLY the stock imported for the currently viewed account
+  const currentImportedStock = accountId ? importedStockByAccount[accountId] || {} : {};
 
   React.useEffect(() => {
     async function loadFaParameters() {
@@ -248,14 +252,22 @@ export function FellowshipAdventure() {
             <FaStockSidePanel badges={badges}></FaStockSidePanel>
           </Box>
           <Box>
-            <FaStockImport onImportSuccess={addImportedStock}></FaStockImport>
+            <FaStockImport
+              onImportSuccess={(memberName, badges) => {
+                if (accountId) addImportedStock(accountId, memberName, badges);
+              }}
+            />
           </Box>
         </Stack>
         <Stack sx={{ flex: '1 1 0%', minWidth: 0 }}>
           <Box>
             <ProductionTimeline badgesInProduction={badgesInProduction} timestamp={timestamp} endTime={endTime} />
           </Box>
-          <FaSummary badges={badges} badgesInProduction={badgesInProduction || {}} importedStock={importedStock} />
+          <FaSummary
+            badges={badges}
+            badgesInProduction={badgesInProduction || {}}
+            importedStock={currentImportedStock}
+          />
         </Stack>
       </Box>
     </Stack>
