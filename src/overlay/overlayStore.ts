@@ -9,6 +9,7 @@ interface OverlayState {
   setOfferedGoods: (goods: string[]) => void;
   chatMessages: ChatMessage[];
   setChatMessages: (messages: ChatMessage[]) => void;
+  cleanupOldMessages: (days: number) => void;
   userMap: Record<string, string>;
   setUserMap: (map: Record<string, string>) => void;
   forceUpdate: number;
@@ -38,7 +39,29 @@ export const generateOverlayStore = (accountId: string) => {
         offeredGoods: [],
         setOfferedGoods: (goods) => set({ offeredGoods: goods }),
         chatMessages: [],
-        setChatMessages: (messages) => set({ chatMessages: messages }),
+        setChatMessages: (messages) => {
+          // Automatic 30-day cleanup whenever the chat is updated
+          const cutoffTime = Date.now() - 30 * 24 * 60 * 60 * 1000;
+          const filteredMessages = messages.filter((msg) => {
+            if (!msg.timestamp) return true; // Safe fallback for malformed/legacy data
+
+            // Parse the string timestamp (milliseconds)
+            const timeInMs = parseInt(msg.timestamp, 10);
+            return timeInMs >= cutoffTime;
+          });
+          set({ chatMessages: filteredMessages });
+        },
+        cleanupOldMessages: (days) => set((state) => {
+          const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
+          return {
+            chatMessages: state.chatMessages.filter((msg) => {
+              if (!msg.timestamp) return true;
+
+              const timeInMs = parseInt(msg.timestamp, 10);
+              return timeInMs >= cutoffTime;
+            })
+          };
+        }),
         userMap: {},
         setUserMap: (map) => set({ userMap: map }),
         forceUpdate: 0,
