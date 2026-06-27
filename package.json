@@ -1,6 +1,6 @@
 {
   "name": "elven-assist",
-  "version": "8.5.1",
+  "version": "8.6.0",
   "description": "Unofficial extension to help with Elvenar city planning",
   "license": "GNU GPLv3",
   "author": "Aviad Pineles",
@@ -73,6 +73,7 @@
     "zustand": "^5.0.14"
   },
   "overrides": {
+    "js-yaml": "^4.1.2",
     "shell-quote": "^1.8.4",
     "tmp": "^0.2.6"
   }
