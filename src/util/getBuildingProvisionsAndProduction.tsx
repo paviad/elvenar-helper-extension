@@ -36,7 +36,7 @@ export function getBuildingProvisionsAndProduction(
 
       if (product.revenue?.resources) {
         Object.entries(product.revenue.resources).forEach(([resName, amount]) => {
-          if (!['mana', 'orcs', 'seeds', 'unurium'].includes(resName)) {
+          if (!['mana', 'orcs', 'seeds', 'unurium', 'nox'].includes(resName)) {
             return;
           }
 

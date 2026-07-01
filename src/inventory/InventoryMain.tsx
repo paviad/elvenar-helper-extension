@@ -134,7 +134,7 @@ export const InventoryMain = () => {
             }
           });
           Object.entries(production || {}).forEach(([k, v]) => {
-            if (['mana', 'orcs', 'seeds', 'unurium'].includes(k) && v > 0) {
+            if (['mana', 'orcs', 'seeds', 'unurium', 'nox'].includes(k) && v > 0) {
               enrichedItem.production[k] = v;
               resourceKeys.add(k);
             }
@@ -144,7 +144,7 @@ export const InventoryMain = () => {
       }
 
       const sortedKeys = Array.from(resourceKeys).sort((a, b) => {
-        const priority = ['population', 'culture', 'mana', 'seeds', 'orcs', 'unurium'];
+        const priority = ['population', 'culture', 'mana', 'seeds', 'orcs', 'unurium', 'nox'];
         const idxA = priority.indexOf(a);
         const idxB = priority.indexOf(b);
         if (idxA !== -1 && idxB !== -1) return idxA - idxB;

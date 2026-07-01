@@ -217,6 +217,7 @@ export interface OriginalRevenueResources {
   __class__: PurpleClass;
   mana?: number;
   unurium?: number;
+  nox?: number;
   seeds?: number;
   supplies?: number;
   boosted_plus_1_quality_3?: number;
@@ -551,6 +552,7 @@ export interface RequiredResourcesResources {
   ch19_magic2?: number;
   seeds?: number;
   unurium?: number;
+  nox?: number;
   ch20_bars?: number;
   boosted_sentient_plus_1_quality_2?: number;
   boosted_sentient_plus_2_quality_2?: number;
@@ -851,6 +853,7 @@ export interface FluffyResources {
   combiningcatalyst?: number;
   orcs?: number;
   unurium?: number;
+  nox?: number;
   gems?: number;
   elixir?: number;
   magic_dust?: number;
