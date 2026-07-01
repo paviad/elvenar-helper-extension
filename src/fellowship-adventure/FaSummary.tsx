@@ -135,7 +135,7 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
         }
       });
 
-    const finalLines: string[] = [`**${title} (Stage ${currentStage})**`];
+    const finalLines: string[] = [`**${title} (${currentStage >= 4 ? 'The Pit' : `Stage ${currentStage}`})**`];
 
     if (neededLines.length > 0) {
       finalLines.push('**Still Needed:**');
@@ -275,7 +275,7 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
   return (
     <Box sx={{ p: 3, mx: '10%' }}>
       <Typography variant='h4' sx={{ mb: importedIds.length > 0 ? 1 : 3, fontWeight: 'bold' }}>
-        Fellowship Adventure: Stage {currentStage}
+        Fellowship Adventure: {currentStage >= 4 ? 'The Pit' : `Stage ${currentStage}`}
       </Typography>
 
       {/* Imported Accounts Bar */}
@@ -308,20 +308,50 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
         </Box>
       )}
 
-      {/* Row 1: 3 Panels */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        {renderPanel('Orange Requirements', stats.orangeOnly, '1 1 20%')}
-        {renderPanel('Blue Requirements', stats.blueOnly, '1 1 20%')}
-        {renderPanel('Green Requirements', stats.greenOnly, '1 1 20%')}
-      </Box>
+      {currentStage >= 4 ? (
+        <Paper
+          variant='outlined'
+          sx={{
+            p: 6,
+            mt: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            bgcolor: 'action.hover',
+            borderRadius: 3,
+            borderStyle: 'dashed',
+            borderWidth: 2,
+            borderColor: 'divider',
+          }}
+        >
+          <Typography variant='h3' sx={{ fontWeight: 800, mb: 2, color: 'primary.main' }}>
+            Welcome to the Pit! 🕳️
+          </Typography>
+          <Typography variant='h6' color='text.secondary' sx={{ maxWidth: '600px' }}>
+            Congratulations to your Fellowship for completing the main map! Toss your remaining badges into the
+            Bottomless Pit to climb the leaderboards.
+          </Typography>
+        </Paper>
+      ) : (
+        <>
+          {/* Row 1: 3 Panels */}
+          <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+            {renderPanel('Orange Requirements', stats.orangeOnly, '1 1 20%')}
+            {renderPanel('Blue Requirements', stats.blueOnly, '1 1 20%')}
+            {renderPanel('Green Requirements', stats.greenOnly, '1 1 20%')}
+          </Box>
 
-      {/* Row 2: 4 Panels */}
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        {renderPanel('Orange + Multis', stats.orangeFull, '1 1 20%')}
-        {renderPanel('Blue + Multis', stats.blueFull, '1 1 20%')}
-        {renderPanel('Green + Multis', stats.greenFull, '1 1 20%')}
-        {renderPanel('Total Stage', stats.total, '1 1 20%')}
-      </Box>
+          {/* Row 2: 4 Panels */}
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            {renderPanel('Orange + Multis', stats.orangeFull, '1 1 20%')}
+            {renderPanel('Blue + Multis', stats.blueFull, '1 1 20%')}
+            {renderPanel('Green + Multis', stats.greenFull, '1 1 20%')}
+            {renderPanel('Total Stage', stats.total, '1 1 20%')}
+          </Box>
+        </>
+      )}
     </Box>
   );
 };
