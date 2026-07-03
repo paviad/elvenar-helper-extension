@@ -23,6 +23,7 @@ import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { WorldNeighbor } from '../model/worldNeighbors';
 import { angle_from_origin, offset_distance } from '../util/hexGrid';
 import { getAccountId, getOverlayStore } from './overlayStore';
+import { relayToGame } from '../inject/relayToGame';
 
 // Extend the base interface to include our calculated metrics
 type NeighborWithMetrics = WorldNeighbor & { distance: number; angle: number };
@@ -406,30 +407,13 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
 };
 
 const getNeighbourlyHelpBuildings = (playerId: number) => {
-  window.postMessage(
-    {
-      type: 'getNeighborlyHelpBuildings',
-      payload: playerId,
-    },
-    '*',
-  );
+  relayToGame('getNeighborlyHelpBuildings', playerId);
 };
 
 const performAppropriateHelp = (neighbourhoodHelpData: NeighbourHelpData) => {
-  window.postMessage(
-    {
-      type: 'neighbourHelpBuildings',
-      payload: neighbourhoodHelpData,
-    },
-    '*',
-  );
+  relayToGame('neighbourHelpBuildings', neighbourhoodHelpData);
 };
 
 const fetchWorldNeighbors = () => {
-  window.postMessage(
-    {
-      type: 'fetchWorldNeighbors',
-    },
-    '*',
-  );
+  relayToGame('fetchWorldNeighbors');
 };

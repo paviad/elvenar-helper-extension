@@ -21,6 +21,7 @@ import {
   loadSingleAccountFromStorage,
   saveAllAccounts,
 } from '../elvenar/AccountManager';
+import { relayToGame } from '../inject/relayToGame';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { KpHuntData } from '../model/kpHuntData';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
@@ -79,11 +80,18 @@ export function OverlayMain() {
     if (retrievingCounterRaw === 0 && retrievingCounter !== 0) {
       timeoutRef.current = setTimeout(() => {
         setRetrievingCounter(0);
+        console.log('Retrieving counter reached 0, checking for next page...', kpHuntOpportunities);
+        const primaryOpportunities = Object.values(kpHuntOpportunities || {}).filter(
+          (opportunity) => opportunity.standToGain >= 10,
+        );
+        if (primaryOpportunities.length === 0) {
+          relayToGame('nextPage');
+        }
       }, 500);
     } else {
       setRetrievingCounter(retrievingCounterRaw);
     }
-  }, [retrievingCounterRaw]);
+  }, [retrievingCounterRaw, kpHuntOpportunities]);
 
   const chatTab = 0;
   const tradeTab = chapter >= 18 ? 1 : -1;

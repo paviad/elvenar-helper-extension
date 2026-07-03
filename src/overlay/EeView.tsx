@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import { loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { relayToGame } from '../inject/relayToGame';
 import { formatTimeLeft } from '../util/formatTimeLeft';
 import { EeMissingBuilding, getEeMissingBuildings } from '../util/getEeMissingBuildings';
 import { getAccountId, getOverlayStore } from './overlayStore';
@@ -73,7 +74,7 @@ export const EeView = () => {
   }, [buildings, now]);
 
   const handleCastClick = (building: EeMissingBuilding) => {
-    window.postMessage({ type: 'CAST_EE', payload: [building.id] }, '*');
+    relayToGame('CAST_EE', [building.id]);
   };
 
   if (buildings === null) {

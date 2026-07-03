@@ -1,5 +1,6 @@
 import { BuildingFinder } from '../city/buildingFinder';
 import { BuildingEx } from '../model/buildingEx';
+import { CityEntity } from '../model/cityEntity';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { KpHuntData, PackHuntData } from '../model/kpHuntData';
@@ -50,6 +51,11 @@ export const processNeighborAncientWondersData = async (
   for (const resp of ancientWonderResponses) {
     const ancientWonderPhases = resp.ancientWonderPhases;
 
+    const awDictionary = (resp.cityEntities || []).reduce((dict, entity) => {
+      dict[entity.base_name] = entity.id;
+      return dict;
+    }, {} as Record<string, string>);
+
     decrementRetrievingCounter(sharedInfo);
 
     if (!ancientWonderPhases) {
@@ -57,6 +63,7 @@ export const processNeighborAncientWondersData = async (
     }
 
     const playerName = resp.playerInfo.name;
+    const playerId = resp.playerInfo.player_id;
     const pageIndex = (getPlayerPageIndex(resp.playerInfo.player_id) || -1) + 1;
     const ownerGuild = getPlayerGuildName(resp.playerInfo.player_id) || resp.playerInfo.player_id.toString();
 
@@ -72,7 +79,7 @@ export const processNeighborAncientWondersData = async (
         continue;
       }
 
-      rc = rc || calculatePhase(finder, phase, ownerGuild, playerName, huntersInfo, sharedInfo, pageIndex);
+      rc = rc || calculatePhase(finder, phase, ownerGuild, playerName, huntersInfo, sharedInfo, pageIndex, playerId, awDictionary);
     }
   }
 
@@ -167,10 +174,16 @@ export type Type = 'good' | 'item';
 
 interface AncientWonderResponse {
   ancientWonderPhases: AncientWonderPhases[];
+  cityEntities: AwCityEntity[];
   playerInfo: {
     player_id: number;
     name: string;
   };
+}
+
+export interface AwCityEntity {
+  id: string;
+  base_name: string;
 }
 
 interface ProcessedContribution {
@@ -192,6 +205,8 @@ export const calculatePhase = (
   huntersInfo: HuntersInformation,
   sharedInfo: ExtensionSharedInfo,
   pageIndex: number,
+  playerId: number,
+  awDictionary: Record<string, string>,
 ) => {
   const isFavorite = phase.isFavourite;
   const totalKpNeeded = phase.requiredKnowledgePoints || 0;
@@ -287,7 +302,10 @@ export const calculatePhase = (
     if (accountData) {
       accountData.kpHuntOpportunities = accountData.kpHuntOpportunities || {};
       const kpHuntRecord: KpHuntData = {
+        playerId,
+        guildName: ownerGuild,
         buildingId: phase.entityBaseName,
+        buildingFullId: awDictionary[phase.entityBaseName],
         resourceId: phase.resourceId,
         buildingName: building?.name || phase.entityBaseName,
         contributeAtLeast,

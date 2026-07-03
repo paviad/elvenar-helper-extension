@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { getBattleUnitTypes } from '../elvenar/getBattleUnitTypes';
+import { relayToGame } from '../inject/relayToGame';
 import { ArmyDetails, TrainingBuilding, TroopType, UnitType } from '../model/armyDetails';
 import { BattleUnitType } from '../model/battleUnitType';
 import { TournyProvince } from '../model/tourny/provincesOverview';
@@ -256,33 +257,16 @@ export const Tourny = () => {
     };
 
     console.log('Posting message for fight click with payload:', { q: province.q, r: province.r, unit });
-    window.postMessage(
-      {
-        type: 'tournyFight',
-        payload: { q: province.q, r: province.r, unit } satisfies TournyFight,
-      },
-      '*',
-    );
+
+    relayToGame('tournyFight', { q: province.q, r: province.r, unit } satisfies TournyFight);
   };
 
   const handleCaterClick = (province: ExtendedProvince) => () => {
-    window.postMessage(
-      {
-        type: 'tournyCater',
-        payload: { q: province.q, r: province.r },
-      },
-      '*',
-    );
+    relayToGame('tournyCater', { q: province.q, r: province.r });
   };
 
   const handleOpenClick = (province: ExtendedProvince) => () => {
-    window.postMessage(
-      {
-        type: 'tournyOpen',
-        payload: { q: province.q, r: province.r },
-      },
-      '*',
-    );
+    relayToGame('tournyOpen', { q: province.q, r: province.r });
   };
 
   const handleAddModifier = () => {

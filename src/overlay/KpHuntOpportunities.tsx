@@ -12,6 +12,7 @@ import VerifiedIcon from '@mui/icons-material/Verified'; // Icon for completion
 import {
   Avatar,
   Box,
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -26,6 +27,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { relayToGame } from '../inject/relayToGame';
 import { KpHuntData } from '../model/kpHuntData';
 
 interface KpHuntOpportunitiesProps {
@@ -83,6 +85,20 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
 
     navigator.clipboard.writeText(text).catch((err) => {
       console.error('Unable to copy', err);
+    });
+  };
+
+  // Handler for visiting a player
+  const handleVisitPlayer = (e: React.MouseEvent, opportunity: KpHuntData) => {
+    e.stopPropagation(); // Prevent the list item click event from firing
+
+    // TODO: Implement your visit logic here!
+    console.log(`Ready to visit player: ${opportunity.playerId}`);
+
+    relayToGame('visitPlayer', {
+      playerId: opportunity.playerId,
+      buildingId: opportunity.buildingFullId,
+      baseName: opportunity.buildingId,
     });
   };
 
@@ -217,9 +233,24 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
               // Common Secondary Text Component (Progress details + Pack Hunt details)
               const SecondaryText = (
                 <Box>
-                  <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                    {opportunity.id}
-                  </Typography>
+                  <Box sx={{ mt: 0.5, mb: 0.5, display: 'flex', alignItems: 'center' }}>
+                    <Button
+                      variant='outlined'
+                      size='small'
+                      onClick={(e) => handleVisitPlayer(e, opportunity)}
+                      sx={{
+                        textTransform: 'none',
+                        py: 0,
+                        px: 1,
+                        fontSize: '0.75rem',
+                        lineHeight: 1.5,
+                        minWidth: 'auto',
+                      }}
+                    >
+                      {opportunity.id}
+                    </Button>
+                    - {opportunity.guildName}
+                  </Box>
                   <Typography variant='body2' color='text.secondary'>
                     Page {opportunity.pageIndex} • Runes: {runeCount}
                   </Typography>

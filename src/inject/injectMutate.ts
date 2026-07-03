@@ -96,8 +96,8 @@ export function injectMutate() {
 
 function patchCtorRegistryAssignment(scriptText: string, registryPath: string, windowField: string): string {
   const escapedRegistryPath = registryPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const registryRegex1 = new RegExp(`([\\$\\w]+)\\[['"]${escapedRegistryPath}['"]\\]\\s*=\\s*(\\w+)\\s*;`, 'g');
-  const registryRegex2 = new RegExp(`([\\$\\w]+)\\.${escapedRegistryPath}\\s*=\\s*(\\w+)\\s*;`, 'g');
+  const registryRegex1 = new RegExp(`([\\$\\w]+)\\[['"]${escapedRegistryPath}['"]\\]\\s*=\\s*([\\w$]+)\\s*;`, 'g');
+  const registryRegex2 = new RegExp(`([\\$\\w]+)\\.${escapedRegistryPath}\\s*=\\s*([\\w$]+)\\s*;`, 'g');
 
   const registryRegex = escapedRegistryPath === registryPath ? registryRegex2 : registryRegex1;
 
@@ -108,20 +108,21 @@ function patchCtorRegistryAssignment(scriptText: string, registryPath: string, w
     return scriptText;
   }
 
-  console.log(`Found constructor for ${registryPath}:`, ctorFound);
-  const ctorAssignmentRegex = new RegExp(`\\b${ctorFound}\\s*=\\s*function\\(([^)]*)\\)`, 'g');
+  const escapedCtorFound = ctorFound.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const ctorAssignmentRegex = new RegExp(`\\s${escapedCtorFound}\\s*=\\s*function\\(([^)]*)\\)`, 'g');
+  console.log(`Found constructor for ${registryPath}:`, ctorFound, escapedCtorFound, ctorAssignmentRegex);
   let argumentList: string;
   const replacementResult = scriptText.replace(ctorAssignmentRegex, (_match, args) => {
     argumentList = args;
-    console.log(`replacing ${_match} with ${ctorFound}2=function(${args})`);
-    return `${ctorFound}2=function(${args})`;
+    console.log(`replacing ${_match} with ${ctorFound}2aviad=function(${args})`);
+    return ` ${ctorFound}2aviad=function(${args})`;
   });
   // console.log('Ctor assignment replacement result:', replacementResult);
   scriptText = replacementResult;
 
   registryRegex.lastIndex = 0;
   scriptText = scriptText.replace(registryRegex, (_match, registry: string, ctor: string) => {
-    const replacement = `${ctor}=function(${argumentList}){${ctor}2.call(this,${argumentList});console.error('${windowField} = ${registryPath}', this);window['${windowField}']=this;window['${windowField}_a']=window['${windowField}_a']||[];window['${windowField}_a'].push(this)};\n      ${registry}['${registryPath}']=${ctor};`;
+    const replacement = `${ctor}=function(${argumentList}){${ctor}2aviad.call(this,${argumentList});console.error('${windowField} = ${registryPath}', this);window['${windowField}']=this;window['${windowField}_a']=window['${windowField}_a']||[];window['${windowField}_a'].push(this)};\n      ${registry}['${registryPath}']=${ctor};`;
     console.log(`Applied ${registryPath} replacement:`, replacement);
     ctorFound ??= ctor;
     return replacement;
@@ -130,6 +131,7 @@ function patchCtorRegistryAssignment(scriptText: string, registryPath: string, w
   return scriptText;
 }
 
+
 async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
   try {
     const response = await fetch(scriptSrc);
@@ -137,15 +139,42 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
     // scriptText now contains the script as a string
     // You can now use scriptText as needed
 
-    const idx = version === 'min' ? scriptText.indexOf('var d={},') : scriptText.indexOf('var $hxClasses = {},');
-    if (idx === -1) {
-      console.error("Couldn't find target code segment in tamper target");
-      return;
+    const hookRegistry = (minText: string, fullText: string, hookName: string) => {
+      const idx = version === 'min' ? scriptText.indexOf(minText) : scriptText.indexOf(fullText);
+      if (idx === -1) {
+        console.error(`Couldn't find target code segment in tamper target ${minText} / ${fullText} / ${hookName}`);
+        throw new Error(`Couldn't find target code segment in tamper target ${minText} / ${fullText} / ${hookName}`);
+      }
+
+      const registryRex = /^(var )?([\w$]+)/;
+      const registryText = registryRex.exec(version === 'min' ? minText : fullText)?.[2];
+
+      const replacement = version === 'min'
+        ? `${minText.slice(0, -1)};window.${hookName}=${registryText};var `
+        : `${fullText.slice(0, -1)};window.${hookName}=${registryText};var `;
+
+      scriptText =
+        version === 'min'
+          ? scriptText.replace(minText, replacement)
+          : scriptText.replace(fullText, replacement);
     }
-    scriptText =
-      version === 'min'
-        ? scriptText.replace('var d={},', 'var d={};window.aviad=d;var ')
-        : scriptText.replace('var $hxClasses = {},', 'var $hxClasses = {};window.aviad=$hxClasses;var ');
+
+    // const idx = version === 'min' ? scriptText.indexOf('var d={},') : scriptText.indexOf('var $hxClasses = {},');
+    // if (idx === -1) {
+    //   console.error("Couldn't find target code segment in tamper target");
+    //   return;
+    // }
+    // scriptText =
+    //   version === 'min'
+    //     ? scriptText.replace('var d={},', 'var d={};window.aviad=d;var ')
+    //     : scriptText.replace('var $hxClasses = {},', 'var $hxClasses = {};window.aviad=$hxClasses;var ');
+
+    hookRegistry('var d={},', 'var $hxClasses = {},', 'aviad');
+    try {
+      hookRegistry('Ab=Ab||{},', '$hxEnums = $hxEnums || {},', 'aviad_enum');
+    } catch (e) {
+      hookRegistry('xb=xb||{},', '$hxEnums = $hxEnums || {},', 'aviad_enum');
+    }
 
     scriptText = scriptText.replace(
       /(_createCameraController\s*:\s*function\s*\(\)\s*\{)([\s\S]*?)(\}\s*,)/g,
@@ -201,11 +230,18 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
       'aviad_silm',
     );
 
-    // de.innogames.onyx.city.ui.windows.construction.renderer.BuildingItemRendererMediator
+    // de.innogames.onyx.city.model.ApplicationModel
     scriptText = patchCtorRegistryAssignment(
       scriptText,
-      'de.innogames.onyx.city.ui.windows.construction.renderer.BuildingItemRendererMediator',
-      'aviad_birm',
+      'de.innogames.onyx.city.model.ApplicationModel',
+      'aviad_am',
+    );
+
+    // de.innogames.onyx.shared.ui.components.pagination.Pagination
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.shared.ui.components.pagination.Pagination',
+      'aviad_pagination',
     );
 
     const newScript = document.createElement('script');
@@ -223,8 +259,6 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
     console.error('Failed to fetch script:', error);
   }
 }
-
-
 
 /*
 acs = aviad['de.innogames.shared.networking.AbstractConnectionService']

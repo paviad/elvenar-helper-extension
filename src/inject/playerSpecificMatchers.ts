@@ -4,6 +4,7 @@ import { localCollectEventTreasure } from './local/localCollectEventTreasure';
 import { localProcessGuildData } from './local/localProcessGuildData';
 import { localProcessRankingsData } from './local/localProcessRankingsData';
 import { localProcessSpireDiplomacyGetData } from './local/localProcessSpireDiplomacyGetData';
+import { localTrapVisitPlayer } from './local/localTrapVisitPlayer';
 
 export interface PlayerSpecificMatcherSpecification {
   requestSelector?: {
@@ -65,6 +66,13 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'OtherPlayerService',
       requestMethod: 'visitPlayer',
     },
+  },
+  {
+    responseSelector: {
+      requestClass: 'OtherPlayerService',
+      requestMethod: 'visitPlayer',
+    },
+    local: localTrapVisitPlayer,
   },
   {
     responseSelector: {

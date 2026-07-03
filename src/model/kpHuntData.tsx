@@ -8,7 +8,10 @@ export interface PackHuntData {
 }
 
 export interface KpHuntData {
+  playerId: number;
+  guildName: string;
   buildingId: string;
+  buildingFullId: string;
   resourceId: string;
   buildingName: string;
   contributeAtLeast: number;

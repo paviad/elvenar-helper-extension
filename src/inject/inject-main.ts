@@ -24,6 +24,8 @@ import {
   unlockEncounter,
 } from './gameops/tourny';
 import { injectMutate } from './injectMutate';
+import { localNextPage } from './local/localNextPage';
+import { localVisitPlayer } from './local/localVisitPlayer';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { storePicksForLaterUse } from './spirePicksStore';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
@@ -102,6 +104,12 @@ window.addEventListener('message', (event) => {
       break;
     case 'spirePicks':
       storePicksForLaterUse(event.data.payload as string[]);
+      break;
+    case 'visitPlayer':
+      localVisitPlayer(event.data.payload as { playerId: number, buildingId: string, baseName: string });
+      break;
+    case 'nextPage':
+      localNextPage();
       break;
   }
 });
