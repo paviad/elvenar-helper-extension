@@ -28,6 +28,11 @@ type AviadPagination = {
 
 declare global {
   interface Window {
+    gameVars: {
+      market: string;
+      version: string;
+      build_number: string;
+    };
     aviadVisit: (playerId: number) => void;
     aviadOpenAw: (playerId: number, buildingId: string, baseName: string) => void;
     WebSocketUnchanged: typeof WebSocket;
@@ -76,6 +81,7 @@ declare global {
         getNeighbourlyHelpBuildings: (playerId: number, callback: (response: unknown) => void) => void;
       };
       'de.innogames.onyx.city.service.NeighborlyHelpService': new () => {
+        helpPlayer(playerId: number, arg1: (response: unknown) => void): unknown;
         performAction: (
           action: 'unlimited_help' | 'limited_help' | 'time_limited_help',
           entityId: number,

@@ -24,6 +24,7 @@ import {
   unlockEncounter,
 } from './gameops/tourny';
 import { injectMutate } from './injectMutate';
+import { localHelpPlayer } from './local/localHelpPlayer';
 import { localNextPage } from './local/localNextPage';
 import { localVisitPlayer } from './local/localVisitPlayer';
 import { setupKeyHandlers } from './setupKeyHandlers';
@@ -77,14 +78,19 @@ window.addEventListener('message', (event) => {
         void castEeOncePerSecond(payload);
       }
       break;
+    case 'helpPlayer':
+      if (window.gameVars.market === 'zz') {
+        localHelpPlayer(event.data.payload as number);
+      }
+      break;
     case 'neighbourHelpBuildings':
-      {
+      if (window.gameVars.market !== 'zz') {
         const neighbourHelpData = event.data.payload as NeighbourHelpData;
         void receivedNeighbourHelpBuildings(neighbourHelpData);
       }
       break;
     case 'getNeighborlyHelpBuildings':
-      {
+      if (window.gameVars.market !== 'zz') {
         const playerId = event.data.payload as number;
         const service = createOtherPlayerService();
         getNeighborlyHelpBuildings(service, playerId);

@@ -1,7 +1,7 @@
 import { localOpenAw } from './localOpenAw';
 import { registerTrapHook } from './localTrapVisitPlayer';
 
-export const localVisitPlayer = async (payload: { playerId: number, buildingId: string, baseName: string }) => {
+export const localVisitPlayer = (payload: { playerId: number, buildingId: string, baseName: string }) => {
   const am = window.aviad_am;
   const vopcCtor = window.aviad['de.innogames.onyx.city.commands.VisitOtherPlayerCommand'];
   const vopc = am.injector.getOrCreateNewInstance(vopcCtor);

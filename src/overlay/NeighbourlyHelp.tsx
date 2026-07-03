@@ -199,6 +199,8 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
 
         const target = targets[i];
 
+        // relayToGame('helpPlayer', target.player_id);
+
         getNeighbourlyHelpBuildings(target.player_id);
 
         // Wait for the response to arrive in the store before proceeding
