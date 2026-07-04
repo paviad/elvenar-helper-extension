@@ -1,6 +1,5 @@
 import { BuildingFinder } from '../city/buildingFinder';
 import { BuildingEx } from '../model/buildingEx';
-import { CityEntity } from '../model/cityEntity';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { KpHuntData, PackHuntData } from '../model/kpHuntData';
@@ -24,11 +23,14 @@ const huntersInformationByWorld: Record<string, HuntersInformation> = {};
 export const processNeighborAncientWondersData = async (
   untypedResponseArray: ElvenarRequestResponseEntry[],
   sharedInfo: ExtensionSharedInfo,
-): Promise<boolean | undefined> => {
+): Promise<Record<string, KpHuntData>> => {
+  const kpHuntOpportunities: Record<string, KpHuntData> = {};
+
+  accountData = getAccountBySessionId(sharedInfo.sessionId);
+
   if (!finder) {
     finder = new BuildingFinder();
     await finder.ensureInitialized();
-    accountData = getAccountBySessionId(sharedInfo.sessionId);
     myPlayerId = accountData?.cityQuery?.userData.player_id;
   }
 
@@ -45,8 +47,6 @@ export const processNeighborAncientWondersData = async (
     otherHuntersKpAmounts: {},
   };
   huntersInformationByWorld[world] = huntersInfo;
-
-  let rc = false;
 
   for (const resp of ancientWonderResponses) {
     const ancientWonderPhases = resp.ancientWonderPhases;
@@ -82,8 +82,7 @@ export const processNeighborAncientWondersData = async (
         continue;
       }
 
-      rc =
-        rc ||
+      const kpHuntRecord =
         calculatePhase(
           finder,
           phase,
@@ -95,6 +94,11 @@ export const processNeighborAncientWondersData = async (
           playerId,
           awDictionary,
         );
+
+      if (kpHuntRecord) {
+        console.log('Found KP Hunt Opportunity:', kpHuntRecord);
+        kpHuntOpportunities[playerName] = kpHuntRecord;
+      }
     }
   }
 
@@ -109,7 +113,29 @@ export const processNeighborAncientWondersData = async (
   console.log('E Top 10 hunters:\n' + top10Hunters);
   */
 
-  return rc;
+  if (accountData) {
+    accountData.kpHuntOpportunities = mergeKpHuntOpportunities(accountData?.kpHuntOpportunities, kpHuntOpportunities);
+  } else {
+    console.warn('Account data not found for sessionId:', sharedInfo.sessionId);
+  }
+
+  return kpHuntOpportunities;
+};
+
+const mergeKpHuntOpportunities = (
+  existingOpportunities: Record<string, KpHuntData> | undefined,
+  newOpportunities: Record<string, KpHuntData>,
+) => {
+  if (!existingOpportunities) {
+    return newOpportunities;
+  }
+  for (const [playerName, newData] of Object.entries(newOpportunities)) {
+    const existingData = existingOpportunities[playerName];
+    if (!existingData) {
+      existingOpportunities[playerName] = newData;
+    }
+  }
+  return existingOpportunities;
 };
 
 const extractLastNumber = (str: string): number => {
@@ -222,7 +248,7 @@ export const calculatePhase = (
   pageIndex: number,
   playerId: number,
   awDictionary: Record<string, string>,
-) => {
+): KpHuntData | undefined => {
   const isFavorite = phase.isFavourite;
   const totalKpNeeded = phase.requiredKnowledgePoints || 0;
   const investedKp = phase.investedKnowledgePoints || 0;
@@ -313,30 +339,26 @@ export const calculatePhase = (
     const standToGain = Math.max(0, contribution.filteredRewards - contributeAtLeast);
 
     // we can steal it!
-    accountData = getAccountBySessionId(sharedInfo.sessionId);
-    if (accountData) {
-      accountData.kpHuntOpportunities = accountData.kpHuntOpportunities || {};
-      const kpHuntRecord: KpHuntData = {
-        playerId,
-        guildName: ownerGuild,
-        buildingId: phase.entityBaseName,
-        buildingFullId: awDictionary[phase.entityBaseName],
-        resourceId: phase.resourceId,
-        buildingName: building?.name || phase.entityBaseName,
-        contributeAtLeast,
-        standToGain,
-        numberOfRunes: contribution.numberOfRunes,
-        totalKpNeeded,
-        investedKp,
-        pageIndex: pageIndex || accountData.kpHuntOpportunities[playerName]?.pageIndex || 0,
-        isFavorite,
-        packHunt,
-      };
-      accountData.kpHuntOpportunities[playerName] = kpHuntRecord;
-    }
-    return true;
+    const kpHuntRecord: KpHuntData = {
+      playerName,
+      playerId,
+      guildName: ownerGuild,
+      buildingId: phase.entityBaseName,
+      buildingFullId: awDictionary[phase.entityBaseName],
+      resourceId: phase.resourceId,
+      buildingName: building?.name || phase.entityBaseName,
+      contributeAtLeast,
+      standToGain,
+      numberOfRunes: contribution.numberOfRunes,
+      totalKpNeeded,
+      investedKp,
+      pageIndex,
+      isFavorite,
+      packHunt,
+    };
+    return kpHuntRecord;
   }
-  return false;
+  return undefined;
 };
 
 const checkHunter = (

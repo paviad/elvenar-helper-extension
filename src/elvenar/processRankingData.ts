@@ -1,4 +1,4 @@
-import { debounceTime, Subject } from 'rxjs';
+import { debounceTime, groupBy, mergeMap, Subject } from 'rxjs';
 import { sendRetrievingCounterUpdateMessage } from '../chrome/messages';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { PagedRankingList, RankingsData } from '../model/rankingData';
@@ -6,7 +6,7 @@ import { PagedRankingList, RankingsData } from '../model/rankingData';
 const playerIdToPageIndexMapCache: Record<number, number> = {};
 const playerIdToGuildNameMapCache: Record<number, string | undefined> = {};
 
-let retrievingCounter = 0;
+const retrievingCounter: Record<number, number> = {};
 
 interface NotifyData {
   retrievingCounter: number;
@@ -15,13 +15,18 @@ interface NotifyData {
 
 const retrievingCounterSubject = new Subject<NotifyData>();
 
-const retrievingCounterNotify = retrievingCounterSubject.pipe(debounceTime(50)).subscribe((data) => {
-  void sendRetrievingCounterUpdateMessage(data.tabId, data.retrievingCounter);
-});
+const retrievingCounterNotify = retrievingCounterSubject.pipe(
+  groupBy((data) => data.tabId),
+  mergeMap((group) => group.pipe(debounceTime(50))))
+  .subscribe((data) => {
+    console.log(`Retrieving counter updated: ${data.retrievingCounter} for tabId: ${data.tabId}`);
+    void sendRetrievingCounterUpdateMessage(data.tabId, data.retrievingCounter);
+  });
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export const processRankingData = async (untypedJson: unknown, sharedInfo: ExtensionSharedInfo): Promise<void> => {
   const rankingsDataResponse = untypedJson as (RankingsData | PagedRankingList)[];
+  const tabId = sharedInfo.tabId;
 
   for (const resp of rankingsDataResponse) {
     const pageIndex = resp.responseData.pageIndex;
@@ -34,16 +39,18 @@ export const processRankingData = async (untypedJson: unknown, sharedInfo: Exten
       playerIds.pop();
     }
 
+    retrievingCounter[tabId] = retrievingCounter[tabId] || 0;
+
     for (let i = 0; i < playerIds.length; i++) {
       const playerId = playerIds[i];
       const guildName = guildNames[i];
       playerIdToPageIndexMapCache[playerId] = pageIndex;
       playerIdToGuildNameMapCache[playerId] = guildName;
-      retrievingCounter++;
+      retrievingCounter[tabId]++;
     }
   }
 
-  retrievingCounterSubject.next({ retrievingCounter, tabId: sharedInfo.tabId });
+  retrievingCounterSubject.next({ retrievingCounter: retrievingCounter[tabId], tabId });
 };
 
 export const getPlayerPageIndex = (playerId: number): number | undefined => {
@@ -54,13 +61,14 @@ export const getPlayerGuildName = (playerId: number): string | undefined => {
   return playerIdToGuildNameMapCache[playerId];
 };
 
-export const getRetrievingCounter = (): number => {
-  return retrievingCounter;
+export const getRetrievingCounter = (tabId: number): number => {
+  return retrievingCounter[tabId] || 0;
 };
 
 export const decrementRetrievingCounter = (sharedInfo: ExtensionSharedInfo): void => {
-  retrievingCounter = Math.max(0, retrievingCounter - 1);
-  retrievingCounterSubject.next({ retrievingCounter, tabId: sharedInfo.tabId });
+  const tabId = sharedInfo.tabId;
+  retrievingCounter[tabId] = Math.max(0, retrievingCounter[tabId] - 1);
+  retrievingCounterSubject.next({ retrievingCounter: retrievingCounter[tabId], tabId });
 };
 
 export const setGuildName = (playerId: number, guildName: string): void => {
@@ -68,6 +76,7 @@ export const setGuildName = (playerId: number, guildName: string): void => {
 };
 
 export const incrementRetrievingCounter = (amount: number, sharedInfo: ExtensionSharedInfo): void => {
-  retrievingCounter += amount;
-  retrievingCounterSubject.next({ retrievingCounter, tabId: sharedInfo.tabId });
+  const tabId = sharedInfo.tabId;
+  retrievingCounter[tabId] = (retrievingCounter[tabId] || 0) + amount;
+  retrievingCounterSubject.next({ retrievingCounter: retrievingCounter[tabId], tabId });
 };

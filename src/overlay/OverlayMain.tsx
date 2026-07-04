@@ -42,6 +42,7 @@ import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { TradeView } from './TradeView';
+import { saveSingleAccount } from '../elvenar/Accounts';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -70,6 +71,7 @@ export function OverlayMain() {
 
   const retrievingCounterRaw = useOverlayStore((state) => state.retrievingCounter);
   const [retrievingCounter, setRetrievingCounter] = React.useState(retrievingCounterRaw);
+  const autoKpHunt = useOverlayStore((state) => state.autoKpHunt);
 
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -85,13 +87,16 @@ export function OverlayMain() {
           (opportunity) => opportunity.standToGain >= 10,
         );
         if (primaryOpportunities.length === 0) {
-          relayToGame('nextPage');
+          if (autoKpHunt) {
+            console.log('Auto KP Hunt is enabled, relaying to game to go to next page...');
+            relayToGame('nextPage');
+          }
         }
       }, 500);
     } else {
       setRetrievingCounter(retrievingCounterRaw);
     }
-  }, [retrievingCounterRaw, kpHuntOpportunities]);
+  }, [retrievingCounterRaw, kpHuntOpportunities, autoKpHunt]);
 
   const chatTab = 0;
   const tradeTab = chapter >= 18 ? 1 : -1;
@@ -284,28 +289,28 @@ export function OverlayMain() {
   };
 
   const onClearAllOpportunities = async () => {
-    await loadAccountManagerFromStorage();
     const accountId = getAccountId();
     if (!accountId) return;
+    await loadSingleAccountFromStorage(accountId);
     const accountData = getAccountById(accountId);
     if (!accountData || !accountData.kpHuntOpportunities) return;
     accountData.kpHuntOpportunities = {};
     setKpHuntOpportunities({});
     accountData.kpHuntOpportunities = {};
-    await saveAllAccounts();
+    await saveSingleAccount(accountId);
     // expandPanel(false);
   };
 
   const onClearOpportunity = async (id: string) => {
-    await loadAccountManagerFromStorage();
     const accountId = getAccountId();
     if (!accountId) return;
+    await loadSingleAccountFromStorage(accountId);
     const accountData = getAccountById(accountId);
     if (!accountData || !accountData.kpHuntOpportunities) return;
     const { [id]: _, ...rest } = accountData.kpHuntOpportunities;
     setKpHuntOpportunities({ ...rest });
     accountData.kpHuntOpportunities = { ...rest };
-    await saveAllAccounts();
+    await saveSingleAccount(accountId);
     // if (Object.keys(rest).length === 0) {
     //   expandPanel(false);
     // }

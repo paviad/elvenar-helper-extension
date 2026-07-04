@@ -18,17 +18,20 @@ import {
   CardHeader,
   Chip,
   Divider,
+  FormControlLabel,
   IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
+  Switch,
   Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
 import { relayToGame } from '../inject/relayToGame';
 import { KpHuntData } from '../model/kpHuntData';
+import { getOverlayStore } from './overlayStore';
 
 interface KpHuntOpportunitiesProps {
   kpHuntOpportunities?: Record<string, KpHuntData>;
@@ -48,6 +51,9 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
   kpInstantsInventory,
 }) => {
   const theme = useTheme();
+  const store = getOverlayStore();
+  const autoKpHunt = store((state) => state.autoKpHunt);
+  const setAutoKpHunt = store((state) => state.setAutoKpHunt);
 
   // Convert Record to Array and Sort by standToGain (highest first)
   const sortedOpportunities = useMemo(() => {
@@ -114,13 +120,33 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
           </Avatar>
         }
         action={
-          hasData && onClearAllOpportunities ? (
-            <Tooltip title='Clear All'>
-              <IconButton onClick={onClearAllOpportunities}>
-                <DeleteSweepIcon />
-              </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+            <Tooltip title='Toggle automatic KP Hunting when targets are scanned'>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={!!autoKpHunt}
+                    onChange={(e) => setAutoKpHunt(e.target.checked)}
+                    color='warning'
+                    size='small'
+                  />
+                }
+                label={
+                  <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                    Auto
+                  </Typography>
+                }
+                sx={{ m: 0, mr: 1 }}
+              />
             </Tooltip>
-          ) : null
+            {hasData && onClearAllOpportunities && (
+              <Tooltip title='Clear All'>
+                <IconButton onClick={onClearAllOpportunities}>
+                  <DeleteSweepIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         }
         title={
           <Typography variant='h6' component='div' sx={{ fontWeight: 'bold' }}>

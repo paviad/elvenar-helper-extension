@@ -62,6 +62,9 @@ interface OverlayState {
   modifiers?: StrengthModifier[];
   setModifiers: (modifiers: StrengthModifier[]) => void;
 
+  autoKpHunt?: boolean;
+  setAutoKpHunt: (autoKpHunt: boolean) => void;
+
   gameVars?: GameVars;
   setGameVars: (gameVars: GameVars) => void;
 }
@@ -137,6 +140,10 @@ export const generateOverlayStore = (accountId: string) => {
         setTournyData: (data) => set({ tournyData: data }),
         modifiers: [],
         setModifiers: (modifiers) => set({ modifiers }),
+
+        autoKpHunt: false,
+        setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
+
         gameVars: undefined,
         setGameVars: (gameVars) => set({ gameVars }),
       }),
@@ -156,6 +163,7 @@ export const generateOverlayStore = (accountId: string) => {
             initialWorldMapData,
             worldNeighbors,
             neighbourHelpData,
+            autoKpHunt,
             // gameVars,
             // tournyData,
             ...toPersist
