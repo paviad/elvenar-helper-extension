@@ -1,42 +1,23 @@
-import { InitialWorldMapData } from '../model/initialWorldMapData';
 import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { TournyFight } from '../model/tourny/tournyFight';
-import { WorldNeighbor } from '../model/worldNeighbors';
+import { compareVersion } from './compareVersion';
 import { CustomWebSocket } from './customWebSocket';
-import { castEe, createSpellService } from './gameops/castEe';
-import {
-  createNeighbourlyHelpService,
-  createOtherPlayerService,
-  createWorldMapService,
-  fetchInitialWorldMapData,
-  getDiscoveredPlayerProvinces,
-  getNeighborlyHelpBuildings,
-} from './gameops/neighbourlyHelp';
-import {
-  createBattlefieldService,
-  createTournamentService,
-  createUnlockEncounterService,
-  createWorldMapTournamentService,
-  getProvinceInformation,
-  getProvincesOverview,
-  getTournamentOverview,
-  instantBattle,
-  unlockEncounter,
-} from './gameops/tourny';
 import { injectMutate } from './injectMutate';
+import { castEeOncePerSecond } from './local/castEeOncePerSecond';
+import { fetchWorldNeighbors } from './local/fetchWorldNeighbors';
 import { localHelpPlayer } from './local/localHelpPlayer';
 import { localNextPage } from './local/localNextPage';
 import { localVisitPlayer } from './local/localVisitPlayer';
+import { createOtherPlayerService, getNeighborlyHelpBuildings } from './local/neighbourlyHelp';
+import { receivedNeighbourHelpBuildings } from './local/receivedNeighbourHelpBuildings';
+import { tournyCater } from './local/tournyCater';
+import { tournyFight } from './local/tournyFight';
+import { tournyOpen } from './local/tournyOpen';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { storePicksForLaterUse } from './spirePicksStore';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
-
-const worldMapState = {
-  initialWorldMapData: null as InitialWorldMapData | null,
-  worldNeighbors: [] as WorldNeighbor[],
-};
 
 declare global {
   interface Window {
@@ -79,18 +60,18 @@ window.addEventListener('message', (event) => {
       }
       break;
     case 'helpPlayer':
-      if (window.gameVars.market === 'zz') {
+      if (compareVersion('1.239') >= 0) {
         localHelpPlayer(event.data.payload as number);
       }
       break;
     case 'neighbourHelpBuildings':
-      if (window.gameVars.market !== 'zz') {
+      if (compareVersion('1.239') < 0) {
         const neighbourHelpData = event.data.payload as NeighbourHelpData;
         void receivedNeighbourHelpBuildings(neighbourHelpData);
       }
       break;
     case 'getNeighborlyHelpBuildings':
-      if (window.gameVars.market !== 'zz') {
+      if (compareVersion('1.239') < 0) {
         const playerId = event.data.payload as number;
         const service = createOtherPlayerService();
         getNeighborlyHelpBuildings(service, playerId);
@@ -112,88 +93,12 @@ window.addEventListener('message', (event) => {
       storePicksForLaterUse(event.data.payload as string[]);
       break;
     case 'visitPlayer':
-      localVisitPlayer(event.data.payload as { playerId: number, buildingId: string, baseName: string });
+      localVisitPlayer(event.data.payload as { playerId: number; buildingId: string; baseName: string });
       break;
     case 'nextPage':
       localNextPage();
       break;
   }
 });
-
-const castEeOncePerSecond = async (entityIds: number[]) => {
-  if (entityIds.length === 0) {
-    return;
-  }
-
-  const service = createSpellService();
-  if (!service) {
-    console.error('ElvenAssist: SpellService not available, cannot cast EE');
-    return;
-  }
-  for (const entityId of entityIds) {
-    castEe(service, entityId);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-};
-
-const receivedNeighbourHelpBuildings = (neighbourHelpData: NeighbourHelpData) => {
-  const service = createNeighbourlyHelpService();
-
-  const buildings = neighbourHelpData.buildings;
-
-  const mainHall = buildings.find((r) => r.entityId === 1)!;
-  const builders = buildings.find((r) => r.entityId === 2);
-  const culture = buildings.find((r) => r.entityId !== 1 && r.entityId !== 2);
-
-  const playerId = neighbourHelpData.player.player_id;
-
-  if (builders) {
-    service?.performAction('limited_help', builders.entityId, playerId, (response) => {
-      console.log('E Perform help response for builders:', response);
-    });
-  } else if (culture) {
-    service?.performAction('time_limited_help', culture.entityId, playerId, (response) => {
-      console.log('E Perform help response for culture building:', response);
-    });
-  } else {
-    service?.performAction('unlimited_help', mainHall.entityId, playerId, (response) => {
-      console.log('E Perform help response for main hall:', response);
-    });
-  }
-};
-
-const fetchWorldNeighbors = async () => {
-  const service = createWorldMapService();
-  fetchInitialWorldMapData(service);
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  getDiscoveredPlayerProvinces(service);
-};
-
-const tournyFight = async (fightData: TournyFight) => {
-  const service = createBattlefieldService();
-  instantBattle(service, fightData);
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  const tournamentService = createTournamentService();
-  getTournamentOverview(tournamentService);
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  const worldMapTournamentService = createWorldMapTournamentService();
-  getProvincesOverview(worldMapTournamentService);
-};
-
-const tournyOpen = (payload: { q: number; r: number }) => {
-  const worldMapService = createWorldMapService();
-  getProvinceInformation(worldMapService, payload);
-};
-
-const tournyCater = async (payload: { q: number; r: number }) => {
-  const unlockEncounterService = createUnlockEncounterService();
-  unlockEncounter(unlockEncounterService, payload);
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  const tournamentService = createTournamentService();
-  getTournamentOverview(tournamentService);
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  const worldMapTournamentService = createWorldMapTournamentService();
-  getProvincesOverview(worldMapTournamentService);
-};
 
 setupKeyHandlers();

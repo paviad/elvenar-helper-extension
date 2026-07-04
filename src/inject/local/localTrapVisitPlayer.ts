@@ -4,7 +4,7 @@ import { OtherPlayerClass } from '../../model/otherPlayer';
 type HookType = {
   playerId: number;
   hookFn: (otherPlayer: OtherPlayerClass) => void;
-}
+};
 
 let trapHooks: HookType[] = [];
 

@@ -16,11 +16,11 @@ export async function processOtherPlayerData(
 
   const startupService = json.find((r) => r.requestClass === 'OtherPlayerService')?.responseData as
     | {
-      other_player: OtherPlayerClass;
-      city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
-      city_name: string;
-      technologySection: number;
-    }
+        other_player: OtherPlayerClass;
+        city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
+        city_name: string;
+        technologySection: number;
+      }
     | undefined;
 
   if (!startupService) {

@@ -6,4 +6,4 @@ export const relayToGame = (type: string, payload?: unknown) => {
     },
     '*',
   );
-}
+};

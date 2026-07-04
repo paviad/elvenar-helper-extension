@@ -19,11 +19,12 @@ import {
 } from '@mui/material';
 import { getAccountById } from '../elvenar/AccountManager';
 import { getEffects } from '../elvenar/getEffects';
+import { compareVersion } from '../inject/compareVersion';
+import { relayToGame } from '../inject/relayToGame';
 import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { WorldNeighbor } from '../model/worldNeighbors';
 import { angle_from_origin, offset_distance } from '../util/hexGrid';
 import { getAccountId, getOverlayStore } from './overlayStore';
-import { relayToGame } from '../inject/relayToGame';
 
 // Extend the base interface to include our calculated metrics
 type NeighborWithMetrics = WorldNeighbor & { distance: number; angle: number };
@@ -34,6 +35,7 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
   const store = getOverlayStore();
   const initialWorldMapData = store((state) => state.initialWorldMapData);
   const worldNeighbors = store((state) => state.worldNeighbors);
+  const gameVars = store((state) => state.gameVars);
 
   const [neighborsOffCooldownSorted, setNeighboursOffCooldownSorted] = useState<NeighborWithMetrics[]>([]);
   const [overflowMoney, setOverflowMoney] = useState(0);
@@ -199,34 +201,36 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
 
         const target = targets[i];
 
-        // relayToGame('helpPlayer', target.player_id);
+        if (gameVars && compareVersion('1.239', gameVars.version) >= 0) {
+          relayToGame('helpPlayer', target.player_id);
+        } else {
+          getNeighbourlyHelpBuildings(target.player_id);
 
-        getNeighbourlyHelpBuildings(target.player_id);
+          // Wait for the response to arrive in the store before proceeding
+          const neighbourHelpData = await new Promise<NeighbourHelpData>((resolve, reject) => {
+            // Subscribe to store changes to detect when this specific player's data arrives
+            const unsubscribe = store.subscribe((state) => {
+              if (state.neighbourHelpData?.player.player_id === target.player_id) {
+                clearTimeout(timeoutId);
+                unsubscribe();
+                resolve(state.neighbourHelpData);
+              }
+            });
 
-        // Wait for the response to arrive in the store before proceeding
-        const neighbourHelpData = await new Promise<NeighbourHelpData>((resolve, reject) => {
-          // Subscribe to store changes to detect when this specific player's data arrives
-          const unsubscribe = store.subscribe((state) => {
-            if (state.neighbourHelpData?.player.player_id === target.player_id) {
-              clearTimeout(timeoutId);
+            // Timeout to prevent infinite hanging if the server fails
+            const timeoutId = setTimeout(() => {
+              console.warn(`Timeout waiting for help response for ${target.name}`);
               unsubscribe();
-              resolve(state.neighbourHelpData);
-            }
+              reject(new Error(`Timeout waiting for help response for ${target.name}`));
+            }, 8000); // 8 seconds timeout
           });
 
-          // Timeout to prevent infinite hanging if the server fails
-          const timeoutId = setTimeout(() => {
-            console.warn(`Timeout waiting for help response for ${target.name}`);
-            unsubscribe();
-            reject(new Error(`Timeout waiting for help response for ${target.name}`));
-          }, 8000); // 8 seconds timeout
-        });
+          if (stopRequestedRef.current) {
+            break;
+          }
 
-        if (stopRequestedRef.current) {
-          break;
+          performAppropriateHelp(neighbourHelpData);
         }
-
-        performAppropriateHelp(neighbourHelpData);
 
         // Remove the neighbor from the list now that help is completed
         setNeighboursOffCooldownSorted((prev) => prev.filter((n) => n.player_id !== target.player_id));

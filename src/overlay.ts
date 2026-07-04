@@ -10,6 +10,7 @@ import {
   setupWorldNeighborsUpdatedListener,
 } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
+import { GameVars } from './inject/gameVars';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
@@ -28,6 +29,20 @@ console.log('ElvenAssist: Content script loaded');
 const defaultStartingWidth = 630;
 const defaultStartingHeight = 800;
 
+let gameVars: GameVars | undefined;
+
+const setupGameVarsListener = () => {
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || event.data?.type !== 'gameVars') {
+      return;
+    }
+
+    gameVars = event.data.payload as GameVars;
+
+    console.log('gameVars', gameVars);
+  });
+};
+
 const initFunc = () => {
   // Remove existing panel if present
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
@@ -36,6 +51,7 @@ const initFunc = () => {
   } else {
     setupNonSpecificRequestInterceptedListener();
     setupAggregateRequestResponseListener();
+    setupGameVarsListener();
   }
 
   // Create the div
@@ -339,7 +355,7 @@ const initFunc = () => {
   });
   setupWorldNeighborsUpdatedListener(({ worldNeighbors }) => {
     const store = getOverlayStore();
-    console.log('received world neighbors', worldNeighbors.filter(r=>r.cool_down).length);
+    console.log('received world neighbors', worldNeighbors.filter((r) => r.cool_down).length);
     store.getState().setWorldNeighbors(worldNeighbors);
   });
   setupInitialWorldMapDataListener(({ initialWorldMapData }) => {
@@ -375,6 +391,12 @@ async function setup(tabId: number, contentDiv: HTMLDivElement) {
       if (!state.lastSeenChat) {
         // First time setup, set last seen chat to now
         state.setLastSeenChat(Date.now());
+      }
+
+      if (gameVars) {
+        state.setGameVars(gameVars);
+      } else {
+        throw new Error('gameVars not set yet, cannot setup overlay store');
       }
 
       createOverlayUi(contentDiv);

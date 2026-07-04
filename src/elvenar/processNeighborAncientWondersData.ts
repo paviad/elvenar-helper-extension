@@ -51,10 +51,13 @@ export const processNeighborAncientWondersData = async (
   for (const resp of ancientWonderResponses) {
     const ancientWonderPhases = resp.ancientWonderPhases;
 
-    const awDictionary = (resp.cityEntities || []).reduce((dict, entity) => {
-      dict[entity.base_name] = entity.id;
-      return dict;
-    }, {} as Record<string, string>);
+    const awDictionary = (resp.cityEntities || []).reduce(
+      (dict, entity) => {
+        dict[entity.base_name] = entity.id;
+        return dict;
+      },
+      {} as Record<string, string>,
+    );
 
     decrementRetrievingCounter(sharedInfo);
 
@@ -79,7 +82,19 @@ export const processNeighborAncientWondersData = async (
         continue;
       }
 
-      rc = rc || calculatePhase(finder, phase, ownerGuild, playerName, huntersInfo, sharedInfo, pageIndex, playerId, awDictionary);
+      rc =
+        rc ||
+        calculatePhase(
+          finder,
+          phase,
+          ownerGuild,
+          playerName,
+          huntersInfo,
+          sharedInfo,
+          pageIndex,
+          playerId,
+          awDictionary,
+        );
     }
   }
 

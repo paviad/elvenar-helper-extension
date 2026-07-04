@@ -6,8 +6,9 @@ import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
-import { TournyData } from './tournyData';
 import { StrengthModifier } from './counterCalculation';
+import { TournyData } from './tournyData';
+import { GameVars } from '../inject/gameVars';
 
 interface OverlayState {
   offeredGoods: string[];
@@ -60,6 +61,9 @@ interface OverlayState {
   setTournyData: (data: TournyData) => void;
   modifiers?: StrengthModifier[];
   setModifiers: (modifiers: StrengthModifier[]) => void;
+
+  gameVars?: GameVars;
+  setGameVars: (gameVars: GameVars) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -133,6 +137,8 @@ export const generateOverlayStore = (accountId: string) => {
         setTournyData: (data) => set({ tournyData: data }),
         modifiers: [],
         setModifiers: (modifiers) => set({ modifiers }),
+        gameVars: undefined,
+        setGameVars: (gameVars) => set({ gameVars }),
       }),
       {
         name: `overlay-store-${accountId}`,
@@ -150,6 +156,7 @@ export const generateOverlayStore = (accountId: string) => {
             initialWorldMapData,
             worldNeighbors,
             neighbourHelpData,
+            // gameVars,
             // tournyData,
             ...toPersist
           } = state;

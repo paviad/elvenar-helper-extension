@@ -78,7 +78,7 @@ export function calculateBestCounter(
   targetArmy: Army[],
   roster: BattleUnitType[],
   almanac: BattleUnitType[],
-  modifiers: StrengthModifier[] = []
+  modifiers: StrengthModifier[] = [],
 ): CounterResult | null {
   if (!targetArmy || targetArmy.length === 0 || roster.length === 0 || !almanac) return null;
 
@@ -131,7 +131,7 @@ export function calculateBestCounter(
     });
 
     let quality: CounterQuality = 'Experimental';
-    // Note: Quality is driven by the RAW counterCount, ensuring optimal units don't lose their 
+    // Note: Quality is driven by the RAW counterCount, ensuring optimal units don't lose their
     // tier status just because of priority tweaks, but they will absolutely win tie-breakers.
     if (counterCount === 5) quality = 'Optimal';
     else if (counterCount >= 4) quality = 'Strong';

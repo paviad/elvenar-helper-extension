@@ -26,6 +26,11 @@ export function injectMutate() {
         (window as any).loadGameCode = async function () {
           console.log('ElvenAssist: loadGameCode called');
           await fetchAndModify(elvenarScriptFound!, minFullVersion);
+          const message = {
+            type: 'gameVars',
+            payload: window.gameVars,
+          };
+          window.postMessage(message, '*');
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,7 +136,6 @@ function patchCtorRegistryAssignment(scriptText: string, registryPath: string, w
   return scriptText;
 }
 
-
 async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
   try {
     const response = await fetch(scriptSrc);
@@ -149,15 +153,14 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
       const registryRex = /^(var )?([\w$]+)/;
       const registryText = registryRex.exec(version === 'min' ? minText : fullText)?.[2];
 
-      const replacement = version === 'min'
-        ? `${minText.slice(0, -1)};window.${hookName}=${registryText};var `
-        : `${fullText.slice(0, -1)};window.${hookName}=${registryText};var `;
+      const replacement =
+        version === 'min'
+          ? `${minText.slice(0, -1)};window.${hookName}=${registryText};var `
+          : `${fullText.slice(0, -1)};window.${hookName}=${registryText};var `;
 
       scriptText =
-        version === 'min'
-          ? scriptText.replace(minText, replacement)
-          : scriptText.replace(fullText, replacement);
-    }
+        version === 'min' ? scriptText.replace(minText, replacement) : scriptText.replace(fullText, replacement);
+    };
 
     // const idx = version === 'min' ? scriptText.indexOf('var d={},') : scriptText.indexOf('var $hxClasses = {},');
     // if (idx === -1) {
@@ -231,11 +234,7 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
     );
 
     // de.innogames.onyx.city.model.ApplicationModel
-    scriptText = patchCtorRegistryAssignment(
-      scriptText,
-      'de.innogames.onyx.city.model.ApplicationModel',
-      'aviad_am',
-    );
+    scriptText = patchCtorRegistryAssignment(scriptText, 'de.innogames.onyx.city.model.ApplicationModel', 'aviad_am');
 
     // de.innogames.onyx.shared.ui.components.pagination.Pagination
     scriptText = patchCtorRegistryAssignment(

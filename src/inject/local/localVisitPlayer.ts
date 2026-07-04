@@ -1,7 +1,7 @@
 import { localOpenAw } from './localOpenAw';
 import { registerTrapHook } from './localTrapVisitPlayer';
 
-export const localVisitPlayer = (payload: { playerId: number, buildingId: string, baseName: string }) => {
+export const localVisitPlayer = (payload: { playerId: number; buildingId: string; baseName: string }) => {
   const am = window.aviad_am;
   const vopcCtor = window.aviad['de.innogames.onyx.city.commands.VisitOtherPlayerCommand'];
   const vopc = am.injector.getOrCreateNewInstance(vopcCtor);
@@ -12,7 +12,9 @@ export const localVisitPlayer = (payload: { playerId: number, buildingId: string
   registerTrapHook(payload.playerId, () => {
     async function Do() {
       while (window.aviad_am.get_isLoading()) {
-        await new Promise<void>((resolve) => { setTimeout(resolve, 500) });
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 500);
+        });
       }
       // console.log('would call localOpenAw here');
       localOpenAw(payload.playerId, payload.buildingId, payload.baseName);
@@ -24,4 +26,4 @@ export const localVisitPlayer = (payload: { playerId: number, buildingId: string
   });
 
   vopc.execute();
-}
+};
