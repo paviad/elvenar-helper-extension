@@ -23,7 +23,7 @@ const huntersInformationByWorld: Record<string, HuntersInformation> = {};
 export const processNeighborAncientWondersData = async (
   untypedResponseArray: ElvenarRequestResponseEntry[],
   sharedInfo: ExtensionSharedInfo,
-): Promise<Record<string, KpHuntData>> => {
+): Promise<boolean> => {
   const kpHuntOpportunities: Record<string, KpHuntData> = {};
 
   accountData = getAccountBySessionId(sharedInfo.sessionId);
@@ -47,6 +47,8 @@ export const processNeighborAncientWondersData = async (
     otherHuntersKpAmounts: {},
   };
   huntersInformationByWorld[world] = huntersInfo;
+
+  let rc = false;
 
   for (const resp of ancientWonderResponses) {
     const ancientWonderPhases = resp.ancientWonderPhases;
@@ -98,6 +100,7 @@ export const processNeighborAncientWondersData = async (
       if (kpHuntRecord) {
         console.log('Found KP Hunt Opportunity:', kpHuntRecord);
         kpHuntOpportunities[playerName] = kpHuntRecord;
+        rc = true;
       }
     }
   }
@@ -119,7 +122,7 @@ export const processNeighborAncientWondersData = async (
     console.warn('Account data not found for sessionId:', sharedInfo.sessionId);
   }
 
-  return kpHuntOpportunities;
+  return rc;
 };
 
 const mergeKpHuntOpportunities = (

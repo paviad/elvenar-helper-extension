@@ -176,7 +176,7 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
     try {
       hookRegistry('Ab=Ab||{},', '$hxEnums = $hxEnums || {},', 'aviad_enum');
     } catch (e) {
-      hookRegistry('xb=xb||{},', '$hxEnums = $hxEnums || {},', 'aviad_enum');
+      hookRegistry('vb=vb||{},', '$hxEnums = $hxEnums || {},', 'aviad_enum');
     }
 
     scriptText = scriptText.replace(

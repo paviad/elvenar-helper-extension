@@ -54,6 +54,8 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
   const store = getOverlayStore();
   const autoKpHunt = store((state) => state.autoKpHunt);
   const setAutoKpHunt = store((state) => state.setAutoKpHunt);
+  const kpHuntImportantThreshold = store((state) => state.kpHuntImportantThreshold);
+  const setKpHuntImportantThreshold = store((state) => state.setKpHuntImportantThreshold);
 
   // Convert Record to Array and Sort by standToGain (highest first)
   const sortedOpportunities = useMemo(() => {
@@ -120,7 +122,38 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
           </Avatar>
         }
         action={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+            {/* Compact Threshold input */}
+            <Tooltip title='Highlight targets when they stand to gain at least this many KP' arrow>
+              <Box sx={{ display: 'flex', alignItems: 'center', mr: 0.5 }}>
+                <Typography variant='caption' sx={{ mr: 0.5, fontWeight: 700, color: 'text.secondary' }}>
+                  Min Gain:
+                </Typography>
+                <input
+                  type='number'
+                  min='0'
+                  value={kpHuntImportantThreshold ?? 0}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setKpHuntImportantThreshold(isNaN(val) ? 0 : val);
+                  }}
+                  style={{
+                    width: '42px',
+                    height: '24px',
+                    padding: '0 4px',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: '4px',
+                    backgroundColor: theme.palette.background.default,
+                    color: theme.palette.text.primary,
+                    textAlign: 'center',
+                    outline: 'none',
+                  }}
+                />
+              </Box>
+            </Tooltip>
+
             <Tooltip title='Toggle automatic KP Hunting when targets are scanned'>
               <FormControlLabel
                 control={
@@ -136,7 +169,7 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
                     Auto
                   </Typography>
                 }
-                sx={{ m: 0, mr: 1 }}
+                sx={{ m: 0, mr: 0.5 }}
               />
             </Tooltip>
             {hasData && onClearAllOpportunities && (
@@ -185,6 +218,9 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
               const profitIfCompleted = opportunity.standToGain - extraContributionBeyondMinimal;
               const canCompleteProfitably = profitIfCompleted > 0;
 
+              // Determine if this target meets or exceeds our high-priority threshold
+              const isImportant = opportunity.standToGain >= (kpHuntImportantThreshold ?? 0);
+
               // Primary Summary string for clipboard
               const totalGetBack =
                 opportunity.standToGain + opportunity.contributeAtLeast - opportunity.numberOfRunes * 15;
@@ -197,12 +233,17 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
               // Common Primary Text Component (Name + heart + copy)
               const PrimaryText = (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant='subtitle1' sx={{ fontWeight: 500 }} color='text.primary'>
+                  <Typography variant='subtitle1' sx={{ fontWeight: isImportant ? 700 : 500 }} color='text.primary'>
                     {opportunity.buildingName}
                   </Typography>
                   {opportunity.isFavorite && (
                     <Tooltip title='Favorite Player'>
                       <FavoriteIcon sx={{ fontSize: 16, color: '#f44336' }} />
+                    </Tooltip>
+                  )}
+                  {isImportant && (
+                    <Tooltip title='High Profit Opportunity!'>
+                      <AutoAwesomeIcon sx={{ fontSize: 16, color: theme.palette.warning.main }} />
                     </Tooltip>
                   )}
                   <Tooltip title='Copy summary to clipboard'>
@@ -293,6 +334,11 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
                   <ListItem
                     alignItems='flex-start'
                     disablePadding={!!onOpportunityClick}
+                    sx={{
+                      // Visually flag high-profit items using a stylish left highlight bar
+                      borderLeft: `4px solid ${isImportant ? theme.palette.warning.main : 'transparent'}`,
+                      transition: 'border-left-color 0.2s ease',
+                    }}
                     secondaryAction={
                       <Box
                         // Added right margin to avoid overlap with absolute clear button

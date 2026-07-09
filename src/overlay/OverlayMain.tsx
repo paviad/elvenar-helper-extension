@@ -21,6 +21,7 @@ import {
   loadSingleAccountFromStorage,
   saveAllAccounts,
 } from '../elvenar/AccountManager';
+import { saveSingleAccount } from '../elvenar/Accounts';
 import { relayToGame } from '../inject/relayToGame';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { KpHuntData } from '../model/kpHuntData';
@@ -42,7 +43,6 @@ import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { TradeView } from './TradeView';
-import { saveSingleAccount } from '../elvenar/Accounts';
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -72,6 +72,7 @@ export function OverlayMain() {
   const retrievingCounterRaw = useOverlayStore((state) => state.retrievingCounter);
   const [retrievingCounter, setRetrievingCounter] = React.useState(retrievingCounterRaw);
   const autoKpHunt = useOverlayStore((state) => state.autoKpHunt);
+  const kpHuntImportantThreshold = useOverlayStore((state) => state.kpHuntImportantThreshold);
 
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -84,7 +85,7 @@ export function OverlayMain() {
         setRetrievingCounter(0);
         console.log('Retrieving counter reached 0, checking for next page...', kpHuntOpportunities);
         const primaryOpportunities = Object.values(kpHuntOpportunities || {}).filter(
-          (opportunity) => opportunity.standToGain >= 10,
+          (opportunity) => opportunity.standToGain >= kpHuntImportantThreshold,
         );
         if (primaryOpportunities.length === 0) {
           if (autoKpHunt) {
@@ -96,7 +97,7 @@ export function OverlayMain() {
     } else {
       setRetrievingCounter(retrievingCounterRaw);
     }
-  }, [retrievingCounterRaw, kpHuntOpportunities, autoKpHunt]);
+  }, [retrievingCounterRaw, kpHuntOpportunities, autoKpHunt, kpHuntImportantThreshold]);
 
   const chatTab = 0;
   const tradeTab = chapter >= 18 ? 1 : -1;

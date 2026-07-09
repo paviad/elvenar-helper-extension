@@ -64,6 +64,8 @@ interface OverlayState {
 
   autoKpHunt?: boolean;
   setAutoKpHunt: (autoKpHunt: boolean) => void;
+  kpHuntImportantThreshold: number;
+  setKpHuntImportantThreshold: (threshold: number) => void;
 
   gameVars?: GameVars;
   setGameVars: (gameVars: GameVars) => void;
@@ -143,6 +145,8 @@ export const generateOverlayStore = (accountId: string) => {
 
         autoKpHunt: false,
         setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
+        kpHuntImportantThreshold: 10,
+        setKpHuntImportantThreshold: (threshold) => set({ kpHuntImportantThreshold: threshold }),
 
         gameVars: undefined,
         setGameVars: (gameVars) => set({ gameVars }),
