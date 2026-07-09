@@ -7,7 +7,7 @@ import {
   sendGenericResponse,
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
-import { getAccountBySessionId, loadAccountManagerFromStorage, saveAllAccounts } from '../elvenar/AccountManager';
+import { getAccountBySessionId, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
@@ -29,6 +29,7 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
+import { saveSingleAccount } from '../elvenar/Accounts';
 
 type Processors = Record<
   string,
@@ -77,7 +78,17 @@ export const playerSpecificRequestHandlerInternal = async (
   const request = msg.payload.payload.request;
   const response = msg.payload.payload.response;
 
-  await loadAccountManagerFromStorage();
+  let accountData = getAccountBySessionId(sharedInfo.sessionId);
+  let accountId = accountData?.cityQuery?.accountId;
+
+  if (msg.payload.type !== 'Q:StartupService/getData') {
+    if (!accountId) {
+      console.warn('ElvenAssist: Account ID not found for sessionId:', sharedInfo.sessionId, msg.payload.type, sharedInfo);
+      return;
+    }
+
+    await loadSingleAccountFromStorage(accountId);
+  }
 
   const processors: Processors = {
     'Q:NotificationService/getAllNotifications': processNotifications,
@@ -113,11 +124,22 @@ export const playerSpecificRequestHandlerInternal = async (
     return;
   }
 
-  const accountData = getAccountBySessionId(sharedInfo.sessionId);
-
   const result = await processorFunction(response, sharedInfo, request);
 
-  await saveAllAccounts();
+  if (msg.payload.type === 'Q:StartupService/getData') {
+    accountData = getAccountBySessionId(sharedInfo.sessionId);
+    accountId = accountData?.cityQuery?.accountId;
+  }
+
+  if (!accountId) {
+    console.warn('ElvenAssist: Account ID not found after processing StartupService/getData for sessionId:',
+      sharedInfo.sessionId,
+      msg.payload.type,
+      sharedInfo);
+    return;
+  }
+
+  await saveSingleAccount(accountId);
 
   await sendGenericResponse(msg.payload.type, result, sharedInfo.tabId);
 
