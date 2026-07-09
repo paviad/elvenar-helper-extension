@@ -10,6 +10,7 @@ import { useHelper } from '../helper/HelperContext';
 import { useTabStore } from '../util/tabStore';
 import { DiscordButton } from '../widgets/DiscordButton';
 import { AboutDialog } from './AboutDialog';
+import { StorageDialog } from './StorageDialog';
 
 const ERROR_BAR_HEIGHT = 48; // px
 
@@ -29,6 +30,9 @@ export const LayoutMain = () => {
 
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const [aboutOpen, setAboutOpen] = React.useState(false);
+
+  // Storage report modal state
+  const [storageOpen, setStorageOpen] = React.useState(false);
 
   const setTechSprite = useTabStore((state) => state.setTechSprite);
   const helper = useHelper();
@@ -115,6 +119,15 @@ export const LayoutMain = () => {
     setAboutOpen(false);
   };
 
+  const handleStorageOpen = () => {
+    setStorageOpen(true);
+    setMenuAnchor(null);
+  };
+
+  const handleStorageClose = () => {
+    setStorageOpen(false);
+  };
+
   const handleResetEverything = async () => {
     if (window.confirm('Are you sure you want to reset everything? This cannot be undone.')) {
       const techTreeSpriteUrl = await getFromStorage('techTreeSpriteUrl');
@@ -165,6 +178,7 @@ export const LayoutMain = () => {
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
+            <MenuItem onClick={handleStorageOpen}>Show Storage Report</MenuItem>
             <MenuItem onClick={() => void handleResetEverything()}>Reset Everything</MenuItem>
             <MenuItem onClick={handleAboutOpen}>About</MenuItem>
           </Menu>
@@ -255,6 +269,7 @@ export const LayoutMain = () => {
       <Toolbar sx={{ pointerEvents: 'none' }} />
       <Outlet />
       <HelperAvatar />
+      <StorageDialog open={storageOpen} onClose={handleStorageClose} />
     </Box>
   );
 };

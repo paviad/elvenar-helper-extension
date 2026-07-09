@@ -5,6 +5,7 @@
   "description": "A comprehensive unofficial toolkit for Elvenar featuring a live city planner, inventory manager, and FA tracker.",
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "webRequest"
   ],
   "browser_specific_settings": {
