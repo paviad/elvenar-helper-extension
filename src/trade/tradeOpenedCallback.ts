@@ -9,6 +9,12 @@ export const tradeOpenedCallback = async (accountData: AccountData) => {
 
   const trades = accountData.trades;
   const boostedGoods = accountData.cityQuery.boostedGoods;
+
+  if(trades.some((trade) => trade.__class__ !== 'PlayerTradeVO')) {
+    console.error('ElvenAssist: Unexpected trade data format', accountData);
+    return;
+  }
+
   const boostedTrades = trades.filter((trade) => boostedGoods.includes(trade.need.good_id));
   const boostedAscendedTrades = boostedTrades.filter((trade) => trade.need.good_id.startsWith('ascended'));
   const tradesOfferingNotBoostedGoods = boostedAscendedTrades.filter(

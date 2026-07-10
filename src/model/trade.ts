@@ -1,4 +1,5 @@
 export interface Trade {
+  __class__: string;
   id: number;
   offer: Need;
   need: Need;

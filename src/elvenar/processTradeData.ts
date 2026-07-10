@@ -10,5 +10,9 @@ export async function processTradeData(untypedJson: unknown, sharedInfo: Extensi
 
   if (accountData) {
     accountData.trades = json[0].responseData;
+
+    if (accountData.trades.some(r => r.__class__ !== 'PlayerTradeVO')) {
+      console.error('ElvenAssist: Unexpected trade data format', accountData);
+    }
   }
 }
