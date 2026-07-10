@@ -21,6 +21,7 @@ export function injectMutate() {
       const urlMatch = functionBody.match(/https?:\/\/[^\s'"]*elvenar-release-(min|full)[^\s'"]*/i);
       if (urlMatch) {
         const minFullVersion = urlMatch[0].includes('elvenar-release-min') ? 'min' : 'full';
+        window.gameVars.gameScriptUrl = urlMatch[0];
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).loadGameCode = async function () {

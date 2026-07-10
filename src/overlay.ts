@@ -395,6 +395,14 @@ async function setup(tabId: number, contentDiv: HTMLDivElement) {
 
       if (gameVars) {
         state.setGameVars(gameVars);
+        const existingPanel = document.getElementById('elven-assist-draggable-panel');
+        if (existingPanel) {
+          if (gameVars.gameScriptUrl.includes('full')) {
+            existingPanel.style.border = '13px solid red';
+          } else {
+            // existingPanel.style.border = '13px solid green';
+          }
+        }
       } else {
         throw new Error('gameVars not set yet, cannot setup overlay store');
       }
