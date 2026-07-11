@@ -91,7 +91,7 @@ export const useCityGridState = () => {
 
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Level up/down
-      if (['Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract', 'BracketRight'].includes(event.code)) {
+      if (['Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract', 'BracketRight', 'Slash'].includes(event.code)) {
         event.preventDefault();
         const block = blocks[dragIndex];
         if (!block) return;
@@ -109,7 +109,7 @@ export const useCityGridState = () => {
           if (newStage !== undefined) {
             if (['Equal', 'NumpadAdd', 'BracketRight'].includes(event.code)) {
               if (newStage < maxStage) newStage++;
-            } else if (['Minus', 'NumpadSubtract'].includes(event.code)) {
+            } else if (['Minus', 'NumpadSubtract', 'Slash'].includes(event.code)) {
               if (newStage > 1) newStage--;
             }
           }
@@ -117,7 +117,7 @@ export const useCityGridState = () => {
           if (['Equal', 'NumpadAdd', 'BracketRight'].includes(event.code)) {
             // if (newLevel < maxLevel)
             newLevel++;
-          } else if (['Minus', 'NumpadSubtract'].includes(event.code)) {
+          } else if (['Minus', 'NumpadSubtract', 'Slash'].includes(event.code)) {
             if (newLevel > 1) newLevel--;
           }
         }
