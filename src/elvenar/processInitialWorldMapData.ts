@@ -2,10 +2,10 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { InitialWorldMapData, InitialWorldMapDataResponse } from '../model/initialWorldMapData';
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export const processInitialWorldMapData = async (
   untypedJson: unknown,
   sharedInfo: ExtensionSharedInfo,
+// eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<InitialWorldMapData | undefined> => {
   const response = untypedJson as ElvenarRequestResponseEntry[];
 

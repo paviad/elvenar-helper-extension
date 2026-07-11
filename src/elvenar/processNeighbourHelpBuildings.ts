@@ -2,10 +2,10 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { NeighbourHelpBuildingsResponse, NeighbourHelpData } from '../model/neighbourHelpBuildings';
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export const processNeighbourHelpBuildings = async (
   untypedJson: unknown,
   sharedInfo: ExtensionSharedInfo,
+// eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<NeighbourHelpData | undefined> => {
   const response = untypedJson as ElvenarRequestResponseEntry[];
 

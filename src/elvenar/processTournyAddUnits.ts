@@ -3,10 +3,10 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { TournyAddUnits } from '../model/tourny/addUnits';
 import { getAccountBySessionId } from './AccountManager';
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export const processTournyAddUnits = async (
   response: ElvenarRequestResponseEntry[],
   sharedInfo: ExtensionSharedInfo,
+// eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<TournyAddUnits | undefined> => {
   const addUnitsResponse = response.find(
     (entry) => entry.requestClass === 'ArmyService' && entry.requestMethod === 'addUnit',
