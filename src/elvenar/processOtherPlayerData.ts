@@ -8,7 +8,7 @@ import { setAccountData } from './AccountManager';
 import { AccountData } from './Accounts';
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
+export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo): Promise<string | undefined> {
   const json = untypedJson as [{ requestClass: string; responseData: unknown }];
 
   const startupService = json.find((r) => r.requestClass === 'OtherPlayerService')?.responseData as
@@ -135,6 +135,8 @@ export async function processOtherPlayerData(untypedJson: unknown, sharedInfo: E
   } satisfies AccountData;
 
   setAccountData(accountId, data);
+
+  return accountId;
 }
 
 const maxUpgradeIndexByChapter = [

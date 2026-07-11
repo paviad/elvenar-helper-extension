@@ -155,6 +155,7 @@ export const playerSpecificRequestHandlerInternal = async (
       }
       break;
     case 'Q:OtherPlayerService/visitPlayer':
+      await saveSingleAccount(result as string);
       await sendOtherPlayerCityDataUpdatedMessage();
       break;
     case 'Q:SpireService/getEncounter':
