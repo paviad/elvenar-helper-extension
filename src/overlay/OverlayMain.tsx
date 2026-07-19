@@ -40,6 +40,7 @@ import { MessagesView } from './MessagesView';
 import { NeighbourlyHelp } from './NeighbourlyHelp';
 import { getAccountId, getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
+import { playPrimaryOpportunityAlert } from './primaryOpportunityAlertService';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { TradeView } from './TradeView';
@@ -92,6 +93,8 @@ export function OverlayMain() {
             console.log('Auto KP Hunt is enabled, relaying to game to go to next page...');
             relayToGame('nextPage');
           }
+        } else {
+          playPrimaryOpportunityAlert();
         }
       }, 500);
     } else {

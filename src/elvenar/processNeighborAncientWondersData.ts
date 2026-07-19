@@ -34,6 +34,11 @@ export const processNeighborAncientWondersData = async (
     myPlayerId = accountData?.cityQuery?.userData.player_id;
   }
 
+  if (!myPlayerId) {
+    console.error('My player ID is not available. Cannot process neighbor ancient wonders data.');
+    return false;
+  }
+
   const ancientWonderResponses = extractElvenarResponse<AncientWonderResponse>(
     untypedResponseArray,
     'AncientWonderService',
