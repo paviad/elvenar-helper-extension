@@ -41,6 +41,12 @@ function formatSeconds(seconds: number | undefined): string {
   return `${date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })} ${time}`;
 }
 
+// Game posts use bare "\r" (and "\r\r" for blank lines) as line breaks; CSS pre-wrap only
+// reliably renders "\n", so normalize carriage returns before displaying.
+function normalizeLineBreaks(text: string): string {
+  return text.replace(/\r\n?/g, '\n');
+}
+
 function lastPost(message: GameMessage) {
   if (!message.posts || message.posts.length === 0) return undefined;
   return [...message.posts].reduce((latest, p) => (p.created_at > latest.created_at ? p : latest), message.posts[0]);
@@ -328,7 +334,7 @@ const MessageDetail = ({ message, onBack }: MessageDetailProps) => {
                     align='left'
                     sx={{ color: 'text.primary', whiteSpace: 'pre-wrap', wordBreak: 'break-word', textAlign: 'left' }}
                   >
-                    {post.post}
+                    {normalizeLineBreaks(post.post)}
                   </Typography>
                 </Box>
               </Stack>
