@@ -1,5 +1,11 @@
 # Changelog
 
+## v8.9.0
+- **New Feature: Messages** — Added a "Messages" tab to the in-game overlay for browsing your Inbox and Outbox. Includes a thread list with unread indicators and previews, a master/detail thread view (most recent first), and collapsible recipients.
+- Messages are captured live from the game and saved per-account (no history kept — the latest data overwrites the previous snapshot).
+- Shows a "saved view" notice until you open the in-game Messages window, since the game only sends message data when its icon is clicked.
+- Keyboard chord navigation (Alt+C, M) to jump straight to the Messages tab.
+
 ## v5.9.0
 - **Inventory:** Added "Copy Table" button to export inventory as tab-separated values (TSV) for easy spreadsheet use.
 - **Inventory:** Spell Fragments now scale with Magic Academy level; improved chapter/level detection for reward kits.
