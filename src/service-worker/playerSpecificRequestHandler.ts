@@ -15,6 +15,7 @@ import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
 import { processInventory } from '../elvenar/processInventory';
+import { processMessageMarkedAsRead } from '../elvenar/processMessageMarkedAsRead';
 import { processMessageOverview } from '../elvenar/processMessageOverview';
 import { processMessages } from '../elvenar/processMessages';
 import { processNotifications } from '../elvenar/processNotifications';
@@ -122,6 +123,7 @@ export const playerSpecificRequestHandlerInternal = async (
 
     'R:MessageService/getMessageOverview': processMessageOverview,
     'R:MessageService/fetchMessages': processMessages,
+    'R:MessageService/markMessageAsRead': processMessageMarkedAsRead,
   };
 
   const processorFunction = processors[msg.payload.type];
@@ -176,6 +178,7 @@ export const playerSpecificRequestHandlerInternal = async (
       break;
     case 'R:MessageService/getMessageOverview':
     case 'R:MessageService/fetchMessages':
+    case 'R:MessageService/markMessageAsRead':
       await sendMessagesUpdatedMessage(sharedInfo.tabId, msg.payload.type);
       break;
   }

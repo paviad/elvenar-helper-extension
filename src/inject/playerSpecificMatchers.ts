@@ -151,5 +151,11 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'MessageService',
       requestMethod: 'fetchMessages',
     },
+  },
+  {
+    responseSelector: {
+      requestClass: 'MessageService',
+      requestMethod: 'markMessageAsRead',
+    },
   }
 ];
