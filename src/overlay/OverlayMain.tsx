@@ -5,9 +5,11 @@ import { Badge, Box, IconButton, Tab, Tabs, TextField, Typography } from '@mui/m
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
+  clearMessagesUpdatedListener,
   clearTradeParsedListener,
   setupActiveEffectsUpdatedListener,
   setupGenericResponseListener,
+  setupMessagesUpdatedListener,
   setupTradeParsedListener,
   TradeParsedMessage,
 } from '../chrome/messages';
@@ -20,6 +22,7 @@ import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { getOverlayStore } from './overlayStore';
+import { MessagesView } from './MessagesView';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
 import { TradeView } from './TradeView';
@@ -48,6 +51,7 @@ export function OverlayMain() {
   const tradeTab = chapter >= 18 ? 1 : -1;
   const eeTab = chapter >= 18 ? 2 : 1;
   const questsTab = chapter >= 18 ? 3 : 2;
+  const messagesTab = chapter >= 18 ? 4 : 3;
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
   const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
@@ -72,6 +76,7 @@ export function OverlayMain() {
         KeyC: chatTab,
         KeyE: eeTab,
         KeyQ: questsTab,
+        KeyM: messagesTab,
       };
       if (!(code in tabDic)) {
         return;
@@ -165,10 +170,20 @@ export function OverlayMain() {
       useOverlayStore.getState().triggerEeUpdate();
     });
 
+    setupMessagesUpdatedListener((msg) => {
+      const store = useOverlayStore.getState();
+      store.triggerMessagesUpdate();
+      // A detail response means the user opened Messages in-game this session -> data is live.
+      if (msg.reqRespType === 'R:MessageService/fetchMessages') {
+        store.setMessagesDetailsReceived(true);
+      }
+    });
+
     return () => {
       window.removeEventListener('message', messageHandler);
       clearTradeParsedListener();
       clearActiveEffectsUpdatedListener();
+      clearMessagesUpdatedListener();
     };
   }, []);
 
@@ -266,6 +281,7 @@ export function OverlayMain() {
           {chapter >= 18 && <Tab label='Trade' />}
           <Tab label={renderLabel('EE')} />
           <Tab label={renderLabel('Quests')} />
+          <Tab label={renderLabel('Messages')} />
         </Tabs>
         {tab === chatTab && (
           <>
@@ -389,6 +405,7 @@ export function OverlayMain() {
             onClearQuests={() => setQuests(undefined)}
           />
         ))}{' '}
+      {tab === messagesTab && <MessagesView />}
     </div>
   );
 }

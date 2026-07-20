@@ -85,6 +85,13 @@ export interface MissingEeMessage {
   entityIds: number[];
 }
 
+export interface MessagesUpdatedMessage {
+  type: 'messagesUpdated';
+  tabId: number;
+  // Which player-specific response triggered this (e.g. 'R:MessageService/fetchMessages').
+  reqRespType: string;
+}
+
 // ============================================================================
 // UNION TYPES & UTILITIES
 // ============================================================================
@@ -101,7 +108,8 @@ export type AllMessages =
   | CityDataUpdatedMessage
   | TradeParsedMessage
   | ActiveEffectsUpdatedMessage
-  | MissingEeMessage;
+  | MissingEeMessage
+  | MessagesUpdatedMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -239,6 +247,14 @@ export const sendMissingEeMessage = async (tabId: number, entityIds: number[]) =
   }
 };
 
+export const sendMessagesUpdatedMessage = async (tabId: number, reqRespType: string) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'messagesUpdated', tabId, reqRespType } satisfies MessagesUpdatedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending messagesUpdated message:', e);
+  }
+};
+
 // ============================================================================
 // LISTENER SETUP & ROUTING
 // ============================================================================
@@ -366,3 +382,11 @@ export const clearActiveEffectsUpdatedListener = () => {
 
 export const setupMissingEeListener = (callback: (message: MissingEeMessage) => void) =>
   (callbackMap['missingEe'] = callback);
+
+export const setupMessagesUpdatedListener = (
+  callback: (message: MessagesUpdatedMessage) => void | Promise<void>,
+) => (callbackMap['messagesUpdated'] = callback);
+
+export const clearMessagesUpdatedListener = () => {
+  delete callbackMap['messagesUpdated'];
+};

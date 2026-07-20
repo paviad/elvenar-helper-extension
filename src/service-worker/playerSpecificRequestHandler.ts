@@ -5,6 +5,7 @@ import {
   sendCityDataUpdatedMessage,
   sendCityEntitiesUpdatedMessage,
   sendGenericResponse,
+  sendMessagesUpdatedMessage,
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
 import { getAccountBySessionId, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
@@ -14,6 +15,8 @@ import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
 import { processInventory } from '../elvenar/processInventory';
+import { processMessageOverview } from '../elvenar/processMessageOverview';
+import { processMessages } from '../elvenar/processMessages';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
@@ -116,6 +119,9 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:MultiplayerEventService/updateWaypoints': processUpdateWaypoints,
     'R:ChestsService/updateChestPayInProgress': processUpdateChestPayInProgress,
     'R:MultiplayerEventService/updateOverview': processUpdateWaypointsOverview,
+
+    'R:MessageService/getMessageOverview': processMessageOverview,
+    'R:MessageService/fetchMessages': processMessages,
   };
 
   const processorFunction = processors[msg.payload.type];
@@ -167,6 +173,10 @@ export const playerSpecificRequestHandlerInternal = async (
       break;
     case 'R:EffectsService/update':
       await sendActiveEffectsUpdatedMessage(sharedInfo.tabId);
+      break;
+    case 'R:MessageService/getMessageOverview':
+    case 'R:MessageService/fetchMessages':
+      await sendMessagesUpdatedMessage(sharedInfo.tabId, msg.payload.type);
       break;
   }
 };

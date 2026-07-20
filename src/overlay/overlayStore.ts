@@ -24,6 +24,12 @@ interface OverlayState {
   setAutoOpenTrade: (autoOpen: boolean) => void;
   eeUpdate: number;
   triggerEeUpdate: () => void;
+  messagesUpdate: number;
+  triggerMessagesUpdate: () => void;
+  // Session-scoped: true once a fetchMessages (detail) response arrived this session.
+  // Not persisted, so a fresh session starts false and the view flags stored data as stale.
+  messagesDetailsReceived: boolean;
+  setMessagesDetailsReceived: (received: boolean) => void;
   quests: ParsedQuestExport | undefined;
   setQuests: (quests: ParsedQuestExport | undefined) => void;
 }
@@ -76,6 +82,10 @@ export const generateOverlayStore = (accountId: string) => {
         setAutoOpenTrade: (autoOpen) => set({ autoOpenTrade: autoOpen }),
         eeUpdate: 0,
         triggerEeUpdate: () => set((state) => ({ eeUpdate: state.eeUpdate + 1 })),
+        messagesUpdate: 0,
+        triggerMessagesUpdate: () => set((state) => ({ messagesUpdate: state.messagesUpdate + 1 })),
+        messagesDetailsReceived: false,
+        setMessagesDetailsReceived: (received) => set({ messagesDetailsReceived: received }),
         quests: undefined,
         setQuests: (quests) => set({ quests }),
       }),
@@ -83,7 +93,8 @@ export const generateOverlayStore = (accountId: string) => {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
-          const { offeredGoods, forceUpdate, overlayExpanded, eeUpdate, ...toPersist } = state;
+          const { offeredGoods, forceUpdate, overlayExpanded, eeUpdate, messagesUpdate, messagesDetailsReceived, ...toPersist } =
+            state;
           return toPersist;
         },
       },

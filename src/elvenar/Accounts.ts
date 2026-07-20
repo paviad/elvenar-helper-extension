@@ -5,6 +5,7 @@ import { CityEntity } from '../model/cityEntity';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { FAStoreData } from '../model/faStageProgress';
+import { MessagesData } from '../model/gameMessage';
 import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
 import { PotionEffect } from '../model/potionEffect';
@@ -74,6 +75,8 @@ export interface AccountData {
   };
 
   faDataStore?: FAStoreData;
+
+  messagesData?: MessagesData;
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};
