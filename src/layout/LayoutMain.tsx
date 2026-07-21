@@ -1,7 +1,7 @@
 import React from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
 import MenuIcon from '@mui/icons-material/Menu';
-import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
 import { getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
@@ -186,25 +186,9 @@ export const LayoutMain = () => {
           <Button component={NavLink} to='/city' color='inherit' sx={{ mr: 2 }}>
             City
           </Button>
-          <Badge
-            badgeContent='NEW'
-            color='secondary'
-            sx={{
-              mr: 2,
-              '& .MuiBadge-badge': {
-                fontSize: '0.6rem',
-                height: 16,
-                minWidth: 16,
-                px: 0.5,
-                mr: 1,
-                mt: 0.5,
-              },
-            }}
-          >
-            <Button component={NavLink} to='/inventory' color='inherit' sx={{ mr: 2 }}>
-              Inventory
-            </Button>
-          </Badge>
+          <Button component={NavLink} to='/inventory' color='inherit' sx={{ mr: 2 }}>
+            Inventory
+          </Button>
           <Button component={NavLink} to='/fellowship-adventure' color='inherit' sx={{ mr: 2 }}>
             Fellowship Adventure
           </Button>

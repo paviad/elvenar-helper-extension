@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
 import SearchIcon from '@mui/icons-material/Search';
-import { Badge, Box, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { Box, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material';
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
@@ -281,7 +281,28 @@ export function OverlayMain() {
           {chapter >= 18 && <Tab label='Trade' />}
           <Tab label={renderLabel('EE')} />
           <Tab label={renderLabel('Quests')} />
-          <Tab label={renderLabel('Messages')} />
+          <Tab
+            label={
+              <span style={{ display: 'inline-flex', alignItems: 'flex-start' }}>
+                {renderLabel('Messages')}
+                <span
+                  style={{
+                    marginLeft: 4,
+                    marginTop: -2,
+                    padding: '1px 4px',
+                    fontSize: '0.55rem',
+                    fontWeight: 700,
+                    lineHeight: 1.4,
+                    color: '#fff',
+                    background: '#9c27b0',
+                    borderRadius: 8,
+                  }}
+                >
+                  NEW
+                </span>
+              </span>
+            }
+          />
         </Tabs>
         {tab === chatTab && (
           <>
