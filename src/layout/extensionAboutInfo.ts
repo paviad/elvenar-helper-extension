@@ -1,3 +1,3 @@
 export const EXTENSION_NAME = 'ElvenAssist';
-export const EXTENSION_VERSION = '8.8.1';
-export const EXTENSION_DATE = '11-Jul-2026';
+export const EXTENSION_VERSION = '8.9.0';
+export const EXTENSION_DATE = '21-Jul-2026';
