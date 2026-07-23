@@ -15,7 +15,7 @@ export interface BasePlayerVO {
 
 export interface MessagePostVO {
   __class__?: string;
-  post_id: number;
+  post_id?: number; // absent on the post returned by replyMessage
   author: BasePlayerVO;
   post: string;
   created_at: number; // unix seconds
@@ -48,6 +48,13 @@ export interface MessageMetadataVO {
   folder: MessageFolder;
   // id -> updatedAt (seconds); the dictionary also carries a "__class__" key we ignore
   metadata: Record<string, number | string>;
+}
+
+// replyMessage response — NOT a full thread: just the new post plus the thread it belongs to.
+export interface MessageConversationPostVO {
+  __class__?: string;
+  conversationId: number;
+  messagePost: MessagePostVO;
 }
 
 // fetchMessages response

@@ -21,6 +21,7 @@ import { processMessages } from '../elvenar/processMessages';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
+import { processReplyMessage } from '../elvenar/processReplyMessage';
 import { processQuestUpdates } from '../elvenar/processQuestUpdates';
 import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
@@ -124,6 +125,7 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:MessageService/getMessageOverview': processMessageOverview,
     'R:MessageService/fetchMessages': processMessages,
     'R:MessageService/markMessageAsRead': processMessageMarkedAsRead,
+    'R:MessageService/replyMessage': processReplyMessage,
   };
 
   const processorFunction = processors[msg.payload.type];
@@ -179,6 +181,7 @@ export const playerSpecificRequestHandlerInternal = async (
     case 'R:MessageService/getMessageOverview':
     case 'R:MessageService/fetchMessages':
     case 'R:MessageService/markMessageAsRead':
+    case 'R:MessageService/replyMessage':
       await sendMessagesUpdatedMessage(sharedInfo.tabId, msg.payload.type);
       break;
   }

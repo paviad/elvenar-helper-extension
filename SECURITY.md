@@ -25,7 +25,10 @@ To address common concerns regarding open-source browser extensions, we maintain
 ElvenAssist is designed primarily as an **overlay** tool.
 
 * **Read-Only Philosophy:** The vast majority of the extension's features operate in a read-only capacity, analyzing game data to provide statistics without modifying the game state.
-* **Server Interactions:** The extension does not send commands to "play the game" for you (e.g., it does not collect resources, move buildings, or fight battles automatically).
+* **Server Interactions:** Exactly one feature sends a request to the game server, and we want to be completely transparent about it. **Refreshing your city data** re-issues the very same read-only data query the game client itself makes, so the planner can show your current city. It is triggered **explicitly by you** — never automatically, never on a timer, and never in the background. It does not affect game balance or progression in any way: it reads, it does not act.
+
+    Everything else the extension knows about your game — your city, inventory, trades, chat, and messages (including whether a message has been read) — is learned **passively by observing** the game's own network traffic. Nothing is sent for those.
+* **No Automation:** The extension does not play the game for you. There is no bot, no scheduler, and no unattended or repeated action of any kind.
 * **No External Tracking:** Your game data stays in your browser. This extension does not send your city layout, resources, or chat logs to any external third-party analytics servers.
 
 ## Reporting a Vulnerability

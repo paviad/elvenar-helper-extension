@@ -575,7 +575,12 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
           posts.map((post) => {
             const name = authorName(post);
             return (
-              <Stack key={post.post_id} direction='row' spacing={1} sx={{ alignItems: 'flex-start' }}>
+              <Stack
+                key={post.post_id ?? `${post.created_at}-${post.author?.player_id ?? ''}`}
+                direction='row'
+                spacing={1}
+                sx={{ alignItems: 'flex-start' }}
+              >
                 <Avatar sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }} title={name}>
                   {name[0]}
                 </Avatar>
