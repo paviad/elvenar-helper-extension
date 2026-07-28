@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import SecurityIcon from '@mui/icons-material/Security';
@@ -85,6 +85,13 @@ const formatSeconds = (seconds: number) => {
   return [h, m, s].map((v) => v.toString().padStart(2, '0')).join(':');
 };
 
+/** How long an action button stays disabled after a click, to swallow accidental double clicks. */
+const CLICK_COOLDOWN_MS = 2000;
+
+type ProvinceAction = 'fight' | 'cater' | 'open';
+
+const cooldownKey = (province: TournyProvince, action: ProvinceAction) => `${province.q},${province.r}:${action}`;
+
 type ExtendedProvince = TournyProvince & {
   bestCounter?: CounterResult | null;
   squadSize?: number;
@@ -119,11 +126,30 @@ export const Tourny = () => {
   const [modTroop, setModTroop] = useState<TroopType | 'any'>('any');
   const [modFactor, setModFactor] = useState<number | string>(1.5);
 
+  // Keys of action buttons that are temporarily disabled after being clicked.
+  const [cooldowns, setCooldowns] = useState<Record<string, boolean>>({});
+  const cooldownTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
   useEffect(() => {
     // Refresh the component every minute to update the "time left" counters automatically
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => () => cooldownTimers.current.forEach(clearTimeout), []);
+
+  const startCooldown = (key: string) => {
+    setCooldowns((prev) => ({ ...prev, [key]: true }));
+    const timer = setTimeout(() => {
+      setCooldowns((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+      cooldownTimers.current = cooldownTimers.current.filter((t) => t !== timer);
+    }, CLICK_COOLDOWN_MS);
+    cooldownTimers.current.push(timer);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -245,6 +271,9 @@ export const Tourny = () => {
   };
 
   const handleFightClick = (province: ExtendedProvince) => () => {
+    const key = cooldownKey(province, 'fight');
+    if (cooldowns[key]) return;
+
     const bestCounter = province.bestCounter;
     if (!bestCounter || province.neededUnitsForOneSquad === undefined) return;
 
@@ -258,14 +287,21 @@ export const Tourny = () => {
 
     console.log('Posting message for fight click with payload:', { q: province.q, r: province.r, unit });
 
+    startCooldown(key);
     relayToGame('tournyFight', { q: province.q, r: province.r, unit } satisfies TournyFight);
   };
 
   const handleCaterClick = (province: ExtendedProvince) => () => {
+    const key = cooldownKey(province, 'cater');
+    if (cooldowns[key]) return;
+    startCooldown(key);
     relayToGame('tournyCater', { q: province.q, r: province.r });
   };
 
   const handleOpenClick = (province: ExtendedProvince) => () => {
+    const key = cooldownKey(province, 'open');
+    if (cooldowns[key]) return;
+    startCooldown(key);
     relayToGame('tournyOpen', { q: province.q, r: province.r });
   };
 
@@ -569,16 +605,18 @@ export const Tourny = () => {
                                     size='small'
                                     color='primary'
                                     clickable
+                                    disabled={!!cooldowns[cooldownKey(province, 'fight')]}
                                     onClick={handleFightClick(province)}
-                                    sx={{ height: 18, fontSize: '0.6rem', fontWeight: 900, borderRadius: 0.5 }}
+                                    sx={{ height: 42, fontSize: '0.65rem', fontWeight: 900, borderRadius: 0.5 }}
                                   />
                                   <Chip
                                     label='CATER'
                                     size='small'
                                     variant='outlined'
                                     clickable
+                                    disabled={!!cooldowns[cooldownKey(province, 'cater')]}
                                     onClick={handleCaterClick(province)}
-                                    sx={{ height: 18, fontSize: '0.6rem', fontWeight: 900, borderRadius: 0.5 }}
+                                    sx={{ height: 42, fontSize: '0.65rem', fontWeight: 900, borderRadius: 0.5 }}
                                   />
                                 </>
                               ) : (
@@ -587,8 +625,9 @@ export const Tourny = () => {
                                   size='small'
                                   variant='outlined'
                                   clickable
+                                  disabled={!!cooldowns[cooldownKey(province, 'open')]}
                                   onClick={handleOpenClick(province)}
-                                  sx={{ height: 18, fontSize: '0.6rem', fontWeight: 900, borderRadius: 0.5 }}
+                                  sx={{ height: 42, fontSize: '0.65rem', fontWeight: 900, borderRadius: 0.5 }}
                                 />
                               )}
                             </Stack>
