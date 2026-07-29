@@ -63,6 +63,8 @@ export interface SpirePicksMessage {
   picks: string[];
   /** Latest win probability from the Spire Wizard; absent on a fresh encounter. */
   prob?: string;
+  /** 1-based ghost to spend a joker on; absent when a joker is not an option. */
+  jokerGhost?: number;
 }
 
 // ============================================================================

@@ -38,15 +38,20 @@ window.addEventListener('message', (event) => {
     return;
   }
   if (event.data?.type === 'spirePicks') {
-    void sendPicksBackToElvenar(event.data.payload as string[], event.data.prob as string | undefined);
+    void sendPicksBackToElvenar(
+      event.data.payload as string[],
+      event.data.prob as string | undefined,
+      event.data.jokerGhost as number | undefined,
+    );
   }
 });
 
-const sendPicksBackToElvenar = async (picks: string[], prob?: string) => {
+const sendPicksBackToElvenar = async (picks: string[], prob?: string, jokerGhost?: number) => {
   await chrome.runtime.sendMessage({
     type: 'spirePicks',
     picks,
     prob,
+    jokerGhost,
   });
 };
 

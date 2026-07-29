@@ -5,6 +5,8 @@ export interface ChoiceResult {
   picks: string[];
   /** Win probability reported for the most advanced turn the wizard has computed. */
   prob?: string;
+  /** 1-based ghost to spend a joker on; absent when a joker is not an option. */
+  jokerGhost?: number;
 }
 
 export const waitForChoiceToBe = async (targetChoice: number): Promise<ChoiceResult> => {
@@ -21,7 +23,31 @@ export const waitForChoiceToBe = async (targetChoice: number): Promise<ChoiceRes
   return {
     picks: state.picks[targetChoice].map((z) => translationsMobile[resources[z]]),
     prob: latestProb(state.prob),
+    jokerGhost: jokerGhostFor(targetChoice),
   };
+};
+
+// Gated on `displayed` rather than `recommended` so we agree with the wizard's own banner,
+// which stays hidden in 3-5 resource games even when a joker is recommended.
+const jokerGhostFor = (targetChoice: number) => {
+  if (typeof SpireWizard.getJokerSuggestion !== 'function') {
+    return undefined; // wizard site predates the joker API
+  }
+  const suggestion = SpireWizard.getJokerSuggestion();
+  if (!suggestion) {
+    return undefined;
+  }
+  if (suggestion.contradiction) {
+    // The colours we fed in cannot happen — almost certainly our own mapping is off.
+    console.warn('ElvenAssist: Spire Wizard reports a contradiction in the entered results', suggestion);
+  }
+  if (suggestion.choice !== targetChoice) {
+    console.warn(
+      `ElvenAssist: joker suggestion is for choice ${suggestion.choice}, expected ${targetChoice}`,
+      suggestion,
+    );
+  }
+  return suggestion.displayed ? suggestion.ghostNumber : undefined;
 };
 
 // Every turn key exists up front; turns not reached yet hold null, and turn 1 is never populated.

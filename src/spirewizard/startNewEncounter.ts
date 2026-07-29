@@ -8,8 +8,8 @@ export const startNewEncounter = async (encounterData: EncounterData) => {
   apiStartNewEncounter();
   apiSelectResources(encounterData);
   apiClickConfirmResourceSelection();
-  const { picks, prob } = await waitForChoiceToBe(1);
-  sendPicksBackToElvenar(picks, prob);
+  const { picks, prob, jokerGhost } = await waitForChoiceToBe(1);
+  sendPicksBackToElvenar(picks, prob, jokerGhost);
 };
 
 const apiStartNewEncounter = () => {
