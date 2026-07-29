@@ -1,4 +1,4 @@
-import { BuildingFinder } from '../city/buildingFinder';
+import { getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getItemDefinitions } from '../elvenar/getItemDefinitions';
@@ -17,7 +17,7 @@ export async function generateInventory(accountId: string) {
 
   const inventoryItems = accountData.inventoryItems;
 
-  const finder = new BuildingFinder();
+  const finder = getBuildingFinder();
   await finder.ensureInitialized();
 
   let academyLevel = 1;

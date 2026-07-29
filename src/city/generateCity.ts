@@ -1,10 +1,10 @@
 import { AccountData } from '../elvenar/Accounts';
 import { CityEntity, CityEntityEx } from '../model/cityEntity';
-import { BuildingFinder } from './buildingFinder';
+import { getBuildingFinder } from './buildingFinder';
 import { CityBlock } from './CityBlock';
 
 export async function generateCity(accountData: AccountData) {
-  const finder = new BuildingFinder();
+  const finder = getBuildingFinder();
   await finder.ensureInitialized();
 
   const cityEntities = accountData.cityQuery!.cityEntities;

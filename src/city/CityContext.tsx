@@ -10,7 +10,7 @@ import { Effect } from '../model/effect';
 import { StageProvision } from '../model/stageProvision';
 import { UnlockedArea } from '../model/unlockedArea';
 import { useTabStore } from '../util/tabStore';
-import { BuildingFinder } from './buildingFinder';
+import { BuildingFinder, getBuildingFinder } from './buildingFinder';
 import { CityBlock } from './CityBlock';
 import { generateCity, saveBack } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
@@ -97,7 +97,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const menuRef = React.useRef<HTMLDivElement | null>(null);
   const svgRef = React.useRef<SVGSVGElement | null>(null);
   const mousePositionRef = React.useRef<HTMLDivElement | null>(null);
-  const [buildingFinder, setBuildingFinder] = React.useState<BuildingFinder>(new BuildingFinder());
+  const buildingFinder = getBuildingFinder();
   const [goodsNames, setGoodsNames] = React.useState<Record<string, string>>({});
   const [evolvingBuildings, setEvolvingBuildings] = React.useState<StageProvision[]>([]);
   const [effects, setEffects] = React.useState<Effect[]>([]);

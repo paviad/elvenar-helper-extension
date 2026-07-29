@@ -22,7 +22,7 @@ import {
   TextField,
 } from '@mui/material';
 import { useNavigate } from 'react-router';
-import { BuildingFinder } from '../city/buildingFinder';
+import { getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
@@ -64,7 +64,6 @@ export const InventoryMain = () => {
   const [allResourceKeys, setAllResourceKeys] = React.useState<string[]>([]);
   const [goodsNames, setGoodsNames] = React.useState<Record<string, string>>({});
   const [boostedGoods, setBoostedGoods] = React.useState<string[]>([]);
-  const [finder, setFinder] = React.useState<BuildingFinder | null>(null);
 
   const accountId = useTabStore((state) => state.accountId);
   const accountData = useTabStore((state) => state.accountData);
@@ -85,15 +84,6 @@ export const InventoryMain = () => {
   const setShowPerSquare = useTabStore((state) => state.setInvShowPerSquare);
 
   React.useEffect(() => {
-    async function initializeFinder() {
-      const finder = new BuildingFinder();
-      await finder.ensureInitialized();
-      setFinder(new BuildingFinder());
-    }
-    void initializeFinder();
-  }, []);
-
-  React.useEffect(() => {
     async function fetchInventory() {
       if (!accountId) {
         return;
@@ -109,7 +99,7 @@ export const InventoryMain = () => {
 
       const { inventory: rawInventory } = inventoryData;
 
-      const finder = new BuildingFinder();
+      const finder = getBuildingFinder();
       await finder.ensureInitialized();
 
       const enrichedInventory: InventoryItemWithStats[] = [];

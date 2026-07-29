@@ -5,7 +5,7 @@ import { getPremiumBuildingHints } from '../elvenar/getPremiumBuildingHints';
 import { Building } from '../model/building';
 import { StageProvision } from '../model/stageProvision';
 import { makeBuilding, makeBuildingLevels } from '../testing/fixtures';
-import { BuildingFinder } from './buildingFinder';
+import { BuildingFinder, getBuildingFinder } from './buildingFinder';
 
 jest.mock('../elvenar/getBuildings');
 jest.mock('../elvenar/getEvolvingBuildings');
@@ -408,5 +408,67 @@ describe('getAllBuildingsByCategory', () => {
 
       expect(finder.getAllBuildingsByCategory('humans')[0].maxLevel).toBe(7);
     });
+  });
+});
+
+describe('initialisation', () => {
+  it('answers lookups without throwing before initialisation resolves', async () => {
+    mockedGetBuildings.mockResolvedValue(makeBuildingLevels('G_Steel', 1));
+    mockedGetPremiumBuildingHints.mockResolvedValue([]);
+    mockedGetEvolvingBuildings.mockResolvedValue([]);
+    mockedGetExpirations.mockResolvedValue({});
+
+    const finder = new BuildingFinder();
+
+    // Synchronous call, before the constructor's init promise has resolved. The
+    // shared finder is reachable from a render, so this must not throw.
+    expect(finder.getBuilding('G_Steel_1', 1)).toBeUndefined();
+    expect(finder.getBuildingExact('G_Steel_1')).toBeUndefined();
+
+    await finder.ensureInitialized();
+    expect(finder.getBuilding('G_Steel_1', 1)).toBeDefined();
+  });
+
+  it('retries after a failed initialisation instead of staying poisoned', async () => {
+    mockedGetPremiumBuildingHints.mockResolvedValue([]);
+    mockedGetEvolvingBuildings.mockResolvedValue([]);
+    mockedGetExpirations.mockResolvedValue({});
+    mockedGetBuildings
+      .mockRejectedValueOnce(new Error('storage unavailable'))
+      .mockResolvedValue(makeBuildingLevels('G_Steel', 1));
+
+    const finder = new BuildingFinder();
+
+    await expect(finder.ensureInitialized()).rejects.toThrow('storage unavailable');
+
+    await finder.ensureInitialized();
+    expect(finder.getBuilding('G_Steel_1', 1)).toBeDefined();
+  });
+
+  it('only initialises once across repeated calls', async () => {
+    mockedGetBuildings.mockResolvedValue(makeBuildingLevels('G_Steel', 1));
+    mockedGetPremiumBuildingHints.mockResolvedValue([]);
+    mockedGetEvolvingBuildings.mockResolvedValue([]);
+    mockedGetExpirations.mockResolvedValue({});
+
+    const finder = new BuildingFinder();
+    await Promise.all([finder.ensureInitialized(), finder.ensureInitialized()]);
+    await finder.ensureInitialized();
+
+    expect(mockedGetBuildings).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('getBuildingFinder', () => {
+  it('hands out one shared instance', async () => {
+    mockedGetBuildings.mockResolvedValue(makeBuildingLevels('G_Steel', 1));
+    mockedGetPremiumBuildingHints.mockResolvedValue([]);
+    mockedGetEvolvingBuildings.mockResolvedValue([]);
+    mockedGetExpirations.mockResolvedValue({});
+
+    const first = getBuildingFinder();
+    await first.ensureInitialized();
+
+    expect(getBuildingFinder()).toBe(first);
   });
 });

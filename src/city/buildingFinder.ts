@@ -14,14 +14,36 @@ interface bAndC {
   chapter?: number;
 }
 
-export class BuildingFinder {
-  private buildingsDictionary!: Record<string, Building[]>;
-  private buildingsDictionaryLowerCase!: Record<string, Building[]>;
+let sharedFinder: BuildingFinder | null = null;
 
-  private hintsDictionary!: Record<string, string>;
-  private hintsDictionaryLowerCase!: Record<string, string>;
-  private evolvingBuildingsDictionary!: Record<string, StageProvision>;
-  private expirations!: Record<string, number>;
+/**
+ * The shared finder for the whole app. The building catalog is immutable for the
+ * lifetime of the page - getBuildings() caches it in memory and never invalidates -
+ * so there is nothing to gain from per-call-site instances, and each one repeats
+ * the same storage reads and index building.
+ *
+ * Callers must still await ensureInitialized() before using it.
+ */
+export function getBuildingFinder(): BuildingFinder {
+  sharedFinder ??= new BuildingFinder();
+  return sharedFinder;
+}
+
+export class BuildingFinder {
+  // Defaulted rather than definitely-assigned: the finder is shared and its
+  // lookups can be reached from a render before initialisation has resolved.
+  private buildingsDictionary: Record<string, Building[]> = {};
+
+  /** base name -> level -> building, so a lookup does not rescan the level list. */
+  private buildingsByLevel: Record<string, Map<number, Building>> = {};
+  private buildingsByLevelLowerCase: Record<string, Map<number, Building>> = {};
+  /** Exact id -> building, for getBuildingExact. */
+  private buildingsById: Map<string, Building> = new Map();
+
+  private hintsDictionary: Record<string, string> = {};
+  private hintsDictionaryLowerCase: Record<string, string> = {};
+  private evolvingBuildingsDictionary: Record<string, StageProvision> = {};
+  private expirations: Record<string, number> = {};
 
   private getBaseName(goodsId: string): bAndC {
     const baseNameRex = /(.*?)(_\d+)?$/;
@@ -36,15 +58,24 @@ export class BuildingFinder {
   }
 
   private initPromise: Promise<void> | null = null;
+  private initialized = false;
 
   constructor() {
     this.initPromise = this.initInternal();
   }
 
   public async ensureInitialized() {
-    if (this.initPromise) {
+    if (this.initialized) return;
+
+    this.initPromise ??= this.initInternal();
+    try {
       await this.initPromise;
+      this.initialized = true;
+    } catch (e) {
+      // Drop the failed attempt so a later caller can retry. A shared finder would
+      // otherwise stay poisoned for the rest of the page.
       this.initPromise = null;
+      throw e;
     }
   }
 
@@ -70,16 +101,6 @@ export class BuildingFinder {
       {} as Record<string, Building[]>,
     );
 
-    this.buildingsDictionaryLowerCase = buildings.reduce(
-      (acc, building) => {
-        const normalizedBaseName = building.base_name.toLowerCase();
-        acc[normalizedBaseName] = acc[normalizedBaseName] || [];
-        acc[normalizedBaseName].push(building);
-        return acc;
-      },
-      {} as Record<string, Building[]>,
-    );
-
     this.evolvingBuildingsDictionary = evolvingBuildings.reduce(
       (acc, eb) => {
         acc[eb.baseName] = eb;
@@ -87,13 +108,38 @@ export class BuildingFinder {
       },
       {} as Record<string, StageProvision>,
     );
+
+    // Index by id and by level. First entry wins, matching the .find() calls these
+    // replace, so duplicate ids or levels resolve exactly as they did before.
+    this.buildingsById = new Map();
+    this.buildingsByLevel = {};
+    this.buildingsByLevelLowerCase = {};
+
+    for (const building of buildings) {
+      if (!this.buildingsById.has(building.id)) {
+        this.buildingsById.set(building.id, building);
+      }
+
+      const byLevel = (this.buildingsByLevel[building.base_name] ??= new Map());
+      if (!byLevel.has(building.level)) {
+        byLevel.set(building.level, building);
+      }
+
+      const byLevelLower = (this.buildingsByLevelLowerCase[building.base_name.toLowerCase()] ??= new Map());
+      if (!byLevelLower.has(building.level)) {
+        byLevelLower.set(building.level, building);
+      }
+    }
   }
 
   public getBuildingExact(id: string): BuildingEx | undefined {
     const { baseName: baseName1 } = this.getBaseName(id);
     const baseName = baseName1;
 
-    const building = this.buildingsDictionary[baseName]?.find((b) => b.id === id);
+    // The base name guard keeps this identical to the previous bucket-scoped scan:
+    // an id is only a match if it also belongs to the base name derived from it.
+    const candidate = this.buildingsById.get(id);
+    const building = candidate?.base_name === baseName ? candidate : undefined;
 
     const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
 
@@ -108,7 +154,7 @@ export class BuildingFinder {
     const { baseName: baseName1 } = this.getBaseName(id);
     const baseName = baseName1;
 
-    const building = this.buildingsDictionary[baseName]?.find((b) => b.level === level);
+    const building = this.buildingsByLevel[baseName]?.get(level);
 
     const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
 
@@ -126,7 +172,7 @@ export class BuildingFinder {
     const { baseName: baseName1 } = this.getBaseName(id);
     const baseName = baseName1.toLowerCase();
 
-    const building = this.buildingsDictionaryLowerCase[baseName]?.find((b) => b.level === level);
+    const building = this.buildingsByLevelLowerCase[baseName]?.get(level);
 
     const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionaryLowerCase[baseName]) || undefined;
 

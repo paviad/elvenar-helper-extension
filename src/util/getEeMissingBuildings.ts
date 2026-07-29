@@ -1,4 +1,4 @@
-import { BuildingFinder } from '../city/buildingFinder';
+import { getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/AccountManager';
 import { getEffects } from '../elvenar/getEffects';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
@@ -23,7 +23,7 @@ export const getEeMissingBuildings = async (accountId: string): Promise<EeMissin
   }
 
   const cityEntities = accountData.cityQuery.cityEntities;
-  const buildingFinder = new BuildingFinder();
+  const buildingFinder = getBuildingFinder();
   await buildingFinder.ensureInitialized();
   const effects = await getEffects();
   const cultureBlocks = getCulturalBuildings(cityEntities, buildingFinder, effects, 2, 2);

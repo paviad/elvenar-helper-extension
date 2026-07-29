@@ -19,7 +19,7 @@ import {
 import { formatResourceName } from '../../../util/formatResourceName';
 import { getBuildingProvisionsAndProduction } from '../../../util/getBuildingProvisionsAndProduction';
 import { useTabStore } from '../../../util/tabStore';
-import { BuildingFinder } from '../../buildingFinder';
+import { getBuildingFinder } from '../../buildingFinder';
 import { getChapterProgress } from '../../chapterProgress';
 import { useCity } from '../../CityContext';
 
@@ -64,7 +64,7 @@ export const TableCityView = () => {
   const [toastOpen, setToastOpen] = React.useState(false);
   React.useEffect(() => {
     async function buildData() {
-      const finder = new BuildingFinder();
+      const finder = getBuildingFinder();
       await finder.ensureInitialized();
 
       const blockValues = Object.values(blocks);

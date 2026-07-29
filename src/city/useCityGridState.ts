@@ -17,7 +17,7 @@ import { UnlockedArea } from '../model/unlockedArea';
 import { generateUniqueId } from '../util/generateUniqueId';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { useTabStore } from '../util/tabStore';
-import { BuildingFinder } from './buildingFinder';
+import { getBuildingFinder } from './buildingFinder';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { CityBlock } from './CityBlock';
 import { useCity } from './CityContext';
@@ -77,7 +77,7 @@ export const useCityGridState = () => {
   // Initial Data Load (Buildings for Build Menu)
   React.useEffect(() => {
     async function loadBuildings() {
-      const finder = new BuildingFinder();
+      const finder = getBuildingFinder();
       await finder.ensureInitialized();
       const blds = finder.getAllBuildingsByCategory(city.race);
       setBuildings(blds);
@@ -96,7 +96,7 @@ export const useCityGridState = () => {
         const block = blocks[dragIndex];
         if (!block) return;
 
-        const finder = new BuildingFinder();
+        const finder = getBuildingFinder();
         await finder.ensureInitialized();
 
         // const maxLevel = getEntityMaxLevel(block.entity.cityentity_id, block.type, maxLevels);
@@ -320,7 +320,7 @@ export const useCityGridState = () => {
     const blockToDup = blocks[index];
     if (!blockToDup || !blockToDup.label) return;
 
-    const finder = new BuildingFinder();
+    const finder = getBuildingFinder();
     await finder.ensureInitialized();
     const newBuilding = finder.getBuilding(blockToDup.gameId, newLevel);
 
@@ -509,7 +509,7 @@ export const useCityGridState = () => {
         user_data: { race: string };
       }; // Type assertion could be stricter here
 
-      const buildingFinder = new BuildingFinder();
+      const buildingFinder = getBuildingFinder();
       await buildingFinder.ensureInitialized();
 
       let minChapter = 0;
