@@ -29,6 +29,12 @@ export default defineConfig(
     plugins: { jest },
     languageOptions: {
       globals: { ...globals.jest },
+      parserOptions: {
+        // Spec files are excluded from tsconfig.json (so the webpack build doesn't
+        // type-check them), so type-aware linting has to use the jest project instead.
+        projectService: false,
+        project: './tsconfig.jest.json',
+      },
     },
     rules: {
       ...jest.configs['flat/recommended'].rules,
