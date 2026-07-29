@@ -174,6 +174,7 @@ export const RenderCityGrid = () => {
             onSelectBuilding={state.onSelectBuilding}
             buildings={state.buildings}
             currentCityChapter={chapter}
+            maxChapter={city.maxChapter}
           />
         </Dialog>
       </div>

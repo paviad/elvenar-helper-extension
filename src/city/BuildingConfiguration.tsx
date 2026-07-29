@@ -1,16 +1,20 @@
 import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, IconButton, Paper, Stack, Typography } from '@mui/material';
-import { getMaxChapter } from '../elvenar/getMaxChapter';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { knownTypes } from './Legend/knownTypes';
 import { NumericInputControl } from './NumericInputControl';
+
+// Caps for catalog entries that do not declare their own limit.
+const FALLBACK_MAX_LEVEL = 45;
+const FALLBACK_MAX_STAGE = 10;
 
 interface BuildingConfigurationProps {
   building: BuildingDefinition;
   onBack: () => void;
   onAdd: (config: BuildingConfig) => void;
   defaultConfig: BuildingConfig;
+  maxChapter: number;
 }
 
 const getTypeColor = (type?: string) => {
@@ -23,26 +27,18 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
   onBack,
   onAdd,
   defaultConfig,
+  maxChapter,
 }) => {
-  const [configValues, setConfigValues] = React.useState<{ level: number; chapter: number; stage: number }>({
+  // Fields are optional because clearing an input leaves it empty until the user
+  // types again; handleAdd is where a value is settled on.
+  const [configValues, setConfigValues] = React.useState<BuildingConfig>({
     level: 1,
     chapter: 1,
     stage: 1,
     ...defaultConfig,
   });
 
-  const [maxChapter, setMaxChapter] = React.useState(25); // Default max chapter
-
-  React.useEffect(() => {
-    // Fetch max chapter from storage or other source if needed
-    async function fetchMaxChapter() {
-      const maxChapter = await getMaxChapter();
-      setMaxChapter(maxChapter);
-    }
-    void fetchMaxChapter();
-  }, []);
-
-  const updateConfig = (field: keyof typeof configValues) => (value: number | undefined) => {
+  const updateConfig = (field: keyof BuildingConfig) => (value: number | undefined) => {
     setConfigValues((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -131,10 +127,10 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
               {fields.includes('Level') && (
                 <NumericInputControl
                   label='Level'
-                  value={`${configValues.level}`}
+                  value={configValues.level?.toString() ?? ''}
                   onChange={updateConfig('level')}
                   min={1}
-                  max={building.maxLevel || 45}
+                  max={building.maxLevel || FALLBACK_MAX_LEVEL}
                   helperText={building.maxLevel ? `Max Level: ${building.maxLevel}` : undefined}
                 />
               )}
@@ -142,7 +138,7 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
               {fields.includes('Chapter') && (
                 <NumericInputControl
                   label='Chapter'
-                  value={`${configValues.chapter}`}
+                  value={configValues.chapter?.toString() ?? ''}
                   onChange={updateConfig('chapter')}
                   min={1}
                   max={maxChapter}
@@ -152,10 +148,10 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
               {fields.includes('Stage') && (
                 <NumericInputControl
                   label='Stage'
-                  value={`${configValues.stage}`}
+                  value={configValues.stage?.toString() ?? ''}
                   onChange={updateConfig('stage')}
                   min={1}
-                  max={building.maxStage || 10}
+                  max={building.maxStage || FALLBACK_MAX_STAGE}
                   helperText={building.maxStage ? `Max Stage: ${building.maxStage}` : undefined}
                 />
               )}

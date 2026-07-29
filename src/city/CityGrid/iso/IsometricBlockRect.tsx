@@ -2,6 +2,7 @@ import React from 'react';
 import { Tooltip } from '@mui/material';
 import { useHelper } from '../../../helper/HelperContext';
 import { getContrastColor } from '../../../util/getContrastColor';
+import { getChapterProgress } from '../../chapterProgress';
 import { CityBlock } from '../../CityBlock';
 import { useCity } from '../../CityContext';
 import { getTypeColor } from '../../Legend/getTypeColor';
@@ -75,12 +76,12 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
   };
 
   const fillColor = getTypeColor(block.type, city.allTypes, block.moved);
-  const levelingBuilding = /^[GPRHMOY]_/.test(block.gameId);
-  const chapterRequirement = building?.sourceBuilding.upgradeRequirements?.chapter;
-  const nextLevelBuildingChapterRequirement = nextLevelBuilding?.sourceBuilding.upgradeRequirements?.chapter || 0;
-  const isChapterExcessive = chapterRequirement !== undefined && chapterRequirement > chapter;
-  const isMaxLevelForChapter =
-    levelingBuilding && !isChapterExcessive && (!nextLevelBuilding || nextLevelBuildingChapterRequirement > chapter);
+  const { isChapterExcessive, isMaxLevelForChapter } = getChapterProgress(
+    block.gameId,
+    building,
+    nextLevelBuilding,
+    chapter,
+  );
 
   // --- Render Calculation ---
   const p1 = toIso(block.x, block.y, tileWidth, tileHeight, originX, originY);

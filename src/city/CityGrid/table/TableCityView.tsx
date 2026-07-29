@@ -20,6 +20,7 @@ import { formatResourceName } from '../../../util/formatResourceName';
 import { getBuildingProvisionsAndProduction } from '../../../util/getBuildingProvisionsAndProduction';
 import { useTabStore } from '../../../util/tabStore';
 import { BuildingFinder } from '../../buildingFinder';
+import { getChapterProgress } from '../../chapterProgress';
 import { useCity } from '../../CityContext';
 
 interface TableRowData {
@@ -107,8 +108,8 @@ export const TableCityView = () => {
 
           // B. Next Level/Chapter Provisions & Production
           const nextBuilding = finder.getBuilding(block.gameId, block.level + 1);
+          row.isMaxed = getChapterProgress(block.gameId, building, nextBuilding, city.chapter).isMaxedForChapter;
           if (nextBuilding) {
-            row.isMaxed = block.level === city.chapter;
             row.nextWidth = nextBuilding.width;
             row.nextLength = nextBuilding.length;
 

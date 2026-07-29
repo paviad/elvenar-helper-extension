@@ -113,11 +113,12 @@ export class BuildingFinder {
     const hint = (!/^[GPRHMOYDBZ]_/.test(baseName) && this.hintsDictionary[baseName]) || undefined;
 
     if (building) {
-      const bldg = building;
+      // Report the id at the requested level without writing back to the catalog:
+      // getBuildings() hands out a shared cached array, so mutating bldg.id here would
+      // corrupt the entry for every other caller (getBuildingExact matches on id).
+      const idAtLevel = building.id.replace(/_\d+$/, `_${level}`);
 
-      bldg.id = bldg.id.replace(/_\d+$/, `_${level}`);
-
-      return this.getBuildingEx(bldg, hint);
+      return this.getBuildingEx(building, hint, idAtLevel);
     }
   }
 
@@ -136,9 +137,9 @@ export class BuildingFinder {
     }
   }
 
-  private getBuildingEx(bldg: Building, hint: string | undefined): BuildingEx | undefined {
+  private getBuildingEx(bldg: Building, hint: string | undefined, id = bldg.id): BuildingEx | undefined {
     return {
-      id: bldg.id,
+      id,
       name: bldg.name,
       description: bldg.description,
       type: bldg.type,

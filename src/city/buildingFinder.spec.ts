@@ -86,6 +86,36 @@ describe('getBuilding', () => {
     expect(finder.getBuilding('A_Ch5_Statue_5', 1)?.id).toBe('A_Ch5_Statue_1');
   });
 
+  it('does not write the requested level back into the shared catalog', async () => {
+    // getBuildings() returns a module-level cache, so any mutation here leaks into
+    // every other consumer of the catalog.
+    const buildings = [makeBuilding({ id: 'A_Ch5_Statue_5', base_name: 'A_Ch5_Statue', level: 1 })];
+    const finder = await finderWith({ buildings });
+
+    finder.getBuilding('A_Ch5_Statue_5', 1);
+
+    expect(buildings[0].id).toBe('A_Ch5_Statue_5');
+  });
+
+  it('leaves getBuildingExact working after a levelled lookup', async () => {
+    const buildings = [makeBuilding({ id: 'A_Ch5_Statue_5', base_name: 'A_Ch5_Statue', level: 1 })];
+    const finder = await finderWith({ buildings });
+
+    finder.getBuilding('A_Ch5_Statue_5', 1);
+
+    expect(finder.getBuildingExact('A_Ch5_Statue_5')?.id).toBe('A_Ch5_Statue_5');
+  });
+
+  it('keeps sourceBuilding pointing at the unmodified catalog entry', async () => {
+    const buildings = [makeBuilding({ id: 'A_Ch5_Statue_5', base_name: 'A_Ch5_Statue', level: 1 })];
+    const finder = await finderWith({ buildings });
+
+    const building = finder.getBuilding('A_Ch5_Statue_5', 1);
+
+    expect(building?.id).toBe('A_Ch5_Statue_1');
+    expect(building?.sourceBuilding.id).toBe('A_Ch5_Statue_5');
+  });
+
   it('reads the chapter from the premium hints', async () => {
     const buildings = [makeBuilding({ id: 'A_Evt_Tent_1', base_name: 'A_Evt_Tent', level: 1 })];
     const hints = [{ id: 'A_Evt_Tent_1', section: '12' }];

@@ -25,12 +25,14 @@ interface NewBuildingSelectorProps {
   onSelectBuilding: (building: BuildingDefinition, config: BuildingConfig) => void | Promise<void>;
   buildings: BuildingDefinition[];
   currentCityChapter: number;
+  maxChapter: number;
 }
 
 export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
   onSelectBuilding,
   buildings,
   currentCityChapter,
+  maxChapter,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeTab, setActiveTab] = React.useState(0);
@@ -55,9 +57,8 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
   const handleBuildingClick = (building: BuildingDefinition) => {
     void (async () => {
       if (building.supportedFields && building.supportedFields.length > 0) {
-        if (building.supportedFields.includes('Chapter')) {
-          building.chapter = currentCityChapter;
-        }
+        // The chapter default reaches the form via defaultConfig; writing it onto the
+        // building would mutate the shared definition held in the buildings list.
         setSelectedBuilding(building);
       } else {
         await onSelectBuilding(building, {});
@@ -133,10 +134,13 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
   if (selectedBuilding) {
     return (
       <BuildingConfiguration
+        // Keyed so switching buildings re-seeds the form from defaultConfig.
+        key={selectedBuilding.id}
         building={selectedBuilding}
         onBack={() => setSelectedBuilding(null)}
         onAdd={handleAddBuilding}
         defaultConfig={{ chapter: currentCityChapter }}
+        maxChapter={maxChapter}
       />
     );
   }
