@@ -10,8 +10,8 @@ export const submitDiplomacy = async (diplomacySubmitData: DiplomacySubmitData) 
   if (choice === 3) {
     return;
   }
-  const picks = await waitForChoiceToBe(choice + 1);
-  sendPicksBackToElvenar(picks);
+  const { picks, prob } = await waitForChoiceToBe(choice + 1);
+  sendPicksBackToElvenar(picks, prob);
 };
 
 const apiSubmitDiplomacy = async (diplomacySubmitData: DiplomacySubmitData) => {

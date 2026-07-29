@@ -61,6 +61,8 @@ export interface OpenExtensionTabMessage {
 export interface SpirePicksMessage {
   type: 'spirePicks';
   picks: string[];
+  /** Latest win probability from the Spire Wizard; absent on a fresh encounter. */
+  prob?: string;
 }
 
 // ============================================================================

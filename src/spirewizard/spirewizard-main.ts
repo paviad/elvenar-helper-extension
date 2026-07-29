@@ -38,14 +38,15 @@ window.addEventListener('message', (event) => {
     return;
   }
   if (event.data?.type === 'spirePicks') {
-    void sendPicksBackToElvenar(event.data.payload as string[]);
+    void sendPicksBackToElvenar(event.data.payload as string[], event.data.prob as string | undefined);
   }
 });
 
-const sendPicksBackToElvenar = async (picks: string[]) => {
+const sendPicksBackToElvenar = async (picks: string[], prob?: string) => {
   await chrome.runtime.sendMessage({
     type: 'spirePicks',
     picks,
+    prob,
   });
 };
 

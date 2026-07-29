@@ -14,6 +14,7 @@ import { GameVars } from './inject/gameVars';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
+import { updateSpireProbBadge } from './overlay/spireProbBadge';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {
@@ -369,7 +370,9 @@ const initFunc = () => {
   setupHelpPerformedUpdateProvinceListener(({ updatedProvince }) => {
     console.log('E Received helpPerformedUpdateProvince message:', updatedProvince);
   });
-  setupSpirePicksListener(({ picks }) => {
+  setupSpirePicksListener(({ picks, prob }) => {
+    // No prob means a fresh encounter (the wizard only computes it from turn 2), so the badge clears.
+    updateSpireProbBadge(prob);
     const message = {
       type: 'spirePicks',
       payload: picks,
