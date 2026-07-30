@@ -338,7 +338,11 @@ export const useCityGridState = () => {
     setBlocks((prev) => Object.fromEntries(Object.entries(prev).filter(([_, b]) => b.type !== 'street')));
   };
 
-  async function onBuildFromInventory(id: number) {
+  /**
+   * Places an inventory building in drag mode. `stage` overrides the stage the item sits
+   * at, for callers that worked out how far it could be evolved before placing it.
+   */
+  async function onBuildFromInventory(id: number, stage?: number) {
     if (!city.accountId) {
       return;
     }
@@ -359,7 +363,7 @@ export const useCityGridState = () => {
       cityentity_id: newBuilding.id,
       level: newLevel,
       player_id: 0,
-      stage: item.stage,
+      stage: stage ?? item.stage,
       type: item.building.type,
       connected: false,
       connectionStrategy: newBuilding.requirements.connectionStrategyId,

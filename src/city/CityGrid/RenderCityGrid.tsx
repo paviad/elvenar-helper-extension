@@ -58,14 +58,15 @@ export const RenderCityGrid = () => {
   // Replace = delete the old building, then spawn the inventory item in drag mode
   // on the top-down grid. The user positions it and makes room if needed, guided by
   // the marker left on the vacated footprint.
-  const handleReplace = (blockId: number, itemId: number) => {
+  const handleReplace = (blockId: number, itemId: number, stage?: number) => {
     const block = city.blocks[blockId];
     if (block) {
       city.setReplacedArea({ x: block.x, y: block.y, width: block.width, length: block.length, name: block.name });
     }
     state.setViewMode('top');
     state.handleDeleteBlock(blockId);
-    void state.onBuildFromInventory(itemId);
+    // The suggestion was made for an evolved stage, so the building is placed at that stage.
+    void state.onBuildFromInventory(itemId, stage);
   };
 
   // The marker clears itself once something is dropped on it; Escape dismisses it early.

@@ -24,7 +24,7 @@ import { ClearUpgradesResult, findClearUpgrades, UpgradeSuggestion } from './fin
 import { compareSize, fitsInPlace, isSameSize } from './sizeOrder';
 
 interface UpgradesCityViewProps {
-  onReplace: (blockId: number, itemId: number) => void;
+  onReplace: (blockId: number, itemId: number, stage?: number) => void;
 }
 
 type Order = 'asc' | 'desc';
@@ -199,7 +199,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
       <TableRow key={row.key} hover>
         <TableCell>
           <Tooltip title='Deletes the building and starts placing the replacement — you position it and make room if needed'>
-            <Button size='small' variant='outlined' onClick={() => onReplace(row.blockId, row.itemId)}>
+            <Button size='small' variant='outlined' onClick={() => onReplace(row.blockId, row.itemId, row.targetStage)}>
               Replace
             </Button>
           </Tooltip>
