@@ -57,10 +57,12 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
   onViewModeChange,
   modified,
 }) => {
-  // City actions dropdown menu
-  const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
-  const closeMenu = (action?: () => void) => () => {
-    setMenuAnchor(null);
+  // City / Edit dropdown menus
+  const [cityMenuAnchor, setCityMenuAnchor] = React.useState<HTMLElement | null>(null);
+  const [editMenuAnchor, setEditMenuAnchor] = React.useState<HTMLElement | null>(null);
+  const closeMenus = (action?: () => void) => () => {
+    setCityMenuAnchor(null);
+    setEditMenuAnchor(null);
     action?.();
   };
 
@@ -104,24 +106,28 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
         )}
         <Button onClick={onBuild}>Build</Button>
         {showSaveButton && <Button onClick={() => void onSave()}>Save</Button>}
-        <Button endIcon={<ArrowDropDownIcon />} onClick={(e) => setMenuAnchor(e.currentTarget)}>
+        <Button endIcon={<ArrowDropDownIcon />} onClick={(e) => setCityMenuAnchor(e.currentTarget)}>
           City
         </Button>
-        <Menu anchorEl={menuAnchor} open={menuAnchor !== null} onClose={closeMenu()}>
-          <MenuItem onClick={closeMenu(onImport)}>Import</MenuItem>
-          <MenuItem onClick={closeMenu(onExport)}>Export</MenuItem>
-          <MenuItem onClick={closeMenu(onSaveAs)}>Save As...</MenuItem>
+        <Button endIcon={<ArrowDropDownIcon />} onClick={(e) => setEditMenuAnchor(e.currentTarget)}>
+          Edit
+        </Button>
+        <Menu anchorEl={cityMenuAnchor} open={cityMenuAnchor !== null} onClose={closeMenus()}>
+          <MenuItem onClick={closeMenus(onImport)}>Import</MenuItem>
+          <MenuItem onClick={closeMenus(onExport)}>Export</MenuItem>
+          <MenuItem onClick={closeMenus(onSaveAs)}>Save As...</MenuItem>
           <Divider />
-          <MenuItem onClick={closeMenu(onSellStreets)}>Sell Streets</MenuItem>
-          <MenuItem onClick={closeMenu(() => onDeleteHighlighted(true))} disabled={!hasHighlightedBlocks}>
+          <MenuItem onClick={closeMenus(onDelete)} sx={{ color: 'red' }}>
+            Delete City
+          </MenuItem>
+        </Menu>
+        <Menu anchorEl={editMenuAnchor} open={editMenuAnchor !== null} onClose={closeMenus()}>
+          <MenuItem onClick={closeMenus(onSellStreets)}>Sell Streets</MenuItem>
+          <MenuItem onClick={closeMenus(() => onDeleteHighlighted(true))} disabled={!hasHighlightedBlocks}>
             Delete Highlighted
           </MenuItem>
-          <MenuItem onClick={closeMenu(() => onDeleteHighlighted(false))} disabled={!hasHighlightedBlocks}>
+          <MenuItem onClick={closeMenus(() => onDeleteHighlighted(false))} disabled={!hasHighlightedBlocks}>
             Delete Non-Highlighted
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={closeMenu(onDelete)} sx={{ color: 'red' }}>
-            Delete City
           </MenuItem>
         </Menu>
       </Stack>
