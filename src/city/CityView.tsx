@@ -45,6 +45,12 @@ function CityViewInner() {
         return;
       }
 
+      // Nothing here depends on where a block sits, only on which buildings exist,
+      // so there is no reason to rebuild it on every frame of a drag.
+      if (city.dragIndex !== null) {
+        return;
+      }
+
       const accountData = getAccountById(city.accountId);
 
       if (!accountData) {
@@ -91,10 +97,16 @@ function CityViewInner() {
     }
 
     void Do();
-  }, [city.blocks, city.buildingFinder]);
+  }, [city.blocks, city.buildingFinder, city.dragIndex]);
 
   useEffect(() => {
     async function Do() {
+      // As above: switchable production depends on the buildings present, not their
+      // positions, and this path also awaits the goods names.
+      if (city.dragIndex !== null) {
+        return;
+      }
+
       const buildings = Object.values(city.blocks)
         .map((r) => ({ building: city.buildingFinder.getBuildingExact(r.gameId), state: r.entity.state }))
         .filter((r) => !!r.building)
@@ -160,7 +172,7 @@ function CityViewInner() {
     }
 
     void Do();
-  }, [city.blocks, city.buildingFinder, city.boostedGoods]);
+  }, [city.blocks, city.buildingFinder, city.boostedGoods, city.dragIndex]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>

@@ -19,11 +19,15 @@ import { Building } from '../model/building';
 import { calculateCityBonuses } from './calculateCityBonuses';
 import { useCity } from './CityContext';
 import { isOutOfGrid } from './isOutOfGrid';
+import { useSettledValue } from './useSettledValue';
 
 export const CityResourceSummary = () => {
   const city = useCity();
   const [collapsed, setCollapsed] = useState(false);
-  const blocks = React.useMemo(() => Object.values(city.blocks), [city.blocks]);
+  // The totals in context already only move on drop; match that here so the bonus
+  // lookups do not rescan the city mid-drag either.
+  const settledBlocks = useSettledValue(city.blocks, city.dragIndex === null);
+  const blocks = React.useMemo(() => Object.values(settledBlocks), [settledBlocks]);
   const blocksIdAndLevel = React.useMemo(() => blocks.map((b) => ({ id: b.gameId, level: b.level })), [blocks]);
   const buildingFinder = city.buildingFinder;
   const evolvingBuildings = city.evolvingBuildings;

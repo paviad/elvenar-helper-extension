@@ -19,6 +19,7 @@ import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { BlockOpacity, GridMax, GridSize, PaddingTiles } from './gridConstants';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
 import { findMatchingBlockIds } from './searchMatcher';
+import { useSettledValue } from './useSettledValue';
 
 export interface CityContextType {
   moveLog: MoveLogInterface[];
@@ -309,19 +310,25 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     void Do();
   }, []);
 
-  const highlightedIds = React.useMemo(() => findMatchingBlockIds(blocks, searchTerm), [blocks, searchTerm]);
+  // Derivations over the whole city read the settled layout, so a drag does not
+  // rescan every block twenty times a second. They catch up when the block lands.
+  const settledBlocks = useSettledValue(blocks, dragIndex === null);
+
+  const highlightedIds = React.useMemo(
+    () => findMatchingBlockIds(settledBlocks, searchTerm),
+    [settledBlocks, searchTerm],
+  );
 
   const cityTotals = React.useMemo(
-    () => calculateCityTotals(Object.values(blocks), buildingFinder, evolvingBuildings),
-    [blocks, buildingFinder, evolvingBuildings],
+    () => calculateCityTotals(Object.values(settledBlocks), buildingFinder, evolvingBuildings),
+    [settledBlocks, buildingFinder, evolvingBuildings],
   );
 
   const allTypes = React.useMemo(() => {
     const set = new Set<string>();
-    const blocksArray = Object.values(blocks);
-    (blocksArray || []).forEach((b) => set.add(b.type));
+    Object.values(settledBlocks).forEach((b) => set.add(b.type));
     return Array.from(set);
-  }, [blocks]);
+  }, [settledBlocks]);
 
   const clearRedoStack = React.useCallback(() => {
     setRedoStack([]);

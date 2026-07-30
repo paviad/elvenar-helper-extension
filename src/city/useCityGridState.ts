@@ -238,12 +238,17 @@ export const useCityGridState = () => {
     setOriginalPos,
   ]);
 
-  // Keyboard Shortcuts (Ctrl+S, Alt+B)
+  // Keyboard Shortcuts (Ctrl+S, Alt+B). saveCity closes over the current blocks, so
+  // it is reached through a ref: depending on blocks directly detached and reattached
+  // this window listener on every frame of a drag.
+  const saveCityRef = React.useRef(saveCity);
+  saveCityRef.current = saveCity;
+
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'KeyS' && !event.altKey && !event.repeat && event.ctrlKey && !event.metaKey) {
         event.preventDefault();
-        void saveCity();
+        void saveCityRef.current();
       }
       if (event.code === 'KeyB' && event.altKey && !event.repeat && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
@@ -252,7 +257,7 @@ export const useCityGridState = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [blocks]); // Dependency on blocks for saveCity closure
+  }, []);
 
   // Helper Tip
   React.useEffect(() => {
