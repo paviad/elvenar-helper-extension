@@ -268,6 +268,25 @@
         font-size: 1.05rem;
       }
 
+      /* Marks a card as a recent addition. */
+      .feature-card.is-new {
+        border-color: rgba(124, 58, 237, 0.5);
+      }
+
+      .badge-new {
+        position: absolute;
+        top: 1.25rem;
+        right: 1.25rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+      }
+
       /* Carousel Section */
       .preview {
         padding: 2rem 0 6rem 0;
@@ -547,6 +566,17 @@
         <div class="container">
           <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem">Why Switch?</h2>
           <div class="features-grid">
+            <div class="feature-card is-new">
+              <span class="badge-new">NEW</span>
+              <i class="fas fa-wand-magic-sparkles feature-icon"></i>
+              <h3>Upgrade Finder</h3>
+              <p>
+                Finds the event buildings sitting in your inventory that beat what you already have placed &mdash; only
+                the swaps that give up nothing, ranked by what they gain per square. Evolving buildings are measured at
+                the stage your artifacts can actually reach.
+              </p>
+            </div>
+
             <div class="feature-card">
               <i class="fas fa-city feature-icon"></i>
               <h3>Live City Planner</h3>

@@ -5,6 +5,7 @@ import { InGameAssistant } from './topics/InGameAssistant';
 import { Introduction } from './topics/Introduction';
 import { InventoryManager } from './topics/InventoryManager';
 import { SpireWizardIntegration } from './topics/SpireWizardIntegration';
+import { UpgradeFinder } from './topics/UpgradeFinder';
 
 export interface HelpSection {
   id: string;
@@ -23,19 +24,22 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'in-game-assistant',
     title: 'In-Game Assistant',
     content: <InGameAssistant />,
-    isNew: true,
   },
   {
     id: 'city-planner',
     title: 'City Planner',
     content: <CityPlanner />,
+  },
+  {
+    id: 'upgrade-finder',
+    title: 'Upgrade Finder',
+    content: <UpgradeFinder />,
     isNew: true,
   },
   {
     id: 'inventory',
     title: 'Inventory Manager',
     content: <InventoryManager />,
-    isNew: true,
   },
   {
     id: 'fa-tracker',
