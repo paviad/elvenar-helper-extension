@@ -17,7 +17,7 @@ import { getTypeColor } from '../Legend/getTypeColor';
  */
 export const useBlockDecoration = (block: CityBlock) => {
   const city = useCity();
-  const { buildingFinder, chapter, allTypes } = city;
+  const { buildingFinder, chapter, allTypes, highlightedIds } = city;
 
   const building = buildingFinder.getBuilding(block.gameId, block.level);
   const nextLevelBuilding = buildingFinder.getBuilding(block.gameId, block.level + 1);
@@ -39,6 +39,6 @@ export const useBlockDecoration = (block: CityBlock) => {
     textColor,
     isChapterExcessive,
     isMaxLevelForChapter,
-    isHighlighted: !!block.highlighted,
+    isHighlighted: highlightedIds.has(block.id),
   };
 };

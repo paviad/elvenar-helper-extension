@@ -18,6 +18,7 @@ import {
 import { Building } from '../model/building';
 import { calculateCityBonuses } from './calculateCityBonuses';
 import { useCity } from './CityContext';
+import { isOutOfGrid } from './isOutOfGrid';
 
 export const CityResourceSummary = () => {
   const city = useCity();
@@ -33,67 +34,17 @@ export const CityResourceSummary = () => {
   );
 
   const summary = React.useMemo(() => {
-    let popProvided = 0;
-    let popRequired = 0;
-    let cultureProvided = 0;
-    let cultureRequired = 0;
-    let prosperityProvided = 0;
-    let prosperityRequired = 0;
-
-    let residentialPop = 0;
-    let awLevels = 0;
-    let mhRankingPoints = 0;
-
-    blocks.forEach((block) => {
-      const building = buildingFinder.getBuilding(block.gameId, block.level);
-      const evolvingBuilding = evolvingBuildings.find((eb) => eb.baseName === building?.sourceBuilding.base_name);
-      const cultureFactor = evolvingBuilding?.stages.find((s) => s.id === block.stage)?.culture || 1;
-      const populationFactor = evolvingBuilding?.stages.find((s) => s.id === block.stage)?.population || 1;
-
-      if (!building) return;
-      const source: Building = building.sourceBuilding;
-
-      // disregard building if outside of city limits
-      if (block.outOfGrid) {
-        return;
-      }
-
-      if (building.sourceBuilding.type === 'ancient_wonder') {
-        awLevels += block.level;
-      }
-
-      if (building.sourceBuilding.type === 'main_building') {
-        mhRankingPoints = building.sourceBuilding.rankingPoints || 0;
-      }
-
-      // Provisions (Benefits)
-      const provisions = source.provisions?.resources?.resources;
-      if (provisions) {
-        const popProvidedByThisBuilding = Math.floor((provisions.population || 0) * populationFactor);
-        popProvided += popProvidedByThisBuilding;
-
-        if (['residential', 'premium_residential'].includes(block.entity.type)) {
-          residentialPop += popProvidedByThisBuilding;
-        }
-
-        const cultureProvidedByThisBuilding = Math.floor((provisions.culture || 0) * cultureFactor);
-        cultureProvided += cultureProvidedByThisBuilding;
-        prosperityProvided += provisions.prosperity || 0;
-      }
-
-      // Requirements (Costs)
-      const requirements = source.requirements?.resources;
-      if (requirements) {
-        popRequired += requirements.population || 0;
-        cultureRequired += requirements.culture || 0;
-        prosperityRequired += requirements.prosperity || 0;
-      }
-    });
-
-    city.setPopRequired(popRequired);
-    city.setResidentialPop(residentialPop);
-    city.setAwLevels(awLevels);
-    city.setMhRankingPoints(mhRankingPoints);
+    const {
+      popProvided,
+      popRequired,
+      cultureProvided,
+      cultureRequired,
+      prosperityProvided,
+      prosperityRequired,
+      residentialPop,
+      awLevels,
+      mhRankingPoints,
+    } = city.cityTotals;
 
     const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
     const extraAvailablePopulation = Math.ceil(popRequired * availablePopulationBonus);
@@ -119,7 +70,7 @@ export const CityResourceSummary = () => {
         net: prosperityProvided - prosperityRequired,
       },
     };
-  }, [blocks, city.effects, city.squadSize]);
+  }, [city.cityTotals, residentialBonus, availablePopulationBonus, cultureByRankingPoints, extraAvailableCulture]);
 
   const renderRow = (
     label: string,

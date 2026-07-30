@@ -18,10 +18,7 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   const city = useCity();
   const currentChapter = city.chapter;
   const source = building.sourceBuilding;
-  const popRequired = city.popRequired;
-  const residentialPop = city.residentialPop;
-  const awLevels = city.awLevels;
-  const mhRankingPoints = city.mhRankingPoints;
+  const { popRequired, residentialPop, awLevels, mhRankingPoints } = city.cityTotals;
   const evolvingBuildings = city.evolvingBuildings;
 
   const evolvingBuilding = evolvingBuildings.find((eb) => eb.baseName === building?.sourceBuilding.base_name);

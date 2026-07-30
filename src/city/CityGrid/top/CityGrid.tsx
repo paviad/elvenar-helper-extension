@@ -9,7 +9,7 @@ const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 export function CityGrid() {
   const city = useCity();
-  const { GridSize: baseGridSize, GridMax, dragIndex, blocks } = city;
+  const { GridSize: baseGridSize, GridMax, dragIndex, blocks, highlightedIds } = city;
 
   const { containerRef, zoom, panHandlers } = usePanZoom({
     zoomLevels: ZOOM_LEVELS,
@@ -51,16 +51,18 @@ export function CityGrid() {
   const blockRects = React.useMemo(() => {
     // If dragging, render dragged block last (on top)
     const withIndex = Object.entries(blocks);
-    const blocksBelowUnmoved = withIndex.filter(([i, b]) => Number(i) !== dragIndex && !b.moved && !b.highlighted);
-    const blocksBelow = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.moved && !b.highlighted);
-    const blocksHighlighted = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.highlighted);
+    const blocksBelowUnmoved = withIndex.filter(
+      ([i, b]) => Number(i) !== dragIndex && !b.moved && !highlightedIds.has(b.id),
+    );
+    const blocksBelow = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.moved && !highlightedIds.has(b.id));
+    const blocksHighlighted = withIndex.filter(([i, b]) => Number(i) !== dragIndex && highlightedIds.has(b.id));
     const sortedBlocks = [...blocksBelowUnmoved, ...blocksBelow, ...blocksHighlighted];
     if (dragIndex !== null) {
       const draggedBlock = blocks[dragIndex];
       sortedBlocks.push(['dragged', draggedBlock]);
     }
     return sortedBlocks.map(([index, block]) => BlockRect(index === 'dragged' ? index : Number(index), block, zoom));
-  }, [blocks, dragIndex, zoom, city.chapter, city.squadSize]);
+  }, [blocks, dragIndex, zoom, highlightedIds, city.chapter, city.squadSize]);
 
   return (
     <div

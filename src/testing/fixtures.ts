@@ -77,7 +77,6 @@ export function makeCityBlock(overrides: CityBlockOverrides = {}): CityBlock {
     moved: false,
     entity,
     level: entity.level,
-    highlighted: false,
     ...overrides,
   };
 }

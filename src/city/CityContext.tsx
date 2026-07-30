@@ -11,11 +11,14 @@ import { StageProvision } from '../model/stageProvision';
 import { UnlockedArea } from '../model/unlockedArea';
 import { useTabStore } from '../util/tabStore';
 import { BuildingFinder, getBuildingFinder } from './buildingFinder';
+import { calculateCityTotals, CityTotals } from './calculateCityTotals';
 import { CityBlock } from './CityBlock';
 import { generateCity, saveBack } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
+import { BlockOpacity, GridMax, GridSize, PaddingTiles } from './gridConstants';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
+import { findMatchingBlockIds } from './searchMatcher';
 
 export interface CityContextType {
   moveLog: MoveLogInterface[];
@@ -34,6 +37,8 @@ export interface CityContextType {
   setOriginalPos: (pos: { x: number; y: number } | null) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  /** Ids of blocks matching the search term. Derived, so searching never edits the city. */
+  highlightedIds: Set<number>;
   menu: { key: string | number; x: number; y: number } | null;
   setMenu: (menu: { key: string | number; x: number; y: number } | null) => void;
   maxLevels: Record<string, number>;
@@ -64,16 +69,10 @@ export interface CityContextType {
   setChapter: (chapter: number) => void;
   squadSize: number;
   setSquadSize: (size: number) => void;
-  popRequired: number;
-  setPopRequired: (num: number) => void;
-  residentialPop: number;
-  setResidentialPop: (num: number) => void;
   rankingPoints: number;
   setRankingPoints: (num: number) => void;
-  awLevels: number;
-  setAwLevels: (num: number) => void;
-  mhRankingPoints: number;
-  setMhRankingPoints: (num: number) => void;
+  /** Provision and requirement totals, derived from the blocks. */
+  cityTotals: CityTotals;
   mouseGridPosition: { x: number; y: number } | null;
   setMouseGridPosition: (pos: { x: number; y: number } | null) => void;
   resources: Record<string, number>;
@@ -101,14 +100,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [goodsNames, setGoodsNames] = React.useState<Record<string, string>>({});
   const [evolvingBuildings, setEvolvingBuildings] = React.useState<StageProvision[]>([]);
   const [effects, setEffects] = React.useState<Effect[]>([]);
-  const [popRequired, setPopRequired] = React.useState<number>(0);
-  const [residentialPop, setResidentialPop] = React.useState<number>(0);
   const [rankingPoints, setRankingPoints] = React.useState<number>(0);
   const [resources, setResources] = React.useState<Record<string, number>>({});
   const [mouseGridPosition, setMouseGridPosition] = React.useState<{ x: number; y: number } | null>(null);
-
-  const [awLevels, setAwLevels] = React.useState<number>(0);
-  const [mhRankingPoints, setMhRankingPoints] = React.useState<number>(0);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
@@ -256,16 +250,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }, [cityEntities]);
 
   React.useEffect(() => {
-    for (const block of Object.values(blocks)) {
-      const isVestigeOfEternity = block.name === 'Vestige of Eternity';
-      const outOfGrid =
-        !isVestigeOfEternity &&
-        (block.x < 0 || block.y < 0 || block.x + block.width > GridMax || block.y + block.length > GridMax);
-      block.outOfGrid = outOfGrid;
-    }
-  }, [blocks, unlockedAreas, dragIndex]);
-
-  React.useEffect(() => {
     // don't calculate while dragging to avoid performance issues
     if (dragIndex !== null) {
       return;
@@ -323,6 +307,13 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     void Do();
   }, []);
 
+  const highlightedIds = React.useMemo(() => findMatchingBlockIds(blocks, searchTerm), [blocks, searchTerm]);
+
+  const cityTotals = React.useMemo(
+    () => calculateCityTotals(Object.values(blocks), buildingFinder, evolvingBuildings),
+    [blocks, buildingFinder, evolvingBuildings],
+  );
+
   const allTypes = React.useMemo(() => {
     const set = new Set<string>();
     const blocksArray = Object.values(blocks);
@@ -334,10 +325,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     setRedoStack([]);
   };
 
-  const GridSize = 15;
-  const GridMax = 80;
-  const PaddingTiles = 20;
-  const opacity = 0.8;
+  const opacity = BlockOpacity;
 
   // Close menu on click outside
   React.useEffect(() => {
@@ -456,6 +444,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     setOriginalPos,
     searchTerm,
     setSearchTerm,
+    highlightedIds,
     menu,
     setMenu,
     maxLevels,
@@ -486,16 +475,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     setChapter,
     squadSize,
     setSquadSize,
-    popRequired,
-    setPopRequired,
-    residentialPop,
-    setResidentialPop,
     rankingPoints,
     setRankingPoints,
-    awLevels,
-    setAwLevels,
-    mhRankingPoints,
-    setMhRankingPoints,
+    cityTotals,
     mouseGridPosition,
     setMouseGridPosition,
     resources,

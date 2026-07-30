@@ -51,9 +51,7 @@ export const RenderCityGrid = () => {
     };
   }, []);
 
-  const hasHighlighted = React.useMemo(() => {
-    return !Object.values(blocks).every((b) => !b.highlighted);
-  }, [blocks]);
+  const hasHighlighted = city.highlightedIds.size > 0;
 
   return (
     <Stack>

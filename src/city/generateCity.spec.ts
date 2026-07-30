@@ -89,13 +89,12 @@ describe('saveBack', () => {
   });
 
   it('does not carry editor-only fields into the saved entity', () => {
-    const block = makeCityBlock({ highlighted: true, moved: true, outOfGrid: true });
+    const block = makeCityBlock({ highlighted: true, moved: true });
 
     const saved = saveBack([block])[0] as Record<string, unknown>;
 
     expect(saved.highlighted).toBeUndefined();
     expect(saved.moved).toBeUndefined();
-    expect(saved.outOfGrid).toBeUndefined();
   });
 });
 

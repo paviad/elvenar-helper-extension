@@ -67,7 +67,6 @@ describe('getCityBlockFromCityEntity', () => {
       originalX: 12,
       originalY: 34,
       moved: false,
-      highlighted: false,
     });
   });
 

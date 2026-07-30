@@ -264,38 +264,19 @@ export const useCityGridState = () => {
   // --- Logic / Handlers ---
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const term = e.target.value;
-    setSearchTerm(term);
-    let matcher: ((name: string) => boolean) | null = null;
-    if (term.length > 2 && term.startsWith('/') && term.endsWith('/')) {
-      try {
-        const regex = new RegExp(term.slice(1, -1), 'i');
-        matcher = (name: string) => regex.test(name);
-      } catch {
-        matcher = null;
-      }
-    } else if (term) {
-      matcher = (name: string) => name.toLowerCase().includes(term.toLowerCase());
-    }
-    setBlocks((prev) =>
-      Object.fromEntries(
-        Object.entries(prev).map(([key, b]) => [
-          Number(key),
-          {
-            ...b,
-            highlighted: Boolean(!!matcher && ((b.name && matcher(b.name)) || (b.type && matcher(b.type)))),
-          } satisfies CityBlock,
-        ]),
-      ),
-    );
+    // Highlighting is derived from the term, so searching no longer rewrites every
+    // block - which used to mark the city modified and trigger an autosave per keystroke.
+    setSearchTerm(e.target.value);
   }
 
   function deleteHighlightedBlocks(highlighted: boolean) {
-    const blocksToDelete = Object.entries(blocks).filter(([_, block]) => block.highlighted === highlighted);
+    const isHighlighted = (block: CityBlock) => city.highlightedIds.has(block.id);
+
+    const blocksToDelete = Object.entries(blocks).filter(([_, block]) => isHighlighted(block) === highlighted);
     if (blocksToDelete.length === 0) return;
     setBlocks((prev) => {
       const updated = Object.fromEntries(
-        Object.entries(prev).filter(([_, block]) => block.highlighted !== highlighted),
+        Object.entries(prev).filter(([_, block]) => isHighlighted(block) !== highlighted),
       );
       return updated;
     });

@@ -6,12 +6,9 @@ export const WorkingState: React.FC = () => {
   // Accessing blocks to count highlighted ones.
   // Assuming 'pointer' exists in context for grid coordinates {x, y}.
   // If not, it will gracefully fallback.
-  const { blocks, mouseGridPosition, emptySquares } = useCity();
+  const { mouseGridPosition, emptySquares, highlightedIds } = useCity();
 
-  const highlightedCount = React.useMemo(() => {
-    if (!blocks) return 0;
-    return Object.values(blocks).filter((b) => b.highlighted).length;
-  }, [blocks]);
+  const highlightedCount = highlightedIds.size;
 
   return (
     <Card elevation={3}>

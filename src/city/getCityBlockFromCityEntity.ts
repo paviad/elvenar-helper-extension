@@ -91,7 +91,6 @@ export function getCityBlockFromCityEntity(entity: CityEntityEx): CityBlock {
     level: entity.level,
     stage: entity.stage,
     chapter: getChapter(entity),
-    highlighted: false,
     expiration: entity.expiration,
     expirationEnd: entity.expirationEnd,
   } satisfies CityBlock;
