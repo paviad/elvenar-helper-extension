@@ -23,6 +23,7 @@ export async function refreshCity(city: CityContextType) {
   city.setSearchTerm(''); // Re-apply search term
   city.setMoveLog((_) => []); // Clear move log to prevent stale data issues
   city.setRedoStack((_) => []); // Clear redo stack as well
+  city.setReplacedArea(null); // The marked footprint belongs to the layout being replaced
   triggerForceUpdate();
   // window.location.reload();
 }
