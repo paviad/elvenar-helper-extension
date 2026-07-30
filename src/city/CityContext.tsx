@@ -300,18 +300,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }, [blocks, dragIndex]);
 
   React.useEffect(() => {
-    // don't calculate while dragging to avoid performance issues
-    if (dragIndex !== null) {
-      return;
-    }
-    for (const block of Object.values(blocks)) {
-      const outOfGrid =
-        block.x < 0 || block.y < 0 || block.x + block.width > GridMax || block.y + block.length > GridMax;
-      block.outOfGrid = outOfGrid;
-    }
-  }, [blocks, unlockedAreas, dragIndex]);
-
-  React.useEffect(() => {
     async function Do() {
       await buildingFinder?.ensureInitialized();
     }
