@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { GameVars } from '../inject/gameVars';
 import { InitialWorldMapData } from '../model/initialWorldMapData';
 import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
@@ -8,7 +9,6 @@ import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
 import { StrengthModifier } from './counterCalculation';
 import { TournyData } from './tournyData';
-import { GameVars } from '../inject/gameVars';
 
 interface OverlayState {
   offeredGoods: string[];

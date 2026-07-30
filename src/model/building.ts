@@ -28,7 +28,14 @@ export interface Building {
 }
 
 type Category =
-  'ancient_wonders' | 'basics' | 'manufactories' | 'military' | 'non_purchasable' | 'races' | 'void' | 'wealth';
+  | 'ancient_wonders'
+  | 'basics'
+  | 'manufactories'
+  | 'military'
+  | 'non_purchasable'
+  | 'races'
+  | 'void'
+  | 'wealth';
 
 export interface Production {
   isSwitchable: boolean;

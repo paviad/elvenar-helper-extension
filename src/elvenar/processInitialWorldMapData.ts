@@ -5,7 +5,7 @@ import { InitialWorldMapData, InitialWorldMapDataResponse } from '../model/initi
 export const processInitialWorldMapData = async (
   untypedJson: unknown,
   sharedInfo: ExtensionSharedInfo,
-// eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<InitialWorldMapData | undefined> => {
   const response = untypedJson as ElvenarRequestResponseEntry[];
 

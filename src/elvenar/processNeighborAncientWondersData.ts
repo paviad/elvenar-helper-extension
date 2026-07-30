@@ -89,18 +89,17 @@ export const processNeighborAncientWondersData = async (
         continue;
       }
 
-      const kpHuntRecord =
-        calculatePhase(
-          finder,
-          phase,
-          ownerGuild,
-          playerName,
-          huntersInfo,
-          sharedInfo,
-          pageIndex,
-          playerId,
-          awDictionary,
-        );
+      const kpHuntRecord = calculatePhase(
+        finder,
+        phase,
+        ownerGuild,
+        playerName,
+        huntersInfo,
+        sharedInfo,
+        pageIndex,
+        playerId,
+        awDictionary,
+      );
 
       if (kpHuntRecord) {
         console.log('Found KP Hunt Opportunity:', kpHuntRecord);

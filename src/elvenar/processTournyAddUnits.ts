@@ -6,7 +6,7 @@ import { getAccountBySessionId } from './AccountManager';
 export const processTournyAddUnits = async (
   response: ElvenarRequestResponseEntry[],
   sharedInfo: ExtensionSharedInfo,
-// eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<TournyAddUnits | undefined> => {
   const addUnitsResponse = response.find(
     (entry) => entry.requestClass === 'ArmyService' && entry.requestMethod === 'addUnit',

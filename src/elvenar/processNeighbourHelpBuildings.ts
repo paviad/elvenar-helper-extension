@@ -5,7 +5,7 @@ import { NeighbourHelpBuildingsResponse, NeighbourHelpData } from '../model/neig
 export const processNeighbourHelpBuildings = async (
   untypedJson: unknown,
   sharedInfo: ExtensionSharedInfo,
-// eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<NeighbourHelpData | undefined> => {
   const response = untypedJson as ElvenarRequestResponseEntry[];
 

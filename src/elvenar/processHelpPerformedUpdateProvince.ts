@@ -5,7 +5,7 @@ import { WorldNeighbor } from '../model/worldNeighbors';
 export const processHelpPerformedUpdateProvince = async (
   untypedJson: unknown,
   sharedInfo: ExtensionSharedInfo,
-// eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<WorldNeighbor | undefined> => {
   const response = untypedJson as ElvenarRequestResponseEntry[];
 

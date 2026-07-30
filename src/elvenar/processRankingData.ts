@@ -15,9 +15,11 @@ interface NotifyData {
 
 const retrievingCounterSubject = new Subject<NotifyData>();
 
-const retrievingCounterNotify = retrievingCounterSubject.pipe(
-  groupBy((data) => data.tabId),
-  mergeMap((group) => group.pipe(debounceTime(50))))
+const retrievingCounterNotify = retrievingCounterSubject
+  .pipe(
+    groupBy((data) => data.tabId),
+    mergeMap((group) => group.pipe(debounceTime(50))),
+  )
   .subscribe((data) => {
     console.log(`Retrieving counter updated: ${data.retrievingCounter} for tabId: ${data.tabId}`);
     void sendRetrievingCounterUpdateMessage(data.tabId, data.retrievingCounter);
