@@ -1,15 +1,19 @@
 import React from 'react';
+import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
+import { GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { commitDrop } from '../commitDrop';
 import { usePanZoom } from '../usePanZoom';
 import { BlockRect } from './BlockRect';
+import { handleMouseDown } from './handleMouseDown';
 import { handleMouseMove } from './handleMouseMove';
 
 const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 export function CityGrid() {
   const city = useCity();
-  const { GridSize: baseGridSize, GridMax, dragIndex, blocks, highlightedIds } = city;
+  const helper = useHelper();
+  const { dragIndex, blocks, highlightedIds, chapter, allTypes, techSprite } = city;
 
   const { containerRef, zoom, panHandlers } = usePanZoom({
     zoomLevels: ZOOM_LEVELS,
@@ -25,9 +29,9 @@ export function CityGrid() {
   const hasCentered = React.useRef(false);
 
   // Dimension Calculation
-  const gridSizePx = baseGridSize * zoom;
+  const gridSizePx = GridSize * zoom;
   const gridDimension = gridSizePx * GridMax;
-  const paddingPx = city.PaddingTiles * gridSizePx;
+  const paddingPx = PaddingTiles * gridSizePx;
   const totalDimension = gridDimension + paddingPx * 2;
 
   // Center the view on mount (only once)
@@ -48,6 +52,47 @@ export function CityGrid() {
     handleMouseMove(city, e, zoom);
   };
 
+  // The blocks are memoised on their props, so their callbacks have to keep a stable
+  // identity across renders. Reading the city through a ref keeps them current
+  // without making them change every time anything in the city does.
+  const cityRef = React.useRef(city);
+  cityRef.current = city;
+  const helperRef = React.useRef(helper);
+  helperRef.current = helper;
+
+  const onPickUp = React.useCallback(
+    (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) =>
+      handleMouseDown(cityRef.current, helperRef.current, e, blockKey, zoom),
+    [zoom],
+  );
+
+  const onOpenMenu = React.useCallback(
+    (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => {
+      const current = cityRef.current;
+      const svg = current.svgRef.current;
+      const block = current.blocks[blockKey];
+
+      let x = e.clientX;
+      let y = e.clientY;
+
+      if (svg && block) {
+        const rect = svg.getBoundingClientRect();
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+
+        const sGridSize = GridSize * zoom;
+        const paddingPx = PaddingTiles * sGridSize;
+        current.setDragOffset({
+          x: x - paddingPx - block.x * sGridSize,
+          y: y - paddingPx - block.y * sGridSize,
+        });
+      }
+
+      current.setMenu({ x, y, key: blockKey });
+    },
+    [zoom],
+  );
+
   const blockRects = React.useMemo(() => {
     // If dragging, render dragged block last (on top)
     const withIndex = Object.entries(blocks);
@@ -61,8 +106,22 @@ export function CityGrid() {
       const draggedBlock = blocks[dragIndex];
       sortedBlocks.push(['dragged', draggedBlock]);
     }
-    return sortedBlocks.map(([index, block]) => BlockRect(index === 'dragged' ? index : Number(index), block, zoom));
-  }, [blocks, dragIndex, zoom, highlightedIds, city.chapter, city.squadSize]);
+    return sortedBlocks.map(([index, block]) => (
+      <BlockRect
+        key={index}
+        blockKey={index === 'dragged' ? index : Number(index)}
+        block={block}
+        zoom={zoom}
+        chapter={chapter}
+        allTypes={allTypes}
+        isHighlighted={highlightedIds.has(block.id)}
+        isAnyDragging={dragIndex !== null}
+        sprite={techSprite}
+        onPickUp={onPickUp}
+        onOpenMenu={onOpenMenu}
+      />
+    ));
+  }, [blocks, dragIndex, zoom, highlightedIds, chapter, allTypes, techSprite, onPickUp, onOpenMenu]);
 
   return (
     <div

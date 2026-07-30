@@ -1,62 +1,66 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
-import { useHelper } from '../../../helper/HelperContext';
+import { getBuildingFinder } from '../../buildingFinder';
 import { CityBlock } from '../../CityBlock';
-import { useCity } from '../../CityContext';
+import { BlockOpacity, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
+import { getBlockDecoration } from '../blockDecoration';
 import { BuildingTooltip } from '../BuildingTooltip';
-import { useBlockDecoration } from '../useBlockDecoration';
-import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown'; // Updated import
 import { IsoBlockLabel } from './IsoBlockLabel';
 import { createIsoProjection } from './isoProjection';
 
-export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom: number) => {
-  const city = useCity();
-  const helper = useHelper();
-  const { GridSize, GridMax, opacity, PaddingTiles } = city;
+export interface IsometricBlockRectProps {
+  /** The record key, or 'dragged' for the copy drawn on top while dragging. */
+  blockKey: string | number;
+  block: CityBlock;
+  zoom: number;
+  chapter: number;
+  allTypes: string[];
+  isHighlighted: boolean;
+  /** True while any block is being dragged, which suppresses picking up another. */
+  isAnyDragging: boolean;
+  sprite?: { url: string; width: number; height: number };
+  onPickUp: (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => void;
+  onOpenMenu: (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => void;
+}
 
+/**
+ * One block in the isometric view. Memoised and free of context for the same
+ * reason as its top-down counterpart: see the note in BlockRect.
+ */
+export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(function IsometricBlockRect({
+  blockKey,
+  block,
+  zoom,
+  chapter,
+  allTypes,
+  isHighlighted,
+  isAnyDragging,
+  sprite,
+  onPickUp,
+  onOpenMenu,
+}) {
   const { toIso } = createIsoProjection({ GridSize, GridMax, PaddingTiles, zoom });
 
-  const setMenu = city.setMenu;
-  const blocks = city.blocks;
-  const setDragOffset = city.setDragOffset;
-  const dragIndex = city.dragIndex;
+  const { building, fillColor, textColor, isChapterExcessive, isMaxLevelForChapter } = getBlockDecoration({
+    block,
+    finder: getBuildingFinder(),
+    chapter,
+    allTypes,
+    isHighlighted,
+  });
 
-  const { building, fillColor, textColor, isChapterExcessive, isMaxLevelForChapter, isHighlighted } =
-    useBlockDecoration(block);
-
-  const dragging = typeof key === 'string';
-  const handler =
-    !dragging && dragIndex === null
-      ? (e: React.MouseEvent<SVGElement, MouseEvent>) => handleIsoMouseDownWithZoom(city, helper, e, key, zoom)
-      : () => {
-          /* no-op for dragging */
-        };
+  const dragging = typeof blockKey === 'string';
+  const canPickUp = !dragging && !isAnyDragging;
   const cursor = dragging ? 'grab' : 'grabbing';
+
+  const handleClick = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
+    if (canPickUp) onPickUp(e, Number(blockKey));
+  };
 
   const handleContextMenu = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
     e.preventDefault();
     if (dragging) return;
-    const svg = city.svgRef.current;
-    let x = e.clientX;
-    let y = e.clientY;
-    if (svg && typeof key === 'number') {
-      const rect = svg.getBoundingClientRect();
-      x = e.clientX - rect.left;
-      y = e.clientY - rect.top;
-
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      const blockScreenPos = toIso(blocks[key].x, blocks[key].y);
-
-      // Note: Context menu drag offset calculation might need ISO adjustment if we want precise menu drag,
-      // but standard behavior usually snaps center, so we leave as is or update if needed.
-      setDragOffset({
-        x: mouseX - blockScreenPos.x,
-        y: mouseY - blockScreenPos.y,
-      });
-    }
-    setMenu({ x, y, key });
+    onOpenMenu(e, Number(blockKey));
   };
 
   // --- Render Calculation ---
@@ -68,13 +72,25 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
   const pathData = `M${p1.x},${p1.y} L${p2.x},${p2.y} L${p3.x},${p3.y} L${p4.x},${p4.y} Z`;
 
   const isoCenter = toIso(block.x + block.width / 2, block.y + block.length / 2);
-
   const labelTransform = `translate(${isoCenter.x}, ${isoCenter.y})`;
 
-  const patternId = `iso-block-crosshatch-${key}`;
+  const patternId = `iso-block-crosshatch-${blockKey}`;
+
+  const shape = (
+    <path
+      d={pathData}
+      opacity={BlockOpacity}
+      fill={fillColor}
+      stroke={block.moved ? 'black' : '#000'}
+      strokeWidth={block.moved ? 2 : 1}
+      style={{ cursor }}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+    />
+  );
 
   return (
-    <g key={key}>
+    <g>
       {isHighlighted && (
         <defs>
           <pattern id={patternId} patternUnits='userSpaceOnUse' width='8' height='8' patternTransform='rotate(45)'>
@@ -99,28 +115,10 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
           enterDelay={700}
           enterNextDelay={700}
         >
-          <path
-            d={pathData}
-            opacity={opacity}
-            fill={fillColor}
-            stroke={block.moved ? 'black' : '#000'}
-            strokeWidth={block.moved ? 2 : 1}
-            style={{ cursor }}
-            onClick={handler}
-            onContextMenu={handleContextMenu}
-          />
+          {shape}
         </Tooltip>
       ) : (
-        <path
-          d={pathData}
-          opacity={opacity}
-          fill={fillColor}
-          stroke={block.moved ? 'black' : '#000'}
-          strokeWidth={block.moved ? 2 : 1}
-          style={{ cursor }}
-          onClick={handler}
-          onContextMenu={handleContextMenu}
-        />
+        shape
       )}
 
       {isHighlighted && (
@@ -137,11 +135,11 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
           block={block}
           GridSize={GridSize}
           textColor={textColor}
-          sprite={city.techSprite}
+          sprite={sprite}
           showWarning={isChapterExcessive}
           showMaxLevel={isMaxLevelForChapter}
         />
       </g>
     </g>
   );
-};
+});

@@ -1,7 +1,9 @@
 import React from 'react';
+import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
 import { commitDrop } from '../commitDrop';
 import { usePanZoom } from '../usePanZoom';
+import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown';
 import { handleIsoMouseMove } from './handleIsoMouseMove';
 import { IsometricBlockRect } from './IsometricBlockRect';
 import { createIsoProjection } from './isoProjection';
@@ -21,7 +23,19 @@ const ZOOM_LEVELS = [0.5, 0.75, 1, 1.5, 2, 2.5, 3];
 
 export function IsometricCityGrid() {
   const city = useCity();
-  const { GridSize, GridMax, blocks, unlockedAreas, PaddingTiles } = city;
+  const helper = useHelper();
+  const {
+    GridSize,
+    GridMax,
+    blocks,
+    unlockedAreas,
+    PaddingTiles,
+    dragIndex,
+    highlightedIds,
+    chapter,
+    allTypes,
+    techSprite,
+  } = city;
 
   // --- Isometric Configuration ---
   // The grid constants are stable, so a projection is only a function of zoom.
@@ -66,6 +80,41 @@ export function IsometricCityGrid() {
     );
   };
 
+  // Kept stable so the memoised blocks are not invalidated by every city change.
+  const cityRef = React.useRef(city);
+  cityRef.current = city;
+  const helperRef = React.useRef(helper);
+  helperRef.current = helper;
+
+  const onPickUp = React.useCallback(
+    (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) =>
+      handleIsoMouseDownWithZoom(cityRef.current, helperRef.current, e, blockKey, zoom),
+    [zoom],
+  );
+
+  const onOpenMenu = React.useCallback(
+    (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => {
+      const current = cityRef.current;
+      const svg = current.svgRef.current;
+      const block = current.blocks[blockKey];
+
+      let x = e.clientX;
+      let y = e.clientY;
+
+      if (svg && block) {
+        const rect = svg.getBoundingClientRect();
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+
+        const blockScreenPos = projectionAt(zoom).toIso(block.x, block.y);
+        current.setDragOffset({ x: x - blockScreenPos.x, y: y - blockScreenPos.y });
+      }
+
+      current.setMenu({ x, y, key: blockKey });
+    },
+    [zoom],
+  );
+
   const sortedEntries = React.useMemo(() => {
     return Object.entries(blocks).sort(([, a], [, b]) => {
       const depthA = a.x + a.width + (a.y + a.length);
@@ -73,6 +122,33 @@ export function IsometricCityGrid() {
       return depthA - depthB;
     });
   }, [blocks]);
+
+  const blockShapes = React.useMemo(() => {
+    const shapeFor = (blockKey: string | number, block: (typeof blocks)[number]) => (
+      <IsometricBlockRect
+        key={blockKey}
+        blockKey={blockKey}
+        block={block}
+        zoom={zoom}
+        chapter={chapter}
+        allTypes={allTypes}
+        isHighlighted={highlightedIds.has(block.id)}
+        isAnyDragging={dragIndex !== null}
+        sprite={techSprite}
+        onPickUp={onPickUp}
+        onOpenMenu={onOpenMenu}
+      />
+    );
+
+    const resting = sortedEntries
+      .filter(([i]) => Number(i) !== dragIndex)
+      .map(([i, block]) => shapeFor(Number(i), block));
+
+    // The dragged block is drawn last so it stays above everything it passes over.
+    const dragged = dragIndex !== null && blocks[dragIndex] ? [shapeFor('dragged', blocks[dragIndex])] : [];
+
+    return [...resting, ...dragged];
+  }, [sortedEntries, blocks, dragIndex, zoom, chapter, allTypes, highlightedIds, techSprite, onPickUp, onOpenMenu]);
 
   const hasCentered = React.useRef(false);
   React.useEffect(() => {
@@ -158,13 +234,7 @@ export function IsometricCityGrid() {
           })}
         </g>
 
-        {sortedEntries
-          .filter(([i]) => Number(i) !== city.dragIndex)
-          .map(([i, block]) => IsometricBlockRect(Number(i), block, zoom))}
-
-        {city.dragIndex !== null &&
-          blocks[city.dragIndex] &&
-          IsometricBlockRect('dragged', blocks[city.dragIndex], zoom)}
+        {blockShapes}
       </svg>
     </div>
   );

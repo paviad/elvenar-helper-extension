@@ -1,68 +1,76 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
-import { useHelper } from '../../../helper/HelperContext';
+import { getBuildingFinder } from '../../buildingFinder';
 import { CityBlock } from '../../CityBlock';
-import { useCity } from '../../CityContext';
+import { BlockOpacity, GridSize } from '../../gridConstants';
+import { getBlockDecoration } from '../blockDecoration';
 import { BuildingTooltip } from '../BuildingTooltip';
-import { useBlockDecoration } from '../useBlockDecoration';
 import { BlockLabel } from './BlockLabel';
-import { handleMouseDown } from './handleMouseDown';
 
-export const BlockRect = (key: string | number, block: CityBlock, zoom: number) => {
-  const city = useCity();
-  const helper = useHelper();
-  const { GridSize, opacity, PaddingTiles } = city;
+export interface BlockRectProps {
+  /** The record key, or 'dragged' for the copy drawn on top while dragging. */
+  blockKey: string | number;
+  block: CityBlock;
+  zoom: number;
+  chapter: number;
+  allTypes: string[];
+  isHighlighted: boolean;
+  /** True while any block is being dragged, which suppresses picking up another. */
+  isAnyDragging: boolean;
+  sprite?: { url: string; width: number; height: number };
+  onPickUp: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
+  onOpenMenu: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
+}
 
-  // Calculate scaled grid size based on zoom
+/**
+ * One block in the top-down view.
+ *
+ * Memoised and deliberately free of context: a drag rewrites only the dragged
+ * block's object, so every other block's props are unchanged and it can skip the
+ * re-render. Reading anything from CityContext here would defeat that, because a
+ * context change re-renders a memoised consumer regardless of its props.
+ */
+export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect({
+  blockKey,
+  block,
+  zoom,
+  chapter,
+  allTypes,
+  isHighlighted,
+  isAnyDragging,
+  sprite,
+  onPickUp,
+  onOpenMenu,
+}) {
   const sGridSize = GridSize * zoom;
 
-  // Context menu state
-  const setMenu = city.setMenu;
-  const blocks = city.blocks;
-  const setDragOffset = city.setDragOffset;
-  const dragIndex = city.dragIndex;
+  const { building, fillColor, textColor, isChapterExcessive, isMaxLevelForChapter } = getBlockDecoration({
+    block,
+    finder: getBuildingFinder(),
+    chapter,
+    allTypes,
+    isHighlighted,
+  });
 
-  const { building, fillColor, textColor, isChapterExcessive, isMaxLevelForChapter, isHighlighted } =
-    useBlockDecoration(block);
-
-  const dragging = key === 'dragged';
-  const handler =
-    !dragging && dragIndex === null
-      ? (e: React.MouseEvent<SVGRectElement, MouseEvent>) => handleMouseDown(city, helper, e, Number(key), zoom)
-      : () => {
-          /* no-op for dragging */
-        };
+  const dragging = blockKey === 'dragged';
+  const canPickUp = !dragging && !isAnyDragging;
   const cursor = dragging ? 'grab' : 'grabbing';
 
-  // Context menu handler
+  const handleClick = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
+    if (canPickUp) onPickUp(e, Number(blockKey));
+  };
+
   const handleContextMenu = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
     e.preventDefault();
     if (dragging) return;
-    // Position relative to SVG container
-    const svg = city.svgRef.current;
-    let x = e.clientX;
-    let y = e.clientY;
-    if (svg && typeof key === 'number') {
-      const rect = svg.getBoundingClientRect();
-      x = e.clientX - rect.left;
-      y = e.clientY - rect.top;
-      const sGridSize = GridSize * zoom;
-      const paddingPx = PaddingTiles * sGridSize;
-      const mouseX = e.clientX - rect.left - paddingPx;
-      const mouseY = e.clientY - rect.top - paddingPx;
-      setDragOffset({
-        x: mouseX - blocks[key].x * sGridSize, // Use scaled grid size for offset
-        y: mouseY - blocks[key].y * sGridSize,
-      });
-    }
-    setMenu({ x, y, key });
+    onOpenMenu(e, Number(blockKey));
   };
 
   // SVG pattern for crosshatch
-  const patternId = `block-crosshatch-${key}`;
+  const patternId = `block-crosshatch-${blockKey}`;
 
   return (
-    <g key={key}>
+    <g>
       {isHighlighted && (
         <defs>
           <pattern id={patternId} patternUnits='userSpaceOnUse' width='8' height='8' patternTransform='rotate(45)'>
@@ -88,7 +96,7 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
           enterNextDelay={700}
         >
           <rect
-            opacity={opacity}
+            opacity={BlockOpacity}
             x={block.x * sGridSize}
             y={block.y * sGridSize}
             width={block.width * sGridSize}
@@ -97,7 +105,7 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
             stroke={block.moved ? 'black' : '#000'}
             strokeWidth={block.moved ? 2 : 1}
             style={{ cursor }}
-            onClick={handler}
+            onClick={handleClick}
             onContextMenu={handleContextMenu}
           />
         </Tooltip>
@@ -140,10 +148,10 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
         block={block}
         GridSize={sGridSize}
         textColor={textColor}
-        sprite={city.techSprite}
+        sprite={sprite}
         showWarning={isChapterExcessive}
         showMaxLevel={isMaxLevelForChapter}
       />
     </g>
   );
-};
+});
