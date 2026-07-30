@@ -1,5 +1,5 @@
 import { UpgradeSuggestion } from './findClearUpgrades';
-import { compareSize } from './sizeOrder';
+import { compareSize, fitsInPlace } from './sizeOrder';
 
 /** Only the footprint matters here, so everything else is filled in minimally. */
 function suggestion(label: string, [oldWidth, oldLength]: [number, number], [newWidth, newLength]: [number, number]) {
@@ -68,10 +68,24 @@ describe('compareSize', () => {
     expect(bothGrowBy2[0]).toBe('small');
   });
 
-  it('treats a footprint that shrinks on one axis only as growth, not a fit', () => {
+  it('counts a shrink on one axis as a fit when the other axis is unchanged', () => {
+    // Furry Sands (3x1) replaced by a Candy Cane Unicorn (2x1) frees a square.
+    const narrower = suggestion('narrower', [3, 1], [2, 1]);
+    const grows = suggestion('grows', [3, 1], [4, 1]);
+
+    expect(fitsInPlace(narrower)).toBe(true);
+    expect(descending([grows, narrower])).toEqual(['narrower', 'grows']);
+  });
+
+  it('does not count a footprint that grows on the other axis as a fit', () => {
     const mixed = suggestion('mixed', [2, 6], [1, 8]);
     const shrinks = suggestion('shrinks', [2, 6], [1, 5]);
 
+    expect(fitsInPlace(mixed)).toBe(false);
     expect(descending([mixed, shrinks])).toEqual(['shrinks', 'mixed']);
+  });
+
+  it('does not count an unchanged footprint as a fit', () => {
+    expect(fitsInPlace(suggestion('same', [3, 3], [3, 3]))).toBe(false);
   });
 });

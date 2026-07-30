@@ -3,8 +3,13 @@ import { UpgradeSuggestion } from './findClearUpgrades';
 /** The replacement keeps the exact footprint of the building it replaces. */
 export const isSameSize = (s: UpgradeSuggestion) => s.newWidth === s.oldWidth && s.newLength === s.oldLength;
 
-/** Only a footprint that shrinks on both axes is guaranteed to fit where the old one stood. */
-export const fitsInPlace = (s: UpgradeSuggestion) => s.newWidth < s.oldWidth && s.newLength < s.oldLength;
+/**
+ * The replacement fits inside the footprint it inherits: no longer on either axis, and
+ * shorter on at least one. Buildings cannot be rotated, so each axis stands on its own -
+ * 3x1 replaced by 2x1 fits, while 2x6 replaced by 1x8 does not.
+ */
+export const fitsInPlace = (s: UpgradeSuggestion) =>
+  s.newWidth <= s.oldWidth && s.newLength <= s.oldLength && !isSameSize(s);
 
 const newArea = (s: UpgradeSuggestion) => s.newWidth * s.newLength;
 const areaGrowth = (s: UpgradeSuggestion) => newArea(s) - s.oldWidth * s.oldLength;
