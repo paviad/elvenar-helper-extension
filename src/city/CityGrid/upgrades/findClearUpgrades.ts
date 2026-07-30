@@ -49,8 +49,17 @@ export interface ClearUpgradesResult {
   suggestions: UpgradeSuggestion[];
   /** Resource columns that have at least one non-zero value, in display order. */
   resourceKeys: string[];
-  /** Inventory evolving buildings skipped because artifact/stage data is missing. */
-  skippedEvolvingItems: number;
+  /**
+   * Names of evolving inventory buildings that would have been worth comparing but had
+   * to be dropped. Both lists hold only buildings that produce something this finder
+   * tracks, so a name here means a real suggestion may have been lost.
+   */
+  skipped: {
+    /** No artifact recorded, so the reachable stage is unknown. A game reload refreshes this. */
+    missingArtifact: string[];
+    /** Stage production is expressed in a form this code cannot read. A reload will not help. */
+    unreadableStages: string[];
+  };
 }
 
 interface ProductionProfile {
@@ -217,7 +226,8 @@ export function findClearUpgrades(
   evolvingBuildings: StageProvision[],
   inventory: InventoryItem[],
 ): ClearUpgradesResult {
-  let skippedEvolvingItems = 0;
+  const missingArtifact = new Set<string>();
+  const unreadableStages = new Set<string>();
 
   // Inventory candidates: placeable buildings that are clear-upgrade material.
   interface Candidate {
@@ -237,17 +247,21 @@ export function findClearUpgrades(
     if ((requirements?.population ?? 0) > 0 || (requirements?.culture ?? 0) > 0) continue;
 
     const plan = getEvolutionPlan(item, building, evolvingBuildings, inventory);
-    if (plan.missingData) {
-      skippedEvolvingItems++;
-      continue;
-    }
-
     const profile = buildProfile(building, evolvingBuildings, plan.targetStage ?? item.stage);
-    if (profile.unknownStageData) {
-      skippedEvolvingItems++;
+
+    // Stages scale what a building already makes, so whether it is worth comparing at all
+    // does not depend on the stage - which lets a building be judged relevant even when
+    // its evolution data is unusable, and keeps irrelevant ones out of the skip lists.
+    if (!hasConsideredOutput(profile)) continue;
+
+    if (plan.missingData) {
+      missingArtifact.add(building.name);
       continue;
     }
-    if (!hasConsideredOutput(profile)) continue;
+    if (profile.unknownStageData) {
+      unreadableStages.add(building.name);
+      continue;
+    }
 
     candidates.push({ item, building, profile, plan });
   }
@@ -356,5 +370,12 @@ export function findClearUpgrades(
   }
   const resourceKeys = UPGRADE_RESOURCE_ORDER.filter((k) => usedKeys.has(k));
 
-  return { suggestions, resourceKeys, skippedEvolvingItems };
+  return {
+    suggestions,
+    resourceKeys,
+    skipped: {
+      missingArtifact: [...missingArtifact].sort(),
+      unreadableStages: [...unreadableStages].sort(),
+    },
+  };
 }

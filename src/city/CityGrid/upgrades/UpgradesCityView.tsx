@@ -103,7 +103,8 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
   }, [result, searchTerm, order, orderBy]);
 
   const resourceName = (key: string) => formatResourceName(city.goodsNames, city.boostedGoods, key);
-  const skipped = result?.skippedEvolvingItems || 0;
+  const missingArtifact = result?.skipped.missingArtifact ?? [];
+  const unreadableStages = result?.skipped.unreadableStages ?? [];
 
   return (
     <Paper sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -118,10 +119,20 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
             No inventory data captured. Open your in-game inventory (Summonings tab) and refresh this page.
           </Alert>
         )}
-        {skipped > 0 && (
+        {missingArtifact.length > 0 && (
           <Alert severity='info' sx={{ mt: 1 }}>
-            {skipped} evolving inventory building{skipped === 1 ? ' was' : 's were'} skipped because evolution data is
-            missing or not yet understood. Reloading the game may refresh it.
+            Not compared, because no artifact is recorded for {missingArtifact.length === 1 ? 'it' : 'them'} and so the
+            stage {missingArtifact.length === 1 ? 'it' : 'they'} could reach is unknown:{' '}
+            <strong>{missingArtifact.join(', ')}</strong>. Loading the game once refreshes this data.
+          </Alert>
+        )}
+        {unreadableStages.length > 0 && (
+          <Alert severity='warning' sx={{ mt: 1 }}>
+            Not compared, because the per-stage production of{' '}
+            {unreadableStages.length === 1 ? 'this building' : 'these buildings'} is recorded in a form this version
+            cannot read: <strong>{unreadableStages.join(', ')}</strong>. Guessing risks recommending a swap that is not
+            actually an upgrade, so {unreadableStages.length === 1 ? 'it is' : 'they are'} left out. Reloading will not
+            change this.
           </Alert>
         )}
       </Box>

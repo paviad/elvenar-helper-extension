@@ -262,11 +262,12 @@ describe('findClearUpgrades', () => {
     expect(result.suggestions[0].newValues.mana).toBe(288);
   });
 
-  it('skips evolving buildings when the artifact association is missing', () => {
+  it('names evolving buildings skipped for a missing artifact association', () => {
     const old = cityBuilding('A_Old_1', 10);
     const evo = buildingEx(
       {
         id: 'A_Evt_Evo_Bear_1',
+        name: 'Evolving Bear',
         base_name: 'A_Evt_Evo_Bear',
         production: cityBuilding('x', 99).sourceBuilding.production,
       },
@@ -277,14 +278,58 @@ describe('findClearUpgrades', () => {
     const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [invItem(evo)]);
 
     expect(result.suggestions).toHaveLength(0);
-    expect(result.skippedEvolvingItems).toBe(1);
+    expect(result.skipped.missingArtifact).toEqual(['Evolving Bear']);
+    expect(result.skipped.unreadableStages).toEqual([]);
   });
 
-  it('skips evolving buildings whose stage products are not interpretable', () => {
+  it('does not report a skipped building that produces nothing it tracks', () => {
+    const old = cityBuilding('A_Old_1', 10);
+    const evo = buildingEx(
+      {
+        id: 'A_Evt_Evo_Coin_1',
+        name: 'Coin Bear',
+        base_name: 'A_Evt_Evo_Coin',
+        production: {
+          isSwitchable: false,
+          products: [{ production_time: HOUR, revenue: { resources: { money: 500 } } }],
+        },
+      },
+      { maxStage: 10 },
+    );
+    const evolving: StageProvision[] = [{ baseName: 'A_Evt_Evo_Coin', stages: [{ id: 1 }] }];
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [invItem(evo)]);
+
+    expect(result.skipped.missingArtifact).toEqual([]);
+  });
+
+  it('reports each skipped building once, however many copies are held', () => {
     const old = cityBuilding('A_Old_1', 10);
     const evo = buildingEx(
       {
         id: 'A_Evt_Evo_Bear_1',
+        name: 'Evolving Bear',
+        base_name: 'A_Evt_Evo_Bear',
+        production: cityBuilding('x', 99).sourceBuilding.production,
+      },
+      { maxStage: 10 },
+    );
+    const evolving: StageProvision[] = [{ baseName: 'A_Evt_Evo_Bear', stages: [{ id: 1 }] }];
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [
+      invItem(evo, { id: 1, stage: 1 }),
+      invItem(evo, { id: 2, stage: 4 }),
+    ]);
+
+    expect(result.skipped.missingArtifact).toEqual(['Evolving Bear']);
+  });
+
+  it('names evolving buildings skipped for stage products it cannot interpret', () => {
+    const old = cityBuilding('A_Old_1', 10);
+    const evo = buildingEx(
+      {
+        id: 'A_Evt_Evo_Bear_1',
+        name: 'Evolving Bear',
         base_name: 'A_Evt_Evo_Bear',
         production: cityBuilding('x', 99).sourceBuilding.production,
       },
@@ -302,7 +347,8 @@ describe('findClearUpgrades', () => {
     const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [invItem(evo)]);
 
     expect(result.suggestions).toHaveLength(0);
-    expect(result.skippedEvolvingItems).toBe(1);
+    expect(result.skipped.unreadableStages).toEqual(['Evolving Bear']);
+    expect(result.skipped.missingArtifact).toEqual([]);
   });
 
   it('flags an expiring city building and leads with the copy that runs out first', () => {
