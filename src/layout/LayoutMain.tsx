@@ -184,7 +184,22 @@ export const LayoutMain = () => {
           </Menu>
 
           <Button component={NavLink} to='/city' color='inherit' sx={{ mr: 2 }}>
-            City
+            <Badge
+              badgeContent='NEW'
+              color='secondary'
+              sx={{
+                '& .MuiBadge-badge': {
+                  fontSize: '0.6rem',
+                  height: 16,
+                  minWidth: 16,
+                  px: 0.5,
+                  top: -6,
+                  right: -10,
+                },
+              }}
+            >
+              City
+            </Badge>
           </Button>
           <Button component={NavLink} to='/inventory' color='inherit' sx={{ mr: 2 }}>
             Inventory

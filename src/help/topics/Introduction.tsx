@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Chip, Paper, SvgIcon, Typography } from '@mui/material';
+import { Box, Button, Paper, SvgIcon, Typography } from '@mui/material';
 
 export const Introduction = () => (
   <Box>
@@ -32,7 +32,6 @@ export const Introduction = () => (
         <Typography variant='h5' sx={{ color: '#5865F2', fontWeight: 'bold' }}>
           Join our Community!
         </Typography>
-        <Chip label='NEW' size='small' color='secondary' sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold' }} />
       </Box>
       <Typography variant='body1' sx={{ textAlign: 'center', mb: 3, color: 'text.secondary', maxWidth: 500 }}>
         Have questions, feature requests, or just want to share your city layouts? Join the ElvenAssist Discord server
