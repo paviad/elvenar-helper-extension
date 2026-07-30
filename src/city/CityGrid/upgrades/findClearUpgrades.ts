@@ -15,8 +15,8 @@ export interface BuildingLookup {
 
 export interface UpgradeSuggestion {
   key: string;
-  blockIds: number[];
-  count: number;
+  /** The placed building this suggestion is about. Each occurrence gets its own suggestions. */
+  blockId: number;
   oldName: string;
   oldLevel: number;
   oldStage?: number;
@@ -269,15 +269,48 @@ export function findClearUpgrades(
     candidates.push({ item, building, profile, plan });
   }
 
-  // Group identical city buildings so ten unicorns make one row, not ten.
-  interface Group {
-    blockIds: number[];
-    gameId: string;
-    level: number;
-    stage?: number;
-    name: string;
+  // Every placed building is judged on its own, so each one can be replaced individually.
+  // The verdict only depends on its id, level and stage, so it is worked out once and reused.
+  interface Target {
+    building: BuildingEx;
+    profile: ProductionProfile;
+    isThin: boolean;
   }
-  const groups = new Map<string, Group>();
+  const targetCache = new Map<string, Target | null>();
+
+  const targetFor = (block: CityBlock): Target | null => {
+    const key = `${block.gameId}|${block.level}|${block.stage ?? ''}`;
+    const cached = targetCache.get(key);
+    if (cached !== undefined) return cached;
+
+    const resolve = (): Target | null => {
+      const building = finder.getBuilding(block.gameId, block.level);
+      if (!building) return null;
+
+      // Evolving city buildings are never candidates for replacement.
+      if (building.maxStage || evolvingBuildings.some((eb) => eb.baseName === building.sourceBuilding.base_name)) {
+        return null;
+      }
+
+      // Nor are set buildings: their output depends on what they touch, and removing one
+      // also costs the set bonus of every neighbour.
+      if (isSetBuilding(building)) return null;
+
+      // The catalog knows about expiring buildings the placed block may not have flagged.
+      if (building.expiration !== undefined || building.type === 'expiring') return null;
+
+      const profile = buildProfile(building, evolvingBuildings, block.stage);
+      if (!hasConsideredOutput(profile)) return null;
+
+      return { building, profile, isThin: building.width === 1 || building.length === 1 };
+    };
+
+    const target = resolve();
+    targetCache.set(key, target);
+    return target;
+  };
+
+  const suggestions: UpgradeSuggestion[] = [];
   for (const block of blocks) {
     // Same exclusions as the table view: streets, residences, workshops, armories, wonders,
     // plus the chapter Guardians.
@@ -287,57 +320,23 @@ export function findClearUpgrades(
     // An expiring building is on its way out regardless, so it is not worth replacing.
     if (block.expirationEnd !== undefined || block.entity.type === 'expiring') continue;
 
-    const key = `${block.gameId}|${block.level}|${block.stage ?? ''}`;
-    const group = groups.get(key);
-    if (group) {
-      group.blockIds.push(block.id);
-    } else {
-      groups.set(key, {
-        blockIds: [block.id],
-        gameId: block.gameId,
-        level: block.level,
-        stage: block.stage,
-        name: block.name,
-      });
-    }
-  }
-
-  const suggestions: UpgradeSuggestion[] = [];
-  for (const [key, group] of groups) {
-    const building = finder.getBuilding(group.gameId, group.level);
-    if (!building) continue;
-
-    // Evolving city buildings are never candidates for replacement.
-    if (building.maxStage || evolvingBuildings.some((eb) => eb.baseName === building.sourceBuilding.base_name)) {
-      continue;
-    }
-
-    // Nor are set buildings: their output depends on what they touch, and removing one
-    // also costs the set bonus of every neighbour.
-    if (isSetBuilding(building)) continue;
-
-    // The catalog knows about expiring buildings the placed block may not have flagged.
-    if (building.expiration !== undefined || building.type === 'expiring') continue;
-
-    const profile = buildProfile(building, evolvingBuildings, group.stage);
-    if (!hasConsideredOutput(profile)) continue;
-
-    const oldIsThin = building.width === 1 || building.length === 1;
+    const target = targetFor(block);
+    if (!target) continue;
+    const { building, profile } = target;
 
     for (const candidate of candidates) {
       // A 1xN building collects less neighbourly help, so it never replaces a
       // building that is at least two tiles on both sides.
-      if (!oldIsThin && (candidate.building.width === 1 || candidate.building.length === 1)) continue;
+      if (!target.isThin && (candidate.building.width === 1 || candidate.building.length === 1)) continue;
 
       if (!dominates(candidate.profile, profile)) continue;
 
       suggestions.push({
-        key: `${key}->${candidate.item.id}`,
-        blockIds: group.blockIds,
-        count: group.blockIds.length,
-        oldName: building.name || group.name,
-        oldLevel: group.level,
-        oldStage: group.stage,
+        key: `${block.id}->${candidate.item.id}`,
+        blockId: block.id,
+        oldName: building.name || block.name,
+        oldLevel: block.level,
+        oldStage: block.stage,
         oldWidth: building.width,
         oldLength: building.length,
         oldValues: profile.values,

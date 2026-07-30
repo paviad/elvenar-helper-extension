@@ -210,16 +210,50 @@ describe('findClearUpgrades', () => {
     expect(result.suggestions).toHaveLength(0);
   });
 
-  it('groups identical city buildings into a single suggestion', () => {
+  it('suggests separately for each copy of the same building, so each can be replaced alone', () => {
     const old = cityBuilding('A_Old_1', 10);
     const candidate = cityBuilding('A_New_1', 20);
     const blocks = [blockFor(old, { id: 1 }), blockFor(old, { id: 2 })];
 
     const result = findClearUpgrades(blocks, finderFor(old), [], [invItem(candidate)]);
 
-    expect(result.suggestions).toHaveLength(1);
-    expect(result.suggestions[0].count).toBe(2);
-    expect(result.suggestions[0].blockIds.sort()).toEqual([1, 2]);
+    expect(result.suggestions).toHaveLength(2);
+    expect(result.suggestions.map((s) => s.blockId).sort()).toEqual([1, 2]);
+    expect(new Set(result.suggestions.map((s) => s.key)).size).toBe(2);
+  });
+
+  it('keeps same-named city buildings apart when their level differs', () => {
+    const lowLevel = cityBuilding('A_Ruins_3', 10);
+    lowLevel.sourceBuilding.level = 3;
+    const highLevel = cityBuilding('A_Ruins_5', 12);
+    highLevel.name = lowLevel.name;
+    highLevel.sourceBuilding.level = 5;
+    const candidate = cityBuilding('A_New_1', 40);
+
+    const result = findClearUpgrades(
+      [blockFor(lowLevel, { id: 1, level: 3 }), blockFor(highLevel, { id: 2, level: 5 })],
+      finderFor(lowLevel, highLevel),
+      [],
+      [invItem(candidate)],
+    );
+
+    expect(result.suggestions).toHaveLength(2);
+    expect(result.suggestions.map((s) => s.oldLevel).sort()).toEqual([3, 5]);
+  });
+
+  it('keeps separate inventory entries of the same building apart', () => {
+    const old = cityBuilding('A_Old_1', 10);
+    const candidate = cityBuilding('A_New_1', 20);
+
+    const result = findClearUpgrades(
+      [blockFor(old)],
+      finderFor(old),
+      [],
+      [invItem(candidate, { id: 11 }), invItem(candidate, { id: 22 })],
+    );
+
+    expect(result.suggestions).toHaveLength(2);
+    expect(result.suggestions.map((s) => s.itemId).sort()).toEqual([11, 22]);
   });
 
   it('compares evolving buildings at the stage reachable with owned artifacts', () => {

@@ -5,15 +5,13 @@ import { compareSize, fitsInPlace } from './sizeOrder';
 function suggestion(label: string, [oldWidth, oldLength]: [number, number], [newWidth, newLength]: [number, number]) {
   return {
     key: label,
-    blockIds: [1],
-    count: 1,
+    blockId: 1,
     oldName: label,
     oldLevel: 1,
     oldWidth,
     oldLength,
     oldValues: {},
     oldOther: [],
-    oldIsExpiring: false,
     itemId: 1,
     itemAmount: 1,
     newName: label,
