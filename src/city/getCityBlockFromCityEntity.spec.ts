@@ -89,9 +89,7 @@ describe('getCityBlockFromCityEntity', () => {
 
   describe('label', () => {
     it('is the chapter for culture buildings', () => {
-      const block = getCityBlockFromCityEntity(
-        makeCityEntityEx({ cityentity_id: 'A_Ch5_Statue', type: 'culture' }),
-      );
+      const block = getCityBlockFromCityEntity(makeCityEntityEx({ cityentity_id: 'A_Ch5_Statue', type: 'culture' }));
       expect(block.label).toBe('5');
     });
 
@@ -118,9 +116,7 @@ describe('getCityBlockFromCityEntity', () => {
     });
 
     it('is undefined when no rule applies', () => {
-      const block = getCityBlockFromCityEntity(
-        makeCityEntityEx({ cityentity_id: 'A_Evt_Tent', type: 'expiring' }),
-      );
+      const block = getCityBlockFromCityEntity(makeCityEntityEx({ cityentity_id: 'A_Evt_Tent', type: 'expiring' }));
       expect(block.label).toBeUndefined();
     });
   });

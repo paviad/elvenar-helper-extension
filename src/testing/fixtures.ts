@@ -25,11 +25,7 @@ export function makeBuilding(overrides: Partial<Building> = {}): Building {
 }
 
 /** A base_name's worth of buildings, one per level, sized `width x length`. */
-export function makeBuildingLevels(
-  baseName: string,
-  levels: number,
-  overrides: Partial<Building> = {},
-): Building[] {
+export function makeBuildingLevels(baseName: string, levels: number, overrides: Partial<Building> = {}): Building[] {
   return Array.from({ length: levels }, (_, i) =>
     makeBuilding({
       id: `${baseName}_${i + 1}`,

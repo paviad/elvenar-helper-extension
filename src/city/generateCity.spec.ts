@@ -33,10 +33,7 @@ const entity = (overrides: Partial<CityEntity> = {}): CityEntity => ({
 });
 
 /** Only the cityQuery fields generateCity actually reads. */
-const accountData = (overrides: {
-  cityEntities: CityEntity[];
-  expirationsEnd?: Record<string, number>;
-}): AccountData =>
+const accountData = (overrides: { cityEntities: CityEntity[]; expirationsEnd?: Record<string, number> }): AccountData =>
   ({
     cityQuery: {
       cityEntities: overrides.cityEntities,

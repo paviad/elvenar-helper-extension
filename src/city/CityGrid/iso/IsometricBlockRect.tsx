@@ -1,44 +1,28 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
 import { useHelper } from '../../../helper/HelperContext';
-import { getContrastColor } from '../../../util/getContrastColor';
-import { getChapterProgress } from '../../chapterProgress';
 import { CityBlock } from '../../CityBlock';
 import { useCity } from '../../CityContext';
-import { getTypeColor } from '../../Legend/getTypeColor';
 import { BuildingTooltip } from '../BuildingTooltip';
+import { useBlockDecoration } from '../useBlockDecoration';
 import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown'; // Updated import
 import { IsoBlockLabel } from './IsoBlockLabel';
-
-const toIso = (x: number, y: number, tileWidth: number, tileHeight: number, originX: number, originY: number) => {
-  return {
-    x: originX + (x - y) * (tileWidth / 2),
-    y: originY + (x + y) * (tileHeight / 2),
-  };
-};
+import { createIsoProjection } from './isoProjection';
 
 export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom: number) => {
   const city = useCity();
   const helper = useHelper();
-  const { GridSize, GridMax, opacity, chapter, PaddingTiles } = city;
+  const { GridSize, GridMax, opacity, PaddingTiles } = city;
 
-  // --- Iso Configuration ---
-  const tileWidth = GridSize * 1.8 * zoom;
-  const tileHeight = GridSize * 0.9 * zoom;
-
-  // Center calculation with Padding
-  const paddedGridMax = GridMax + PaddingTiles * 2;
-  const originX = (paddedGridMax * tileWidth) / 2;
-  const originY = 50 + PaddingTiles * tileHeight;
+  const { toIso } = createIsoProjection({ GridSize, GridMax, PaddingTiles, zoom });
 
   const setMenu = city.setMenu;
   const blocks = city.blocks;
   const setDragOffset = city.setDragOffset;
   const dragIndex = city.dragIndex;
-  const buildingFinder = city.buildingFinder;
 
-  const building = buildingFinder.getBuilding(block.gameId, block.level);
-  const nextLevelBuilding = buildingFinder.getBuilding(block.gameId, block.level + 1);
+  const { building, fillColor, textColor, isChapterExcessive, isMaxLevelForChapter, isHighlighted } =
+    useBlockDecoration(block);
 
   const dragging = typeof key === 'string';
   const handler =
@@ -63,7 +47,7 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      const blockScreenPos = toIso(blocks[key].x, blocks[key].y, tileWidth, tileHeight, originX, originY);
+      const blockScreenPos = toIso(blocks[key].x, blocks[key].y);
 
       // Note: Context menu drag offset calculation might need ISO adjustment if we want precise menu drag,
       // but standard behavior usually snaps center, so we leave as is or update if needed.
@@ -75,35 +59,19 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
     setMenu({ x, y, key });
   };
 
-  const fillColor = getTypeColor(block.type, city.allTypes, block.moved);
-  const { isChapterExcessive, isMaxLevelForChapter } = getChapterProgress(
-    block.gameId,
-    building,
-    nextLevelBuilding,
-    chapter,
-  );
-
   // --- Render Calculation ---
-  const p1 = toIso(block.x, block.y, tileWidth, tileHeight, originX, originY);
-  const p2 = toIso(block.x + block.width, block.y, tileWidth, tileHeight, originX, originY);
-  const p3 = toIso(block.x + block.width, block.y + block.length, tileWidth, tileHeight, originX, originY);
-  const p4 = toIso(block.x, block.y + block.length, tileWidth, tileHeight, originX, originY);
+  const p1 = toIso(block.x, block.y);
+  const p2 = toIso(block.x + block.width, block.y);
+  const p3 = toIso(block.x + block.width, block.y + block.length);
+  const p4 = toIso(block.x, block.y + block.length);
 
   const pathData = `M${p1.x},${p1.y} L${p2.x},${p2.y} L${p3.x},${p3.y} L${p4.x},${p4.y} Z`;
 
-  const isoCenter = toIso(
-    block.x + block.width / 2,
-    block.y + block.length / 2,
-    tileWidth,
-    tileHeight,
-    originX,
-    originY,
-  );
+  const isoCenter = toIso(block.x + block.width / 2, block.y + block.length / 2);
 
   const labelTransform = `translate(${isoCenter.x}, ${isoCenter.y})`;
 
   const patternId = `iso-block-crosshatch-${key}`;
-  const isHighlighted = !!block.highlighted;
 
   return (
     <g key={key}>
@@ -168,7 +136,7 @@ export const IsometricBlockRect = (key: string | number, block: CityBlock, zoom:
         <IsoBlockLabel
           block={block}
           GridSize={GridSize}
-          textColor={getContrastColor(fillColor)}
+          textColor={textColor}
           sprite={city.techSprite}
           showWarning={isChapterExcessive}
           showMaxLevel={isMaxLevelForChapter}

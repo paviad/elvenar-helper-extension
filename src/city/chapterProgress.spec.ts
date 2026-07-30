@@ -53,24 +53,14 @@ describe('getChapterProgress', () => {
   });
 
   it('reports maxed when the next level is chapter-gated', () => {
-    const progress = getChapterProgress(
-      'G_Steel_5',
-      buildingEx('G_Steel_5'),
-      buildingEx('G_Steel_6', 15),
-      10,
-    );
+    const progress = getChapterProgress('G_Steel_5', buildingEx('G_Steel_5'), buildingEx('G_Steel_6', 15), 10);
 
     expect(progress.isMaxedForChapter).toBe(true);
     expect(progress.isMaxLevelForChapter).toBe(true);
   });
 
   it('reports not maxed when the next level is buildable now', () => {
-    const progress = getChapterProgress(
-      'G_Steel_5',
-      buildingEx('G_Steel_5'),
-      buildingEx('G_Steel_6', 4),
-      10,
-    );
+    const progress = getChapterProgress('G_Steel_5', buildingEx('G_Steel_5'), buildingEx('G_Steel_6', 4), 10);
 
     expect(progress.isMaxedForChapter).toBe(false);
     expect(progress.isMaxLevelForChapter).toBe(false);
@@ -79,12 +69,7 @@ describe('getChapterProgress', () => {
   it('does not depend on the level matching the chapter number', () => {
     // The previous table-view rule was `level === chapter`, which both hid real
     // upgrades and offered unreachable ones. Level and chapter are unrelated here.
-    const upgradable = getChapterProgress(
-      'G_Steel_10',
-      buildingEx('G_Steel_10'),
-      buildingEx('G_Steel_11', 4),
-      10,
-    );
+    const upgradable = getChapterProgress('G_Steel_10', buildingEx('G_Steel_10'), buildingEx('G_Steel_11', 4), 10);
     expect(upgradable.isMaxedForChapter).toBe(false);
 
     const gated = getChapterProgress('G_Steel_5', buildingEx('G_Steel_5'), buildingEx('G_Steel_6', 20), 10);

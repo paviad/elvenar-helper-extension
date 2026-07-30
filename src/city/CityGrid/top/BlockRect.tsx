@@ -1,19 +1,17 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
 import { useHelper } from '../../../helper/HelperContext';
-import { getContrastColor } from '../../../util/getContrastColor';
-import { getChapterProgress } from '../../chapterProgress';
 import { CityBlock } from '../../CityBlock';
 import { useCity } from '../../CityContext';
-import { getTypeColor } from '../../Legend/getTypeColor';
 import { BuildingTooltip } from '../BuildingTooltip';
+import { useBlockDecoration } from '../useBlockDecoration';
 import { BlockLabel } from './BlockLabel';
 import { handleMouseDown } from './handleMouseDown';
 
 export const BlockRect = (key: string | number, block: CityBlock, zoom: number) => {
   const city = useCity();
   const helper = useHelper();
-  const { GridSize, opacity, chapter, PaddingTiles } = city;
+  const { GridSize, opacity, PaddingTiles } = city;
 
   // Calculate scaled grid size based on zoom
   const sGridSize = GridSize * zoom;
@@ -23,10 +21,9 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
   const blocks = city.blocks;
   const setDragOffset = city.setDragOffset;
   const dragIndex = city.dragIndex;
-  const buildingFinder = city.buildingFinder;
 
-  const building = buildingFinder.getBuilding(block.gameId, block.level);
-  const nextLevelBuilding = buildingFinder.getBuilding(block.gameId, block.level + 1);
+  const { building, fillColor, textColor, isChapterExcessive, isMaxLevelForChapter, isHighlighted } =
+    useBlockDecoration(block);
 
   const dragging = key === 'dragged';
   const handler =
@@ -63,18 +60,6 @@ export const BlockRect = (key: string | number, block: CityBlock, zoom: number) 
 
   // SVG pattern for crosshatch
   const patternId = `block-crosshatch-${key}`;
-  const isHighlighted = !!block.highlighted;
-
-  const fillColor = getTypeColor(block.type, city.allTypes, block.moved);
-  const textColor = getContrastColor(fillColor);
-
-  // Check if building requires a higher chapter than the city's current chapter
-  const { isChapterExcessive, isMaxLevelForChapter } = getChapterProgress(
-    block.gameId,
-    building,
-    nextLevelBuilding,
-    chapter,
-  );
 
   return (
     <g key={key}>

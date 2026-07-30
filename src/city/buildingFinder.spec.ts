@@ -146,9 +146,7 @@ describe('getBuilding', () => {
 
   it('reports the highest evolution stage', async () => {
     const buildings = [makeBuilding({ id: 'A_Evt_Evo_Bear_1', base_name: 'A_Evt_Evo_Bear', level: 1 })];
-    const evolving: StageProvision[] = [
-      { baseName: 'A_Evt_Evo_Bear', stages: [{ id: 1 }, { id: 10 }, { id: 5 }] },
-    ];
+    const evolving: StageProvision[] = [{ baseName: 'A_Evt_Evo_Bear', stages: [{ id: 1 }, { id: 10 }, { id: 5 }] }];
     const finder = await finderWith({ buildings, evolving });
 
     expect(finder.getBuilding('A_Evt_Evo_Bear_1', 1)?.maxStage).toBe(10);

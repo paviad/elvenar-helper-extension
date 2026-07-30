@@ -2,6 +2,7 @@ import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
 import { getEntityMaxLevel } from '../getEntityMaxLevel';
+import { createIsoProjection } from './isoProjection';
 
 export const handleIsoMouseDownWithZoom = (
   city: ReturnType<typeof useCity>,
@@ -23,20 +24,7 @@ export const handleIsoMouseDownWithZoom = (
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
-  const tileWidth = GridSize * 1.8 * zoom;
-  const tileHeight = GridSize * 0.9 * zoom;
-
-  // Updated Origins with Padding
-  const paddedGridMax = GridMax + PaddingTiles * 2;
-  const originX = (paddedGridMax * tileWidth) / 2;
-  const originY = 50 + PaddingTiles * tileHeight;
-
-  const toIso = (x: number, y: number) => {
-    return {
-      x: originX + (x - y) * (tileWidth / 2),
-      y: originY + (x + y) * (tileHeight / 2),
-    };
-  };
+  const { toIso } = createIsoProjection({ GridSize, GridMax, PaddingTiles, zoom });
 
   setDragIndex(index);
   const block = blocks[index];

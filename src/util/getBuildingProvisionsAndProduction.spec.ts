@@ -46,9 +46,7 @@ describe('provisions', () => {
   });
 
   it('scales culture and population by the matching evolution stage', () => {
-    const evolving: StageProvision[] = [
-      { baseName: 'G_Steel', stages: [{ id: 2, culture: 1.5, population: 2 }] },
-    ];
+    const evolving: StageProvision[] = [{ baseName: 'G_Steel', stages: [{ id: 2, culture: 1.5, population: 2 }] }];
     const building = buildingEx({
       provisions: { resources: { resources: { population: 100, culture: 101 } } },
     });
@@ -60,9 +58,7 @@ describe('provisions', () => {
   });
 
   it('leaves values unscaled when the stage does not match', () => {
-    const evolving: StageProvision[] = [
-      { baseName: 'G_Steel', stages: [{ id: 2, culture: 1.5, population: 2 }] },
-    ];
+    const evolving: StageProvision[] = [{ baseName: 'G_Steel', stages: [{ id: 2, culture: 1.5, population: 2 }] }];
     const building = buildingEx({
       provisions: { resources: { resources: { population: 100 } } },
     });

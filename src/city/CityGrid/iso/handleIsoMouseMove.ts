@@ -1,6 +1,7 @@
 import React from 'react';
 import { sampleTime, Subject } from 'rxjs';
 import { useCity } from '../../CityContext';
+import { createIsoProjection } from './isoProjection';
 
 // Updated Subject to include zoom
 const isoSubject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent; zoom: number }>();
@@ -35,22 +36,12 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
-  // --- Isometric Constants ---
-  const tileWidth = GridSize * 1.8 * zoom;
-  const tileHeight = GridSize * 0.9 * zoom;
-  const paddedGridMax = GridMax + PaddingTiles * 2;
-  const originX = (paddedGridMax * tileWidth) / 2;
-  const originY = 50 + PaddingTiles * tileHeight;
+  const projection = createIsoProjection({ GridSize, GridMax, PaddingTiles, zoom });
 
-  // --- Coordinate Transformation Helper ---
-  const fromIso = (screenX: number, screenY: number) => {
-    const adjX = screenX - originX;
-    const adjY = screenY - originY;
-
-    const gy = (adjY / (tileHeight / 2) - adjX / (tileWidth / 2)) / 2;
-    const gx = (adjY / (tileHeight / 2) + adjX / (tileWidth / 2)) / 2;
-
-    return { x: Math.floor(gx), y: Math.floor(gy) };
+  /** The tile containing a screen point. */
+  const tileAt = (screenX: number, screenY: number) => {
+    const { x, y } = projection.fromIso(screenX, screenY);
+    return { x: Math.floor(x), y: Math.floor(y) };
   };
 
   if (dragIndex !== null) {
@@ -60,7 +51,7 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
 
     const targetScreenX = mouseX - dragOffset.x;
     const targetScreenY = mouseY - dragOffset.y;
-    const gridPos = fromIso(targetScreenX, targetScreenY);
+    const gridPos = tileAt(targetScreenX, targetScreenY);
 
     const newX = Math.max(-PaddingTiles, Math.min(GridMax - blocks[dragIndex].width + PaddingTiles, gridPos.x));
     const newY = Math.max(-PaddingTiles, Math.min(GridMax - blocks[dragIndex].length + PaddingTiles, gridPos.y));
@@ -94,7 +85,7 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
       city.setMouseGridPosition({ x: newX, y: newY });
     }
   } else {
-    const { x: gridX, y: gridY } = fromIso(mouseX, mouseY);
+    const { x: gridX, y: gridY } = tileAt(mouseX, mouseY);
 
     if (mouseGrid) {
       if (
