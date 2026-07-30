@@ -259,6 +259,24 @@ export function CityGrid() {
 
           {blockRects}
 
+          {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
+          {city.replacedArea && (
+            <g pointerEvents='none'>
+              <animate attributeName='opacity' values='1;0.4;1' dur='1.4s' repeatCount='indefinite' />
+              <rect
+                x={city.replacedArea.x * gridSizePx}
+                y={city.replacedArea.y * gridSizePx}
+                width={city.replacedArea.width * gridSizePx}
+                height={city.replacedArea.length * gridSizePx}
+                fill='#ff1744'
+                fillOpacity={0.35}
+                stroke='#ff1744'
+                strokeWidth={3}
+                strokeDasharray='6 4'
+              />
+            </g>
+          )}
+
           {/* Unlock Area mode: shade the locked expansions and let the user pick one. */}
           {unlockAreaMode &&
             lockedCells.map(({ cx, cy }) => {

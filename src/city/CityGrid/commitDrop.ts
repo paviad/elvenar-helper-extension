@@ -23,12 +23,26 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
   if (dragIndex === null) return;
 
   const block = blocks[dragIndex];
+  const replacedArea = city.replacedArea;
+  // The marker has done its job once something is dropped on the vacated footprint.
+  const coversReplacedArea =
+    !!replacedArea &&
+    block.x <= replacedArea.x + replacedArea.width - 1 &&
+    block.x + block.width - 1 >= replacedArea.x &&
+    block.y <= replacedArea.y + replacedArea.length - 1 &&
+    block.y + block.length - 1 >= replacedArea.y;
+
   const newX = block.x;
   const newY = block.y;
   let finalX = newX;
   let finalY = newY;
 
-  if (isOverlapping(block, dragIndex, newX, newY, blocks)) {
+  const overlaps = isOverlapping(block, dragIndex, newX, newY, blocks);
+  if (!overlaps && coversReplacedArea) {
+    city.setReplacedArea(null);
+  }
+
+  if (overlaps) {
     if (originalPos) {
       // Normal case: snap back
       finalX = originalPos.x;

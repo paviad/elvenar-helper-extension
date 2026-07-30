@@ -21,6 +21,15 @@ import { MoveLogInterface } from './MoveLog/moveLogInterface';
 import { findMatchingBlockIds } from './searchMatcher';
 import { useSettledValue } from './useSettledValue';
 
+/** Footprint a replaced building used to occupy, marked on the grid until it is reused. */
+export interface ReplacedArea {
+  x: number;
+  y: number;
+  width: number;
+  length: number;
+  name: string;
+}
+
 export interface CityContextType {
   moveLog: MoveLogInterface[];
   setMoveLog: (fn: (prev: MoveLogInterface[]) => MoveLogInterface[]) => void;
@@ -62,6 +71,9 @@ export interface CityContextType {
   /** When true, the grid lets the user pick a locked expansion to unlock. */
   unlockAreaMode: boolean;
   setUnlockAreaMode: (on: boolean) => void;
+  /** Where a just-replaced building stood, highlighted on the grid. */
+  replacedArea: ReplacedArea | null;
+  setReplacedArea: (area: ReplacedArea | null) => void;
   triggerForceUpdate: () => void;
   forceUpdate: number;
   race: string;
@@ -120,6 +132,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntityEx[], UnlockedArea[]]);
   const [unlockedAreas, setUnlockedAreas] = React.useState([] as UnlockedArea[]);
   const [unlockAreaMode, setUnlockAreaMode] = React.useState(false);
+  const [replacedArea, setReplacedArea] = React.useState<ReplacedArea | null>(null);
   const triggerForceUpdate = useTabStore((state) => state.triggerForceUpdate);
   const forceUpdate = useTabStore((state) => state.forceUpdate);
 
@@ -157,6 +170,8 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       setReady(false);
       firstLoad.current = true;
       setModified(false);
+      // The marker belongs to the city it was made in.
+      setReplacedArea(null);
       triggerLocalRefresh();
     }
     previousAccountId.current = accountId;
@@ -482,6 +497,8 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       setUnlockedAreas,
       unlockAreaMode,
       setUnlockAreaMode,
+      replacedArea,
+      setReplacedArea,
       triggerForceUpdate,
       forceUpdate,
       race,
@@ -522,6 +539,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       allTypes,
       unlockedAreas,
       unlockAreaMode,
+      replacedArea,
       triggerForceUpdate,
       forceUpdate,
       race,

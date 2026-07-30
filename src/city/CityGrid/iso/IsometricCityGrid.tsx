@@ -238,6 +238,22 @@ export function IsometricCityGrid() {
         </g>
 
         {blockShapes}
+
+        {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
+        {city.replacedArea && (
+          <g pointerEvents='none'>
+            <animate attributeName='opacity' values='1;0.4;1' dur='1.4s' repeatCount='indefinite' />
+            {renderPolygon(
+              city.replacedArea.x,
+              city.replacedArea.y,
+              city.replacedArea.width,
+              city.replacedArea.length,
+              'rgba(255, 23, 68, 0.45)',
+              '#ff1744',
+              0,
+            )}
+          </g>
+        )}
       </svg>
     </div>
   );

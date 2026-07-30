@@ -56,12 +56,28 @@ export const RenderCityGrid = () => {
   const hasHighlighted = city.highlightedIds.size > 0;
 
   // Replace = delete the old building, then spawn the inventory item in drag mode
-  // on the top-down grid. The user positions it and makes room if needed.
+  // on the top-down grid. The user positions it and makes room if needed, guided by
+  // the marker left on the vacated footprint.
   const handleReplace = (blockId: number, itemId: number) => {
+    const block = city.blocks[blockId];
+    if (block) {
+      city.setReplacedArea({ x: block.x, y: block.y, width: block.width, length: block.length, name: block.name });
+    }
     state.setViewMode('top');
     state.handleDeleteBlock(blockId);
     void state.onBuildFromInventory(itemId);
   };
+
+  // The marker clears itself once something is dropped on it; Escape dismisses it early.
+  const { replacedArea, setReplacedArea } = city;
+  useEffect(() => {
+    if (!replacedArea) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setReplacedArea(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [replacedArea, setReplacedArea]);
 
   return (
     <Stack>
