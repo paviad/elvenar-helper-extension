@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { createHashRouter, Navigate, RouterProvider } from 'react-router';
+import { createHashRouter, Navigate } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { FellowshipAdventure } from '../fellowship-adventure/FellowshipAdventure';
 import { HelpPage } from '../help/HelpPage';
 import { HelperProvider } from '../helper/HelperContext';
