@@ -1,7 +1,7 @@
 import React from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
 import MenuIcon from '@mui/icons-material/Menu';
-import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
 import { getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
@@ -205,12 +205,29 @@ export const LayoutMain = () => {
             }}
           />
 
-          {/* Help Button */}
+          {/* Help Button, badged while it has something new to show */}
           <Button
             component={NavLink}
             to='/help'
             color='inherit'
-            startIcon={<HelpOutlineIcon />}
+            startIcon={
+              <Badge
+                badgeContent='NEW'
+                color='secondary'
+                sx={{
+                  '& .MuiBadge-badge': {
+                    fontSize: '0.6rem',
+                    height: 16,
+                    minWidth: 16,
+                    px: 0.5,
+                    top: -4,
+                    right: -6,
+                  },
+                }}
+              >
+                <HelpOutlineIcon />
+              </Badge>
+            }
             sx={{ textTransform: 'none', fontSize: '1rem', mr: 6 }}
           >
             Help
