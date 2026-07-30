@@ -81,6 +81,9 @@ export interface CityContextType {
   maxChapter: number;
 }
 
+/** Stable empty default, so a city with no query does not hand out a fresh array each render. */
+const NO_BOOSTED_GOODS: string[] = [];
+
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
 
 export const CityProvider = ({ children }: { children: React.ReactNode }) => {
@@ -124,17 +127,16 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = React.useState<boolean>(false);
   const [modified, setModified] = React.useState<boolean>(false);
 
-  let boostedGoods: string[] = [];
-  let isDetached = true;
-  let race = 'humans';
-  if (accountId) {
-    const accountData = getAccountById(accountId);
-    if (accountData?.cityQuery) {
-      race = accountData.cityQuery.userData.race;
-      boostedGoods = accountData.cityQuery.boostedGoods;
-    }
-    isDetached = accountData?.isDetached ?? true;
-  }
+  // Account data is only replaced when the city is switched or reloaded, and a reload
+  // bumps forceUpdate, so those two cover every change to what this reads.
+  const { race, boostedGoods, isDetached } = React.useMemo(() => {
+    const accountData = accountId ? getAccountById(accountId) : undefined;
+    return {
+      race: accountData?.cityQuery?.userData.race ?? 'humans',
+      boostedGoods: accountData?.cityQuery?.boostedGoods ?? NO_BOOSTED_GOODS,
+      isDetached: accountData?.isDetached ?? true,
+    };
+  }, [accountId, forceUpdate]);
 
   const previousAccountId = React.useRef<string | undefined>(accountId);
 
@@ -321,9 +323,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     return Array.from(set);
   }, [blocks]);
 
-  const clearRedoStack = () => {
+  const clearRedoStack = React.useCallback(() => {
     setRedoStack([]);
-  };
+  }, []);
 
   const opacity = BlockOpacity;
 
@@ -357,7 +359,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     void fetchMaxLevels();
   }, []);
 
-  const handleUndo = () => {
+  const handleUndo = React.useCallback(() => {
     // Prevent undo while dragging
     if (dragIndex !== null) return;
 
@@ -385,9 +387,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     }
     setMoveLog((prev) => prev.slice(0, -1));
     setRedoStack((prev) => [...prev, last]);
-  };
+  }, [dragIndex, moveLog]);
 
-  const handleRedo = () => {
+  const handleRedo = React.useCallback(() => {
     // Prevent redo while dragging
     if (dragIndex !== null) return;
 
@@ -411,7 +413,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     }
     setMoveLog((prev) => [...prev, last]);
     setRedoStack((prev) => prev.slice(0, -1));
-  };
+  }, [dragIndex, redoStack]);
 
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -427,64 +429,107 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleUndo, handleRedo]);
 
-  const defaultValue: CityContextType = {
-    moveLog,
-    setMoveLog,
-    redoStack,
-    setRedoStack,
-    clearRedoStack,
-    blocks,
-    setBlocks,
-    overwriteBlocks: setBlocks,
-    dragIndex,
-    setDragIndex,
-    dragOffset,
-    setDragOffset,
-    originalPos,
-    setOriginalPos,
-    searchTerm,
-    setSearchTerm,
-    highlightedIds,
-    menu,
-    setMenu,
-    maxLevels,
-    setMaxLevels,
-    menuRef,
-    svgRef,
-    mousePositionRef,
-    accountId,
-    setAccountId,
-    techSprite,
-    handleUndo: handleUndo,
-    handleRedo: handleRedo,
-    GridSize,
-    GridMax,
-    PaddingTiles,
-    opacity,
-    allTypes,
-    unlockedAreas,
-    triggerForceUpdate,
-    forceUpdate,
-    race,
-    buildingFinder,
-    goodsNames,
-    evolvingBuildings,
-    effects,
-    boostedGoods,
-    chapter,
-    setChapter,
-    squadSize,
-    setSquadSize,
-    rankingPoints,
-    setRankingPoints,
-    cityTotals,
-    mouseGridPosition,
-    setMouseGridPosition,
-    resources,
-    emptySquares,
-    modified,
-    maxChapter,
-  };
+  // Memoised so a provider re-render alone does not invalidate every consumer. The
+  // dependency list is exhaustive on purpose: a missing entry hands out stale context,
+  // and nothing in the lint setup checks it. Setters, refs and grid constants are
+  // stable by construction and so are omitted.
+  const defaultValue: CityContextType = React.useMemo(
+    () => ({
+      moveLog,
+      setMoveLog,
+      redoStack,
+      setRedoStack,
+      clearRedoStack,
+      blocks,
+      setBlocks,
+      overwriteBlocks: setBlocks,
+      dragIndex,
+      setDragIndex,
+      dragOffset,
+      setDragOffset,
+      originalPos,
+      setOriginalPos,
+      searchTerm,
+      setSearchTerm,
+      highlightedIds,
+      menu,
+      setMenu,
+      maxLevels,
+      setMaxLevels,
+      menuRef,
+      svgRef,
+      mousePositionRef,
+      accountId,
+      setAccountId,
+      techSprite,
+      handleUndo: handleUndo,
+      handleRedo: handleRedo,
+      GridSize,
+      GridMax,
+      PaddingTiles,
+      opacity,
+      allTypes,
+      unlockedAreas,
+      triggerForceUpdate,
+      forceUpdate,
+      race,
+      buildingFinder,
+      goodsNames,
+      evolvingBuildings,
+      effects,
+      boostedGoods,
+      chapter,
+      setChapter,
+      squadSize,
+      setSquadSize,
+      rankingPoints,
+      setRankingPoints,
+      cityTotals,
+      mouseGridPosition,
+      setMouseGridPosition,
+      resources,
+      emptySquares,
+      modified,
+      maxChapter,
+    }),
+    [
+      moveLog,
+      redoStack,
+      clearRedoStack,
+      blocks,
+      dragIndex,
+      dragOffset,
+      originalPos,
+      searchTerm,
+      highlightedIds,
+      menu,
+      maxLevels,
+      accountId,
+      setAccountId,
+      techSprite,
+      handleUndo,
+      handleRedo,
+      allTypes,
+      unlockedAreas,
+      triggerForceUpdate,
+      forceUpdate,
+      race,
+      buildingFinder,
+      goodsNames,
+      evolvingBuildings,
+      effects,
+      boostedGoods,
+      chapter,
+      squadSize,
+      rankingPoints,
+      cityTotals,
+      mouseGridPosition,
+      resources,
+      emptySquares,
+      modified,
+      maxChapter,
+    ],
+  );
 
   return <CityContext.Provider value={defaultValue}>{children}</CityContext.Provider>;
 };
