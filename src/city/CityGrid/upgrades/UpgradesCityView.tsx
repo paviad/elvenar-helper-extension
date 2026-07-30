@@ -172,6 +172,9 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
               const oldArea = row.oldWidth * row.oldLength;
               const newArea = row.newWidth * row.newLength;
               const sizeChanged = row.oldWidth !== row.newWidth || row.oldLength !== row.newLength;
+              // Only a footprint that shrinks on both axes is guaranteed to fit where the
+              // old building stood; anything else needs room to be made for it.
+              const fitsInPlace = row.newWidth < row.oldWidth && row.newLength < row.oldLength;
 
               return (
                 <TableRow key={row.key} hover>
@@ -219,7 +222,10 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
                   </TableCell>
                   <TableCell align='center'>
                     {sizeChanged ? (
-                      <Box component='span' sx={{ color: 'warning.main', fontWeight: 'bold' }}>
+                      <Box
+                        component='span'
+                        sx={{ color: fitsInPlace ? 'success.main' : 'error.main', fontWeight: 'bold' }}
+                      >
                         {row.oldWidth}x{row.oldLength} ➔ {row.newWidth}x{row.newLength}
                       </Box>
                     ) : (

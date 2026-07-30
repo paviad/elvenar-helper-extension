@@ -110,6 +110,22 @@ export function CityGrid() {
     }
   }, [totalDimension]);
 
+  // Bring a freshly marked replacement footprint into the middle of the viewport.
+  // Assigning an out-of-range scroll offset is clamped by the browser, so a footprint
+  // near the edge of the map ends up as close to centred as it can get.
+  const { replacedArea } = city;
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !replacedArea) return;
+
+    const centerX = paddingPx + (replacedArea.x + replacedArea.width / 2) * gridSizePx;
+    const centerY = paddingPx + (replacedArea.y + replacedArea.length / 2) * gridSizePx;
+    container.scrollLeft = centerX - container.clientWidth / 2;
+    container.scrollTop = centerY - container.clientHeight / 2;
+    // Suppress the one-off mount centring, which would otherwise fight this.
+    hasCentered.current = true;
+  }, [replacedArea]);
+
   // Panning is handled by the hook; the grid also tracks the cursor for drag/drop.
   const onMouseMove = (e: React.MouseEvent) => {
     panHandlers.onMouseMove(e);
