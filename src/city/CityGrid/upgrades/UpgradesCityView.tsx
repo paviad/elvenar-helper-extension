@@ -33,6 +33,26 @@ type GroupBy = 'none' | 'city' | 'item';
 const formatAbs = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 const formatPerSq = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
+/**
+ * Where an evolving item starts, where it is compared, and whether that is as far as it
+ * goes - "Stage 1 ➔ 5 (max)" reads very differently from "Stage 1 ➔ 5 of 10", and without
+ * the ceiling a low number looks like a shortfall even when the building has no more stages.
+ */
+const stageSummary = (row: UpgradeSuggestion) => {
+  if (row.targetStage === undefined) return null;
+
+  const atMax = row.maxStage !== undefined && row.targetStage >= row.maxStage;
+  const reached = atMax ? `${row.targetStage} (max)` : `${row.targetStage}${row.maxStage ? ` of ${row.maxStage}` : ''}`;
+  const stages =
+    row.currentItemStage !== undefined && row.currentItemStage !== row.targetStage
+      ? `Stage ${row.currentItemStage} ➔ ${reached}`
+      : `Stage ${reached}`;
+
+  if (row.artifactsNeeded) return `${stages} · uses ${row.artifactsNeeded} of your ${row.artifactsOwned} artifacts`;
+  if (!atMax) return `${stages} · no artifacts to evolve it`;
+  return stages;
+};
+
 /** A column header that toggles grouping by its column. */
 const GroupHeader = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
   <Tooltip title={active ? 'Click to ungroup' : `Click to group by ${label.toLowerCase()}`}>
@@ -143,7 +163,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
     const labelFor = (row: UpgradeSuggestion) =>
       groupBy === 'city'
         ? `${row.oldName}${row.oldLevel > 1 ? ` (Level ${row.oldLevel})` : ''}${row.oldStage ? ` (Stage ${row.oldStage})` : ''}`
-        : `${row.newName}${row.targetStage ? ` (Stage ${row.targetStage})` : ''}${row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}`;
+        : `${row.newName}${row.targetStage ? ` (Stage ${row.targetStage}${row.maxStage ? ` of ${row.maxStage}` : ''})` : ''}${row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}`;
 
     return [...byKey.entries()].map(([key, groupRows]) => ({ key, label: labelFor(groupRows[0]), rows: groupRows }));
   }, [rows, groupBy]);
@@ -207,8 +227,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
             </span>
             {row.targetStage !== undefined && (
               <Typography variant='caption' color='text.secondary'>
-                at Stage {row.targetStage}
-                {row.artifactsNeeded ? ` (uses ${row.artifactsNeeded} of your ${row.artifactsOwned} artifacts)` : ''}
+                {stageSummary(row)}
               </Typography>
             )}
             {row.newOther.length > 0 && (

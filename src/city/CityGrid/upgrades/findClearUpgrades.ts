@@ -34,8 +34,12 @@ export interface UpgradeSuggestion {
   newLength: number;
   newValues: Record<string, number>;
   newOther: string[];
+  /** The stage the item sits at in the inventory. */
+  currentItemStage?: number;
   /** Stage the comparison was made at (max reachable with owned artifacts). */
   targetStage?: number;
+  /** The building's own ceiling, so a stage below it can be told from a fully evolved one. */
+  maxStage?: number;
   artifactsNeeded?: number;
   artifactsOwned?: number;
 }
@@ -193,6 +197,8 @@ interface EvolutionPlan {
   missingData?: boolean;
   currentStage?: number;
   targetStage?: number;
+  /** The building's own ceiling, which is often lower than the usual ten stages. */
+  maxStage?: number;
   artifactsOwned?: number;
   artifactsNeeded?: number;
 }
@@ -220,6 +226,7 @@ function getEvolutionPlan(
     isEvolving: true,
     currentStage,
     targetStage,
+    maxStage,
     artifactsOwned,
     artifactsNeeded: (targetStage - currentStage) * artifactCost,
   };
@@ -348,7 +355,9 @@ export function findClearUpgrades(
         newLength: candidate.building.length,
         newValues: candidate.profile.values,
         newOther: candidate.profile.otherProduction,
+        currentItemStage: candidate.plan.currentStage,
         targetStage: candidate.plan.targetStage,
+        maxStage: candidate.plan.maxStage,
         artifactsNeeded: candidate.plan.artifactsNeeded,
         artifactsOwned: candidate.plan.artifactsOwned,
       });

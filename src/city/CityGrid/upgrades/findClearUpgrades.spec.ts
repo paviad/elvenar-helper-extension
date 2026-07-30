@@ -290,10 +290,46 @@ describe('findClearUpgrades', () => {
     const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [artifacts, evoItem]);
 
     expect(result.suggestions).toHaveLength(1);
+    expect(result.suggestions[0].currentItemStage).toBe(1);
     expect(result.suggestions[0].targetStage).toBe(3);
+    expect(result.suggestions[0].maxStage).toBe(10);
     expect(result.suggestions[0].artifactsNeeded).toBe(2);
     expect(result.suggestions[0].artifactsOwned).toBe(2);
     expect(result.suggestions[0].newValues.mana).toBe(288);
+  });
+
+  it('reports a ceiling lower than the artifacts owned would allow', () => {
+    const old = cityBuilding('A_Old_1', 10);
+    const evo = buildingEx(
+      {
+        id: 'A_Evt_Evo_Arena_1',
+        base_name: 'A_Evt_Evo_Arena',
+        width: 2,
+        length: 2,
+        production: { isSwitchable: false, products: [{ production_time: HOUR, revenue: { resources: { mana: 6 } } }] },
+      },
+      { maxStage: 5 },
+    );
+    // Five stages only, as the Arcane Arena has, with far more artifacts than needed.
+    const evolving: StageProvision[] = [
+      {
+        baseName: 'A_Evt_Evo_Arena',
+        artifactId: 'INS_EVO_ARENA',
+        artifactCost: 1,
+        stages: [{ id: 1 }, { id: 5, products: [{ index: 0, factor: 2 }] }],
+      },
+    ];
+    const artifacts = invItem(undefined, { id: 7, subtype: 'INS_EVO_ARENA', amount: 12, type: 'Item' });
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [
+      artifacts,
+      invItem(evo, { id: 8, stage: 1 }),
+    ]);
+
+    expect(result.suggestions[0].targetStage).toBe(5);
+    expect(result.suggestions[0].maxStage).toBe(5);
+    expect(result.suggestions[0].artifactsNeeded).toBe(4);
+    expect(result.suggestions[0].artifactsOwned).toBe(12);
   });
 
   it('names evolving buildings skipped for a missing artifact association', () => {
