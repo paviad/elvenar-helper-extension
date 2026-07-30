@@ -3,6 +3,7 @@ import {
   Alert,
   Box,
   Button,
+  LinearProgress,
   Paper,
   Stack,
   Table,
@@ -61,6 +62,9 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
   const [order, setOrder] = React.useState<Order>('asc');
   const [groupBy, setGroupBy] = React.useState<GroupBy>('none');
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
+  // Regrouping and re-sorting thousands of rows blocks the thread, so those updates run as
+  // transitions: React paints the pending state before starting the work.
+  const [isPending, startTransition] = React.useTransition();
 
   React.useEffect(() => {
     async function buildData() {
@@ -87,12 +91,14 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
   }, [blocks, city.accountId, city.evolvingBuildings]);
 
   const handleRequestSort = (property: string) => {
-    if (orderBy === property) {
-      setOrder(order === 'asc' ? 'desc' : 'asc');
-    } else {
-      setOrder(property === 'name' ? 'asc' : 'desc');
-    }
-    setOrderBy(property);
+    startTransition(() => {
+      if (orderBy === property) {
+        setOrder(order === 'asc' ? 'desc' : 'asc');
+      } else {
+        setOrder(property === 'name' ? 'asc' : 'desc');
+      }
+      setOrderBy(property);
+    });
   };
 
   const rows = React.useMemo(() => {
@@ -141,15 +147,19 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
   }, [rows, groupBy]);
 
   const toggleGroupBy = (target: 'city' | 'item') => {
-    setGroupBy(groupBy === target ? 'none' : target);
-    setCollapsed(new Set());
+    startTransition(() => {
+      setGroupBy(groupBy === target ? 'none' : target);
+      setCollapsed(new Set());
+    });
   };
 
-  const toggleCollapsed = (label: string) =>
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(label)) next.add(label);
-      return next;
+  const toggleCollapsed = (key: string) =>
+    startTransition(() => {
+      setCollapsed((prev) => {
+        const next = new Set(prev);
+        if (!next.delete(key)) next.add(key);
+        return next;
+      });
     });
 
   const resourceName = (key: string) => formatResourceName(city.goodsNames, city.boostedGoods, key);
@@ -275,7 +285,16 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
           </Alert>
         )}
       </Box>
-      <TableContainer sx={{ flexGrow: 1 }}>
+      {/* The old rows stay on screen, dimmed, while the new ones are worked out. */}
+      <Box sx={{ height: 4 }}>{(isPending || (!result && !noInventory)) && <LinearProgress />}</Box>
+      <TableContainer
+        sx={{
+          flexGrow: 1,
+          opacity: isPending ? 0.4 : 1,
+          pointerEvents: isPending ? 'none' : undefined,
+          transition: 'opacity 0.1s',
+        }}
+      >
         <Table stickyHeader size='small' aria-label='upgrade suggestions table'>
           <TableHead>
             <TableRow>
