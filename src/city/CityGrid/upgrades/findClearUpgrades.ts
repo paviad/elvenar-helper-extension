@@ -26,6 +26,10 @@ export interface UpgradeSuggestion {
   oldValues: Record<string, number>;
   /** Resources the old building produces that the finder does not consider (lost on replacement). */
   oldOther: string[];
+  /** The old building only stands for a limited time. */
+  oldIsExpiring: boolean;
+  /** When the soonest-expiring block of the group runs out, if the game told us. */
+  oldExpirationEnd?: number;
   itemId: number;
   itemAmount: number;
   newName: string;
@@ -250,7 +254,7 @@ export function findClearUpgrades(
 
   // Group identical city buildings so ten unicorns make one row, not ten.
   interface Group {
-    blockIds: number[];
+    members: { id: number; expirationEnd?: number }[];
     gameId: string;
     level: number;
     stage?: number;
@@ -263,12 +267,13 @@ export function findClearUpgrades(
     if (block.entity.type === 'ancient_wonder') continue;
 
     const key = `${block.gameId}|${block.level}|${block.stage ?? ''}`;
+    const member = { id: block.id, expirationEnd: block.expirationEnd };
     const group = groups.get(key);
     if (group) {
-      group.blockIds.push(block.id);
+      group.members.push(member);
     } else {
       groups.set(key, {
-        blockIds: [block.id],
+        members: [member],
         gameId: block.gameId,
         level: block.level,
         stage: block.stage,
@@ -296,6 +301,16 @@ export function findClearUpgrades(
 
     const oldIsThin = building.width === 1 || building.length === 1;
 
+    // Replacing the copy that runs out first is the natural choice, so it leads the list
+    // and its deadline is the one reported.
+    const members = [...group.members].sort(
+      (a, b) => (a.expirationEnd ?? Number.POSITIVE_INFINITY) - (b.expirationEnd ?? Number.POSITIVE_INFINITY),
+    );
+    const blockIds = members.map((m) => m.id);
+    const oldExpirationEnd = members[0].expirationEnd;
+    const oldIsExpiring =
+      oldExpirationEnd !== undefined || building.expiration !== undefined || building.type === 'expiring';
+
     for (const candidate of candidates) {
       // A 1xN building collects less neighbourly help, so it never replaces a
       // building that is at least two tiles on both sides.
@@ -305,8 +320,8 @@ export function findClearUpgrades(
 
       suggestions.push({
         key: `${key}->${candidate.item.id}`,
-        blockIds: group.blockIds,
-        count: group.blockIds.length,
+        blockIds,
+        count: blockIds.length,
         oldName: building.name || group.name,
         oldLevel: group.level,
         oldStage: group.stage,
@@ -314,6 +329,8 @@ export function findClearUpgrades(
         oldLength: building.length,
         oldValues: profile.values,
         oldOther: profile.otherProduction,
+        oldIsExpiring,
+        oldExpirationEnd,
         itemId: candidate.item.id,
         itemAmount: candidate.item.amount,
         newName: candidate.building.name,
