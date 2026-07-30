@@ -133,6 +133,12 @@ export function usePanZoom({ zoomLevels, anchorScroll, idleCursor }: PanZoomOpti
     return () => container.removeEventListener('wheel', onWheel);
   }, []);
 
+  /** Jumps to a zoom level outright, for callers framing a particular spot. */
+  const zoomTo = React.useCallback((level: number) => {
+    zoomRef.current = level;
+    setZoom(level);
+  }, []);
+
   const endPan = () => {
     if (isPanning.current && containerRef.current) {
       isPanning.current = false;
@@ -183,5 +189,5 @@ export function usePanZoom({ zoomLevels, anchorScroll, idleCursor }: PanZoomOpti
     },
   };
 
-  return { containerRef, zoom, panHandlers };
+  return { containerRef, zoom, zoomTo, panHandlers };
 }

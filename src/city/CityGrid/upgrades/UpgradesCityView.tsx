@@ -20,6 +20,7 @@ import { formatResourceName } from '../../../util/formatResourceName';
 import { getBuildingFinder } from '../../buildingFinder';
 import { useCity } from '../../CityContext';
 import { ClearUpgradesResult, findClearUpgrades, UpgradeSuggestion } from './findClearUpgrades';
+import { compareSize, fitsInPlace, isSameSize } from './sizeOrder';
 
 interface UpgradesCityViewProps {
   onReplace: (blockId: number, itemId: number) => void;
@@ -94,11 +95,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
 
     const comparator = (a: UpgradeSuggestion, b: UpgradeSuggestion): number => {
       if (orderBy === 'name') return a.oldName.localeCompare(b.oldName) || a.newName.localeCompare(b.newName);
-      if (orderBy === 'size') {
-        return (
-          a.newWidth * a.newLength - a.oldWidth * a.oldLength - (b.newWidth * b.newLength - b.oldWidth * b.oldLength)
-        );
-      }
+      if (orderBy === 'size') return compareSize(a, b);
       return perSquareDelta(a, orderBy) - perSquareDelta(b, orderBy);
     };
 
@@ -178,10 +175,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
             {rows.map((row) => {
               const oldArea = row.oldWidth * row.oldLength;
               const newArea = row.newWidth * row.newLength;
-              const sizeChanged = row.oldWidth !== row.newWidth || row.oldLength !== row.newLength;
-              // Only a footprint that shrinks on both axes is guaranteed to fit where the
-              // old building stood; anything else needs room to be made for it.
-              const fitsInPlace = row.newWidth < row.oldWidth && row.newLength < row.oldLength;
+              const sizeChanged = !isSameSize(row);
               // Two buildings sharing a name are told apart by their level.
               const showLevels = row.oldName === row.newName && row.oldLevel !== row.newLevel;
 
@@ -240,7 +234,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
                     {sizeChanged ? (
                       <Box
                         component='span'
-                        sx={{ color: fitsInPlace ? 'success.main' : 'error.main', fontWeight: 'bold' }}
+                        sx={{ color: fitsInPlace(row) ? 'success.main' : 'error.main', fontWeight: 'bold' }}
                       >
                         {row.oldWidth}x{row.oldLength} ➔ {row.newWidth}x{row.newLength}
                       </Box>

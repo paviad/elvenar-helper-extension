@@ -16,7 +16,7 @@ export function CityGrid() {
   const helper = useHelper();
   const { dragIndex, blocks, highlightedIds, chapter, allTypes, techSprite, unlockAreaMode, unlockedAreas } = city;
 
-  const { containerRef, zoom, panHandlers } = usePanZoom({
+  const { containerRef, zoom, zoomTo, panHandlers } = usePanZoom({
     zoomLevels: ZOOM_LEVELS,
     // Content scales uniformly with zoom, so scaling the anchor point is enough.
     anchorScroll: ({ contentX, contentY, mouseX, mouseY, currentZoom, newZoom }) => {
@@ -110,21 +110,29 @@ export function CityGrid() {
     }
   }, [totalDimension]);
 
-  // Bring a freshly marked replacement footprint into the middle of the viewport.
-  // Assigning an out-of-range scroll offset is clamped by the browser, so a footprint
-  // near the edge of the map ends up as close to centred as it can get.
+  // Bring a freshly marked replacement footprint into the middle of the viewport, at
+  // 1:1 zoom. Assigning an out-of-range scroll offset is clamped by the browser, so a
+  // footprint near the edge of the map ends up as close to centred as it can get.
   const { replacedArea } = city;
+  const centredFor = React.useRef<typeof replacedArea>(null);
   React.useEffect(() => {
     const container = containerRef.current;
-    if (!container || !replacedArea) return;
+    if (!container || !replacedArea || centredFor.current === replacedArea) return;
+
+    // Resetting the zoom resizes the grid, so wait for that render before scrolling.
+    if (zoom !== 1) {
+      zoomTo(1);
+      return;
+    }
 
     const centerX = paddingPx + (replacedArea.x + replacedArea.width / 2) * gridSizePx;
     const centerY = paddingPx + (replacedArea.y + replacedArea.length / 2) * gridSizePx;
     container.scrollLeft = centerX - container.clientWidth / 2;
     container.scrollTop = centerY - container.clientHeight / 2;
+    centredFor.current = replacedArea;
     // Suppress the one-off mount centring, which would otherwise fight this.
     hasCentered.current = true;
-  }, [replacedArea]);
+  }, [replacedArea, zoom, zoomTo]);
 
   // Panning is handled by the hook; the grid also tracks the cursor for drag/drop.
   const onMouseMove = (e: React.MouseEvent) => {
