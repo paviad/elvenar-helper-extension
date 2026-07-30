@@ -1,4 +1,5 @@
 import React from 'react';
+import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import {
   Alert,
   Box,
@@ -58,17 +59,31 @@ const GroupHeader = ({ label, active, onClick }: { label: string; active: boolea
   <Tooltip title={active ? 'Click to ungroup' : `Click to group by ${label.toLowerCase()}`}>
     <Box
       component='span'
+      role='button'
+      tabIndex={0}
+      aria-pressed={active}
       onClick={onClick}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       sx={{
         cursor: 'pointer',
         userSelect: 'none',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
         fontWeight: active ? 'bold' : undefined,
-        textDecoration: active ? 'underline' : undefined,
-        '&:hover': { textDecoration: 'underline' },
+        // The icon is faint until hovered or active, as the sort arrows in this table are.
+        '& .group-icon': { opacity: active ? 1 : 0.35, transition: 'opacity 0.15s' },
+        '&:hover .group-icon': { opacity: 1 },
       }}
     >
       {label}
       {active ? ' (grouped)' : ''}
+      <GroupWorkIcon className='group-icon' color={active ? 'primary' : 'inherit'} sx={{ fontSize: 16 }} />
     </Box>
   </Tooltip>
 );
