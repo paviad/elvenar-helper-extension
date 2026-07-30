@@ -175,6 +175,8 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
               // Only a footprint that shrinks on both axes is guaranteed to fit where the
               // old building stood; anything else needs room to be made for it.
               const fitsInPlace = row.newWidth < row.oldWidth && row.newLength < row.oldLength;
+              // Two buildings sharing a name are told apart by their level.
+              const showLevels = row.oldName === row.newName && row.oldLevel !== row.newLevel;
 
               return (
                 <TableRow key={row.key} hover>
@@ -189,6 +191,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
                     <Stack>
                       <span>
                         {row.oldName}
+                        {showLevels ? ` (Level ${row.oldLevel})` : ''}
                         {row.oldStage ? ` (Stage ${row.oldStage})` : ''}
                         {row.count > 1 ? ` ×${row.count}` : ''}
                       </span>
@@ -203,6 +206,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
                     <Stack>
                       <span>
                         {row.newName}
+                        {showLevels ? ` (Level ${row.newLevel})` : ''}
                         {row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}
                       </span>
                       {row.targetStage !== undefined && (

@@ -29,6 +29,7 @@ export interface UpgradeSuggestion {
   itemId: number;
   itemAmount: number;
   newName: string;
+  newLevel: number;
   newWidth: number;
   newLength: number;
   newValues: Record<string, number>;
@@ -298,6 +299,7 @@ export function findClearUpgrades(
         itemId: candidate.item.id,
         itemAmount: candidate.item.amount,
         newName: candidate.building.name,
+        newLevel: candidate.building.sourceBuilding.level || 1,
         newWidth: candidate.building.width,
         newLength: candidate.building.length,
         newValues: candidate.profile.values,

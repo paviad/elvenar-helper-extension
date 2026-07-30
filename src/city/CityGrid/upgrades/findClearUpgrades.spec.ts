@@ -305,6 +305,20 @@ describe('findClearUpgrades', () => {
     expect(result.skippedEvolvingItems).toBe(1);
   });
 
+  it('reports both levels so a same-named upgrade can be told apart', () => {
+    const old = cityBuilding('A_Ruins_3', 10);
+    old.sourceBuilding.level = 3;
+    const candidate = cityBuilding('A_Ruins_5', 20);
+    candidate.name = old.name;
+    candidate.sourceBuilding.level = 5;
+
+    const result = findClearUpgrades([blockFor(old, { level: 3 })], finderFor(old), [], [invItem(candidate)]);
+
+    expect(result.suggestions).toHaveLength(1);
+    expect(result.suggestions[0].oldLevel).toBe(3);
+    expect(result.suggestions[0].newLevel).toBe(5);
+  });
+
   it('never suggests replacing a placed evolving building', () => {
     const old = cityBuilding('A_Evt_Evo_Phoenix_1', 10);
     old.sourceBuilding.base_name = 'A_Evt_Evo_Phoenix';
