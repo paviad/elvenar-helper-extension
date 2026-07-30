@@ -264,6 +264,35 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
     );
   };
 
+  // Built once per change of content. Deliberately not a function of `isPending`, so
+  // dimming the rows reuses these elements instead of rebuilding a few thousand of them -
+  // otherwise the pending state itself takes about a second to appear.
+  const bodyContent = React.useMemo(
+    () =>
+      groups
+        ? groups.map((group) => (
+            <React.Fragment key={group.key}>
+              <TableRow
+                hover
+                onClick={() => toggleCollapsed(group.key)}
+                sx={{ cursor: 'pointer', bgcolor: 'action.hover' }}
+              >
+                <TableCell colSpan={columnCount} sx={{ fontWeight: 'bold' }}>
+                  {collapsed.has(group.key) ? '▸' : '▾'} {group.label}{' '}
+                  <Typography component='span' variant='caption' color='text.secondary'>
+                    ({group.rows.length} {group.rows.length === 1 ? 'option' : 'options'})
+                  </Typography>
+                </TableCell>
+              </TableRow>
+              {!collapsed.has(group.key) && group.rows.map(renderRow)}
+            </React.Fragment>
+          ))
+        : rows.map(renderRow),
+    // renderRow and toggleCollapsed are rebuilt every render; the values they close over
+    // are listed here instead, in the same spirit as the city context's memo.
+    [groups, rows, collapsed, columnCount, result, city.goodsNames, city.boostedGoods, onReplace],
+  );
+
   return (
     <Paper sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
@@ -336,24 +365,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
                 </TableCell>
               </TableRow>
             )}
-            {groups?.map((group) => (
-              <React.Fragment key={group.key}>
-                <TableRow
-                  hover
-                  onClick={() => toggleCollapsed(group.key)}
-                  sx={{ cursor: 'pointer', bgcolor: 'action.hover' }}
-                >
-                  <TableCell colSpan={columnCount} sx={{ fontWeight: 'bold' }}>
-                    {collapsed.has(group.key) ? '▸' : '▾'} {group.label}{' '}
-                    <Typography component='span' variant='caption' color='text.secondary'>
-                      ({group.rows.length} {group.rows.length === 1 ? 'option' : 'options'})
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-                {!collapsed.has(group.key) && group.rows.map(renderRow)}
-              </React.Fragment>
-            ))}
-            {!groups && rows.map(renderRow)}
+            {bodyContent}
           </TableBody>
         </Table>
       </TableContainer>
