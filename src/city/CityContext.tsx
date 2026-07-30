@@ -74,8 +74,6 @@ export interface CityContextType {
   setRankingPoints: (num: number) => void;
   /** Provision and requirement totals, derived from the blocks. */
   cityTotals: CityTotals;
-  mouseGridPosition: { x: number; y: number } | null;
-  setMouseGridPosition: (pos: { x: number; y: number } | null) => void;
   resources: Record<string, number>;
   emptySquares: number;
   modified: boolean;
@@ -106,7 +104,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [effects, setEffects] = React.useState<Effect[]>([]);
   const [rankingPoints, setRankingPoints] = React.useState<number>(0);
   const [resources, setResources] = React.useState<Record<string, number>>({});
-  const [mouseGridPosition, setMouseGridPosition] = React.useState<{ x: number; y: number } | null>(null);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
@@ -492,8 +489,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       rankingPoints,
       setRankingPoints,
       cityTotals,
-      mouseGridPosition,
-      setMouseGridPosition,
       resources,
       emptySquares,
       modified,
@@ -530,7 +525,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       squadSize,
       rankingPoints,
       cityTotals,
-      mouseGridPosition,
       resources,
       emptySquares,
       modified,

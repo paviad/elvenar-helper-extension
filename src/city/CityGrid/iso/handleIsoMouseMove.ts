@@ -1,6 +1,7 @@
 import React from 'react';
 import { sampleTime, Subject } from 'rxjs';
 import { useCity } from '../../CityContext';
+import { setMouseGridPosition } from '../../mouseGridStore';
 import { createIsoProjection } from './isoProjection';
 
 // Updated Subject to include zoom
@@ -76,7 +77,7 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
 
     if (mouseGrid) {
       mouseGrid.innerText = `Grid: (${newX}, ${newY})`;
-      city.setMouseGridPosition({ x: newX, y: newY });
+      setMouseGridPosition({ x: newX, y: newY });
     }
   } else {
     const { x: gridX, y: gridY } = tileAt(mouseX, mouseY);
@@ -90,7 +91,7 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
       ) {
         // Show coordinate even if negative
         mouseGrid.innerText = `Grid: (${gridX}, ${gridY})`;
-        city.setMouseGridPosition({ x: gridX, y: gridY });
+        setMouseGridPosition({ x: gridX, y: gridY });
       } else {
         mouseGrid.innerText = `Grid: -`;
       }

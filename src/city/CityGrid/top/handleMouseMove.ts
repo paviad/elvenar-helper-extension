@@ -1,6 +1,7 @@
 import React from 'react';
 import { sampleTime, Subject } from 'rxjs';
 import { useCity } from '../../CityContext';
+import { setMouseGridPosition } from '../../mouseGridStore';
 
 const subject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent; zoom: number }>();
 const throttled = subject.pipe(sampleTime(50));
@@ -73,14 +74,14 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
 
     if (mouseGrid) {
       mouseGrid.innerText = `Grid: (${newX}, ${newY})`;
-      city.setMouseGridPosition({ x: newX, y: newY });
+      setMouseGridPosition({ x: newX, y: newY });
     }
   } else {
     const gridX = Math.floor(mouseX / sGridSize);
     const gridY = Math.floor(mouseY / sGridSize);
     if (mouseGrid) {
       mouseGrid.innerText = `Grid: (${gridX}, ${gridY})`;
-      city.setMouseGridPosition({ x: gridX, y: gridY });
+      setMouseGridPosition({ x: gridX, y: gridY });
     }
   }
 };

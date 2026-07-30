@@ -1,12 +1,16 @@
 import React from 'react';
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import { useCity } from './CityContext';
+import { useMouseGridStore } from './mouseGridStore';
 
 export const WorkingState: React.FC = () => {
   // Accessing blocks to count highlighted ones.
   // Assuming 'pointer' exists in context for grid coordinates {x, y}.
   // If not, it will gracefully fallback.
-  const { mouseGridPosition, emptySquares, highlightedIds } = useCity();
+  const { emptySquares, highlightedIds } = useCity();
+  // Subscribed here rather than through the city context, so a moving cursor
+  // re-renders this panel alone.
+  const mouseGridPosition = useMouseGridStore((state) => state.position);
 
   const highlightedCount = highlightedIds.size;
 
