@@ -57,17 +57,18 @@ export const generateOverlayStore = (accountId: string) => {
           });
           set({ chatMessages: filteredMessages });
         },
-        cleanupOldMessages: (days) => set((state) => {
-          const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
-          return {
-            chatMessages: state.chatMessages.filter((msg) => {
-              if (!msg.timestamp) return true;
+        cleanupOldMessages: (days) =>
+          set((state) => {
+            const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
+            return {
+              chatMessages: state.chatMessages.filter((msg) => {
+                if (!msg.timestamp) return true;
 
-              const timeInMs = parseInt(msg.timestamp, 10);
-              return timeInMs >= cutoffTime;
-            })
-          };
-        }),
+                const timeInMs = parseInt(msg.timestamp, 10);
+                return timeInMs >= cutoffTime;
+              }),
+            };
+          }),
         userMap: {},
         setUserMap: (map) => set({ userMap: map }),
         forceUpdate: 0,
@@ -93,8 +94,15 @@ export const generateOverlayStore = (accountId: string) => {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
-          const { offeredGoods, forceUpdate, overlayExpanded, eeUpdate, messagesUpdate, messagesDetailsReceived, ...toPersist } =
-            state;
+          const {
+            offeredGoods,
+            forceUpdate,
+            overlayExpanded,
+            eeUpdate,
+            messagesUpdate,
+            messagesDetailsReceived,
+            ...toPersist
+          } = state;
           return toPersist;
         },
       },

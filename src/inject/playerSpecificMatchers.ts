@@ -163,5 +163,5 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'MessageService',
       requestMethod: 'replyMessage',
     },
-  }
+  },
 ];

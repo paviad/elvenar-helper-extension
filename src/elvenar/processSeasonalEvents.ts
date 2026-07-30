@@ -37,7 +37,7 @@ export async function processSeasonalEvents(untypedJson: unknown, sharedInfo: Ex
   }
   accountData.faEndTime = fa ? fa.remainingTime * 1000 + Date.now() : undefined;
 
-  if(!accountData.faEndTime) {
+  if (!accountData.faEndTime) {
     // If the FA event is not running, clear the faDataStore to reset any stored data
     console.log('ElvenAssist: FA event not running, clearing faDataStore for account:', accountId);
     accountData.faDataStore = undefined;

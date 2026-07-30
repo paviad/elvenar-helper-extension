@@ -1,8 +1,5 @@
 export type HelperMessageId =
-  | 'drag_tip'
-  | 'visited_other'
-  | 'multiple_accounts_notice'
-  | 'you_can_press_alt_b_to_build';
+  'drag_tip' | 'visited_other' | 'multiple_accounts_notice' | 'you_can_press_alt_b_to_build';
 
 export const HELPER_MESSAGES: Record<HelperMessageId, string> = {
   drag_tip:

@@ -58,4 +58,4 @@ export const getBadgeMap = async (): Promise<Record<string, string>> => {
     badgeMap[badgeType] = displayName;
   });
   return badgeMap;
-}
+};

@@ -53,9 +53,7 @@ export function appendPostToStoredMessage(
   const alreadyPresent = posts.some((p) =>
     post.post_id !== undefined && p.post_id !== undefined
       ? p.post_id === post.post_id
-      : p.created_at === post.created_at &&
-        p.author?.player_id === post.author?.player_id &&
-        p.post === post.post,
+      : p.created_at === post.created_at && p.author?.player_id === post.author?.player_id && p.post === post.post,
   );
   if (alreadyPresent) {
     return;

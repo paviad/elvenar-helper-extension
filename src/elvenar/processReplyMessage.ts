@@ -1,6 +1,6 @@
-import { GameMessage, MessageConversationPostVO } from '../model/gameMessage';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { GameMessage, MessageConversationPostVO } from '../model/gameMessage';
 import { getAccountBySessionId } from './AccountManager';
 import { extractElvenarResponse } from './extractElvenarResponse';
 import { appendPostToStoredMessage, upsertStoredMessage } from './storeGameMessage';

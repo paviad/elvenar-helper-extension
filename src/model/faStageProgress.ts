@@ -2,8 +2,8 @@
 // API RESPONSE TYPINGS (Based on provided JSON)
 // ============================================================================
 
-import { FAChestData, FAWaypointData } from './FAWaypointData';
 import { INITIAL_FA_CHESTS } from './faConstants'; // Adjust this import to match your filename
+import { FAChestData, FAWaypointData } from './FAWaypointData';
 
 export interface WaypointVO {
   __class__: 'WaypointVO';
@@ -156,7 +156,7 @@ export const processFaNodeDetails = (faDataStore: FAStoreData, nodeDetailsData: 
 
     // 3. Extract the badge string (e.g., 'golden_bracelet')
     const resources = chestDetails.costs?.costs?.resources || {};
-    const badgeType = Object.keys(resources).find(key => key !== '__class__') || 'unknown';
+    const badgeType = Object.keys(resources).find((key) => key !== '__class__') || 'unknown';
 
     // 4. Merge detailed data into the chest store safely
     // (It retains the metadata like color, position, and stage initialized by the overview)

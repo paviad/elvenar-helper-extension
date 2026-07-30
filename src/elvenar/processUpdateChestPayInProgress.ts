@@ -1,7 +1,7 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { ChestPayInProgressVO, FAStoreData, processFaNodeDetails } from '../model/faStageProgress';
-import { getAccountIdBySessionId, getAccountById } from './AccountManager';
+import { getAccountById, getAccountIdBySessionId } from './AccountManager';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function processUpdateChestPayInProgress(

@@ -1,9 +1,9 @@
 // src/util/tabStore.ts
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { Badges } from '../model/badges';
-import { AccountData } from '../elvenar/Accounts';
 import { getAccountById } from '../elvenar/AccountManager';
+import { AccountData } from '../elvenar/Accounts';
+import { Badges } from '../model/badges';
 
 interface TabState {
   accountId: string | undefined;
@@ -111,31 +111,34 @@ export const useTabStore = create<TabState>()(
 
       // --- FA Persisted Settings Defaults ---
       importedStockByAccount: {},
-      addImportedStock: (accountId, memberName, badges) => set((state) => ({
-        importedStockByAccount: {
-          ...state.importedStockByAccount,
-          [accountId]: {
-            ...(state.importedStockByAccount[accountId] || {}),
-            [memberName]: badges,
-          }
-        }
-      })),
-      removeImportedStock: (accountId, memberName) => set((state) => {
-        const accountStock = { ...(state.importedStockByAccount[accountId] || {}) };
-        delete accountStock[memberName];
-        return {
+      addImportedStock: (accountId, memberName, badges) =>
+        set((state) => ({
           importedStockByAccount: {
             ...state.importedStockByAccount,
-            [accountId]: accountStock,
-          }
-        };
-      }),
-      clearImportedStock: (accountId) => set((state) => ({
-        importedStockByAccount: {
-          ...state.importedStockByAccount,
-          [accountId]: {},
-        }
-      })),
+            [accountId]: {
+              ...(state.importedStockByAccount[accountId] || {}),
+              [memberName]: badges,
+            },
+          },
+        })),
+      removeImportedStock: (accountId, memberName) =>
+        set((state) => {
+          const accountStock = { ...(state.importedStockByAccount[accountId] || {}) };
+          delete accountStock[memberName];
+          return {
+            importedStockByAccount: {
+              ...state.importedStockByAccount,
+              [accountId]: accountStock,
+            },
+          };
+        }),
+      clearImportedStock: (accountId) =>
+        set((state) => ({
+          importedStockByAccount: {
+            ...state.importedStockByAccount,
+            [accountId]: {},
+          },
+        })),
     }),
     {
       name: 'tab-store',

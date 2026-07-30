@@ -9,6 +9,7 @@ import {
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
 import { getAccountBySessionId, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { saveSingleAccount } from '../elvenar/Accounts';
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
@@ -21,8 +22,8 @@ import { processMessages } from '../elvenar/processMessages';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
-import { processReplyMessage } from '../elvenar/processReplyMessage';
 import { processQuestUpdates } from '../elvenar/processQuestUpdates';
+import { processReplyMessage } from '../elvenar/processReplyMessage';
 import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
@@ -30,11 +31,10 @@ import { processTradeData } from '../elvenar/processTradeData';
 import { processTranscendenceService } from '../elvenar/processTranscendenceService';
 import { processUpdateChestPayInProgress } from '../elvenar/processUpdateChestPayInProgress';
 import { processUpdateWaypoints } from '../elvenar/processUpdateWaypoints';
+import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
-import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
-import { saveSingleAccount } from '../elvenar/Accounts';
 
 type Processors = Record<
   string,
@@ -88,7 +88,12 @@ export const playerSpecificRequestHandlerInternal = async (
 
   if (msg.payload.type !== 'Q:StartupService/getData') {
     if (!accountId) {
-      console.warn('ElvenAssist: Account ID not found for sessionId:', sharedInfo.sessionId, msg.payload.type, sharedInfo);
+      console.warn(
+        'ElvenAssist: Account ID not found for sessionId:',
+        sharedInfo.sessionId,
+        msg.payload.type,
+        sharedInfo,
+      );
       return;
     }
 
@@ -142,10 +147,12 @@ export const playerSpecificRequestHandlerInternal = async (
   }
 
   if (!accountId) {
-    console.warn('ElvenAssist: Account ID not found after processing StartupService/getData for sessionId:',
+    console.warn(
+      'ElvenAssist: Account ID not found after processing StartupService/getData for sessionId:',
       sharedInfo.sessionId,
       msg.payload.type,
-      sharedInfo);
+      sharedInfo,
+    );
     return;
   }
 

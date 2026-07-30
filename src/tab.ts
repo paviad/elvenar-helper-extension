@@ -1,7 +1,7 @@
-import { Subject, groupBy, mergeMap, debounceTime } from 'rxjs';
+import { debounceTime, groupBy, mergeMap, Subject } from 'rxjs';
 import {
-  setupCityEntitiesUpdatedListener,
   setupAccountsSavedRuntimeListener,
+  setupCityEntitiesUpdatedListener,
   setupMessageListener,
   setupOtherPlayerCityUpdatedListener,
 } from './chrome/messages';
@@ -39,7 +39,7 @@ const setupAccountsSavedHandler = () => {
   const updateSubject = new Subject<number>();
   const updateObservable = updateSubject.pipe(
     groupBy((tabId) => tabId),
-    mergeMap((group) => group.pipe(debounceTime(300)))
+    mergeMap((group) => group.pipe(debounceTime(300))),
   );
   updateObservable.subscribe((tabId) => {
     async function handleUpdate() {

@@ -249,7 +249,11 @@ export const sendMissingEeMessage = async (tabId: number, entityIds: number[]) =
 
 export const sendMessagesUpdatedMessage = async (tabId: number, reqRespType: string) => {
   try {
-    await chrome.tabs.sendMessage(tabId, { type: 'messagesUpdated', tabId, reqRespType } satisfies MessagesUpdatedMessage);
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'messagesUpdated',
+      tabId,
+      reqRespType,
+    } satisfies MessagesUpdatedMessage);
   } catch (e) {
     console.log('ElvenAssist: Error sending messagesUpdated message:', e);
   }
@@ -324,7 +328,9 @@ export const clearGenericResponseListener = (id: string) => {
   }
 };
 
-export const setupAccountsSavedRuntimeListener = (callback: (message: AccountsSavedRuntimeMessage) => Promise<void>) => {
+export const setupAccountsSavedRuntimeListener = (
+  callback: (message: AccountsSavedRuntimeMessage) => Promise<void>,
+) => {
   const id = crypto.randomUUID();
   callbackMap2[id] = { messageType: `accountsSavedRuntime`, callback };
   return id;
@@ -383,9 +389,8 @@ export const clearActiveEffectsUpdatedListener = () => {
 export const setupMissingEeListener = (callback: (message: MissingEeMessage) => void) =>
   (callbackMap['missingEe'] = callback);
 
-export const setupMessagesUpdatedListener = (
-  callback: (message: MessagesUpdatedMessage) => void | Promise<void>,
-) => (callbackMap['messagesUpdated'] = callback);
+export const setupMessagesUpdatedListener = (callback: (message: MessagesUpdatedMessage) => void | Promise<void>) =>
+  (callbackMap['messagesUpdated'] = callback);
 
 export const clearMessagesUpdatedListener = () => {
   delete callbackMap['messagesUpdated'];

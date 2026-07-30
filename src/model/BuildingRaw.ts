@@ -170,10 +170,7 @@ export interface Production {
 }
 
 export type ProductionClass =
-  | 'AutomaticProductionVO'
-  | 'ManualProductionVO'
-  | 'QueuedProductionVO'
-  | 'SwitchableProductionVO';
+  'AutomaticProductionVO' | 'ManualProductionVO' | 'QueuedProductionVO' | 'SwitchableProductionVO';
 
 export enum ProductionTitle {
   AvailableTours = 'Available Tours',

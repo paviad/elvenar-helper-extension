@@ -1,6 +1,6 @@
-import { GameMessage, MessageMetadataVO } from '../model/gameMessage';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { GameMessage, MessageMetadataVO } from '../model/gameMessage';
 import { getAccountBySessionId } from './AccountManager';
 import { extractElvenarResponse } from './extractElvenarResponse';
 

@@ -16,8 +16,8 @@ export const processCityResourcesUpdate = async (untypedJson: unknown, sharedInf
 
   const cityResources = json?.responseData as
     | {
-      resources: Record<string, number>;
-    }
+        resources: Record<string, number>;
+      }
     | undefined;
 
   const { __class__, ...resources } = cityResources?.resources || {};

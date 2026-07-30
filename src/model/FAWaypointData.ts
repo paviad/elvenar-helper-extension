@@ -1,4 +1,3 @@
-
 export interface FAWaypointData {
   id: string;
   state: string;
@@ -10,7 +9,7 @@ export interface FAWaypointData {
   color: string;
   position: number;
   isMultiColored: boolean;
-}// ============================================================================
+} // ============================================================================
 // INTERNAL DATA STORE MODEL
 // ============================================================================
 
@@ -28,4 +27,3 @@ export interface FAChestData {
   chestIndex: number;
   isMultiColored: boolean;
 }
-

@@ -38,9 +38,7 @@ function formatSeconds(seconds: number | undefined): string {
   if (isNaN(date.getTime())) return '';
   const now = new Date();
   const isToday =
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate();
+    date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
   const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   if (isToday) return time;
   return `${date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })} ${time}`;
@@ -282,7 +280,11 @@ export const MessagesView = () => {
           sx={{ flex: 1 }}
         >
           <ToggleButton value='inbox' aria-label='Inbox'>
-            <Badge color='primary' badgeContent={folder === 'inbox' ? unreadCount : 0} sx={{ mr: unreadCount ? 1.5 : 0 }}>
+            <Badge
+              color='primary'
+              badgeContent={folder === 'inbox' ? unreadCount : 0}
+              sx={{ mr: unreadCount ? 1.5 : 0 }}
+            >
               <MailOutlineIcon fontSize='small' sx={{ mr: 0.75 }} />
             </Badge>
             Inbox
@@ -459,12 +461,20 @@ export const MessagesView = () => {
                       <Box sx={{ mt: 0.5 }}>
                         <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>
                           {message.guild?.name || message.initiator?.name}
-                          {message.posts?.length ? ` · ${message.posts.length} post${message.posts.length === 1 ? '' : 's'}` : ''}
+                          {message.posts?.length
+                            ? ` · ${message.posts.length} post${message.posts.length === 1 ? '' : 's'}`
+                            : ''}
                         </Typography>
                         {preview && (
                           <Typography
                             variant='body2'
-                            sx={{ color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
                           >
                             <b>{preview.author?.name}:</b> {preview.post}
                           </Typography>
@@ -565,7 +575,16 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
 
       <Paper
         elevation={0}
-        sx={{ flexGrow: 1, overflowY: 'auto', minHeight: 0, p: 1.5, bgcolor: '#f9f9fb', display: 'flex', flexDirection: 'column', gap: 1.2 }}
+        sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          minHeight: 0,
+          p: 1.5,
+          bgcolor: '#f9f9fb',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.2,
+        }}
       >
         {posts.length === 0 ? (
           <Typography variant='body2' sx={{ color: 'text.secondary', textAlign: 'center', mt: 4 }}>
@@ -581,7 +600,10 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
                 spacing={1}
                 sx={{ alignItems: 'flex-start' }}
               >
-                <Avatar sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }} title={name}>
+                <Avatar
+                  sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }}
+                  title={name}
+                >
                   {name[0]}
                 </Avatar>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
