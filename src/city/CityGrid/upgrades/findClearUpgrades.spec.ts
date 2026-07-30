@@ -278,8 +278,7 @@ describe('findClearUpgrades', () => {
     const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [invItem(evo)]);
 
     expect(result.suggestions).toHaveLength(0);
-    expect(result.skipped.missingArtifact).toEqual(['Evolving Bear']);
-    expect(result.skipped.unreadableStages).toEqual([]);
+    expect(result.skippedMissingArtifact).toEqual(['Evolving Bear']);
   });
 
   it('does not report a skipped building that produces nothing it tracks', () => {
@@ -300,7 +299,7 @@ describe('findClearUpgrades', () => {
 
     const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [invItem(evo)]);
 
-    expect(result.skipped.missingArtifact).toEqual([]);
+    expect(result.skippedMissingArtifact).toEqual([]);
   });
 
   it('reports each skipped building once, however many copies are held', () => {
@@ -321,34 +320,79 @@ describe('findClearUpgrades', () => {
       invItem(evo, { id: 2, stage: 4 }),
     ]);
 
-    expect(result.skipped.missingArtifact).toEqual(['Evolving Bear']);
+    expect(result.skippedMissingArtifact).toEqual(['Evolving Bear']);
   });
 
-  it('names evolving buildings skipped for stage products it cannot interpret', () => {
-    const old = cityBuilding('A_Old_1', 10);
-    const evo = buildingEx(
-      {
-        id: 'A_Evt_Evo_Bear_1',
-        name: 'Evolving Bear',
-        base_name: 'A_Evt_Evo_Bear',
-        production: cityBuilding('x', 99).sourceBuilding.production,
-      },
-      { maxStage: 10 },
-    );
-    const evolving: StageProvision[] = [
-      {
-        baseName: 'A_Evt_Evo_Bear',
-        artifactId: 'INS_EVO_BEAR',
-        artifactCost: 1,
-        stages: [{ id: 1, products: [{ goodId: 'mana', value: 500 }] }],
-      },
+  describe('stage products', () => {
+    /** Two-slot building: slot 0 makes mana, slot 1 makes seeds, both 10/hour. */
+    const twoSlot = () =>
+      buildingEx(
+        {
+          id: 'A_Evt_Evo_Bear_1',
+          name: 'Evolving Bear',
+          base_name: 'A_Evt_Evo_Bear',
+          width: 2,
+          length: 2,
+          production: {
+            isSwitchable: false,
+            products: [
+              { production_time: HOUR, revenue: { resources: { mana: 10 } } },
+              { production_time: HOUR, revenue: { resources: { seeds: 10 } } },
+            ],
+          },
+        },
+        { maxStage: 10 },
+      );
+
+    const evolvingWith = (products: StageProvision['stages'][number]['products']): StageProvision[] => [
+      { baseName: 'A_Evt_Evo_Bear', artifactId: 'INS_EVO_BEAR', artifactCost: 1, stages: [{ id: 1, products }] },
     ];
 
-    const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [invItem(evo)]);
+    const valuesFor = (evolving: StageProvision[]) => {
+      // A trivial city building, so the bear always dominates and a row always appears.
+      const old = cityBuilding('A_Old_1', 1);
+      const item = invItem(twoSlot(), { stage: 1 });
+      return findClearUpgrades([blockFor(old)], finderFor(old), evolving, [item]).suggestions[0]?.newValues;
+    };
 
-    expect(result.suggestions).toHaveLength(0);
-    expect(result.skipped.unreadableStages).toEqual(['Evolving Bear']);
-    expect(result.skipped.missingArtifact).toEqual([]);
+    it('applies a factor to the slot it names, defaulting the index to 0', () => {
+      expect(valuesFor(evolvingWith([{ factor: 2 }, { index: 1, factor: 3 }]))).toEqual({ mana: 480, seeds: 720 });
+    });
+
+    it('treats a slot listed without a factor as not yet unlocked', () => {
+      // How the live data marks a locked slot: the Dragonsnail's fourth slot stays bare
+      // until stage 8, where it appears at factor 1.
+      expect(valuesFor(evolvingWith([{ factor: 1 }, { index: 1 }]))).toEqual({ mana: 240 });
+    });
+
+    it('treats a slot paid out as a flat item reward as contributing nothing here', () => {
+      expect(valuesFor(evolvingWith([{ factor: 1 }, { index: 1, goodId: 'INS_RF_SPL_5', value: 1 }]))).toEqual({
+        mana: 240,
+      });
+    });
+
+    it('leaves a slot the stage does not mention at its catalog value', () => {
+      expect(valuesFor(evolvingWith([{ factor: 2 }]))).toEqual({ mana: 480, seeds: 240 });
+    });
+
+    it('leaves every slot at its catalog value when the stage lists no products', () => {
+      expect(valuesFor(evolvingWith(undefined))).toEqual({ mana: 240, seeds: 240 });
+    });
+  });
+
+  it('ignores chapter Guardians on both sides', () => {
+    const guardian = cityBuilding('B_Guardian_XXV_Naturion_1', 10);
+    guardian.sourceBuilding.base_name = 'B_Guardian_XXV_Naturion';
+    const candidate = cityBuilding('A_New_1', 99);
+    const old = cityBuilding('A_Old_1', 10);
+    const guardianItem = cityBuilding('B_Guardian_XXVI_Ursalith_1', 99);
+    guardianItem.sourceBuilding.base_name = 'B_Guardian_XXVI_Ursalith';
+
+    const asCity = findClearUpgrades([blockFor(guardian)], finderFor(guardian), [], [invItem(candidate)]);
+    const asItem = findClearUpgrades([blockFor(old)], finderFor(old), [], [invItem(guardianItem)]);
+
+    expect(asCity.suggestions).toHaveLength(0);
+    expect(asItem.suggestions).toHaveLength(0);
   });
 
   it('flags an expiring city building and leads with the copy that runs out first', () => {

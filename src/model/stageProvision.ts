@@ -13,9 +13,13 @@ export interface Stage {
   products?: StageProduct[];
 }
 /**
- * Per-stage production scaling: `factor` multiplies the revenue of the building's base
- * product at `index`. Entries that instead carry goodId/value have unknown semantics,
- * and consumers must treat the stage data as unusable.
+ * What one of a building's catalog product slots yields at a given stage.
+ *
+ * `index` addresses the slot and defaults to 0. `factor` multiplies that slot's catalog
+ * revenue; an entry with no `factor` marks a slot that has not unlocked at this stage.
+ * `value` (optionally naming a `goodId`) replaces the slot with a flat item reward -
+ * knowledge points, spell fragments, relics, goods - and never appears alongside `factor`.
+ * A slot the stage does not mention keeps its catalog value.
  */
 export interface StageProduct {
   index?: number;

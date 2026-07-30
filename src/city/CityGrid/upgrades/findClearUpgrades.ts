@@ -1,6 +1,6 @@
 import { BuildingEx } from '../../../model/buildingEx';
 import { InventoryItem } from '../../../model/inventoryItem';
-import { StageProvision } from '../../../model/stageProvision';
+import { Stage, StageProvision } from '../../../model/stageProvision';
 import { CityBlock } from '../../CityBlock';
 
 /** Production resources the upgrade finder reasons about, plus culture (a provision). */
@@ -50,16 +50,11 @@ export interface ClearUpgradesResult {
   /** Resource columns that have at least one non-zero value, in display order. */
   resourceKeys: string[];
   /**
-   * Names of evolving inventory buildings that would have been worth comparing but had
-   * to be dropped. Both lists hold only buildings that produce something this finder
-   * tracks, so a name here means a real suggestion may have been lost.
+   * Evolving inventory buildings dropped because no artifact is recorded for them, leaving
+   * the stage they could reach unknown. Only buildings that produce something this finder
+   * tracks are listed, so a name here means a real suggestion may have been lost.
    */
-  skipped: {
-    /** No artifact recorded, so the reachable stage is unknown. A game reload refreshes this. */
-    missingArtifact: string[];
-    /** Stage production is expressed in a form this code cannot read. A reload will not help. */
-    unreadableStages: string[];
-  };
+  skippedMissingArtifact: string[];
 }
 
 interface ProductionProfile {
@@ -71,7 +66,28 @@ interface ProductionProfile {
   population: number;
   area: number;
   otherProduction: string[];
-  unknownStageData: boolean;
+}
+
+/**
+ * How much of each catalog product slot a building yields at a given stage.
+ *
+ * A stage lists one entry per slot, addressing it by `index` (absent means slot 0):
+ * an entry carrying a `factor` scales that slot's catalog revenue, while a bare entry
+ * marks a slot that has not unlocked yet. Slots unlock as the building evolves - the
+ * Dragonsnail's fourth slot stays bare until stage 8, where it appears at factor 1.
+ *
+ * An entry can instead carry `value` (with an optional `goodId`), which is an absolute
+ * item reward rather than a multiple of the catalog product: knowledge points, spell
+ * fragments, relics, goods. Across the live data no such entry names a resource this
+ * finder tracks, so those slots contribute nothing here and are treated as inactive.
+ * A slot the stage does not mention at all keeps its catalog value.
+ */
+function stageFactors(stageEntry: Stage | undefined): Map<number, number> | undefined {
+  if (!stageEntry?.products) return undefined;
+
+  const factors = new Map<number, number>();
+  stageEntry.products.forEach((p) => factors.set(p.index ?? 0, typeof p.factor === 'number' ? p.factor : 0));
+  return factors;
 }
 
 function buildProfile(building: BuildingEx, evolvingBuildings: StageProvision[], stage?: number): ProductionProfile {
@@ -81,12 +97,7 @@ function buildProfile(building: BuildingEx, evolvingBuildings: StageProvision[],
   const cultureFactor = stageEntry?.culture || 1;
   const populationFactor = stageEntry?.population || 1;
 
-  let unknownStageData = false;
-  const factorByIndex = new Map<number, number>();
-  stageEntry?.products?.forEach((p) => {
-    if (typeof p.index === 'number' && typeof p.factor === 'number') factorByIndex.set(p.index, p.factor);
-    else unknownStageData = true;
-  });
+  const factorByIndex = stageFactors(stageEntry);
 
   const provisions = source.provisions?.resources?.resources;
   const culture = Math.floor(Math.max(provisions?.culture ?? 0, 0) * cultureFactor);
@@ -101,7 +112,7 @@ function buildProfile(building: BuildingEx, evolvingBuildings: StageProvision[],
     const pTime = product.production_time;
     if (!pTime || pTime <= 0) return;
 
-    const dailyFactor = (86400 / pTime) * (factorByIndex.get(index) ?? 1);
+    const dailyFactor = (86400 / pTime) * (factorByIndex?.get(index) ?? 1);
     const option: Record<string, number> = {};
 
     Object.entries(product.revenue?.resources ?? {}).forEach(([res, amount]) => {
@@ -139,7 +150,6 @@ function buildProfile(building: BuildingEx, evolvingBuildings: StageProvision[],
     population,
     area: building.width * building.length,
     otherProduction: Array.from(otherProduction).sort(),
-    unknownStageData,
   };
 }
 
@@ -227,7 +237,6 @@ export function findClearUpgrades(
   inventory: InventoryItem[],
 ): ClearUpgradesResult {
   const missingArtifact = new Set<string>();
-  const unreadableStages = new Set<string>();
 
   // Inventory candidates: placeable buildings that are clear-upgrade material.
   interface Candidate {
@@ -240,8 +249,10 @@ export function findClearUpgrades(
   for (const item of inventory) {
     const building = item.building;
     if (!building || item.amount <= 0) continue;
-    // Buildable buildings (streets, residences, workshops, armories, manufactories) are excluded.
+    // Buildable buildings (streets, residences, workshops, armories, manufactories) are excluded,
+    // as are the chapter Guardians.
     if (/^[SRPOG]_/.test(building.sourceBuilding.base_name)) continue;
+    if (/^B_Guardian_/.test(building.sourceBuilding.base_name)) continue;
     if (building.expiration !== undefined || building.type === 'expiring') continue;
     const requirements = building.sourceBuilding.requirements?.resources;
     if ((requirements?.population ?? 0) > 0 || (requirements?.culture ?? 0) > 0) continue;
@@ -250,16 +261,12 @@ export function findClearUpgrades(
     const profile = buildProfile(building, evolvingBuildings, plan.targetStage ?? item.stage);
 
     // Stages scale what a building already makes, so whether it is worth comparing at all
-    // does not depend on the stage - which lets a building be judged relevant even when
-    // its evolution data is unusable, and keeps irrelevant ones out of the skip lists.
+    // does not depend on the stage - which keeps buildings whose artifact is unknown out of
+    // the notice unless dropping them actually costs a suggestion.
     if (!hasConsideredOutput(profile)) continue;
 
     if (plan.missingData) {
       missingArtifact.add(building.name);
-      continue;
-    }
-    if (profile.unknownStageData) {
-      unreadableStages.add(building.name);
       continue;
     }
 
@@ -276,8 +283,10 @@ export function findClearUpgrades(
   }
   const groups = new Map<string, Group>();
   for (const block of blocks) {
-    // Same exclusions as the table view: streets, residences, workshops, armories, wonders.
+    // Same exclusions as the table view: streets, residences, workshops, armories, wonders,
+    // plus the chapter Guardians.
     if (/^[SRPO]_/.test(block.gameId)) continue;
+    if (/^B_Guardian_/.test(block.gameId)) continue;
     if (block.entity.type === 'ancient_wonder') continue;
 
     const key = `${block.gameId}|${block.level}|${block.stage ?? ''}`;
@@ -370,12 +379,5 @@ export function findClearUpgrades(
   }
   const resourceKeys = UPGRADE_RESOURCE_ORDER.filter((k) => usedKeys.has(k));
 
-  return {
-    suggestions,
-    resourceKeys,
-    skipped: {
-      missingArtifact: [...missingArtifact].sort(),
-      unreadableStages: [...unreadableStages].sort(),
-    },
-  };
+  return { suggestions, resourceKeys, skippedMissingArtifact: [...missingArtifact].sort() };
 }
