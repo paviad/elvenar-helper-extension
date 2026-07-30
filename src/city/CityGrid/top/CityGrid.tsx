@@ -1,7 +1,8 @@
 import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
+import { generateUniqueId } from '../../../util/generateUniqueId';
 import { useCity } from '../../CityContext';
-import { GridMax, GridSize, PaddingTiles } from '../../gridConstants';
+import { ExpansionSize, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { commitDrop } from '../commitDrop';
 import { usePanZoom } from '../usePanZoom';
 import { BlockRect } from './BlockRect';
@@ -13,7 +14,7 @@ const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 export function CityGrid() {
   const city = useCity();
   const helper = useHelper();
-  const { dragIndex, blocks, highlightedIds, chapter, allTypes, techSprite } = city;
+  const { dragIndex, blocks, highlightedIds, chapter, allTypes, techSprite, unlockAreaMode, unlockedAreas } = city;
 
   const { containerRef, zoom, panHandlers } = usePanZoom({
     zoomLevels: ZOOM_LEVELS,
@@ -27,6 +28,71 @@ export function CityGrid() {
 
   // --- Initial Centering State ---
   const hasCentered = React.useRef(false);
+
+  // --- Unlock Area mode ---
+  const [hoveredLockedCell, setHoveredLockedCell] = React.useState<{ cx: number; cy: number } | null>(null);
+
+  // The grid is a lattice of ExpansionSize x ExpansionSize cells; a cell with any
+  // tile outside every unlocked area is still locked and can be unlocked.
+  const lockedCells = React.useMemo(() => {
+    if (!unlockAreaMode) return [];
+    const covered = new Set<string>();
+    unlockedAreas.forEach((area) => {
+      for (let x = area.x; x < area.x + area.width; x++) {
+        for (let y = area.y; y < area.y + area.length; y++) {
+          covered.add(`${x},${y}`);
+        }
+      }
+    });
+    const isUnlocked = (cx: number, cy: number) => {
+      for (let dx = 0; dx < ExpansionSize; dx++) {
+        for (let dy = 0; dy < ExpansionSize; dy++) {
+          if (!covered.has(`${cx * ExpansionSize + dx},${cy * ExpansionSize + dy}`)) return false;
+        }
+      }
+      return true;
+    };
+    const cells: { cx: number; cy: number }[] = [];
+    const cellsPerSide = GridMax / ExpansionSize;
+    for (let cx = 0; cx < cellsPerSide; cx++) {
+      for (let cy = 0; cy < cellsPerSide; cy++) {
+        if (!isUnlocked(cx, cy)) cells.push({ cx, cy });
+      }
+    }
+    return cells;
+  }, [unlockAreaMode, unlockedAreas]);
+
+  const { setUnlockAreaMode } = city;
+  React.useEffect(() => {
+    if (!unlockAreaMode) {
+      setHoveredLockedCell(null);
+      return;
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setUnlockAreaMode(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [unlockAreaMode, setUnlockAreaMode]);
+
+  const unlockCell = (cx: number, cy: number) => {
+    const area = { x: cx * ExpansionSize, y: cy * ExpansionSize, width: ExpansionSize, length: ExpansionSize };
+    city.setUnlockedAreas((prev) => [...prev, area]);
+    city.setMoveLog((prev) => [
+      ...prev,
+      {
+        id: generateUniqueId(),
+        name: 'Unlocked area',
+        from: { x: area.x, y: area.y },
+        to: { x: area.x, y: area.y },
+        movedChanged: false,
+        type: 'unlock',
+        unlockedArea: area,
+      },
+    ]);
+    city.clearRedoStack();
+    city.setUnlockAreaMode(false);
+  };
 
   // Dimension Calculation
   const gridSizePx = GridSize * zoom;
@@ -193,6 +259,28 @@ export function CityGrid() {
           ))}
 
           {blockRects}
+
+          {/* Unlock Area mode: shade the locked expansions and let the user pick one. */}
+          {unlockAreaMode &&
+            lockedCells.map(({ cx, cy }) => {
+              const isHovered = hoveredLockedCell?.cx === cx && hoveredLockedCell?.cy === cy;
+              return (
+                <rect
+                  key={`locked-${cx}-${cy}`}
+                  x={cx * ExpansionSize * gridSizePx}
+                  y={cy * ExpansionSize * gridSizePx}
+                  width={ExpansionSize * gridSizePx}
+                  height={ExpansionSize * gridSizePx}
+                  fill={isHovered ? 'rgba(255, 215, 0, 0.5)' : 'rgba(0, 0, 0, 0.35)'}
+                  stroke={isHovered ? 'gold' : 'none'}
+                  strokeWidth={2}
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={() => setHoveredLockedCell({ cx, cy })}
+                  onMouseLeave={() => setHoveredLockedCell(null)}
+                  onClick={() => unlockCell(cx, cy)}
+                />
+              );
+            })}
         </g>
       </svg>
     </div>

@@ -28,6 +28,7 @@ interface CityToolbarProps {
   onSave: () => void | Promise<void>;
   showSaveButton: boolean;
   onDeleteHighlighted: (highlighted: boolean) => void;
+  onUnlockArea: () => void;
   hasHighlightedBlocks: boolean;
   searchTerm: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -49,6 +50,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
   onSave,
   showSaveButton,
   onDeleteHighlighted,
+  onUnlockArea,
   hasHighlightedBlocks,
   searchTerm,
   onSearchChange,
@@ -129,6 +131,13 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
           <MenuItem onClick={closeMenus(() => onDeleteHighlighted(false))} disabled={!hasHighlightedBlocks}>
             Delete Non-Highlighted
           </MenuItem>
+          <Tooltip title={viewMode !== 'top' ? 'Available in the top-down view' : 'Click a locked area to unlock it'}>
+            <span>
+              <MenuItem onClick={closeMenus(onUnlockArea)} disabled={viewMode !== 'top'}>
+                Unlock Area
+              </MenuItem>
+            </span>
+          </Tooltip>
         </Menu>
       </Stack>
       <div>

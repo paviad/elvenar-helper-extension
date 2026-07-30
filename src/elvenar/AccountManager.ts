@@ -225,6 +225,7 @@ export const saveCurrentCityAs = async (
   cityEntities: CityEntity[],
   chapter: number,
   name?: string,
+  unlockedAreas?: UnlockedArea[],
 ) => {
   const currentAccount = getAccountById(currentAccountId);
   if (!currentAccount) {
@@ -254,11 +255,19 @@ export const saveCurrentCityAs = async (
   newAccountData.isDetached = true;
   newAccountData.cityQuery.cityEntities = cityEntities;
   newAccountData.cityQuery.chapter = chapter;
+  if (unlockedAreas) {
+    newAccountData.cityQuery.unlockedAreas = unlockedAreas;
+  }
   accounts[newAccountId] = newAccountData;
   await saveAllAccounts();
 };
 
-export const saveCityInPlace = async (accountId: string, cityEntities: CityEntity[], chapter: number) => {
+export const saveCityInPlace = async (
+  accountId: string,
+  cityEntities: CityEntity[],
+  chapter: number,
+  unlockedAreas?: UnlockedArea[],
+) => {
   const accountData = getAccountById(accountId);
   if (!accountData) {
     throw new Error('ElvenAssist: Account not found');
@@ -271,6 +280,9 @@ export const saveCityInPlace = async (accountId: string, cityEntities: CityEntit
   }
   accountData.cityQuery.cityEntities = cityEntities;
   accountData.cityQuery.chapter = chapter;
+  if (unlockedAreas) {
+    accountData.cityQuery.unlockedAreas = unlockedAreas;
+  }
   await saveAllAccounts();
 };
 

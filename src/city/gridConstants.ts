@@ -9,3 +9,6 @@ export const PaddingTiles = 20;
 
 /** Fill opacity for a block, so the grid stays visible underneath. */
 export const BlockOpacity = 0.8;
+
+/** An expansion is ExpansionSize x ExpansionSize tiles; areas unlock one expansion at a time. */
+export const ExpansionSize = 5;

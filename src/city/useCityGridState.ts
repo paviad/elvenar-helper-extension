@@ -545,7 +545,7 @@ export const useCityGridState = () => {
       return;
     }
 
-    await saveCityInPlace(city.accountId, newBlocks, city.chapter);
+    await saveCityInPlace(city.accountId, newBlocks, city.chapter, city.unlockedAreas);
     resetMovedInPlace(Object.values(blocks));
     city.triggerForceUpdate();
   }
@@ -553,7 +553,7 @@ export const useCityGridState = () => {
   async function handleSaveDialogSave(name: string) {
     setSaveAsDialog({ open: false, defaultName: '', existingCities: [] });
     const cityEntities = saveBack(Object.values(blocks));
-    await saveCurrentCityAs(city.accountId!, name, cityEntities, city.chapter);
+    await saveCurrentCityAs(city.accountId!, name, cityEntities, city.chapter, undefined, city.unlockedAreas);
     await sendCitySavedMessage(name);
     resetMovedInPlace(Object.values(blocks));
     setAccountId(name);

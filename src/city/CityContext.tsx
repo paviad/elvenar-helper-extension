@@ -58,6 +58,10 @@ export interface CityContextType {
   opacity: number;
   allTypes: string[];
   unlockedAreas: UnlockedArea[];
+  setUnlockedAreas: (fn: (prev: UnlockedArea[]) => UnlockedArea[]) => void;
+  /** When true, the grid lets the user pick a locked expansion to unlock. */
+  unlockAreaMode: boolean;
+  setUnlockAreaMode: (on: boolean) => void;
   triggerForceUpdate: () => void;
   forceUpdate: number;
   race: string;
@@ -115,6 +119,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [cityEntities, setCityEntities] = React.useState([[], []] as [CityEntityEx[], UnlockedArea[]]);
   const [unlockedAreas, setUnlockedAreas] = React.useState([] as UnlockedArea[]);
+  const [unlockAreaMode, setUnlockAreaMode] = React.useState(false);
   const triggerForceUpdate = useTabStore((state) => state.triggerForceUpdate);
   const forceUpdate = useTabStore((state) => state.forceUpdate);
 
@@ -218,11 +223,11 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     setModified(true);
     if (isDetached) {
       const cityEntities = saveBack(Object.values(blocks));
-      void saveCityInPlace(accountId!, cityEntities, chapter);
+      void saveCityInPlace(accountId!, cityEntities, chapter, unlockedAreas);
     } else {
       void saveCityAuto();
     }
-  }, [blocks, ready, dragIndex]);
+  }, [blocks, unlockedAreas, ready, dragIndex]);
 
   async function saveCityAuto() {
     if (!accountId) return;
@@ -233,7 +238,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     const cityEntities = saveBack(Object.values(blocks));
     const name = `${accountName} (autosave)`;
     const autoSaveAccountId = `${accountId} (autosave)`;
-    await saveCurrentCityAs(accountId, autoSaveAccountId, cityEntities, chapter, name);
+    await saveCurrentCityAs(accountId, autoSaveAccountId, cityEntities, chapter, name, unlockedAreas);
   }
 
   React.useEffect(() => {
@@ -245,6 +250,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     const blocks = Object.fromEntries(blocksArr.map((b) => [b.id, b]));
     setBlocks(blocks);
     setUnlockedAreas(unlockedAreas);
+    setUnlockAreaMode(false);
     setDragIndex(null);
     setReady(true);
   }, [cityEntities]);
@@ -362,6 +368,12 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     if (last.type === 'delete' && last.deletedBlock) {
       const g = last.deletedBlock;
       setBlocks((prev) => ({ ...prev, [g.id]: g }));
+    } else if (last.type === 'unlock' && last.unlockedArea) {
+      const a = last.unlockedArea;
+      setUnlockedAreas((prev) => {
+        const idx = prev.findIndex((r) => r.x === a.x && r.y === a.y && r.width === a.width && r.length === a.length);
+        return idx === -1 ? prev : [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      });
     } else if (last.type === 'duplicate' && last.duplicatedBlock) {
       const g = last.duplicatedBlock;
       setBlocks((prev) => {
@@ -391,6 +403,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     const last = redoStack[redoStack.length - 1];
     if (last.type === 'delete' && last.deletedBlock) {
       setBlocks((prev) => Object.fromEntries(Object.entries(prev).filter(([_, b]) => b.id !== last.id)));
+    } else if (last.type === 'unlock' && last.unlockedArea) {
+      const a = last.unlockedArea;
+      setUnlockedAreas((prev) => [...prev, a]);
     } else if (last.type === 'duplicate' && last.duplicatedBlock) {
       const g = last.duplicatedBlock;
       setBlocks((prev) => ({ ...prev, [g.id]: g }));
@@ -464,6 +479,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       opacity,
       allTypes,
       unlockedAreas,
+      setUnlockedAreas,
+      unlockAreaMode,
+      setUnlockAreaMode,
       triggerForceUpdate,
       forceUpdate,
       race,
@@ -503,6 +521,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       handleRedo,
       allTypes,
       unlockedAreas,
+      unlockAreaMode,
       triggerForceUpdate,
       forceUpdate,
       race,

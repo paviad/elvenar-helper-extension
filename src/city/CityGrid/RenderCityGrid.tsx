@@ -67,6 +67,7 @@ export const RenderCityGrid = () => {
         onSave={state.saveCity}
         showSaveButton={false}
         onDeleteHighlighted={state.deleteHighlightedBlocks}
+        onUnlockArea={() => city.setUnlockAreaMode(true)}
         hasHighlightedBlocks={hasHighlighted}
         searchTerm={city.searchTerm}
         onSearchChange={state.handleSearchChange}

@@ -67,6 +67,10 @@ export const RenderMoveLog = () => {
               <span style={{ color: '#0a6', fontWeight: 500 }}>
                 Duplicated <span style={{ fontWeight: 400 }}>{log.name}</span> at ({log.from.x}, {log.from.y})
               </span>
+            ) : log.type === 'unlock' ? (
+              <span style={{ color: '#06b', fontWeight: 500 }}>
+                Unlocked area at ({log.from.x}, {log.from.y})
+              </span>
             ) : (
               <span>
                 <span style={{ fontWeight: 500 }}>{log.name}</span>: ({log.from.x}, {log.from.y}) → ({log.to.x},{' '}
