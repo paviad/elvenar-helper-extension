@@ -1,8 +1,20 @@
 import React from 'react';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import GridViewIcon from '@mui/icons-material/GridView';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
-import { Badge, Button, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import {
+  Badge,
+  Button,
+  Divider,
+  Menu,
+  MenuItem,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+} from '@mui/material';
 
 interface CityToolbarProps {
   isDetached: boolean;
@@ -45,6 +57,13 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
   onViewModeChange,
   modified,
 }) => {
+  // City actions dropdown menu
+  const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
+  const closeMenu = (action?: () => void) => () => {
+    setMenuAnchor(null);
+    action?.();
+  };
+
   // Sticky-to-fixed search box logic
   const searchBoxRef = React.useRef<HTMLDivElement>(null);
   const searchBoxOffset = React.useRef<number | null>(null);
@@ -83,22 +102,28 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
             Refresh City
           </Button>
         )}
-        <Button onClick={onSellStreets}>Sell Streets</Button>
         <Button onClick={onBuild}>Build</Button>
-        <Button onClick={onImport}>Import City</Button>
-        <Button onClick={onExport}>Export City</Button>
-        <Button onClick={onSaveAs}>Save City As...</Button>
-        <Button onClick={onDelete} sx={{ color: 'red' }}>
-          Delete
-        </Button>
-
         {showSaveButton && <Button onClick={() => void onSave()}>Save</Button>}
-        <Button onClick={() => onDeleteHighlighted(true)} disabled={!hasHighlightedBlocks}>
-          Delete Highlighted
+        <Button endIcon={<ArrowDropDownIcon />} onClick={(e) => setMenuAnchor(e.currentTarget)}>
+          City
         </Button>
-        <Button onClick={() => onDeleteHighlighted(false)} disabled={!hasHighlightedBlocks}>
-          Delete Non-Highlighted
-        </Button>
+        <Menu anchorEl={menuAnchor} open={menuAnchor !== null} onClose={closeMenu()}>
+          <MenuItem onClick={closeMenu(onImport)}>Import</MenuItem>
+          <MenuItem onClick={closeMenu(onExport)}>Export</MenuItem>
+          <MenuItem onClick={closeMenu(onSaveAs)}>Save As...</MenuItem>
+          <Divider />
+          <MenuItem onClick={closeMenu(onSellStreets)}>Sell Streets</MenuItem>
+          <MenuItem onClick={closeMenu(() => onDeleteHighlighted(true))} disabled={!hasHighlightedBlocks}>
+            Delete Highlighted
+          </MenuItem>
+          <MenuItem onClick={closeMenu(() => onDeleteHighlighted(false))} disabled={!hasHighlightedBlocks}>
+            Delete Non-Highlighted
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={closeMenu(onDelete)} sx={{ color: 'red' }}>
+            Delete City
+          </MenuItem>
+        </Menu>
       </Stack>
       <div>
         {/* Toolbar Line: Search + Grid Position + View Toggle */}
