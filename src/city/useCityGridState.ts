@@ -21,7 +21,6 @@ import { getBuildingFinder } from './buildingFinder';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { CityBlock } from './CityBlock';
 import { useCity } from './CityContext';
-import { getEntityMaxLevel } from './CityGrid/getEntityMaxLevel';
 import { resetMovedInPlace, saveBack } from './generateCity';
 import { getChapterFromEntity, getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
@@ -43,7 +42,6 @@ export const useCityGridState = () => {
     setOriginalPos,
     setSearchTerm,
     setMenu,
-    maxLevels,
     dragIndex,
   } = city;
 
@@ -99,9 +97,7 @@ export const useCityGridState = () => {
         const finder = getBuildingFinder();
         await finder.ensureInitialized();
 
-        // const maxLevel = getEntityMaxLevel(block.entity.cityentity_id, block.type, maxLevels);
         const maxStage = finder.getBuilding(block.entity.cityentity_id, block.entity.level || 1)?.maxStage || 0;
-        // if (maxLevel === 1) return;
 
         let newStage = block.entity.stage;
         let newLevel = block.entity.level || 1;
@@ -115,7 +111,6 @@ export const useCityGridState = () => {
           }
         } else {
           if (['Equal', 'NumpadAdd', 'BracketRight'].includes(event.code)) {
-            // if (newLevel < maxLevel)
             newLevel++;
           } else if (['Minus', 'NumpadSubtract', 'Slash'].includes(event.code)) {
             if (newLevel > 1) newLevel--;
@@ -226,17 +221,7 @@ export const useCityGridState = () => {
     const listener = (event: KeyboardEvent) => void handleKeyDown(event);
     window.addEventListener('keydown', listener);
     return () => window.removeEventListener('keydown', listener);
-  }, [
-    dragIndex,
-    blocks,
-    maxLevels,
-    setBlocks,
-    setDragIndex,
-    setDragOffset,
-    setMoveLog,
-    city.originalPos,
-    setOriginalPos,
-  ]);
+  }, [dragIndex, blocks, setBlocks, setDragIndex, setDragOffset, setMoveLog, city.originalPos, setOriginalPos]);
 
   // Keyboard Shortcuts (Ctrl+S, Alt+B). saveCity closes over the current blocks, so
   // it is reached through a ref: depending on blocks directly detached and reattached

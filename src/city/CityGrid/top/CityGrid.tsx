@@ -61,8 +61,12 @@ export function CityGrid() {
   helperRef.current = helper;
 
   const onPickUp = React.useCallback(
-    (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) =>
-      handleMouseDown(cityRef.current, helperRef.current, e, blockKey, zoom),
+    (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => {
+      // Checked here rather than passed to every block: as a prop it changed on drag
+      // start and end, re-rendering all of them twice per gesture.
+      if (cityRef.current.dragIndex !== null) return;
+      handleMouseDown(cityRef.current, helperRef.current, e, blockKey, zoom);
+    },
     [zoom],
   );
 
@@ -115,7 +119,6 @@ export function CityGrid() {
         chapter={chapter}
         allTypes={allTypes}
         isHighlighted={highlightedIds.has(block.id)}
-        isAnyDragging={dragIndex !== null}
         sprite={techSprite}
         onPickUp={onPickUp}
         onOpenMenu={onOpenMenu}

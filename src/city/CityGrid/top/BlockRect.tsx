@@ -15,8 +15,6 @@ export interface BlockRectProps {
   chapter: number;
   allTypes: string[];
   isHighlighted: boolean;
-  /** True while any block is being dragged, which suppresses picking up another. */
-  isAnyDragging: boolean;
   sprite?: { url: string; width: number; height: number };
   onPickUp: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
   onOpenMenu: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
@@ -37,7 +35,6 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
   chapter,
   allTypes,
   isHighlighted,
-  isAnyDragging,
   sprite,
   onPickUp,
   onOpenMenu,
@@ -53,11 +50,10 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
   });
 
   const dragging = blockKey === 'dragged';
-  const canPickUp = !dragging && !isAnyDragging;
   const cursor = dragging ? 'grab' : 'grabbing';
 
   const handleClick = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
-    if (canPickUp) onPickUp(e, Number(blockKey));
+    if (!dragging) onPickUp(e, Number(blockKey));
   };
 
   const handleContextMenu = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {

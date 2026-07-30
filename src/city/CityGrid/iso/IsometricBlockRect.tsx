@@ -16,8 +16,6 @@ export interface IsometricBlockRectProps {
   chapter: number;
   allTypes: string[];
   isHighlighted: boolean;
-  /** True while any block is being dragged, which suppresses picking up another. */
-  isAnyDragging: boolean;
   sprite?: { url: string; width: number; height: number };
   onPickUp: (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => void;
   onOpenMenu: (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => void;
@@ -34,7 +32,6 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
   chapter,
   allTypes,
   isHighlighted,
-  isAnyDragging,
   sprite,
   onPickUp,
   onOpenMenu,
@@ -50,11 +47,10 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
   });
 
   const dragging = typeof blockKey === 'string';
-  const canPickUp = !dragging && !isAnyDragging;
   const cursor = dragging ? 'grab' : 'grabbing';
 
   const handleClick = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
-    if (canPickUp) onPickUp(e, Number(blockKey));
+    if (!dragging) onPickUp(e, Number(blockKey));
   };
 
   const handleContextMenu = (e: React.MouseEvent<SVGElement, MouseEvent>) => {

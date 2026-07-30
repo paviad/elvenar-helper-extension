@@ -8,8 +8,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Card,
-  CardContent,
   Divider,
   LinearProgress,
   Stack,

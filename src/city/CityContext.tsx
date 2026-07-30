@@ -278,16 +278,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     setEmptySquares(unoccupiedSquares.length);
   }, [blocks, dragIndex]);
 
-  // temporary
-  const lastId = React.useRef<number>(-1);
-  React.useEffect(() => {
-    if (dragIndex === null) return;
-    if (blocks[dragIndex].id === lastId.current) return;
-    // console.log('ElvenAssist: Dragging block:', blocks[dragIndex], lastId.current);
-    lastId.current = blocks[dragIndex].id;
-  }, [dragIndex, blocks]);
-  // end temporary
-
   React.useEffect(() => {
     async function Do() {
       await buildingFinder?.ensureInitialized();

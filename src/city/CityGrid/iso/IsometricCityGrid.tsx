@@ -87,8 +87,12 @@ export function IsometricCityGrid() {
   helperRef.current = helper;
 
   const onPickUp = React.useCallback(
-    (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) =>
-      handleIsoMouseDownWithZoom(cityRef.current, helperRef.current, e, blockKey, zoom),
+    (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => {
+      // See the note in the top-down grid: as a prop this re-rendered every block
+      // twice per gesture.
+      if (cityRef.current.dragIndex !== null) return;
+      handleIsoMouseDownWithZoom(cityRef.current, helperRef.current, e, blockKey, zoom);
+    },
     [zoom],
   );
 
@@ -133,7 +137,6 @@ export function IsometricCityGrid() {
         chapter={chapter}
         allTypes={allTypes}
         isHighlighted={highlightedIds.has(block.id)}
-        isAnyDragging={dragIndex !== null}
         sprite={techSprite}
         onPickUp={onPickUp}
         onOpenMenu={onOpenMenu}
