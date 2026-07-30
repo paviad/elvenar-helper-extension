@@ -5,7 +5,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment'; // For stats/analys
 import GroupWorkIcon from '@mui/icons-material/GroupWork'; // For grouping/aggregation
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'; // For resale/value
 import SearchIcon from '@mui/icons-material/Search';
-import { Badge, Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
 
 export const InventoryManager = () => (
   <Box>
@@ -44,26 +44,9 @@ export const InventoryManager = () => (
       }}
     />
 
-    {/* City Planner Integration with NEW badge */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <AddLocationIcon color='primary' fontSize='small' />
-      <Badge
-        badgeContent='NEW'
-        color='secondary'
-        sx={{
-          mr: 3, // Margin right to ensure spacing after the badge
-          '& .MuiBadge-badge': {
-            fontSize: '0.6rem',
-            height: 16,
-            minWidth: 16,
-            px: 0.5,
-            right: -24, // Shifts the badge to the right of the text
-            top: 4, // Aligns it vertically with the text
-          },
-        }}
-      >
-        City Planner Integration
-      </Badge>
+      City Planner Integration
     </Typography>
     <List dense disablePadding>
       <ListItem>

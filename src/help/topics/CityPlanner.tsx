@@ -6,7 +6,7 @@ import KeyboardIcon from '@mui/icons-material/Keyboard';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { Badge, Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
 
 export const CityPlanner = () => (
   <Box>
@@ -140,40 +140,10 @@ export const CityPlanner = () => (
         <ListItemText primary='Minus (-)' secondary='Decrease the level or chapter of the building you are holding.' />
       </ListItem>
       <ListItem>
-        <Badge
-          badgeContent='NEW'
-          color='secondary'
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-          sx={{
-            '& .MuiBadge-badge': {
-              fontSize: '0.6rem',
-              height: 16,
-              minWidth: 16,
-              px: 0.5,
-              ml: -2,
-            },
-          }}
-        >
-          <ListItemText primary='Shift + Plus (+)' secondary='Increase the stage of an evolving building.' />
-        </Badge>
+        <ListItemText primary='Shift + Plus (+)' secondary='Increase the stage of an evolving building.' />
       </ListItem>
       <ListItem>
-        <Badge
-          badgeContent='NEW'
-          color='secondary'
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-          sx={{
-            '& .MuiBadge-badge': {
-              fontSize: '0.6rem',
-              height: 16,
-              minWidth: 16,
-              px: 0.5,
-              ml: -2,
-            },
-          }}
-        >
-          <ListItemText primary='Shift + Minus (-)' secondary='Decrease the stage of an evolving building.' />
-        </Badge>
+        <ListItemText primary='Shift + Minus (-)' secondary='Decrease the stage of an evolving building.' />
       </ListItem>
       <ListItem>
         <ListItemText primary='Delete (DEL)' secondary='Delete the building you are currently holding.' />

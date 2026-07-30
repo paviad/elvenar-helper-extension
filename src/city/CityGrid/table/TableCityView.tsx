@@ -1,7 +1,6 @@
 import React from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
-  Badge,
   Box,
   Button,
   FormControlLabel,
@@ -343,27 +342,12 @@ export const TableCityView = () => {
           gap: 2,
         }}
       >
-        <Badge
-          badgeContent='NEW'
-          color='secondary'
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-          sx={{
-            '& .MuiBadge-badge': {
-              fontSize: '0.6rem',
-              height: 16,
-              minWidth: 16,
-              px: 0.5,
-              mt: -0.5,
-            },
-          }}
-        >
-          <FormControlLabel
-            control={<Switch checked={showUpgrades} onChange={onChangeShowUpgrades} size='small' color='secondary' />}
-            label={
-              <span style={{ fontSize: '0.875rem', fontWeight: showUpgrades ? 'bold' : 'normal' }}>Show Upgrades</span>
-            }
-          />
-        </Badge>
+        <FormControlLabel
+          control={<Switch checked={showUpgrades} onChange={onChangeShowUpgrades} size='small' color='secondary' />}
+          label={
+            <span style={{ fontSize: '0.875rem', fontWeight: showUpgrades ? 'bold' : 'normal' }}>Show Upgrades</span>
+          }
+        />
         <FormControlLabel
           control={<Switch checked={showPerSquare} onChange={(e) => setShowPerSquare(e.target.checked)} size='small' />}
           label={<span style={{ fontSize: '0.875rem' }}>Show per square</span>}

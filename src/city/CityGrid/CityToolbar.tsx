@@ -194,23 +194,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
               </ToggleButton>
               <ToggleButton value='table' aria-label='table view'>
                 <Tooltip title='List/Table view'>
-                  <Badge
-                    badgeContent='NEW'
-                    color='secondary'
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        fontSize: '0.6rem',
-                        height: 16,
-                        minWidth: 16,
-                        px: 0.5,
-                        mr: 1,
-                        mt: -0.7,
-                      },
-                    }}
-                  >
-                    <TableRowsIcon fontSize='small' />
-                  </Badge>
+                  <TableRowsIcon fontSize='small' />
                 </Tooltip>
               </ToggleButton>
               <ToggleButton value='upgrades' aria-label='upgrade suggestions view'>
