@@ -130,17 +130,22 @@ interface Transcendence {
 export const processEvolvingBuildings = async (responseText: string) => {
   const evolvingBuildingsRaw = JSON.parse(responseText) as StageProvisionRaw[];
 
-  const evolvingBuildings = evolvingBuildingsRaw.map(
-    (z) =>
-      ({
-        baseName: z.baseName,
-        stages: z.stages.map((s) => ({
-          id: s.id,
-          culture: s.provisions?.find((p) => p.name === Name.Culture)?.value,
-          population: s.provisions?.find((p) => p.name === Name.Population)?.value,
-        })),
-      }) satisfies StageProvision,
-  );
+  const evolvingBuildings = evolvingBuildingsRaw.map((z) => {
+    const artifactEntry = Object.entries(z.costs?.resources ?? {}).find(([, v]) => typeof v === 'number') as
+      [string, number] | undefined;
+
+    return {
+      baseName: z.baseName,
+      artifactId: artifactEntry?.[0],
+      artifactCost: artifactEntry?.[1],
+      stages: z.stages.map((s) => ({
+        id: s.id,
+        culture: s.provisions?.find((p) => p.name === Name.Culture)?.value,
+        population: s.provisions?.find((p) => p.name === Name.Population)?.value,
+        products: s.products?.map((p) => ({ index: p.index, factor: p.factor, goodId: p.goodId, value: p.value })),
+      })),
+    } satisfies StageProvision;
+  });
 
   await setEvolvingBuildings(evolvingBuildings);
 };

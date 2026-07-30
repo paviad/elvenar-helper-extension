@@ -18,6 +18,7 @@ import { TableCityView } from './table/TableCityView';
 import { CityGrid } from './top/CityGrid';
 import { subscribeToMouseMove as subscribeToTopMouseMove } from './top/handleMouseMove';
 import { unlockExpansion } from './unlockExpansion';
+import { UpgradesCityView } from './upgrades/UpgradesCityView';
 
 export const RenderCityGrid = () => {
   const city = useCity();
@@ -53,6 +54,14 @@ export const RenderCityGrid = () => {
   }, []);
 
   const hasHighlighted = city.highlightedIds.size > 0;
+
+  // Replace = delete the old building, then spawn the inventory item in drag mode
+  // on the top-down grid. The user positions it and makes room if needed.
+  const handleReplace = (blockId: number, itemId: number) => {
+    state.setViewMode('top');
+    state.handleDeleteBlock(blockId);
+    void state.onBuildFromInventory(itemId);
+  };
 
   return (
     <Stack>
@@ -93,6 +102,7 @@ export const RenderCityGrid = () => {
           {state.viewMode === 'top' && <CityGrid />}
           {state.viewMode === 'iso' && <IsometricCityGrid />}
           {state.viewMode === 'table' && <TableCityView />}
+          {state.viewMode === 'upgrades' && <UpgradesCityView onReplace={handleReplace} />}
         </Box>
 
         {/* Modal Numeric Input Dialog */}

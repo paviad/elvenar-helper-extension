@@ -2,6 +2,7 @@ import React from 'react';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import GridViewIcon from '@mui/icons-material/GridView';
 import TableRowsIcon from '@mui/icons-material/TableRows';
+import UpgradeIcon from '@mui/icons-material/Upgrade';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import {
   Badge,
@@ -33,8 +34,8 @@ interface CityToolbarProps {
   searchTerm: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   mousePositionRef: React.RefObject<HTMLDivElement | null>;
-  viewMode: 'top' | 'iso' | 'table';
-  onViewModeChange: (mode: 'top' | 'iso' | 'table') => void;
+  viewMode: 'top' | 'iso' | 'table' | 'upgrades';
+  onViewModeChange: (mode: 'top' | 'iso' | 'table' | 'upgrades') => void;
   modified: boolean;
 }
 
@@ -177,7 +178,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
             <ToggleButtonGroup
               value={viewMode}
               exclusive
-              onChange={(e, newMode: 'top' | 'iso' | 'table') => newMode && onViewModeChange(newMode)}
+              onChange={(e, newMode: 'top' | 'iso' | 'table' | 'upgrades') => newMode && onViewModeChange(newMode)}
               size='small'
               aria-label='view mode'
             >
@@ -209,6 +210,27 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
                     }}
                   >
                     <TableRowsIcon fontSize='small' />
+                  </Badge>
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton value='upgrades' aria-label='upgrade suggestions view'>
+                <Tooltip title='Upgrade suggestions from your inventory'>
+                  <Badge
+                    badgeContent='NEW'
+                    color='secondary'
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    sx={{
+                      '& .MuiBadge-badge': {
+                        fontSize: '0.6rem',
+                        height: 16,
+                        minWidth: 16,
+                        px: 0.5,
+                        mr: 1,
+                        mt: -0.7,
+                      },
+                    }}
+                  >
+                    <UpgradeIcon fontSize='small' />
                   </Badge>
                 </Tooltip>
               </ToggleButton>

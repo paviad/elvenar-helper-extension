@@ -20,8 +20,8 @@ interface TabState {
   setOtherCityUpdated: (updated: boolean) => void;
   legendCollapsed: boolean;
   setLegendCollapsed: (collapsed: boolean) => void;
-  viewMode: 'top' | 'iso' | 'table';
-  setViewMode: (mode: 'top' | 'iso' | 'table') => void;
+  viewMode: 'top' | 'iso' | 'table' | 'upgrades';
+  setViewMode: (mode: 'top' | 'iso' | 'table' | 'upgrades') => void;
   avatarPosition: { x: number; y: number };
   setAvatarPosition: (pos: { x: number; y: number }) => void;
 
