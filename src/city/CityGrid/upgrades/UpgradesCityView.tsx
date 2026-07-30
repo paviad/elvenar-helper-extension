@@ -138,10 +138,12 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
       else byKey.set(key, [row]);
     }
 
+    // An evolving item is named by the highest stage it could be raised to, matching the
+    // stage its rows are compared at rather than the one it sits at in the inventory.
     const labelFor = (row: UpgradeSuggestion) =>
       groupBy === 'city'
         ? `${row.oldName}${row.oldLevel > 1 ? ` (Level ${row.oldLevel})` : ''}${row.oldStage ? ` (Stage ${row.oldStage})` : ''}`
-        : `${row.newName}${row.currentItemStage ? ` (Stage ${row.currentItemStage})` : ''}${row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}`;
+        : `${row.newName}${row.targetStage ? ` (Stage ${row.targetStage})` : ''}${row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}`;
 
     return [...byKey.entries()].map(([key, groupRows]) => ({ key, label: labelFor(groupRows[0]), rows: groupRows }));
   }, [rows, groupBy]);
