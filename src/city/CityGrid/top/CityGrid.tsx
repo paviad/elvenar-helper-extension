@@ -1,9 +1,9 @@
 import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
-import { generateUniqueId } from '../../../util/generateUniqueId';
 import { useCity } from '../../CityContext';
 import { ExpansionSize, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { commitDrop } from '../commitDrop';
+import { unlockExpansion } from '../unlockExpansion';
 import { usePanZoom } from '../usePanZoom';
 import { BlockRect } from './BlockRect';
 import { handleMouseDown } from './handleMouseDown';
@@ -35,7 +35,6 @@ export function CityGrid() {
   // The grid is a lattice of ExpansionSize x ExpansionSize cells; a cell with any
   // tile outside every unlocked area is still locked and can be unlocked.
   const lockedCells = React.useMemo(() => {
-    if (!unlockAreaMode) return [];
     const covered = new Set<string>();
     unlockedAreas.forEach((area) => {
       for (let x = area.x; x < area.x + area.width; x++) {
@@ -60,7 +59,9 @@ export function CityGrid() {
       }
     }
     return cells;
-  }, [unlockAreaMode, unlockedAreas]);
+  }, [unlockedAreas]);
+
+  const lockedCellSet = React.useMemo(() => new Set(lockedCells.map((c) => `${c.cx},${c.cy}`)), [lockedCells]);
 
   const { setUnlockAreaMode } = city;
   React.useEffect(() => {
@@ -75,23 +76,20 @@ export function CityGrid() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [unlockAreaMode, setUnlockAreaMode]);
 
-  const unlockCell = (cx: number, cy: number) => {
-    const area = { x: cx * ExpansionSize, y: cy * ExpansionSize, width: ExpansionSize, length: ExpansionSize };
-    city.setUnlockedAreas((prev) => [...prev, area]);
-    city.setMoveLog((prev) => [
-      ...prev,
-      {
-        id: generateUniqueId(),
-        name: 'Unlocked area',
-        from: { x: area.x, y: area.y },
-        to: { x: area.x, y: area.y },
-        movedChanged: false,
-        type: 'unlock',
-        unlockedArea: area,
-      },
-    ]);
-    city.clearRedoStack();
-    city.setUnlockAreaMode(false);
+  // Right-clicking a locked expansion offers to unlock it, without arming the mode
+  // first. A block's own context menu bubbles up preventDefault-ed, so it wins.
+  const onSvgContextMenu = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (e.defaultPrevented || city.dragIndex !== null) return;
+    const svg = city.svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const cx = Math.floor((x - paddingPx) / (gridSizePx * ExpansionSize));
+    const cy = Math.floor((y - paddingPx) / (gridSizePx * ExpansionSize));
+    if (!lockedCellSet.has(`${cx},${cy}`)) return;
+    e.preventDefault();
+    city.setMenu({ key: `locked:${cx},${cy}`, x, y });
   };
 
   // Dimension Calculation
@@ -217,6 +215,7 @@ export function CityGrid() {
           backgroundColor: '#1a1a2e',
         }}
         onClick={() => commitDrop(city)}
+        onContextMenu={onSvgContextMenu}
       >
         {/* Shift visual grid by Padding */}
         <g transform={`translate(${paddingPx}, ${paddingPx})`}>
@@ -277,7 +276,7 @@ export function CityGrid() {
                   style={{ cursor: 'pointer' }}
                   onMouseEnter={() => setHoveredLockedCell({ cx, cy })}
                   onMouseLeave={() => setHoveredLockedCell(null)}
-                  onClick={() => unlockCell(cx, cy)}
+                  onClick={() => unlockExpansion(city, cx, cy)}
                 />
               );
             })}

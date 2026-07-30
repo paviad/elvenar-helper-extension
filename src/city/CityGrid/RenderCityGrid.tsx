@@ -17,6 +17,7 @@ import SaveCityDialog from './SaveCityDialog';
 import { TableCityView } from './table/TableCityView';
 import { CityGrid } from './top/CityGrid';
 import { subscribeToMouseMove as subscribeToTopMouseMove } from './top/handleMouseMove';
+import { unlockExpansion } from './unlockExpansion';
 
 export const RenderCityGrid = () => {
   const city = useCity();
@@ -121,6 +122,14 @@ export const RenderCityGrid = () => {
             onDuplicate={() => state.handleDuplicateBlock(menu.key)}
             onDelete={() => state.handleDeleteBlock(menu.key)}
             onChangeLevel={() => state.handleChangeLevel(menu.key)}
+            onUnlockArea={
+              typeof menu.key === 'string' && menu.key.startsWith('locked:')
+                ? () => {
+                    const [cx, cy] = (menu.key as string).slice('locked:'.length).split(',').map(Number);
+                    unlockExpansion(city, cx, cy);
+                  }
+                : undefined
+            }
           />
         )}
 

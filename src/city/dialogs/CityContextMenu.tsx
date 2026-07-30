@@ -10,6 +10,8 @@ interface CityContextMenuProps {
   onDuplicate: () => void;
   onDelete: () => void;
   onChangeLevel: () => void;
+  /** When set, the menu was opened on a locked expansion and offers only this action. */
+  onUnlockArea?: () => void;
   block?: CityBlock;
 }
 
@@ -35,6 +37,7 @@ export const CityContextMenu: React.FC<CityContextMenuProps> = ({
   onDuplicate,
   onDelete,
   onChangeLevel,
+  onUnlockArea,
   block,
 }) => {
   const svgElem = svgRef.current;
@@ -56,18 +59,26 @@ export const CityContextMenu: React.FC<CityContextMenuProps> = ({
       onContextMenu={(e) => e.preventDefault()}
     >
       <List dense disablePadding>
-        <ListItemButton onClick={onDuplicate}>
-          <ListItemText primary='Duplicate' />
-        </ListItemButton>
-        <Divider />
-        <ListItemButton onClick={onDelete}>
-          <ListItemText primary='Delete' />
-        </ListItemButton>
-        <Divider />
-        {block && /^[GPRHMOYDBZ]_/.test(block.gameId) && (
-          <ListItemButton onClick={onChangeLevel}>
-            <ListItemText primary='Change Level' />
+        {onUnlockArea ? (
+          <ListItemButton onClick={onUnlockArea}>
+            <ListItemText primary='Unlock Area' />
           </ListItemButton>
+        ) : (
+          <>
+            <ListItemButton onClick={onDuplicate}>
+              <ListItemText primary='Duplicate' />
+            </ListItemButton>
+            <Divider />
+            <ListItemButton onClick={onDelete}>
+              <ListItemText primary='Delete' />
+            </ListItemButton>
+            <Divider />
+            {block && /^[GPRHMOYDBZ]_/.test(block.gameId) && (
+              <ListItemButton onClick={onChangeLevel}>
+                <ListItemText primary='Change Level' />
+              </ListItemButton>
+            )}
+          </>
         )}
       </List>
     </Paper>,
