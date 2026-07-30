@@ -23,6 +23,8 @@ export interface Building {
   provisions?: { resources: { resources: ProvisionResources } };
   spellFragments: number;
   rankingPoints?: number;
+  /** Part of a set, so its output depends on which buildings it touches. */
+  isSetBuilding?: boolean;
 }
 
 type Category =

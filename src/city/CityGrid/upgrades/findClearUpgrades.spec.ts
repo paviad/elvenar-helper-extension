@@ -127,8 +127,8 @@ describe('findClearUpgrades', () => {
   });
 
   it('accepts a smaller candidate with equal output', () => {
-    const old = cityBuilding('A_Old_1', 10);
-    const candidate = cityBuilding('A_New_1', 10, 0, [1, 2]);
+    const old = cityBuilding('A_Old_1', 10, 0, [3, 3]);
+    const candidate = cityBuilding('A_New_1', 10, 0, [2, 2]);
 
     const result = findClearUpgrades([blockFor(old)], finderFor(old), [], [invItem(candidate)]);
 
@@ -303,6 +303,41 @@ describe('findClearUpgrades', () => {
 
     expect(result.suggestions).toHaveLength(0);
     expect(result.skippedEvolvingItems).toBe(1);
+  });
+
+  it('never suggests replacing a set building', () => {
+    const flagged = cityBuilding('A_Set_1', 10);
+    flagged.sourceBuilding.isSetBuilding = true;
+    const byStrategy = cityBuilding('A_Set_2', 10);
+    byStrategy.connectionStrategy = 'set_buildings';
+    const candidate = cityBuilding('A_New_1', 99);
+
+    const result = findClearUpgrades(
+      [blockFor(flagged, { id: 1 }), blockFor(byStrategy, { id: 2 })],
+      finderFor(flagged, byStrategy),
+      [],
+      [invItem(candidate)],
+    );
+
+    expect(result.suggestions).toHaveLength(0);
+  });
+
+  it('rejects a 1xN replacement for a building that is thicker than one tile', () => {
+    const old = cityBuilding('A_Old_1', 10);
+    const thin = cityBuilding('A_New_1', 99, 0, [1, 2]);
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), [], [invItem(thin)]);
+
+    expect(result.suggestions).toHaveLength(0);
+  });
+
+  it('allows a 1xN replacement when the city building is itself 1xN', () => {
+    const old = cityBuilding('A_Old_1', 10, 0, [1, 4]);
+    const thin = cityBuilding('A_New_1', 30, 0, [1, 4]);
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), [], [invItem(thin)]);
+
+    expect(result.suggestions).toHaveLength(1);
   });
 
   it('reports both levels so a same-named upgrade can be told apart', () => {

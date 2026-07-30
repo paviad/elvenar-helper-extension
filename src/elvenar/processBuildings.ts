@@ -70,6 +70,7 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
         description: r.description,
         spellFragments: r.spellFragments,
         rankingPoints: r.rankingPoints,
+        isSetBuilding: r.components?.is_set_building ? true : undefined,
       }) satisfies Building,
   );
 

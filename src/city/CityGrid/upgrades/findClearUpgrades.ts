@@ -130,6 +130,14 @@ function buildProfile(building: BuildingEx, evolvingBuildings: StageProvision[],
   };
 }
 
+/**
+ * Set buildings are flagged by a component in the catalog, which older stored data
+ * predates, so their dedicated connection strategy stands in until it is refreshed.
+ */
+function isSetBuilding(building: BuildingEx): boolean {
+  return building.sourceBuilding.isSetBuilding === true || building.connectionStrategy === 'set_buildings';
+}
+
 function hasConsideredOutput(profile: ProductionProfile): boolean {
   return profile.culture > 0 || UPGRADE_PRODUCTION_RESOURCES.some((res) => (profile.values[res] || 0) > 0);
 }
@@ -279,10 +287,20 @@ export function findClearUpgrades(
       continue;
     }
 
+    // Nor are set buildings: their output depends on what they touch, and removing one
+    // also costs the set bonus of every neighbour.
+    if (isSetBuilding(building)) continue;
+
     const profile = buildProfile(building, evolvingBuildings, group.stage);
     if (!hasConsideredOutput(profile)) continue;
 
+    const oldIsThin = building.width === 1 || building.length === 1;
+
     for (const candidate of candidates) {
+      // A 1xN building collects less neighbourly help, so it never replaces a
+      // building that is at least two tiles on both sides.
+      if (!oldIsThin && (candidate.building.width === 1 || candidate.building.length === 1)) continue;
+
       if (!dominates(candidate.profile, profile)) continue;
 
       suggestions.push({
