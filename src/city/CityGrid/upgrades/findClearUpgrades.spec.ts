@@ -395,29 +395,24 @@ describe('findClearUpgrades', () => {
     expect(asItem.suggestions).toHaveLength(0);
   });
 
-  it('flags an expiring city building and leads with the copy that runs out first', () => {
-    const old = cityBuilding('A_Tent_1', 10);
-    old.sourceBuilding.type = 'expiring';
-    old.type = 'expiring';
-    const candidate = cityBuilding('A_New_1', 20);
-    const blocks = [blockFor(old, { id: 1, expirationEnd: 5_000 }), blockFor(old, { id: 2, expirationEnd: 1_000 })];
-
-    const result = findClearUpgrades(blocks, finderFor(old), [], [invItem(candidate)]);
-
-    expect(result.suggestions).toHaveLength(1);
-    expect(result.suggestions[0].oldIsExpiring).toBe(true);
-    expect(result.suggestions[0].oldExpirationEnd).toBe(1_000);
-    expect(result.suggestions[0].blockIds).toEqual([2, 1]);
-  });
-
-  it('does not flag a permanent city building as expiring', () => {
-    const old = cityBuilding('A_Old_1', 10);
+  it('never suggests replacing an expiring city building', () => {
+    const byCatalog = cityBuilding('A_Tent_1', 10);
+    byCatalog.sourceBuilding.type = 'expiring';
+    byCatalog.type = 'expiring';
+    const byBlock = cityBuilding('A_Hut_1', 10);
     const candidate = cityBuilding('A_New_1', 20);
 
-    const result = findClearUpgrades([blockFor(old)], finderFor(old), [], [invItem(candidate)]);
+    const catalogResult = findClearUpgrades([blockFor(byCatalog)], finderFor(byCatalog), [], [invItem(candidate)]);
+    // A block the game gave a deadline to, whose catalog entry does not say 'expiring'.
+    const blockResult = findClearUpgrades(
+      [blockFor(byBlock, { expirationEnd: 1_000 })],
+      finderFor(byBlock),
+      [],
+      [invItem(candidate)],
+    );
 
-    expect(result.suggestions[0].oldIsExpiring).toBe(false);
-    expect(result.suggestions[0].oldExpirationEnd).toBeUndefined();
+    expect(catalogResult.suggestions).toHaveLength(0);
+    expect(blockResult.suggestions).toHaveLength(0);
   });
 
   it('never suggests replacing a set building', () => {

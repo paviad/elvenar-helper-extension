@@ -31,13 +31,6 @@ type Order = 'asc' | 'desc';
 const formatAbs = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 const formatPerSq = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
-/** Days left, in the same terms the grid and the building tooltip use. */
-const formatExpiry = (expirationEnd?: number) => {
-  if (expirationEnd === undefined) return 'Expiring';
-  const daysLeft = Math.round((expirationEnd - Date.now()) / 86_400_000);
-  return daysLeft > 0 ? `Expires in ${daysLeft}d` : 'Expired';
-};
-
 export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
   const city = useCity();
   const { blocks, searchTerm } = city;
@@ -197,11 +190,6 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
                         {row.oldStage ? ` (Stage ${row.oldStage})` : ''}
                         {row.count > 1 ? ` ×${row.count}` : ''}
                       </span>
-                      {row.oldIsExpiring && (
-                        <Typography variant='caption' color='error.main' sx={{ fontWeight: 'bold' }}>
-                          {formatExpiry(row.oldExpirationEnd)}
-                        </Typography>
-                      )}
                       {row.oldOther.length > 0 && (
                         <Typography variant='caption' color='warning.main'>
                           also makes: {row.oldOther.map(resourceName).join(', ')}
