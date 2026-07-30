@@ -287,14 +287,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
       </Box>
       {/* The old rows stay on screen, dimmed, while the new ones are worked out. */}
       <Box sx={{ height: 4 }}>{(isPending || (!result && !noInventory)) && <LinearProgress />}</Box>
-      <TableContainer
-        sx={{
-          flexGrow: 1,
-          opacity: isPending ? 0.4 : 1,
-          pointerEvents: isPending ? 'none' : undefined,
-          transition: 'opacity 0.1s',
-        }}
-      >
+      <TableContainer sx={{ flexGrow: 1 }}>
         <Table stickyHeader size='small' aria-label='upgrade suggestions table'>
           <TableHead>
             <TableRow>
@@ -331,7 +324,9 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
+          {/* Only the rows dim: the headers stay live so another sort or grouping can be
+              asked for without waiting for this one. */}
+          <TableBody sx={{ opacity: isPending ? 0.4 : 1, transition: 'opacity 0.1s' }}>
             {rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={columnCount}>
