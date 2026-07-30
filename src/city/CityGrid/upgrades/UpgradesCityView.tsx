@@ -99,15 +99,15 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
   }, [result, searchTerm, order, orderBy]);
 
   const resourceName = (key: string) => formatResourceName(city.goodsNames, city.boostedGoods, key);
-  const skipped = (result?.skippedEvolvingItems || 0) + (result?.skippedEvolvingBlocks || 0);
+  const skipped = result?.skippedEvolvingItems || 0;
 
   return (
     <Paper sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
         <Typography variant='body2' color='text.secondary'>
           Inventory buildings that beat a placed building on everything it provides (mana, seeds, orcs, unurium, nox and
-          culture), per square and in total. Production is per 24h. Evolving buildings are compared at the highest stage
-          your artifacts can reach.
+          culture), per square and in total. Production is per 24h. Evolving buildings from the inventory are compared
+          at the highest stage your artifacts can reach; placed evolving buildings are never suggested for replacement.
         </Typography>
         {noInventory && (
           <Alert severity='info' sx={{ mt: 1 }}>
@@ -116,8 +116,8 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
         )}
         {skipped > 0 && (
           <Alert severity='info' sx={{ mt: 1 }}>
-            {skipped} evolving building{skipped === 1 ? ' was' : 's were'} skipped because evolution data is missing or
-            not yet understood. Reloading the game may refresh it.
+            {skipped} evolving inventory building{skipped === 1 ? ' was' : 's were'} skipped because evolution data is
+            missing or not yet understood. Reloading the game may refresh it.
           </Alert>
         )}
       </Box>

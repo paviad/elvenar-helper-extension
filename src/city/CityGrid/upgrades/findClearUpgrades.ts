@@ -46,8 +46,6 @@ export interface ClearUpgradesResult {
   resourceKeys: string[];
   /** Inventory evolving buildings skipped because artifact/stage data is missing. */
   skippedEvolvingItems: number;
-  /** City buildings skipped because their evolving-stage data is not usable. */
-  skippedEvolvingBlocks: number;
 }
 
 interface ProductionProfile {
@@ -207,7 +205,6 @@ export function findClearUpgrades(
   inventory: InventoryItem[],
 ): ClearUpgradesResult {
   let skippedEvolvingItems = 0;
-  let skippedEvolvingBlocks = 0;
 
   // Inventory candidates: placeable buildings that are clear-upgrade material.
   interface Candidate {
@@ -276,11 +273,12 @@ export function findClearUpgrades(
     const building = finder.getBuilding(group.gameId, group.level);
     if (!building) continue;
 
-    const profile = buildProfile(building, evolvingBuildings, group.stage);
-    if (profile.unknownStageData) {
-      skippedEvolvingBlocks += group.blockIds.length;
+    // Evolving city buildings are never candidates for replacement.
+    if (building.maxStage || evolvingBuildings.some((eb) => eb.baseName === building.sourceBuilding.base_name)) {
       continue;
     }
+
+    const profile = buildProfile(building, evolvingBuildings, group.stage);
     if (!hasConsideredOutput(profile)) continue;
 
     for (const candidate of candidates) {
@@ -321,5 +319,5 @@ export function findClearUpgrades(
   }
   const resourceKeys = UPGRADE_RESOURCE_ORDER.filter((k) => usedKeys.has(k));
 
-  return { suggestions, resourceKeys, skippedEvolvingItems, skippedEvolvingBlocks };
+  return { suggestions, resourceKeys, skippedEvolvingItems };
 }

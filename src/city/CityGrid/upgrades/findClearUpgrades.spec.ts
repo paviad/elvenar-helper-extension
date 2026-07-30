@@ -305,6 +305,20 @@ describe('findClearUpgrades', () => {
     expect(result.skippedEvolvingItems).toBe(1);
   });
 
+  it('never suggests replacing a placed evolving building', () => {
+    const old = cityBuilding('A_Evt_Evo_Phoenix_1', 10);
+    old.sourceBuilding.base_name = 'A_Evt_Evo_Phoenix';
+    old.maxStage = 10;
+    const evolving: StageProvision[] = [
+      { baseName: 'A_Evt_Evo_Phoenix', artifactId: 'INS_EVO_PHOENIX', artifactCost: 1, stages: [{ id: 1 }] },
+    ];
+    const candidate = cityBuilding('A_New_1', 99);
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), evolving, [invItem(candidate)]);
+
+    expect(result.suggestions).toHaveLength(0);
+  });
+
   it('rejects candidates that would lose population', () => {
     const old = buildingEx({
       id: 'A_Old_1',
