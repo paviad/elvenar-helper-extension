@@ -7,7 +7,26 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
+import {
+  authorType,
+  bodyType,
+  defaultFace,
+  engravedRule,
+  gild,
+  gildedAvatar,
+  goldLink,
+  plaqueBand,
+  plaqueFace,
+  plaqueTail,
+  timestampType,
+} from './gild';
 import { getOverlayStore } from './overlayStore';
+
+// Chat rows carry three states at once, so each is encoded on a different part of the plaque:
+// the face colour marks search hits, and an inset stripe on the left marks unread.
+const currentMatchFace = 'linear-gradient(180deg, #ffe9a8 0%, #f7d98a 100%)';
+const matchFace = 'linear-gradient(180deg, #fffbe6 0%, #fbf1cd 100%)';
+const unreadStripe = 'inset 3px 0 0 #4c8a3f';
 
 // Extend the Window interface to include forceChatRerender
 declare global {
@@ -201,7 +220,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     <Paper
       elevation={2}
       sx={{
-        background: '#f9f9fb',
+        background: gild.parchment,
         borderRadius: 2,
         p: 1.5,
         height: '100%',
@@ -224,22 +243,22 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
             position: 'sticky',
             top: 0,
             zIndex: 2,
-            background: '#f9f9fb',
+            background: `linear-gradient(180deg, ${gild.cardTop}, ${gild.cardBottom})`,
             pr: 2,
             pl: 2,
-            border: '2px solid #222',
+            border: `2px solid ${gild.mid}`,
             borderRadius: 6,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            boxShadow: '0 2px 8px rgba(58, 46, 20, 0.25)',
             alignSelf: 'end',
           }}
         >
-          <Box sx={{ fontSize: 13, color: '#555' }}>
+          <Box sx={{ ...timestampType, fontSize: 11 }}>
             {searchMatches.length > 0 ? `${searchIndex + 1} of ${searchMatches.length}` : '0 matches'}
           </Box>
           <IconButton
             aria-label='Previous match'
             size='small'
-            sx={{ ml: 1 }}
+            sx={{ ml: 1, color: gild.bronze }}
             disabled={searchMatches.length === 0}
             onClick={() => setSearchIndex((i) => (i - 1 + searchMatches.length) % searchMatches.length)}
           >
@@ -248,7 +267,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
           <IconButton
             aria-label='Next match'
             size='small'
-            sx={{ ml: 0.5 }}
+            sx={{ ml: 0.5, color: gild.bronze }}
             disabled={searchMatches.length === 0}
             onClick={() => setSearchIndex((i) => (i + 1) % searchMatches.length)}
           >
@@ -257,7 +276,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
           <IconButton
             aria-label='Close search'
             size='small'
-            sx={{ ml: 1 }}
+            sx={{ ml: 1, color: gild.bronze }}
             onClick={() => {
               if (setSearchActive) setSearchActive(false);
             }}
@@ -270,7 +289,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
         <Box sx={{ textAlign: 'center', mb: 1 }}>
           <a
             href='#'
-            style={{ color: '#1976d2', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
+            style={goldLink}
             onClick={(e) => {
               e.preventDefault();
               const el = containerRef.current;
@@ -319,25 +338,27 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                       textAlign: 'center',
                       my: 1.5,
                       py: 0.5,
-                      background: '#e3f2fd',
-                      color: '#1976d2',
-                      borderRadius: 2,
-                      fontWeight: 600,
+                      background: 'linear-gradient(180deg, #eef6e6, #e2efd6)',
+                      color: '#3f6b34',
+                      borderTop: '1px solid #b6cfa6',
+                      borderBottom: '1px solid #b6cfa6',
+                      fontFamily: gild.serif,
+                      fontWeight: 700,
                       fontSize: 13,
-                      letterSpacing: 1,
-                      boxShadow: '0 1px 4px rgba(25, 118, 210, 0.08)',
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
                     }}
                   >
                     Unread messages{' '}
                     <a
                       href='#'
                       style={{
-                        color: '#1976d2',
-                        textDecoration: 'underline',
+                        ...goldLink,
+                        color: '#3f6b34',
                         marginLeft: 8,
                         fontWeight: 400,
                         fontSize: 12,
-                        cursor: 'pointer',
+                        textTransform: 'none',
                       }}
                       onClick={(e) => {
                         e.preventDefault();
@@ -358,76 +379,48 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
                     messageRefs.current[idx] = el;
                   }}
                   direction='row'
-                  spacing={1}
-                  sx={[
-                    {
-                      alignItems: 'flex-start',
-                      mb: 1.2,
-                    },
-                    isCurrent
-                      ? { background: '#ffe082' }
-                      : isMatch
-                        ? { background: '#fffde7' }
-                        : isUnread
-                          ? { background: '#39d53646' }
-                          : {},
-                  ]}
+                  spacing={1.25}
+                  sx={{ alignItems: 'flex-start', mb: 1.5 }}
                 >
-                  <Avatar
-                    sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }}
-                    title={name}
-                  >
+                  <Avatar sx={{ ...gildedAvatar }} title={name}>
                     {name[0]}
                   </Avatar>
                   <Box
                     sx={{
+                      ...plaqueBand,
                       flex: 1,
+                      minWidth: 0,
+                      ...(isCurrent ? { boxShadow: `0 0 0 2px rgba(255, 152, 0, 0.55), ${plaqueBand.boxShadow}` } : {}),
                     }}
                   >
-                    <Stack
-                      direction='row'
-                      spacing={1}
+                    <Box aria-hidden sx={{ ...plaqueTail }} />
+                    <Box
                       sx={{
-                        alignItems: 'baseline',
+                        ...plaqueFace(
+                          isCurrent ? currentMatchFace : isMatch ? matchFace : defaultFace,
+                          isUnread ? unreadStripe : undefined,
+                        ),
                       }}
                     >
-                      <Typography
-                        component='span'
-                        sx={{
-                          fontWeight: 600,
-                          color: 'text.primary',
-                        }}
-                      >
-                        {name}
+                      <Stack direction='row' spacing={1} sx={{ alignItems: 'baseline' }}>
+                        <Typography component='span' sx={{ ...authorType }}>
+                          {name}
+                        </Typography>
+                        <Typography component='span' sx={{ ...timestampType }}>
+                          {time}
+                          {dateStr && (
+                            <>
+                              {' '}
+                              <span style={{ color: gild.bronzeSoft, opacity: 0.8 }}>({dateStr})</span>
+                            </>
+                          )}
+                        </Typography>
+                      </Stack>
+                      <Box aria-hidden sx={{ ...engravedRule }} />
+                      <Typography align='left' sx={{ ...bodyType }}>
+                        {msg.text}
                       </Typography>
-                      <Typography
-                        component='span'
-                        sx={{
-                          color: 'text.secondary',
-                          fontSize: 12,
-                        }}
-                      >
-                        {time}
-                        {dateStr && (
-                          <>
-                            {' '}
-                            <span style={{ fontSize: 11, color: '#aaa' }}>({dateStr})</span>
-                          </>
-                        )}
-                      </Typography>
-                    </Stack>
-                    <Typography
-                      align='left'
-                      sx={{
-                        color: 'text.primary',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        textAlign: 'left',
-                        pl: 0,
-                      }}
-                    >
-                      {msg.text}
-                    </Typography>
+                    </Box>
                   </Box>
                 </Stack>
               </React.Fragment>
@@ -438,7 +431,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
             <Box sx={{ textAlign: 'center', mt: 1 }}>
               <a
                 href='#'
-                style={{ color: '#1976d2', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
+                style={goldLink}
                 onClick={(e) => {
                   e.preventDefault();
                   setVisibleCount(30);
@@ -451,24 +444,14 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
           {/* Jump to first unread link at bottom */}
           {!searchActive && unreadUuid && (
             <Box sx={{ textAlign: 'center', mt: 2, mb: 1 }}>
-              <a
-                href='#'
-                style={{
-                  color: '#1976d2',
-                  fontSize: 14,
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                }}
-                onClick={handleJumpToFirstUnread}
-              >
+              <a href='#' style={{ ...goldLink, fontSize: 14, fontWeight: 500 }} onClick={handleJumpToFirstUnread}>
                 Jump to first unread
               </a>
             </Box>
           )}
         </>
       ) : (
-        <Box sx={{ color: '#888', textAlign: 'center', mt: 5 }}>No chat messages yet.</Box>
+        <Box sx={{ color: gild.bronzeSoft, textAlign: 'center', mt: 5 }}>No chat messages yet.</Box>
       )}
     </Paper>
   );

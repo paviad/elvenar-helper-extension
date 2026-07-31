@@ -15,7 +15,6 @@ import {
   Chip,
   CircularProgress,
   Collapse,
-  Divider,
   IconButton,
   List,
   ListItemButton,
@@ -30,6 +29,19 @@ import {
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { GameMessage, MessageFolder, MessageFolderData, MessagePostVO } from '../model/gameMessage';
 import { ensureMinWidthAndHeight } from '../overlay';
+import {
+  authorType,
+  bodyType,
+  engravedRule,
+  engravedRuleFull,
+  gild,
+  gildedAvatar,
+  gildedBar,
+  plaqueBand,
+  plaqueFace,
+  plaqueTail,
+  timestampType,
+} from './gild';
 import { getAccountId, getOverlayStore } from './overlayStore';
 
 function formatSeconds(seconds: number | undefined): string {
@@ -105,10 +117,11 @@ function highlightNodes(text: string, lowerTerm: string, ctx: HighlightCtx): Rea
         key={key++}
         ref={(el) => ctx.register(index, el)}
         style={{
-          backgroundColor: isCurrent ? '#ff9800' : '#fff176',
+          backgroundColor: isCurrent ? '#ff9800' : '#ffdf6e',
           color: 'inherit',
           borderRadius: 2,
           padding: '0 1px',
+          boxShadow: isCurrent ? '0 0 0 1px rgba(138, 106, 28, 0.55)' : 'none',
         }}
       >
         {text.slice(found, found + lowerTerm.length)}
@@ -263,9 +276,7 @@ export const MessagesView = () => {
         sx={{
           px: 1.5,
           py: 1,
-          borderBottom: 1,
-          borderColor: 'divider',
-          bgcolor: 'action.hover',
+          ...gildedBar,
           display: 'flex',
           alignItems: 'center',
           gap: 1,
@@ -277,7 +288,21 @@ export const MessagesView = () => {
           size='small'
           onChange={handleFolderChange}
           aria-label='Message folder'
-          sx={{ flex: 1 }}
+          sx={{
+            flex: 1,
+            '& .MuiToggleButton-root': {
+              color: gild.bronzeSoft,
+              borderColor: gild.mid,
+              background: 'rgba(255, 253, 246, 0.6)',
+            },
+            '& .MuiToggleButton-root.Mui-selected': {
+              color: gild.bronze,
+              fontWeight: 700,
+              background: `linear-gradient(180deg, ${gild.light}, #e6d29a)`,
+              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+              '&:hover': { background: `linear-gradient(180deg, ${gild.light}, #dfc88c)` },
+            },
+          }}
         >
           <ToggleButton value='inbox' aria-label='Inbox'>
             <Badge
@@ -297,7 +322,7 @@ export const MessagesView = () => {
         <IconButton
           size='small'
           aria-label='Search messages'
-          color={searchActive ? 'primary' : 'default'}
+          sx={{ color: searchActive ? gild.mid : gild.bronzeSoft }}
           onClick={() => setSearchActive((a) => !a)}
         >
           <SearchIcon fontSize='small' />
@@ -312,8 +337,8 @@ export const MessagesView = () => {
             gap: 0.5,
             px: 1.5,
             py: 0.75,
-            borderBottom: 1,
-            borderColor: 'divider',
+            background: '#fbf6ea',
+            borderBottom: `1px solid ${gild.mid}`,
           }}
         >
           <TextField
@@ -321,6 +346,15 @@ export const MessagesView = () => {
             size='small'
             fullWidth
             placeholder='Search messages…'
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                background: gild.cardTop,
+                '& fieldset': { borderColor: gild.mid },
+                '&:hover fieldset': { borderColor: gild.deep },
+                '&.Mui-focused fieldset': { borderColor: gild.deep },
+              },
+              '& .MuiOutlinedInput-input': { color: gild.ink },
+            }}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => {
@@ -335,19 +369,38 @@ export const MessagesView = () => {
           />
           <Typography
             variant='caption'
-            sx={{ color: 'text.secondary', whiteSpace: 'nowrap', minWidth: 56, textAlign: 'center' }}
+            sx={{
+              ...timestampType,
+              fontSize: 11,
+              whiteSpace: 'nowrap',
+              minWidth: 56,
+              textAlign: 'center',
+            }}
           >
             {counterLabel}
           </Typography>
-          <IconButton size='small' aria-label='Previous match' disabled={matches.length === 0} onClick={prevMatch}>
+          <IconButton
+            size='small'
+            aria-label='Previous match'
+            disabled={matches.length === 0}
+            onClick={prevMatch}
+            sx={{ color: gild.bronze }}
+          >
             <KeyboardArrowUpIcon fontSize='small' />
           </IconButton>
-          <IconButton size='small' aria-label='Next match' disabled={matches.length === 0} onClick={nextMatch}>
+          <IconButton
+            size='small'
+            aria-label='Next match'
+            disabled={matches.length === 0}
+            onClick={nextMatch}
+            sx={{ color: gild.bronze }}
+          >
             <KeyboardArrowDownIcon fontSize='small' />
           </IconButton>
           <IconButton
             size='small'
             aria-label='Close search'
+            sx={{ color: gild.bronze }}
             onClick={() => {
               setSearchActive(false);
               setSearchTerm('');
@@ -394,7 +447,8 @@ export const MessagesView = () => {
             alignItems: 'center',
             justifyContent: 'center',
             flexGrow: 1,
-            color: 'text.secondary',
+            background: gild.parchment,
+            color: gild.bronzeSoft,
             gap: 1,
             p: 4,
             textAlign: 'center',
@@ -413,7 +467,8 @@ export const MessagesView = () => {
             alignItems: 'center',
             justifyContent: 'center',
             flexGrow: 1,
-            color: 'text.secondary',
+            background: gild.parchment,
+            color: gild.bronzeSoft,
             gap: 1,
             p: 4,
             textAlign: 'center',
@@ -423,43 +478,66 @@ export const MessagesView = () => {
           <Typography variant='body2'>No messages match “{searchTerm.trim()}”.</Typography>
         </Box>
       ) : (
-        <List disablePadding sx={{ flexGrow: 1, overflowY: 'auto', minHeight: 0 }}>
+        <List disablePadding sx={{ flexGrow: 1, overflowY: 'auto', minHeight: 0, background: gild.parchment }}>
           {filteredThreads.map(({ id, message }, index) => {
             const preview = lastPost(message);
             const unread = message.status === 'new';
             return (
               <React.Fragment key={id}>
+                {/* Unread threads sit raised and sealed; read ones lie flat on the parchment. */}
                 <ListItemButton
                   alignItems='flex-start'
                   onClick={() => {
                     setSelectedId(id);
                     setNavigated(false); // manual browse: don't point the match cursor here
                   }}
-                  sx={{ py: 1 }}
+                  sx={{
+                    py: 1,
+                    background: unread ? `linear-gradient(180deg, ${gild.cardTop}, ${gild.cardBottom})` : 'transparent',
+                    boxShadow: unread
+                      ? `inset 3px 0 0 ${gild.mid}, inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(122, 94, 28, 0.15)`
+                      : 'none',
+                    '&:hover': { background: 'rgba(201, 162, 39, 0.12)' },
+                  }}
                 >
                   <ListItemText
+                    disableTypography
                     primary={
                       <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
                         {unread && (
                           <Box
-                            sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', flexShrink: 0 }}
+                            aria-hidden
+                            sx={{
+                              width: 9,
+                              height: 9,
+                              borderRadius: '50%',
+                              flexShrink: 0,
+                              background: `radial-gradient(circle at 35% 30%, ${gild.light}, ${gild.mid} 60%, ${gild.deep})`,
+                              boxShadow: '0 1px 1px rgba(58, 46, 20, 0.4)',
+                            }}
                           />
                         )}
                         <Typography
-                          variant='subtitle2'
-                          sx={{ fontWeight: unread ? 700 : 500, flex: 1, minWidth: 0 }}
+                          sx={{
+                            fontFamily: gild.serif,
+                            fontSize: 14,
+                            fontWeight: unread ? 700 : 500,
+                            color: unread ? gild.ink : '#5c5342',
+                            flex: 1,
+                            minWidth: 0,
+                          }}
                           noWrap
                         >
                           {message.subject || '(no subject)'}
                         </Typography>
-                        <Typography variant='caption' sx={{ color: 'text.secondary', flexShrink: 0 }}>
+                        <Typography sx={{ ...timestampType, flexShrink: 0 }}>
                           {formatSeconds(message.updatedAt)}
                         </Typography>
                       </Stack>
                     }
                     secondary={
                       <Box sx={{ mt: 0.5 }}>
-                        <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>
+                        <Typography variant='caption' sx={{ color: gild.bronzeSoft, display: 'block' }}>
                           {message.guild?.name || message.initiator?.name}
                           {message.posts?.length
                             ? ` · ${message.posts.length} post${message.posts.length === 1 ? '' : 's'}`
@@ -469,26 +547,26 @@ export const MessagesView = () => {
                           <Typography
                             variant='body2'
                             sx={{
-                              color: 'text.secondary',
+                              color: '#6b6353',
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
                             }}
                           >
-                            <b>{preview.author?.name}:</b> {preview.post}
+                            <b style={{ color: gild.bronze }}>{preview.author?.name}:</b> {preview.post}
                           </Typography>
                         )}
                       </Box>
                     }
                   />
                 </ListItemButton>
-                {index < filteredThreads.length - 1 && <Divider component='li' />}
+                {index < filteredThreads.length - 1 && <Box component='li' aria-hidden sx={{ ...engravedRuleFull }} />}
               </React.Fragment>
             );
           })}
           {!term && overviewOnlyCount > 0 && (
-            <Box sx={{ textAlign: 'center', p: 1.5, color: 'text.disabled' }}>
+            <Box sx={{ textAlign: 'center', p: 1.5, color: gild.bronzeSoft }}>
               <Typography variant='caption'>
                 {overviewOnlyCount} more message{overviewOnlyCount === 1 ? '' : 's'} — scroll the in-game window to load
               </Typography>
@@ -551,22 +629,25 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
           gap: 0.5,
           px: 1,
           py: 1,
-          borderBottom: 1,
-          borderColor: 'divider',
+          ...gildedBar,
           cursor: 'pointer',
           userSelect: 'none',
-          '&:hover': { bgcolor: 'action.hover' },
+          '&:hover': { background: 'linear-gradient(180deg, #fffef9, #efe4cb)' },
         }}
       >
-        <IconButton size='small' aria-label='Back to list' tabIndex={-1}>
+        <IconButton size='small' aria-label='Back to list' tabIndex={-1} sx={{ color: gild.bronze }}>
           <ArrowBackIcon fontSize='small' />
         </IconButton>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant='subtitle2' sx={{ fontWeight: 700 }} noWrap>
+          <Typography
+            variant='subtitle2'
+            sx={{ fontFamily: gild.serif, fontWeight: 700, color: gild.ink, letterSpacing: '0.01em' }}
+            noWrap
+          >
             {hl(subjectText(message))}
           </Typography>
           {message.guild?.name && (
-            <Typography variant='caption' sx={{ color: 'text.secondary' }} noWrap>
+            <Typography variant='caption' sx={{ color: gild.bronzeSoft }} noWrap>
               {message.guild.name}
             </Typography>
           )}
@@ -580,14 +661,14 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
           overflowY: 'auto',
           minHeight: 0,
           p: 1.5,
-          bgcolor: '#f9f9fb',
+          background: gild.parchment,
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.2,
+          gap: 1.5,
         }}
       >
         {posts.length === 0 ? (
-          <Typography variant='body2' sx={{ color: 'text.secondary', textAlign: 'center', mt: 4 }}>
+          <Typography variant='body2' sx={{ color: gild.bronzeSoft, textAlign: 'center', mt: 4 }}>
             This message has no posts.
           </Typography>
         ) : (
@@ -597,30 +678,28 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
               <Stack
                 key={post.post_id ?? `${post.created_at}-${post.author?.player_id ?? ''}`}
                 direction='row'
-                spacing={1}
+                spacing={1.25}
                 sx={{ alignItems: 'flex-start' }}
               >
-                <Avatar
-                  sx={{ width: 32, height: 32, bgcolor: '#e0e0e0', color: '#888', fontWeight: 600, fontSize: 16 }}
-                  title={name}
-                >
+                <Avatar sx={{ ...gildedAvatar }} title={name}>
                   {name[0]}
                 </Avatar>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack direction='row' spacing={1} sx={{ alignItems: 'baseline' }}>
-                    <Typography component='span' sx={{ fontWeight: 600, color: 'text.primary' }}>
-                      {hl(name)}
+                <Box sx={{ ...plaqueBand, flex: 1, minWidth: 0 }}>
+                  <Box aria-hidden sx={{ ...plaqueTail }} />
+                  <Box sx={{ ...plaqueFace() }}>
+                    <Stack direction='row' spacing={1} sx={{ alignItems: 'baseline' }}>
+                      <Typography component='span' sx={{ ...authorType }}>
+                        {hl(name)}
+                      </Typography>
+                      <Typography component='span' sx={{ ...timestampType }}>
+                        {formatSeconds(post.created_at)}
+                      </Typography>
+                    </Stack>
+                    <Box aria-hidden sx={{ ...engravedRule }} />
+                    <Typography align='left' sx={{ ...bodyType }}>
+                      {hl(postText(post))}
                     </Typography>
-                    <Typography component='span' sx={{ color: 'text.secondary', fontSize: 12 }}>
-                      {formatSeconds(post.created_at)}
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    align='left'
-                    sx={{ color: 'text.primary', whiteSpace: 'pre-wrap', wordBreak: 'break-word', textAlign: 'left' }}
-                  >
-                    {hl(postText(post))}
-                  </Typography>
+                  </Box>
                 </Box>
               </Stack>
             );
@@ -629,7 +708,7 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
       </Paper>
 
       {recipientCount > 0 && (
-        <Box sx={{ borderTop: 1, borderColor: 'divider' }}>
+        <Box sx={{ borderTop: `2px solid ${gild.mid}`, background: `linear-gradient(180deg, #f6efdd, #fffdf6)` }}>
           <Box
             role='button'
             onClick={() => setRecipientsOpen((o) => !o)}
@@ -641,21 +720,31 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
               py: 1,
               cursor: 'pointer',
               userSelect: 'none',
-              '&:hover': { bgcolor: 'action.hover' },
+              '&:hover': { background: 'rgba(201, 162, 39, 0.1)' },
             }}
           >
             <ExpandMoreIcon
               fontSize='small'
-              sx={{ transform: recipientsOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.15s' }}
+              sx={{
+                color: gild.bronze,
+                transform: recipientsOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                transition: 'transform 0.15s',
+              }}
             />
-            <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+            <Typography variant='caption' sx={{ color: gild.bronzeSoft }}>
               {recipientCount} recipient{recipientCount === 1 ? '' : 's'}
             </Typography>
           </Box>
           <Collapse in={recipientsOpen} unmountOnExit>
             <Box sx={{ px: 1.5, pb: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {message.recipients?.map((r) => (
-                <Chip key={r} label={r} size='small' variant='outlined' />
+                <Chip
+                  key={r}
+                  label={r}
+                  size='small'
+                  variant='outlined'
+                  sx={{ color: gild.bronze, borderColor: gild.mid, bgcolor: 'rgba(255, 253, 246, 0.7)' }}
+                />
               ))}
             </Box>
           </Collapse>
