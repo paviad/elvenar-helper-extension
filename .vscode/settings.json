@@ -1,3 +1,9 @@
 {
-  "prettier.configPath": ""
+  "prettier.configPath": "",
+  "workbench.colorCustomizations": {
+    "editor.background": "#1e1f1bcc",
+    "sideBar.background": "#181815cc",
+    "activityBar.background": "#4b4c3acc",
+    "statusBar.background": "#4b4c3acc"
+  }
 }
