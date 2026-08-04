@@ -1,5 +1,9 @@
 import { ElvenarRequestResponseEntry } from '../../model/elvenarRequestResponseEntry';
-import { getStoredPicks, storePicksForLaterUse } from '../spirePicksStore';
+import { storePicksForLaterUse, waitForPicks } from '../spirePicksStore';
+
+// The wizard tab is throttled hard when it is occluded, so this has to tolerate a reply
+// that takes far longer than the round trip normally does.
+const PICKS_TIMEOUT_MS = 30000;
 
 export const localProcessSpireDiplomacyGetData = async (request: ElvenarRequestResponseEntry[]) => {
   const turnResp = request.find((r) => r.requestClass === 'SpireDiplomacyService' && r.requestMethod === 'submit')
@@ -15,8 +19,8 @@ export const localProcessSpireDiplomacyGetData = async (request: ElvenarRequestR
     return;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const storedPicks = getStoredPicks();
+  await new Promise((resolve) => setTimeout(resolve, 500)); // let the game settle, as before
+  const storedPicks = await waitForPicks(PICKS_TIMEOUT_MS);
   console.log(
     'Processing SpireDiplomacyService/getData request',
     request,

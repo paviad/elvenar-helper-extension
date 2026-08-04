@@ -38,20 +38,26 @@ window.addEventListener('message', (event) => {
     return;
   }
   if (event.data?.type === 'spirePicks') {
-    void sendPicksBackToElvenar(
-      event.data.payload as string[],
-      event.data.prob as string | undefined,
-      event.data.jokerGhost as number | undefined,
-    );
+    void sendPicksBackToElvenar({
+      picks: event.data.payload as string[],
+      prob: event.data.prob as string | undefined,
+      jokerGhost: event.data.jokerGhost as number | undefined,
+      turn: event.data.turn as number | undefined,
+      status: event.data.status as 'waiting' | 'timeout' | undefined,
+    });
   }
 });
 
-const sendPicksBackToElvenar = async (picks: string[], prob?: string, jokerGhost?: number) => {
+const sendPicksBackToElvenar = async (payload: {
+  picks: string[];
+  prob?: string;
+  jokerGhost?: number;
+  turn?: number;
+  status?: 'waiting' | 'timeout';
+}) => {
   await chrome.runtime.sendMessage({
     type: 'spirePicks',
-    picks,
-    prob,
-    jokerGhost,
+    ...payload,
   });
 };
 

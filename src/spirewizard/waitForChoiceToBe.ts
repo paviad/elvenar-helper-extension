@@ -1,7 +1,14 @@
+import { sendSpireStatusToElvenar } from './sendSpireStatusToElvenar';
 import { SpireWizard } from './SpireWizard';
 import { translationsMobile } from './translationsMobile';
 
+// Generous on purpose: when this tab is occluded Chrome clamps our poll interval, so the
+// wizard legitimately takes far longer than usual to advance.
+const CHOICE_TIMEOUT_MS = 30000;
+
 export interface ChoiceResult {
+  /** The round these picks apply to — the wizard's choice, which tracks the game's turn. */
+  turn: number;
   picks: string[];
   /** Win probability reported for the most advanced turn the wizard has computed. */
   prob?: string;
@@ -13,7 +20,20 @@ export const waitForChoiceToBe = async (targetChoice: number): Promise<ChoiceRes
   let state = SpireWizard.getState();
   let choice = state.choice;
   console.log(`Waiting for choice to be ${targetChoice}. Current choice:`, choice);
+
+  if (choice < targetChoice) {
+    sendSpireStatusToElvenar('waiting', targetChoice);
+  }
+
+  // Wall-clock deadline rather than an iteration count: a throttled tab runs this loop far
+  // fewer times than it would at 100ms, and an unbounded wait is what used to look like a hang.
+  const deadline = Date.now() + CHOICE_TIMEOUT_MS;
   while (choice < targetChoice) {
+    if (Date.now() > deadline) {
+      console.error(`ElvenAssist: Spire Wizard never reached choice ${targetChoice}; giving up`, state);
+      sendSpireStatusToElvenar('timeout', targetChoice);
+      return { turn: targetChoice, picks: [] };
+    }
     await new Promise((r) => setTimeout(r, 100));
     state = SpireWizard.getState();
     choice = state.choice;
@@ -21,6 +41,7 @@ export const waitForChoiceToBe = async (targetChoice: number): Promise<ChoiceRes
   console.log(`Choice is now ${targetChoice}`, state);
   const resources = state.selectedResources;
   return {
+    turn: targetChoice,
     picks: state.picks[targetChoice].map((z) => translationsMobile[resources[z]]),
     prob: latestProb(state.prob),
     jokerGhost: jokerGhostFor(targetChoice),

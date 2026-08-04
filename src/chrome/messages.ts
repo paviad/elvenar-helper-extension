@@ -65,6 +65,10 @@ export interface SpirePicksMessage {
   prob?: string;
   /** 1-based ghost to spend a joker on; absent when a joker is not an option. */
   jokerGhost?: number;
+  /** Round these values apply to. Optional: a wizard tab running a pre-update inject omits it. */
+  turn?: number;
+  /** Badge-only progress signal. When set there are no picks and nothing is relayed to the page. */
+  status?: 'waiting' | 'timeout';
 }
 
 // ============================================================================

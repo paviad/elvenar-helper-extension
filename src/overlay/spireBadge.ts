@@ -5,12 +5,22 @@
 const BADGE_ID = 'elven-assist-spire-badge';
 const PROB_ID = 'elven-assist-spire-badge-prob';
 const JOKER_ID = 'elven-assist-spire-badge-joker';
+const STATUS_ID = 'elven-assist-spire-badge-status';
 
 export interface SpireBadgeData {
   prob?: string;
   /** 1-based ghost to spend a joker on; absent when a joker is not an option. */
   jokerGhost?: number;
+  /** Round these values apply to, shown so stale readings are obvious. */
+  turn?: number;
+  /** While set, the values below belong to the previous round and are hidden. */
+  status?: 'waiting' | 'timeout';
 }
+
+const statusText: Record<NonNullable<SpireBadgeData['status']>, string> = {
+  waiting: 'waiting for wizard…',
+  timeout: 'wizard not responding',
+};
 
 const createBadge = () => {
   const badge = document.createElement('div');
@@ -44,31 +54,48 @@ const createBadge = () => {
   jokerLine.style.color = '#74c0fc';
   badge.appendChild(jokerLine);
 
+  const statusLine = document.createElement('div');
+  statusLine.id = STATUS_ID;
+  badge.appendChild(statusLine);
+
   document.body.appendChild(badge);
   return badge;
 };
 
-export const updateSpireBadge = ({ prob, jokerGhost }: SpireBadgeData) => {
+export const updateSpireBadge = ({ prob, jokerGhost, turn, status }: SpireBadgeData) => {
   const existing = document.getElementById(BADGE_ID);
 
-  if (!prob && jokerGhost === undefined) {
+  if (!prob && jokerGhost === undefined && !status) {
     existing?.remove();
     return;
   }
 
   const badge = existing ?? createBadge();
+  // Prefix every line rather than adding a header, so the turn is still visible
+  // when only one of the lines is showing.
+  const prefix = turn === undefined ? '' : `T${turn} `;
+  // A status means the wizard has not answered for this round yet, so any probability or
+  // joker we still hold is from the previous one — show the status alone rather than stale values.
+  const showValues = !status;
 
   const probLine = badge.querySelector<HTMLDivElement>(`#${PROB_ID}`);
   if (probLine) {
-    probLine.textContent = prob ? `Win ${formatProb(prob)}` : '';
+    probLine.textContent = prob ? `${prefix}Win ${formatProb(prob)}` : '';
     probLine.style.color = prob ? probColor(prob) : 'inherit';
-    probLine.style.display = prob ? '' : 'none';
+    probLine.style.display = showValues && prob ? '' : 'none';
   }
 
   const jokerLine = badge.querySelector<HTMLDivElement>(`#${JOKER_ID}`);
   if (jokerLine) {
-    jokerLine.textContent = jokerGhost === undefined ? '' : `🃏 Joker → Ghost ${jokerGhost}`;
-    jokerLine.style.display = jokerGhost === undefined ? 'none' : '';
+    jokerLine.textContent = jokerGhost === undefined ? '' : `${prefix}🃏 Joker → Ghost ${jokerGhost}`;
+    jokerLine.style.display = showValues && jokerGhost !== undefined ? '' : 'none';
+  }
+
+  const statusLine = badge.querySelector<HTMLDivElement>(`#${STATUS_ID}`);
+  if (statusLine) {
+    statusLine.textContent = status ? `${prefix}${statusText[status]}` : '';
+    statusLine.style.color = status === 'timeout' ? '#ff8787' : '#ced4da';
+    statusLine.style.display = status ? '' : 'none';
   }
 };
 

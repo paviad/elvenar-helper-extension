@@ -370,10 +370,15 @@ const initFunc = () => {
   setupHelpPerformedUpdateProvinceListener(({ updatedProvince }) => {
     console.log('E Received helpPerformedUpdateProvince message:', updatedProvince);
   });
-  setupSpirePicksListener(({ picks, prob, jokerGhost }) => {
+  setupSpirePicksListener(({ picks, prob, jokerGhost, turn, status }) => {
     // On a fresh encounter there is no prob yet (the wizard only computes it from turn 2)
     // and no joker, so the badge clears itself.
-    updateSpireBadge({ prob, jokerGhost });
+    updateSpireBadge({ prob, jokerGhost, turn, status });
+    if (status) {
+      // Progress signal only — relaying it would hand the page an empty pick list and
+      // release whatever is waiting on the real one.
+      return;
+    }
     const message = {
       type: 'spirePicks',
       payload: picks,

@@ -8,8 +8,7 @@ export const startNewEncounter = async (encounterData: EncounterData) => {
   apiStartNewEncounter();
   apiSelectResources(encounterData);
   apiClickConfirmResourceSelection();
-  const { picks, prob, jokerGhost } = await waitForChoiceToBe(1);
-  sendPicksBackToElvenar(picks, prob, jokerGhost);
+  sendPicksBackToElvenar(await waitForChoiceToBe(1));
 };
 
 const apiStartNewEncounter = () => {
