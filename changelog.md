@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- **Panel size is remembered** — Resize the helper window by its bottom-right corner and it opens at that size next time, instead of going back to the default on every page load.
+- A new button in the overlay header resets the panel to one of two sizes: Small (250 × 450), the size it has always opened at, or Large (630 × 800), which fits the Chat, Messages and Swaps views without dragging. The size in use is ticked.
+- The saved size is per browser, not per account, and only your own resizes are saved — a view that grows the panel to fit itself does not overwrite the size you chose.
 - **New Feature: Swaps** — Added a "Swaps" button to the Messages tab, alongside Inbox and Outbox, that tallies your knowledge point swap debts automatically.
 - Post exactly "&lt;Ancient Wonder&gt; please" in a swap thread and whoever posted before you is added to the list, with the amount read from the thread title and the wonder they asked for.
 - Wonder names come from the game's own building catalog, so they match whatever language you play in.

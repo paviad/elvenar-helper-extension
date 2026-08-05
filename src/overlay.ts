@@ -2,6 +2,14 @@ import { setupAggregateRequestResponseListener } from './chrome/aggregateRequest
 import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
+import {
+  DEFAULT_OVERLAY_SIZE,
+  loadOverlaySize,
+  OVERLAY_SIZE_PRESETS,
+  OverlaySize,
+  OverlaySizePreset,
+  saveOverlaySize,
+} from './overlay/overlaySize';
 import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
 
@@ -13,6 +21,8 @@ if (typeof chrome.action === 'undefined') {
 
 let expandFn: (state: boolean) => void;
 let ensureWidthAndHeightAtLeastFn: (minWidth: number, minHeight: number) => void;
+let applySizePresetFn: (preset: OverlaySizePreset) => void;
+let getSizeFn: () => OverlaySize | undefined;
 
 console.log('ElvenAssist: Content script loaded');
 
@@ -32,8 +42,8 @@ const initFunc = () => {
   draggableDiv.style.position = 'fixed';
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
-  draggableDiv.style.width = '250px';
-  draggableDiv.style.height = '450px';
+  draggableDiv.style.width = `${DEFAULT_OVERLAY_SIZE.width}px`;
+  draggableDiv.style.height = `${DEFAULT_OVERLAY_SIZE.height}px`;
   draggableDiv.style.background = '#fff';
   draggableDiv.style.border = '1px solid #ccc';
   draggableDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
@@ -168,6 +178,9 @@ const initFunc = () => {
   let startY = 0;
   let startWidth = 0;
   let startHeight = 0;
+  // Set once the user has resized the panel or picked a preset, so the saved size arriving late
+  // from storage cannot undo a choice they have already made in this page.
+  let sizeChosenThisSession = false;
 
   resizeHandle.addEventListener('mousedown', (e) => {
     if (collapsed) return;
@@ -194,6 +207,7 @@ const initFunc = () => {
     if (isResizing) {
       isResizing = false;
       document.body.style.userSelect = '';
+      rememberCurrentSize();
     }
   });
 
@@ -233,14 +247,14 @@ const initFunc = () => {
 
   // Collapse logic
   let collapsed = true;
-  let lastExpandedWidth = '250px';
-  let lastExpandedHeight = '450px';
+  let lastExpandedWidth = `${DEFAULT_OVERLAY_SIZE.width}px`;
+  let lastExpandedHeight = `${DEFAULT_OVERLAY_SIZE.height}px`;
   collapseBtn.addEventListener('click', () => {
     if (isDragging) return;
     if (!collapsed) {
       // About to collapse, save current size
-      lastExpandedWidth = draggableDiv.style.width || '250px';
-      lastExpandedHeight = draggableDiv.style.height || '450px';
+      lastExpandedWidth = draggableDiv.style.width || lastExpandedWidth;
+      lastExpandedHeight = draggableDiv.style.height || lastExpandedHeight;
     }
     collapsed = !collapsed;
     updateStateByCollapsed();
@@ -281,6 +295,57 @@ const initFunc = () => {
     }
   }
 
+  /**
+   * The size as rendered, which is the size the panel actually has: it is clamped by the panel's
+   * own max-height, so dragging past the bottom limit stores what is on screen rather than the
+   * larger number the drag asked for.
+   */
+  function readRenderedSize(): OverlaySize | undefined {
+    const view = document.defaultView;
+    if (!view) return undefined;
+    const style = view.getComputedStyle(draggableDiv);
+    const width = parseInt(style.width, 10);
+    const height = parseInt(style.height, 10);
+    if (!width || !height) return undefined;
+    return { width, height };
+  }
+
+  function applySize(size: OverlaySize) {
+    lastExpandedWidth = `${size.width}px`;
+    lastExpandedHeight = `${size.height}px`;
+    if (!collapsed) {
+      draggableDiv.style.width = lastExpandedWidth;
+      draggableDiv.style.height = lastExpandedHeight;
+    }
+  }
+
+  function rememberCurrentSize() {
+    const size = readRenderedSize();
+    if (!size) return;
+    sizeChosenThisSession = true;
+    lastExpandedWidth = `${size.width}px`;
+    lastExpandedHeight = `${size.height}px`;
+    saveOverlaySize(size);
+  }
+
+  // Storage is async, so the panel is created at the default size and corrected once the read
+  // lands. Only the size the user chose is saved, so a view that grew the panel to fit itself
+  // does not quietly become the remembered size.
+  void loadOverlaySize().then((saved) => {
+    if (saved && !sizeChosenThisSession) {
+      applySize(saved);
+    }
+  });
+
+  applySizePresetFn = (preset: OverlaySizePreset) => {
+    sizeChosenThisSession = true;
+    const size = OVERLAY_SIZE_PRESETS[preset];
+    applySize(size);
+    saveOverlaySize(size);
+  };
+
+  getSizeFn = () => (collapsed ? undefined : readRenderedSize());
+
   expandFn = (state: boolean) => {
     if (collapsed === state) return; // No change needed
     if (!state) {
@@ -289,8 +354,8 @@ const initFunc = () => {
       draggableDiv.style.height = lastExpandedHeight;
     } else {
       // About to collapse, save current size
-      lastExpandedWidth = draggableDiv.style.width || '250px';
-      lastExpandedHeight = draggableDiv.style.height || '450px';
+      lastExpandedWidth = draggableDiv.style.width || lastExpandedWidth;
+      lastExpandedHeight = draggableDiv.style.height || lastExpandedHeight;
     }
     collapsed = state;
     updateStateByCollapsed();
@@ -354,5 +419,15 @@ export const ensureMinWidthAndHeight = (minWidth: number, minHeight: number) => 
     ensureWidthAndHeightAtLeastFn(minWidth, minHeight);
   }
 };
+
+/** Resize the panel to one of the presets and remember it for the next page load. */
+export const setOverlaySizePreset = (preset: OverlaySizePreset) => {
+  if (applySizePresetFn) {
+    applySizePresetFn(preset);
+  }
+};
+
+/** The panel's current size, or undefined while it is collapsed. */
+export const getOverlaySize = (): OverlaySize | undefined => (getSizeFn ? getSizeFn() : undefined);
 
 initFunc();

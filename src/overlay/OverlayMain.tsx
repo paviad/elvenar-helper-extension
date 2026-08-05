@@ -1,7 +1,20 @@
 import React, { useEffect } from 'react';
+import AspectRatioIcon from '@mui/icons-material/AspectRatio';
+import CheckIcon from '@mui/icons-material/Check';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, IconButton, Tab, Tabs, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from '@mui/material';
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
@@ -15,13 +28,14 @@ import {
 } from '../chrome/messages';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
-import { expandPanel } from '../overlay';
+import { expandPanel, getOverlaySize, setOverlaySizePreset } from '../overlay';
 import { parseQuestExport } from '../util/parseQuestExport';
 import { DiscordButton } from '../widgets/DiscordButton';
 import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { MessagesView } from './MessagesView';
+import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
@@ -37,10 +51,28 @@ interface OverlayTab {
   isNew?: boolean;
 }
 
+const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
+  small: 'Small',
+  large: 'Large',
+};
+
+const SIZE_PRESET_ORDER: OverlaySizePreset[] = ['small', 'large'];
+
+/**
+ * Same reasoning as the wonders popover in SwapsView: the menu renders inside the panel rather
+ * than on the body, so this only has to clear the panel's own children — chiefly the resize
+ * handle `overlay.ts` puts at 10000, which would otherwise take the clicks over the corner.
+ */
+const OVERLAY_MENU_Z_INDEX = 10001;
+
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
   const [searchActive, setSearchActive] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [sizeAnchor, setSizeAnchor] = React.useState<HTMLElement | null>(null);
+  // Read when the menu opens rather than tracked: the panel is resized by dragging its corner,
+  // outside React, so there is nothing to subscribe to and nothing to go stale in between.
+  const [sizeAtMenuOpen, setSizeAtMenuOpen] = React.useState<OverlaySize | undefined>(undefined);
   const [tabKey, setTabKey] = React.useState<OverlayTabKey>('chat');
   const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
@@ -216,6 +248,18 @@ export function OverlayMain() {
     setTabKey(tabs[newValue].key);
   };
 
+  const openSizeMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setSizeAtMenuOpen(getOverlaySize());
+    setSizeAnchor(event.currentTarget);
+  };
+
+  const chooseSizePreset = (preset: OverlaySizePreset) => {
+    setOverlaySizePreset(preset);
+    setSizeAnchor(null);
+  };
+
+  const activeSizePreset = matchOverlaySizePreset(sizeAtMenuOpen);
+
   useEffect(() => {
     const listenerIds: string[] = [];
 
@@ -346,6 +390,40 @@ export function OverlayMain() {
             )}
           </>
         )}
+
+        <IconButton
+          aria-label='Panel size'
+          title='Panel size'
+          size='small'
+          sx={{ position: 'absolute', top: -46, right: 126, zIndex: 10 }}
+          onClick={openSizeMenu}
+        >
+          <AspectRatioIcon fontSize='small' />
+        </IconButton>
+        <Menu
+          anchorEl={sizeAnchor}
+          open={!!sizeAnchor}
+          onClose={() => setSizeAnchor(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          // Menu is a Modal, and Modal portals to document.body by default, where it would land
+          // at MUI's modal layer (1300) behind this z-index 9999 panel - open, anchored and
+          // invisible. Rendering in place keeps it in the panel's own stacking context.
+          disablePortal
+          sx={{ zIndex: OVERLAY_MENU_Z_INDEX }}
+        >
+          {SIZE_PRESET_ORDER.map((preset) => {
+            const { width, height } = OVERLAY_SIZE_PRESETS[preset];
+            return (
+              <MenuItem key={preset} onClick={() => chooseSizePreset(preset)} selected={activeSizePreset === preset}>
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  {activeSizePreset === preset && <CheckIcon fontSize='small' />}
+                </ListItemIcon>
+                <ListItemText primary={SIZE_PRESET_LABELS[preset]} secondary={`${width} × ${height}`} />
+              </MenuItem>
+            );
+          })}
+        </Menu>
 
         <DiscordButton
           discordUrl='https://discord.gg/zYzUUDcMrv'
