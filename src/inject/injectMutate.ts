@@ -203,6 +203,16 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
       },
     );
 
+    // de.innogames.onyx.spire.views.windows.diplomacy.SpireDiplomacyWindowMediator
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.spire.views.windows.diplomacy.SpireDiplomacyWindowMediator',
+      'aviad_wm',
+    );
+
+    // de.innogames.onyx.spire.wrappers.SpireEncounter
+    scriptText = patchCtorRegistryAssignment(scriptText, 'de.innogames.onyx.spire.wrappers.SpireEncounter', 'aviad_se');
+
     // de.innogames.onyx.city.engine.snake.components.layers.SnakeInteractiveLayerMediator
     scriptText = patchCtorRegistryAssignment(
       scriptText,

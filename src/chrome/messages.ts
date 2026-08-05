@@ -59,6 +59,19 @@ export interface OpenExtensionTabMessage {
   type: 'openExtensionTab';
 }
 
+export interface SpirePicksMessage {
+  type: 'spirePicks';
+  picks: string[];
+  /** Latest win probability from the Spire Wizard; absent on a fresh encounter. */
+  prob?: string;
+  /** 1-based ghost to spend a joker on; absent when a joker is not an option. */
+  jokerGhost?: number;
+  /** Round these values apply to. Optional: a wizard tab running a pre-update inject omits it. */
+  turn?: number;
+  /** Badge-only progress signal. When set there are no picks and nothing is relayed to the page. */
+  status?: 'waiting' | 'timeout';
+}
+
 // ============================================================================
 // 2. TAB MESSAGES (Content Script / UI Bound) - TYPES
 // ============================================================================
@@ -149,7 +162,8 @@ export type AllMessages =
   | InitialWorldMapDataMessage
   | WorldNeighborsUpdatedMessage
   | NeighbourHelpDataMessage
-  | HelpPerformedUpdateProvinceMessage;
+  | HelpPerformedUpdateProvinceMessage
+  | SpirePicksMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -546,4 +560,11 @@ export const setupHelpPerformedUpdateProvinceListener = (
 
 export const clearHelpPerformedUpdateProvinceListener = () => {
   delete callbackMap['helpPerformedUpdateProvince'];
+};
+
+export const setupSpirePicksListener = (callback: (message: SpirePicksMessage) => void) =>
+  (callbackMap['spirePicks'] = callback);
+
+export const clearSpirePicksListener = () => {
+  delete callbackMap['spirePicks'];
 };

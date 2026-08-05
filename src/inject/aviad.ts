@@ -41,6 +41,14 @@ declare global {
         getOrCreateNewInstance: <T>(ctor: new () => T, ...args: unknown[]) => T;
       };
     };
+    aviad_wm: {
+      _onInvest: ({ resource }: { resource: { id: string; _value: bigint } }) => void;
+    };
+    aviad_se: {
+      diplomacyCosts: {
+        get_resources: () => { id: string; _value: bigint }[];
+      };
+    };
     aviad_pagination: AviadPagination;
     aviad_pagination_a: AviadPagination[];
     aviad_enum: {

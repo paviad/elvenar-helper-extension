@@ -14,6 +14,7 @@ import { tournyCater } from './local/tournyCater';
 import { tournyFight } from './local/tournyFight';
 import { tournyOpen } from './local/tournyOpen';
 import { setupKeyHandlers } from './setupKeyHandlers';
+import { storePicksForLaterUse } from './spirePicksStore';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
@@ -87,6 +88,9 @@ window.addEventListener('message', (event) => {
       break;
     case 'tournyCater':
       void tournyCater(event.data.payload as { q: number; r: number });
+      break;
+    case 'spirePicks':
+      storePicksForLaterUse(event.data.payload as string[]);
       break;
     case 'visitPlayer':
       localVisitPlayer(event.data.payload as { playerId: number; buildingId: string; baseName: string });

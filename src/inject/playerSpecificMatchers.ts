@@ -2,6 +2,7 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { localProcessGuildData } from './local/localProcessGuildData';
 import { localProcessRankingsData } from './local/localProcessRankingsData';
+import { localProcessSpireDiplomacyGetData } from './local/localProcessSpireDiplomacyGetData';
 import { localTrapVisitPlayer } from './local/localTrapVisitPlayer';
 
 export interface PlayerSpecificMatcherSpecification {
@@ -89,6 +90,20 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'SpireService',
       requestMethod: 'getEncounter',
     },
+  },
+  {
+    responseSelector: {
+      requestClass: 'SpireDiplomacyService',
+      requestMethod: 'getData',
+    },
+    local: localProcessSpireDiplomacyGetData,
+  },
+  {
+    responseSelector: {
+      requestClass: 'SpireDiplomacyService',
+      requestMethod: 'submit',
+    },
+    local: localProcessSpireDiplomacyGetData,
   },
   {
     requestSelector: {
