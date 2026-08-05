@@ -1,5 +1,6 @@
 import { CustomWebSocket } from './customWebSocket';
 import { injectMutate } from './injectMutate';
+import { castEeOncePerSecond } from './local/castEeOncePerSecond';
 import { localNextPage } from './local/localNextPage';
 import { localVisitPlayer } from './local/localVisitPlayer';
 import { setupKeyHandlers } from './setupKeyHandlers';
@@ -41,6 +42,12 @@ window.addEventListener('message', (event) => {
   }
 
   switch (event.data.type) {
+    case 'CAST_EE':
+      {
+        const payload = event.data.payload as number[];
+        void castEeOncePerSecond(payload);
+      }
+      break;
     case 'visitPlayer':
       localVisitPlayer(event.data.payload as { playerId: number; buildingId: string; baseName: string });
       break;

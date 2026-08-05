@@ -52,6 +52,9 @@ declare global {
       'de.innogames.onyx.city.ancientwonders.services.AncientWonderService': new () => {
         getOtherPlayerAncientWonders: (playerId: number, callback: (response: unknown) => void) => void;
       };
+      'de.innogames.onyx.shared.spells.services.SpellService': new () => {
+        castSpellOnBuilding: (spellName: string, buildingId: number, callback: (response: unknown) => void) => void;
+      };
       'de.innogames.onyx.city.engine.events.IsoDecorationEvent': new (type: string, id: string) => DecorationEvent;
       'de.innogames.onyx.city.commands.VisitOtherPlayerCommand': new () => AviadVisitOtherPlayerCommand;
       'de.innogames.onyx.city.ancientwonders.commands.DisplayAncientWonderCommand': new () => AviadDisplayAncientWonderCommand;
