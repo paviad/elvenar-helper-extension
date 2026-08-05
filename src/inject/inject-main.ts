@@ -1,4 +1,5 @@
 import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
+import { TournyFight } from '../model/tourny/tournyFight';
 import { compareVersion } from './compareVersion';
 import { CustomWebSocket } from './customWebSocket';
 import { injectMutate } from './injectMutate';
@@ -9,6 +10,9 @@ import { localNextPage } from './local/localNextPage';
 import { localVisitPlayer } from './local/localVisitPlayer';
 import { createOtherPlayerService, getNeighborlyHelpBuildings } from './local/neighbourlyHelp';
 import { receivedNeighbourHelpBuildings } from './local/receivedNeighbourHelpBuildings';
+import { tournyCater } from './local/tournyCater';
+import { tournyFight } from './local/tournyFight';
+import { tournyOpen } from './local/tournyOpen';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
@@ -74,6 +78,15 @@ window.addEventListener('message', (event) => {
       break;
     case 'fetchWorldNeighbors':
       void fetchWorldNeighbors();
+      break;
+    case 'tournyFight':
+      void tournyFight(event.data.payload as TournyFight);
+      break;
+    case 'tournyOpen':
+      void tournyOpen(event.data.payload as { q: number; r: number });
+      break;
+    case 'tournyCater':
+      void tournyCater(event.data.payload as { q: number; r: number });
       break;
     case 'visitPlayer':
       localVisitPlayer(event.data.payload as { playerId: number; buildingId: string; baseName: string });

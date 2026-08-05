@@ -743,6 +743,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
           />
         )}
         {tabKey === 'nhelp' && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
+        {tabKey === 'tourny' && <Tourny />}
       </div>
       {retrievingCounter > 0 && (
         <Box

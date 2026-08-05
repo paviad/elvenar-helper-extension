@@ -8,6 +8,7 @@ import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { StrengthModifier } from './counterCalculation';
 import { TournamentGood } from './tournamentGuide';
 import { TournyData } from './tournyData';
 
@@ -77,6 +78,8 @@ interface OverlayState {
   setWorldNeighbors: (neighbors: WorldNeighbor[]) => void;
   neighbourHelpData?: NeighbourHelpData;
   setNeighbourHelpData: (data: NeighbourHelpData) => void;
+  modifiers?: StrengthModifier[];
+  setModifiers: (modifiers: StrengthModifier[]) => void;
 
   autoKpHunt?: boolean;
   setAutoKpHunt: (autoKpHunt: boolean) => void;
@@ -163,6 +166,8 @@ export const generateOverlayStore = (accountId: string) => {
         setWorldNeighbors: (neighbors) => set({ worldNeighbors: neighbors }),
         neighbourHelpData: undefined,
         setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
+        modifiers: [],
+        setModifiers: (modifiers) => set({ modifiers }),
 
         autoKpHunt: false,
         setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
