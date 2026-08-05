@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { GameVars } from '../inject/gameVars';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
 import { SwapBudget } from '../model/kpSwap';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
 import { TournamentGood } from './tournamentGuide';
@@ -68,6 +71,12 @@ interface OverlayState {
 
   retrievingCounter: number;
   setRetrievingCounter: (counter: number) => void;
+  initialWorldMapData: InitialWorldMapData | null;
+  setInitialWorldMapData: (data: InitialWorldMapData) => void;
+  worldNeighbors: WorldNeighbor[];
+  setWorldNeighbors: (neighbors: WorldNeighbor[]) => void;
+  neighbourHelpData?: NeighbourHelpData;
+  setNeighbourHelpData: (data: NeighbourHelpData) => void;
 
   autoKpHunt?: boolean;
   setAutoKpHunt: (autoKpHunt: boolean) => void;
@@ -148,6 +157,12 @@ export const generateOverlayStore = (accountId: string) => {
 
         retrievingCounter: 0,
         setRetrievingCounter: (counter) => set({ retrievingCounter: counter }),
+        initialWorldMapData: null,
+        setInitialWorldMapData: (data) => set({ initialWorldMapData: data }),
+        worldNeighbors: [],
+        setWorldNeighbors: (neighbors) => set({ worldNeighbors: neighbors }),
+        neighbourHelpData: undefined,
+        setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
 
         autoKpHunt: false,
         setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
@@ -171,6 +186,9 @@ export const generateOverlayStore = (accountId: string) => {
             messagesDetailsReceived,
             wonderKpUpdate,
             retrievingCounter,
+            initialWorldMapData,
+            worldNeighbors,
+            neighbourHelpData,
             autoKpHunt,
             // gameVars,
             ...toPersist

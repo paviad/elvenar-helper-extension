@@ -198,6 +198,30 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   // },
   {
     responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'fetchInitialWorldMapData',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'getDiscoveredPlayerProvinces',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'OtherPlayerService',
+      requestMethod: 'getNeighbourlyHelpBuildings',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'updateProvince',
+    },
+  },
+  {
+    responseSelector: {
       requestClass: 'TournamentService',
       requestMethod: 'getProvincesOverview',
     },

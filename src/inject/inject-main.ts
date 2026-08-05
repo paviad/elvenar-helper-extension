@@ -1,8 +1,14 @@
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
+import { compareVersion } from './compareVersion';
 import { CustomWebSocket } from './customWebSocket';
 import { injectMutate } from './injectMutate';
 import { castEeOncePerSecond } from './local/castEeOncePerSecond';
+import { fetchWorldNeighbors } from './local/fetchWorldNeighbors';
+import { localHelpPlayer } from './local/localHelpPlayer';
 import { localNextPage } from './local/localNextPage';
 import { localVisitPlayer } from './local/localVisitPlayer';
+import { createOtherPlayerService, getNeighborlyHelpBuildings } from './local/neighbourlyHelp';
+import { receivedNeighbourHelpBuildings } from './local/receivedNeighbourHelpBuildings';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
@@ -47,6 +53,27 @@ window.addEventListener('message', (event) => {
         const payload = event.data.payload as number[];
         void castEeOncePerSecond(payload);
       }
+      break;
+    case 'helpPlayer':
+      if (compareVersion('1.239') >= 0) {
+        localHelpPlayer(event.data.payload as number);
+      }
+      break;
+    case 'neighbourHelpBuildings':
+      if (compareVersion('1.239') < 0) {
+        const neighbourHelpData = event.data.payload as NeighbourHelpData;
+        void receivedNeighbourHelpBuildings(neighbourHelpData);
+      }
+      break;
+    case 'getNeighborlyHelpBuildings':
+      if (compareVersion('1.239') < 0) {
+        const playerId = event.data.payload as number;
+        const service = createOtherPlayerService();
+        getNeighborlyHelpBuildings(service, playerId);
+      }
+      break;
+    case 'fetchWorldNeighbors':
+      void fetchWorldNeighbors();
       break;
     case 'visitPlayer':
       localVisitPlayer(event.data.payload as { playerId: number; buildingId: string; baseName: string });

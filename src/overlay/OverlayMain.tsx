@@ -51,6 +51,7 @@ import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { KpHuntOpportunities } from './KpHuntOpportunities';
 import { MessagesView } from './MessagesView';
+import { NeighbourlyHelp } from './NeighbourlyHelp';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
 import { getAccountId, getOverlayStore } from './overlayStore';
@@ -100,6 +101,8 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
   const chapter = useOverlayStore((state) => state.chapter);
 
+  const [refreshNeighborlyHelp, triggerRefreshNeighborlyHelp] = React.useReducer((x) => x + 1, 0);
+
   // Connect Quests from Zustand Store
   const quests = useOverlayStore((state) => state.quests);
   const setQuests = useOverlayStore((state) => state.setQuests);
@@ -137,6 +140,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     }
   }, [retrievingCounterRaw, kpHuntOpportunities, autoKpHunt, kpHuntImportantThreshold]);
 
+<<<<<<< HEAD
   // Declarative, so the tab set, the Alt+C chord map, the rendered content and the help dialog
   // all read from one place. Hand-computed indices used to have to be adjusted in two places
   // whenever the Trade tab came and went with the chapter.
@@ -457,6 +461,16 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }),
     );
 
+    listenerIds.push(
+      setupGenericResponseListener<Record<string, number>>('R:CityResourcesService/getResources', (msg) => {
+        async function Do() {
+          await loadSingleAccountFromStorage(getAccountId()!);
+          triggerRefreshNeighborlyHelp();
+        }
+        void Do();
+      }),
+    );
+
     return () => {
       listenerIds.forEach((id) => {
         clearGenericResponseListener(id);
@@ -728,6 +742,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
             kpInstantsInventory={kpInstantsInventory}
           />
         )}
+        {tabKey === 'nhelp' && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
       </div>
       {retrievingCounter > 0 && (
         <Box

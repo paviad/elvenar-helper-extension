@@ -55,6 +55,31 @@ declare global {
       'de.innogames.onyx.shared.spells.services.SpellService': new () => {
         castSpellOnBuilding: (spellName: string, buildingId: number, callback: (response: unknown) => void) => void;
       };
+      'de.innogames.onyx.worldmap.service.WorldMapService': new () => {
+        getDiscoveredPlayerProvinces: (callback: (response: unknown) => void) => void;
+        startup: (callback: (response: unknown) => void) => void;
+        request: (action: string) => {
+          withData: (...data: unknown[]) => {
+            withCallback: (callback: (response: unknown) => void) => {
+              immediate: () => {
+                call: () => void;
+              };
+            };
+          };
+        };
+      };
+      'de.innogames.onyx.city.service.OtherPlayerService': new () => {
+        getNeighbourlyHelpBuildings: (playerId: number, callback: (response: unknown) => void) => void;
+      };
+      'de.innogames.onyx.city.service.NeighborlyHelpService': new () => {
+        helpPlayer(playerId: number, arg1: (response: unknown) => void): unknown;
+        performAction: (
+          action: 'unlimited_help' | 'limited_help' | 'time_limited_help',
+          entityId: number,
+          playerId: number,
+          callback: (response: unknown) => void,
+        ) => void;
+      };
       'de.innogames.onyx.city.engine.events.IsoDecorationEvent': new (type: string, id: string) => DecorationEvent;
       'de.innogames.onyx.city.commands.VisitOtherPlayerCommand': new () => AviadVisitOtherPlayerCommand;
       'de.innogames.onyx.city.ancientwonders.commands.DisplayAncientWonderCommand': new () => AviadDisplayAncientWonderCommand;

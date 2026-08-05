@@ -1,6 +1,9 @@
 import { NonSpecificMessage } from '../inject/nonSpecificMessages';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { TradeSummary } from '../model/tradeSummary';
+import { WorldNeighbor } from '../model/worldNeighbors';
 import { reportPossibleContextLoss } from './extensionContext';
 
 // ============================================================================
@@ -103,6 +106,26 @@ export interface KpHuntOpportunityMessage {
   tabId: number;
 }
 
+export interface InitialWorldMapDataMessage {
+  type: 'initialWorldMapData';
+  initialWorldMapData: InitialWorldMapData;
+}
+
+export interface WorldNeighborsUpdatedMessage {
+  type: 'worldNeighborsUpdated';
+  worldNeighbors: WorldNeighbor[];
+}
+
+export interface NeighbourHelpDataMessage {
+  type: 'neighbourHelpData';
+  neighbourHelpData: NeighbourHelpData;
+}
+
+export interface HelpPerformedUpdateProvinceMessage {
+  type: 'helpPerformedUpdateProvince';
+  updatedProvince: WorldNeighbor;
+}
+
 // ============================================================================
 // UNION TYPES & UTILITIES
 // ============================================================================
@@ -122,7 +145,11 @@ export type AllMessages =
   | MissingEeMessage
   | MessagesUpdatedMessage
   | RetrievingCounterUpdateMessage
-  | KpHuntOpportunityMessage;
+  | KpHuntOpportunityMessage
+  | InitialWorldMapDataMessage
+  | WorldNeighborsUpdatedMessage
+  | NeighbourHelpDataMessage
+  | HelpPerformedUpdateProvinceMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -300,6 +327,50 @@ export const sendKpHuntOpportunity = async (tabId: number) => {
   }
 };
 
+export const sendInitialWorldMapDataMessage = async (tabId: number, initialWorldMapData: InitialWorldMapData) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'initialWorldMapData',
+      initialWorldMapData,
+    } satisfies InitialWorldMapDataMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending initialWorldMapData message:', e);
+  }
+};
+
+export const sendWorldNeighborsUpdatedMessage = async (tabId: number, worldNeighbors: WorldNeighbor[]) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'worldNeighborsUpdated',
+      worldNeighbors,
+    } satisfies WorldNeighborsUpdatedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending worldNeighborsUpdated message:', e);
+  }
+};
+
+export const sendNeighbourHelpDataMessage = async (tabId: number, neighbourHelpData: NeighbourHelpData) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'neighbourHelpData',
+      neighbourHelpData,
+    } satisfies NeighbourHelpDataMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending neighbourHelpData message:', e);
+  }
+};
+
+export const sendHelpPerformedUpdateProvinceMessage = async (tabId: number, updatedProvince: WorldNeighbor) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'helpPerformedUpdateProvince', updatedProvince } satisfies {
+      type: 'helpPerformedUpdateProvince';
+      updatedProvince: WorldNeighbor;
+    });
+  } catch (e) {
+    console.log('ElvenAssist: Error sending helpPerformedUpdateProvince message:', e);
+  }
+};
+
 // ============================================================================
 // LISTENER SETUP & ROUTING
 // ============================================================================
@@ -446,4 +517,33 @@ export const setupKpHuntOpportunityListener = (callback: (message: KpHuntOpportu
 
 export const clearKpHuntOpportunityListener = () => {
   delete callbackMap['kpHuntOpportunity'];
+};
+
+export const setupInitialWorldMapDataListener = (callback: (message: InitialWorldMapDataMessage) => void) =>
+  (callbackMap['initialWorldMapData'] = callback);
+
+export const clearInitialWorldMapDataListener = () => {
+  delete callbackMap['initialWorldMapData'];
+};
+
+export const setupWorldNeighborsUpdatedListener = (callback: (message: WorldNeighborsUpdatedMessage) => void) =>
+  (callbackMap['worldNeighborsUpdated'] = callback);
+
+export const clearWorldNeighborsUpdatedListener = () => {
+  delete callbackMap['worldNeighborsUpdated'];
+};
+
+export const setupNeighbourHelpDataListener = (callback: (message: NeighbourHelpDataMessage) => void) =>
+  (callbackMap['neighbourHelpData'] = callback);
+
+export const clearNeighbourHelpDataListener = () => {
+  delete callbackMap['neighbourHelpData'];
+};
+
+export const setupHelpPerformedUpdateProvinceListener = (
+  callback: (message: HelpPerformedUpdateProvinceMessage) => void,
+) => (callbackMap['helpPerformedUpdateProvince'] = callback);
+
+export const clearHelpPerformedUpdateProvinceListener = () => {
+  delete callbackMap['helpPerformedUpdateProvince'];
 };

@@ -5,9 +5,13 @@ import {
   sendCityDataUpdatedMessage,
   sendCityEntitiesUpdatedMessage,
   sendGenericResponse,
+  sendHelpPerformedUpdateProvinceMessage,
+  sendInitialWorldMapDataMessage,
   sendKpHuntOpportunity,
   sendMessagesUpdatedMessage,
+  sendNeighbourHelpDataMessage,
   sendOtherPlayerCityDataUpdatedMessage,
+  sendWorldNeighborsUpdatedMessage,
 } from '../chrome/messages';
 import { getAccountBySessionId, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { saveSingleAccount } from '../elvenar/Accounts';
@@ -18,11 +22,14 @@ import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
 import { processGuildData } from '../elvenar/processGuildData';
+import { processHelpPerformedUpdateProvince } from '../elvenar/processHelpPerformedUpdateProvince';
+import { processInitialWorldMapData } from '../elvenar/processInitialWorldMapData';
 import { processInventory } from '../elvenar/processInventory';
 import { processMessageMarkedAsRead } from '../elvenar/processMessageMarkedAsRead';
 import { processMessageOverview } from '../elvenar/processMessageOverview';
 import { processMessages } from '../elvenar/processMessages';
 import { processNeighborAncientWondersData } from '../elvenar/processNeighborAncientWondersData';
+import { processNeighbourHelpBuildings } from '../elvenar/processNeighbourHelpBuildings';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
@@ -41,8 +48,12 @@ import { processTranscendenceService } from '../elvenar/processTranscendenceServ
 import { processUpdateChestPayInProgress } from '../elvenar/processUpdateChestPayInProgress';
 import { processUpdateWaypoints } from '../elvenar/processUpdateWaypoints';
 import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
+import { processWorldNeighbors } from '../elvenar/processWorldNeighbors';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
+import { WorldNeighbor } from '../model/worldNeighbors';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
 type Processors = Record<
@@ -146,6 +157,11 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:RankingService/getRankingList': processRankingData,
     'R:GuildService/getGuild': processGuildData,
 
+    'R:WorldMapService/fetchInitialWorldMapData': processInitialWorldMapData,
+    'R:WorldMapService/getDiscoveredPlayerProvinces': processWorldNeighbors,
+    'R:OtherPlayerService/getNeighbourlyHelpBuildings': processNeighbourHelpBuildings,
+    'R:WorldMapService/updateProvince': processHelpPerformedUpdateProvince,
+
     'R:TournamentService/getProvincesOverview': processTournyProvincesOverview,
     'R:WorldMapService/getProvinceInformation': processTournyProvinceInformation,
     'R:WorldMapService/updateTournamentTime': processTournyUpdateTime,
@@ -214,6 +230,18 @@ export const playerSpecificRequestHandlerInternal = async (
     case 'R:MessageService/markMessageAsRead':
     case 'R:MessageService/replyMessage':
       await sendMessagesUpdatedMessage(sharedInfo.tabId, msg.payload.type);
+      break;
+    case 'R:WorldMapService/fetchInitialWorldMapData':
+      await sendInitialWorldMapDataMessage(sharedInfo.tabId, result as InitialWorldMapData);
+      break;
+    case 'R:WorldMapService/getDiscoveredPlayerProvinces':
+      await sendWorldNeighborsUpdatedMessage(sharedInfo.tabId, result as WorldNeighbor[]);
+      break;
+    case 'R:OtherPlayerService/getNeighbourlyHelpBuildings':
+      await sendNeighbourHelpDataMessage(sharedInfo.tabId, result as NeighbourHelpData);
+      break;
+    case 'R:WorldMapService/updateProvince':
+      await sendHelpPerformedUpdateProvinceMessage(sharedInfo.tabId, result as WorldNeighbor);
       break;
   }
 };

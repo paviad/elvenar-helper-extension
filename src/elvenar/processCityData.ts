@@ -74,6 +74,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     | undefined;
 
   const squadSize = effectsService?.find((r) => r.name === 'squadSize')?.value || 0;
+  const coinsCap = effectsService?.find((r) => r.name === 'coinsCap')?.value || 0;
+  const suppliesCap = effectsService?.find((r) => r.name === 'suppliesCap')?.value || 0;
 
   const expirationsEnd =
     startupService?.effects
@@ -99,7 +101,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   if (!startupService) {
     console.warn('ElvenAssist: No StartupService data found in the provided JSON.');
-    return;
+    return json;
   }
 
   const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
@@ -192,6 +194,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       faRequirements,
       relicBoosts,
       squadSize,
+      coinsCap,
+      suppliesCap,
       rankingPoints,
       cityResources,
       armyDetails: startupService.army_details,
@@ -205,6 +209,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   setAccountData(accountId, data);
   await setMaxChapter(maxChapter);
+
+  return json;
 }
 
 async function setMaxChapter(maxChapter: number) {

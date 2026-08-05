@@ -59,4 +59,6 @@ export const processCityResourcesUpdate = async (untypedJson: unknown, sharedInf
     accountData.cityQuery.badges = badges;
     accountData.cityQuery.relics = relics;
   }
+
+  return resources;
 };
