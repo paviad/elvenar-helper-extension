@@ -8,6 +8,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import MailOutlineIcon from '@mui/icons-material/MailOutlined';
 import SearchIcon from '@mui/icons-material/Search';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import {
   Avatar,
   Badge,
@@ -43,6 +44,7 @@ import {
   timestampType,
 } from './gild';
 import { getAccountId, getOverlayStore } from './overlayStore';
+import { SwapsView } from './SwapsView';
 
 function formatSeconds(seconds: number | undefined): string {
   if (!seconds) return '';
@@ -139,12 +141,18 @@ interface Match {
   within: number; // occurrence index within that thread
 }
 
+/** What the pane switch at the top selects: a message folder, or the swap tally. */
+type MessagesPane = MessageFolder | 'swaps';
+
 export const MessagesView = () => {
   const overlayStore = getOverlayStore();
   const messagesUpdate = overlayStore((state) => state.messagesUpdate);
   const messagesDetailsReceived = overlayStore((state) => state.messagesDetailsReceived);
 
   const [folder, setFolder] = useState<MessageFolder>('inbox');
+  // Swaps rides alongside the folders rather than replacing the selected one, so coming back
+  // from it lands on whichever folder you were reading.
+  const [showSwaps, setShowSwaps] = useState(false);
   const [folderData, setFolderData] = useState<Partial<Record<MessageFolder, MessageFolderData>> | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -228,11 +236,17 @@ export const MessagesView = () => {
   // The overview may list ids we haven't fetched details for yet.
   const overviewOnlyCount = current ? Object.keys(current.overview).length - Object.keys(current.messages).length : 0;
 
-  const handleFolderChange = (_: React.MouseEvent<HTMLElement>, next: MessageFolder | null) => {
-    if (next) {
-      setFolder(next);
-      setSelectedId(null);
+  const handlePaneChange = (_: React.MouseEvent<HTMLElement>, next: MessagesPane | null) => {
+    if (!next) {
+      return;
     }
+    if (next === 'swaps') {
+      setShowSwaps(true);
+      return;
+    }
+    setShowSwaps(false);
+    setFolder(next);
+    setSelectedId(null);
   };
 
   const selectedMessage = selectedId ? current?.messages[selectedId] : undefined;
@@ -283,10 +297,10 @@ export const MessagesView = () => {
         }}
       >
         <ToggleButtonGroup
-          value={folder}
+          value={showSwaps ? 'swaps' : folder}
           exclusive
           size='small'
-          onChange={handleFolderChange}
+          onChange={handlePaneChange}
           aria-label='Message folder'
           sx={{
             flex: 1,
@@ -307,7 +321,7 @@ export const MessagesView = () => {
           <ToggleButton value='inbox' aria-label='Inbox'>
             <Badge
               color='primary'
-              badgeContent={folder === 'inbox' ? unreadCount : 0}
+              badgeContent={!showSwaps && folder === 'inbox' ? unreadCount : 0}
               sx={{ mr: unreadCount ? 1.5 : 0 }}
             >
               <MailOutlineIcon fontSize='small' sx={{ mr: 0.75 }} />
@@ -318,18 +332,27 @@ export const MessagesView = () => {
             <ForumOutlinedIcon fontSize='small' sx={{ mr: 0.75 }} />
             Outbox
           </ToggleButton>
+          <ToggleButton value='swaps' aria-label='Knowledge point swaps'>
+            <SwapHorizIcon fontSize='small' sx={{ mr: 0.75 }} />
+            Swaps
+          </ToggleButton>
         </ToggleButtonGroup>
-        <IconButton
-          size='small'
-          aria-label='Search messages'
-          sx={{ color: searchActive ? gild.mid : gild.bronzeSoft }}
-          onClick={() => setSearchActive((a) => !a)}
-        >
-          <SearchIcon fontSize='small' />
-        </IconButton>
+        {/* Search reads the thread list, so it has nothing to act on in the swap tally. */}
+        {!showSwaps && (
+          <IconButton
+            size='small'
+            aria-label='Search messages'
+            sx={{ color: searchActive ? gild.mid : gild.bronzeSoft }}
+            onClick={() => setSearchActive((a) => !a)}
+          >
+            <SearchIcon fontSize='small' />
+          </IconButton>
+        )}
       </Box>
 
-      {searchActive && (
+      {showSwaps && <SwapsView />}
+
+      {searchActive && !showSwaps && (
         <Box
           sx={{
             display: 'flex',
@@ -411,7 +434,8 @@ export const MessagesView = () => {
         </Box>
       )}
 
-      {stale && (
+      {/* Swaps carries its own staleness notice, so this one would only duplicate it. */}
+      {stale && !showSwaps && (
         <Box
           sx={{
             display: 'flex',
@@ -432,7 +456,7 @@ export const MessagesView = () => {
         </Box>
       )}
 
-      {selectedMessage ? (
+      {showSwaps ? null : selectedMessage ? (
         <MessageDetail
           message={selectedMessage}
           onBack={() => setSelectedId(null)}

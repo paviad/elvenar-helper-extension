@@ -135,7 +135,7 @@ export const SwapsView = () => {
 
   if (account === null || wonderNames === null) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', p: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1, p: 4 }}>
         <CircularProgress size={32} />
       </Box>
     );
@@ -155,8 +155,10 @@ export const SwapsView = () => {
 
   const stale = !messagesDetailsReceived && tally.entries.length + tally.skipped.length > 0;
 
+  // Rendered inside the Messages pane's column, so it grows into the space left by the
+  // Inbox/Outbox/Swaps switch rather than claiming the full height for itself.
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 }}>
       <Box sx={{ px: 1.5, py: 1, ...gildedBar, display: 'flex', alignItems: 'center', gap: 1 }}>
         <SwapHorizIcon fontSize='small' sx={{ color: gild.bronze }} />
         {/* Deliberately just a label: the numbers that matter are the per-payee ones on each

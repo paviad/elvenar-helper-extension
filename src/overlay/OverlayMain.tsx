@@ -25,10 +25,9 @@ import { MessagesView } from './MessagesView';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
-import { SwapsView } from './SwapsView';
 import { TradeView } from './TradeView';
 
-type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'swaps';
+type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages';
 
 interface OverlayTab {
   key: OverlayTabKey;
@@ -67,8 +66,7 @@ export function OverlayMain() {
       ...(chapter >= 18 ? ([{ key: 'trade', label: 'Trade' }] satisfies OverlayTab[]) : []),
       { key: 'ee', label: 'EE', shortcut: 'KeyE' },
       { key: 'quests', label: 'Quests', shortcut: 'KeyQ' },
-      { key: 'messages', label: 'Messages', shortcut: 'KeyM' },
-      { key: 'swaps', label: 'Swaps', shortcut: 'KeyS', isNew: true },
+      { key: 'messages', label: 'Messages', shortcut: 'KeyM', isNew: true },
     ],
     [chapter],
   );
@@ -452,7 +450,6 @@ export function OverlayMain() {
           />
         ))}{' '}
       {tabKey === 'messages' && <MessagesView />}
-      {tabKey === 'swaps' && <SwapsView />}
     </div>
   );
 }

@@ -92,22 +92,6 @@ export const InGameAssistant = () => (
           sx={{ my: 1 }}
         />
       </ListItem>
-
-      <ListItem>
-        <ListItemIcon sx={{ minWidth: 40 }}>
-          <SwapHorizIcon color='action' />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip label='Alt + C' size='small' /> <Typography variant='caption'>then</Typography>{' '}
-              <Chip label='S' size='small' />
-            </Box>
-          }
-          secondary='Opens the Swaps tab.'
-          sx={{ my: 1 }}
-        />
-      </ListItem>
     </List>
 
     <Divider sx={{ my: 2 }} />
@@ -117,17 +101,22 @@ export const InGameAssistant = () => (
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
       Knowledge point swap threads run as a chain: you give KP to whoever posted last, then post the wonder you would
-      like next. The Swaps tab keeps track of who you owe, so you can work through every thread first and repay
-      afterwards.
+      like next. The <strong>Swaps</strong> button in the Messages tab, next to Inbox and Outbox, keeps track of who you
+      owe, so you can work through every thread first and repay afterwards.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
       It keys off <strong>your own post</strong>. Post exactly{' '}
       <Chip label='<Ancient Wonder> please' size='small' sx={{ fontFamily: 'monospace' }} /> — the wonder&apos;s full
       in-game name followed by the word &ldquo;please&rdquo;, nothing before or after it — and whoever posted before you
-      appears in the tab, along with the amount taken from the thread&apos;s title and the wonder they asked for.
+      appears in the list, along with the amount taken from the thread&apos;s title and the wonder they asked for.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
-      The list starts empty and only fills as you post — rounds you did before turning the tab on are left alone. Tick
+      Debts are grouped by the player you owe, because you repay a person rather than a thread. Each card totals what
+      that player is due and breaks it down per thread, since the amount and the wonder they asked for can differ
+      between them.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
+      The list starts empty and only fills as you post — rounds you did before first opening it are left alone. Tick
       rows off as you donate to keep your place, then press <strong>Clear all</strong> once you have repaid everybody.
       Clearing is manual because the extension cannot see your donations, only your posts.
     </Typography>
@@ -138,7 +127,8 @@ export const InGameAssistant = () => (
       can still see you owe somebody there.
     </Typography>
     <Typography component='p' variant='body2' sx={{ color: 'text.secondary' }}>
-      Swaps reads the threads the Messages tab has captured, so open the in-game Messages window to bring it up to date.
+      Swaps reads the threads Inbox and Outbox have captured, so open the in-game Messages window to bring it up to
+      date.
     </Typography>
   </Box>
 );
