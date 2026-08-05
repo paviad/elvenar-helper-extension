@@ -438,159 +438,173 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   );
 
   return (
-    <div style={{ height: '100%' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          position: 'sticky',
-          top: 0,
-          zIndex: 2,
-          background: '#f9f9fb',
-          pr: 2,
-        }}
-      >
-        <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
-          {tabs.map((t) => (
-            <Tab key={t.key} label={renderLabel(t)} />
-          ))}
-        </Tabs>
-        {tabKey === 'chat' && (
-          <>
-            <IconButton aria-label='Search chat' size='small' sx={{ ml: 1 }} onClick={() => setSearchActive((v) => !v)}>
-              <SearchIcon fontSize='small' />
-            </IconButton>
-            {searchActive && (
-              <TextField
-                autoFocus
-                size='small'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder='Search chat...'
-                sx={{ ml: 1, minWidth: 180 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onKeyUp={(e) => e.stopPropagation()}
-              />
-            )}
-          </>
-        )}
-
-        {headerActionsSlot ? createPortal(headerActions, headerActionsSlot) : headerActions}
-        <Menu
-          anchorEl={sizeAnchor}
-          open={!!sizeAnchor}
-          onClose={() => setSizeAnchor(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          // Menu is a Modal, and Modal portals to document.body by default, where it would land
-          // at MUI's modal layer (1300) behind this z-index 9999 panel - open, anchored and
-          // invisible. Rendering in place keeps it in the panel's own stacking context.
-          disablePortal
-          sx={{ zIndex: OVERLAY_MENU_Z_INDEX }}
+    <>
+      <div style={{ height: '100%' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            background: '#f9f9fb',
+            pr: 2,
+          }}
         >
-          {SIZE_PRESET_ORDER.map((preset) => {
-            const { width, height } = OVERLAY_SIZE_PRESETS[preset];
-            return (
-              <MenuItem key={preset} onClick={() => chooseSizePreset(preset)} selected={activeSizePreset === preset}>
-                <ListItemIcon sx={{ minWidth: 32 }}>
-                  {activeSizePreset === preset && <CheckIcon fontSize='small' />}
-                </ListItemIcon>
-                <ListItemText primary={SIZE_PRESET_LABELS[preset]} secondary={`${width} × ${height}`} />
-              </MenuItem>
-            );
-          })}
-        </Menu>
-
-        <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
-      </Box>
-      {tabKey === 'chat' && (
-        <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
-      )}
-      {chapter >= 18 && tabKey === 'trade' && <TradeView />}
-      {tabKey === 'ee' && <EeView />}
-      {tabKey === 'quests' &&
-        (quests === undefined ? (
-          <Box
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onClick={() => document.getElementById('quest-file-upload')?.click()}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              boxSizing: 'border-box',
-              minHeight: 300,
-              p: 4,
-              m: 2,
-              textAlign: 'center',
-              border: '2px dashed',
-              borderColor: dropError ? 'error.main' : 'divider',
-              borderRadius: 2,
-              bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
-              cursor: 'pointer',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
-              },
-            }}
+          <Tabs
+            value={tabIndex}
+            onChange={handleChange}
+            variant='scrollable'
+            scrollButtons='auto'
+            aria-label='Overlay Tabs'
+            sx={{ flex: 1 }}
           >
-            <input
-              type='file'
-              id='quest-file-upload'
-              accept='.txt'
-              style={{ display: 'none' }}
-              onChange={handleFileInput}
+            {tabs.map((t) => (
+              <Tab key={t.key} label={renderLabel(t)} />
+            ))}
+          </Tabs>
+          {tabKey === 'chat' && (
+            <>
+              <IconButton
+                aria-label='Search chat'
+                size='small'
+                sx={{ ml: 1 }}
+                onClick={() => setSearchActive((v) => !v)}
+              >
+                <SearchIcon fontSize='small' />
+              </IconButton>
+              {searchActive && (
+                <TextField
+                  autoFocus
+                  size='small'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder='Search chat...'
+                  sx={{ ml: 1, minWidth: 180 }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onKeyUp={(e) => e.stopPropagation()}
+                />
+              )}
+            </>
+          )}
+
+          {headerActionsSlot ? createPortal(headerActions, headerActionsSlot) : headerActions}
+          <Menu
+            anchorEl={sizeAnchor}
+            open={!!sizeAnchor}
+            onClose={() => setSizeAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            // Menu is a Modal, and Modal portals to document.body by default, where it would land
+            // at MUI's modal layer (1300) behind this z-index 9999 panel - open, anchored and
+            // invisible. Rendering in place keeps it in the panel's own stacking context.
+            disablePortal
+            sx={{ zIndex: OVERLAY_MENU_Z_INDEX }}
+          >
+            {SIZE_PRESET_ORDER.map((preset) => {
+              const { width, height } = OVERLAY_SIZE_PRESETS[preset];
+              return (
+                <MenuItem key={preset} onClick={() => chooseSizePreset(preset)} selected={activeSizePreset === preset}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    {activeSizePreset === preset && <CheckIcon fontSize='small' />}
+                  </ListItemIcon>
+                  <ListItemText primary={SIZE_PRESET_LABELS[preset]} secondary={`${width} × ${height}`} />
+                </MenuItem>
+              );
+            })}
+          </Menu>
+
+          <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+        </Box>
+        {tabKey === 'chat' && (
+          <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
+        )}
+        {chapter >= 18 && tabKey === 'trade' && <TradeView />}
+        {tabKey === 'ee' && <EeView />}
+        {tabKey === 'quests' &&
+          (quests === undefined ? (
+            <Box
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onClick={() => document.getElementById('quest-file-upload')?.click()}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                boxSizing: 'border-box',
+                minHeight: 300,
+                p: 4,
+                m: 2,
+                textAlign: 'center',
+                border: '2px dashed',
+                borderColor: dropError ? 'error.main' : 'divider',
+                borderRadius: 2,
+                bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
+                },
+              }}
+            >
+              <input
+                type='file'
+                id='quest-file-upload'
+                accept='.txt'
+                style={{ display: 'none' }}
+                onChange={handleFileInput}
+              />
+
+              {dropError ? (
+                <>
+                  <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
+                    Upload Failed
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
+                    {dropError}
+                  </Typography>
+                  <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+                    Click or drag a new file to try again.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
+                    No quests loaded
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'text.disabled' }}>
+                    Drag and drop a .txt quest export file here, or click to browse.
+                  </Typography>
+                </>
+              )}
+            </Box>
+          ) : initialQuestIndex === undefined ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                p: 4,
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant='h6' sx={{ color: 'text.secondary' }}>
+                There is no event currently in progress.
+              </Typography>
+            </Box>
+          ) : (
+            <QuestJournal
+              quests={quests}
+              initialQuestIndex={initialQuestIndex}
+              onClearQuests={() => setQuests(undefined)}
             />
-
-            {dropError ? (
-              <>
-                <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
-                  Upload Failed
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
-                  {dropError}
-                </Typography>
-                <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-                  Click or drag a new file to try again.
-                </Typography>
-              </>
-            ) : (
-              <>
-                <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
-                  No quests loaded
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'text.disabled' }}>
-                  Drag and drop a .txt quest export file here, or click to browse.
-                </Typography>
-              </>
-            )}
-          </Box>
-        ) : initialQuestIndex === undefined ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              p: 4,
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant='h6' sx={{ color: 'text.secondary' }}>
-              There is no event currently in progress.
-            </Typography>
-          </Box>
-        ) : (
-          <QuestJournal
-            quests={quests}
-            initialQuestIndex={initialQuestIndex}
-            onClearQuests={() => setQuests(undefined)}
-          />
-        ))}{' '}
-      {tabKey === 'messages' && <MessagesView />}
-      {tabKey === 'tourny' && <Tourny />}
-    </div>
+          ))}{' '}
+        {tabKey === 'messages' && <MessagesView />}
+        {tabKey === 'tourny' && <Tourny />}
+      </div>
+    </>
   );
 }

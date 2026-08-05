@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { GameVars } from '../inject/gameVars';
 import { SwapBudget } from '../model/kpSwap';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
@@ -64,6 +65,9 @@ interface OverlayState {
   // still name what is coming up when startup data mentions no tournament at all.
   lastTournament?: TournamentGood;
   setLastTournament: (good: TournamentGood) => void;
+
+  gameVars?: GameVars;
+  setGameVars: (gameVars: GameVars) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -133,11 +137,15 @@ export const generateOverlayStore = (accountId: string) => {
         setTournyData: (data) => set({ tournyData: data }),
         lastTournament: undefined,
         setLastTournament: (good) => set({ lastTournament: good }),
+
+        gameVars: undefined,
+        setGameVars: (gameVars) => set({ gameVars }),
       }),
       {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
+          // Exclude certain states from being persisted
           const {
             offeredGoods,
             forceUpdate,
@@ -146,8 +154,10 @@ export const generateOverlayStore = (accountId: string) => {
             messagesUpdate,
             messagesDetailsReceived,
             wonderKpUpdate,
+            // gameVars,
             ...toPersist
           } = state;
+          // avatarPosition remains in `toPersist` automatically
           return toPersist;
         },
       },

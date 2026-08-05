@@ -1,4 +1,5 @@
 import { CustomWebSocket } from './customWebSocket';
+import { injectMutate } from './injectMutate';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
@@ -21,5 +22,15 @@ console.log('ElvenAssist: Finished adding interceptor to WebSocket');
 
 const xhrInterceptor = new GlobalHttpInterceptorService();
 console.log('ElvenAssist: Finished adding interceptor to XMLHttpRequest');
+
+function onDOMContentLoaded() {
+  injectMutate();
+}
+
+if (document.readyState !== 'loading') {
+  onDOMContentLoaded();
+} else {
+  document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+}
 
 setupKeyHandlers();

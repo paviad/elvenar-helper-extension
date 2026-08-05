@@ -23,8 +23,6 @@ export const setupAggregateRequestResponseListener = (): void => {
       const requestClass = payload.request.requestClass;
       const requestMethod = payload.request.requestMethod;
 
-      console.log('E:', payload.request.requestId, requestClass, requestMethod, payload);
-
       for (const matcher of playerSpecificMatchers) {
         if (matcher.requestSelector) {
           if (

@@ -2,9 +2,9 @@ import { setupAggregateRequestResponseListener } from './chrome/aggregateRequest
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
 import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
+import { GameVars } from './inject/gameVars';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import {
-  DEFAULT_OVERLAY_SIZE,
   loadOverlaySize,
   OVERLAY_SIZE_PRESETS,
   OverlaySize,
@@ -63,6 +63,24 @@ function styleAsHeaderButton(el: HTMLElement) {
   });
 }
 
+// This branch opens at the large preset rather than master's small default, which is too tight
+// for the extra views. Taken from the preset so the two cannot drift into a third size.
+const { width: defaultStartingWidth, height: defaultStartingHeight } = OVERLAY_SIZE_PRESETS.large;
+
+let gameVars: GameVars | undefined;
+
+const setupGameVarsListener = () => {
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || event.data?.type !== 'gameVars') {
+      return;
+    }
+
+    gameVars = event.data.payload as GameVars;
+
+    console.log('gameVars', gameVars);
+  });
+};
+
 const initFunc = () => {
   // Remove existing panel if present
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
@@ -71,6 +89,7 @@ const initFunc = () => {
   } else {
     setupNonSpecificRequestInterceptedListener();
     setupAggregateRequestResponseListener();
+    setupGameVarsListener();
   }
 
   // Create the div
@@ -79,8 +98,8 @@ const initFunc = () => {
   draggableDiv.style.position = 'fixed';
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
-  draggableDiv.style.width = `${DEFAULT_OVERLAY_SIZE.width}px`;
-  draggableDiv.style.height = `${DEFAULT_OVERLAY_SIZE.height}px`;
+  draggableDiv.style.width = `${defaultStartingWidth}px`;
+  draggableDiv.style.height = `${defaultStartingHeight}px`;
   draggableDiv.style.background = '#fff';
   draggableDiv.style.border = '1px solid #ccc';
   draggableDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
@@ -356,8 +375,8 @@ const initFunc = () => {
 
   // Collapse logic
   let collapsed = true;
-  let lastExpandedWidth = `${DEFAULT_OVERLAY_SIZE.width}px`;
-  let lastExpandedHeight = `${DEFAULT_OVERLAY_SIZE.height}px`;
+  let lastExpandedWidth = `${defaultStartingWidth}px`;
+  let lastExpandedHeight = `${defaultStartingHeight}px`;
   collapseBtn.addEventListener('click', () => {
     if (isDragging) return;
     if (!collapsed) {
@@ -520,6 +539,20 @@ async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlo
       if (!state.lastSeenChat) {
         // First time setup, set last seen chat to now
         state.setLastSeenChat(Date.now());
+      }
+
+      if (gameVars) {
+        state.setGameVars(gameVars);
+        const existingPanel = document.getElementById('elven-assist-draggable-panel');
+        if (existingPanel) {
+          if (gameVars.gameScriptUrl.includes('full')) {
+            existingPanel.style.border = '13px solid red';
+          } else {
+            // existingPanel.style.border = '13px solid green';
+          }
+        }
+      } else {
+        throw new Error('gameVars not set yet, cannot setup overlay store');
       }
 
       createOverlayUi(contentDiv, headerActionsSlot);
