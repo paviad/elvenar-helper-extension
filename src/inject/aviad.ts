@@ -122,6 +122,9 @@ declare global {
         windowId: string,
       ) => AviadAncientWondersDataEvent;
     };
+    aviad_tv: {
+      getTreasures: (type: string) => { id: string }[];
+    };
     aviad_silm: {
       isoEngine: {
         dispatchEvent: (event: DecorationEvent) => void;
