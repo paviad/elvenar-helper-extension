@@ -26,6 +26,13 @@ let getSizeFn: () => OverlaySize | undefined;
 
 console.log('ElvenAssist: Content script loaded');
 
+/**
+ * The panel's ceiling. The resize drag clamps to it as well as the CSS, so `style.height` can
+ * never claim a height the panel does not render: overshooting used to leave the two disagreeing,
+ * and dragging back up then did nothing until the cursor re-crossed the ceiling.
+ */
+const MAX_PANEL_HEIGHT = 800;
+
 const initFunc = () => {
   // Remove existing panel if present
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
@@ -50,7 +57,7 @@ const initFunc = () => {
   draggableDiv.style.zIndex = '9999';
   draggableDiv.style.borderRadius = '6px';
   // draggableDiv.style.userSelect = 'none';
-  draggableDiv.style.maxHeight = '800px';
+  draggableDiv.style.maxHeight = `${MAX_PANEL_HEIGHT}px`;
 
   // Header for dragging and collapse
   const header = document.createElement('div');
@@ -182,7 +189,7 @@ const initFunc = () => {
   // from storage cannot undo a choice they have already made in this page.
   let sizeChosenThisSession = false;
 
-  resizeHandle.addEventListener('mousedown', (e) => {
+  resizeHandle.addEventListener('pointerdown', (e) => {
     if (collapsed) return;
     if (!document.defaultView) return;
     isResizing = true;
@@ -190,26 +197,41 @@ const initFunc = () => {
     startY = e.clientY;
     startWidth = parseInt(document.defaultView.getComputedStyle(draggableDiv).width, 10);
     startHeight = parseInt(document.defaultView.getComputedStyle(draggableDiv).height, 10);
+    // Capturing the pointer is what guarantees we hear the release. The panel stops growing at
+    // MAX_PANEL_HEIGHT while the cursor carries on down, so a downward drag very easily ends
+    // outside the browser window - and a mouseup out there is never delivered to the page. The
+    // old document-level mouseup therefore missed it, leaving the panel in resize mode, tracking
+    // a cursor with no button held.
+    resizeHandle.setPointerCapture(e.pointerId);
     document.body.style.userSelect = 'none';
     e.preventDefault();
     e.stopPropagation();
   });
 
-  document.addEventListener('mousemove', (e) => {
+  // Capture delivers these to the handle wherever the pointer has got to, so they belong here
+  // rather than on the document.
+  resizeHandle.addEventListener('pointermove', (e) => {
     if (!isResizing) return;
+    // A pointer that comes back with nothing held was released somewhere we never heard about.
+    if (e.buttons === 0) {
+      endResize();
+      return;
+    }
     const newWidth = Math.max(180, startWidth + (e.clientX - startX));
-    const newHeight = Math.max(60, startHeight + (e.clientY - startY));
+    const newHeight = Math.min(MAX_PANEL_HEIGHT, Math.max(60, startHeight + (e.clientY - startY)));
     draggableDiv.style.width = newWidth + 'px';
     draggableDiv.style.height = newHeight + 'px';
   });
 
-  document.addEventListener('mouseup', () => {
-    if (isResizing) {
-      isResizing = false;
-      document.body.style.userSelect = '';
-      rememberCurrentSize();
-    }
-  });
+  resizeHandle.addEventListener('pointerup', endResize);
+  resizeHandle.addEventListener('pointercancel', endResize);
+
+  function endResize() {
+    if (!isResizing) return;
+    isResizing = false;
+    document.body.style.userSelect = '';
+    rememberCurrentSize();
+  }
 
   document.body.appendChild(draggableDiv);
 
@@ -228,6 +250,12 @@ const initFunc = () => {
 
   document.addEventListener('mousemove', (e) => {
     if (!isDragging && !maybeDragging) return;
+    // Same trap as the resize: a release outside the window never reaches the mouseup below, and
+    // the panel would then follow the bare cursor. Nothing held means the drag is over.
+    if (e.buttons === 0) {
+      endDrag();
+      return;
+    }
     if (!isDragging && maybeDragging) {
       isDragging = true;
       maybeDragging = false;
@@ -236,14 +264,16 @@ const initFunc = () => {
     draggableDiv.style.top = `${e.clientY - offsetY}px`;
   });
 
-  document.addEventListener('mouseup', () => {
+  document.addEventListener('mouseup', endDrag);
+
+  function endDrag() {
     setTimeout(() => {
       // Delay to prevent click event after drag
       isDragging = false;
     }, 0);
     maybeDragging = false;
     document.body.style.userSelect = '';
-  });
+  }
 
   // Collapse logic
   let collapsed = true;
