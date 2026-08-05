@@ -42,11 +42,10 @@ import { getAccountId, getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { playPrimaryOpportunityAlert } from './primaryOpportunityAlertService';
 import { QuestJournal } from './QuestJournal';
-import { SwapsView } from './SwapsView';
 import { Tourny } from './Tourny';
 import { TradeView } from './TradeView';
 
-type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'swaps' | 'kphunt' | 'nhelp' | 'tourny';
+type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'kphunt' | 'nhelp' | 'tourny';
 
 interface OverlayTab {
   key: OverlayTabKey;
@@ -122,8 +121,7 @@ export function OverlayMain() {
       ...(chapter >= 18 ? ([{ key: 'trade', label: 'Trade' }] satisfies OverlayTab[]) : []),
       { key: 'ee', label: 'EE', shortcut: 'KeyE' },
       { key: 'quests', label: 'Quests', shortcut: 'KeyQ' },
-      { key: 'messages', label: 'Messages', shortcut: 'KeyM' },
-      { key: 'swaps', label: 'Swaps', shortcut: 'KeyS', isNew: true },
+      { key: 'messages', label: 'Messages', shortcut: 'KeyM', isNew: true },
       { key: 'kphunt', label: 'KP Hunt', shortcut: 'KeyK' },
       { key: 'nhelp', label: 'N.Help', shortcut: 'KeyN' },
       { key: 'tourny', label: 'Tourny', shortcut: 'KeyT' },
@@ -690,7 +688,6 @@ export function OverlayMain() {
             />
           ))}{' '}
         {tabKey === 'messages' && <MessagesView />}
-        {tabKey === 'swaps' && <SwapsView />}
         {tabKey === 'kphunt' && (
           <KpHuntOpportunities
             kpHuntOpportunities={kpHuntOpportunities}
