@@ -25,17 +25,28 @@ import { MessagesView } from './MessagesView';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
+import { SwapsView } from './SwapsView';
 import { TradeView } from './TradeView';
+
+type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'swaps';
+
+interface OverlayTab {
+  key: OverlayTabKey;
+  label: string;
+  /** Second key of the Alt+C chord. Tabs without one are mouse-only. */
+  shortcut?: string;
+  isNew?: boolean;
+}
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);
   const [searchActive, setSearchActive] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [tab, setTab] = React.useState(0);
+  const [tabKey, setTabKey] = React.useState<OverlayTabKey>('chat');
   const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
-  const tabRef = React.useRef<number>(tab);
+  const tabRef = React.useRef<OverlayTabKey>(tabKey);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
 
   const useOverlayStore = getOverlayStore();
@@ -47,11 +58,33 @@ export function OverlayMain() {
   const setQuests = useOverlayStore((state) => state.setQuests);
   const [dropError, setDropError] = React.useState<string | undefined>(undefined);
 
-  const chatTab = 0;
-  const tradeTab = chapter >= 18 ? 1 : -1;
-  const eeTab = chapter >= 18 ? 2 : 1;
-  const questsTab = chapter >= 18 ? 3 : 2;
-  const messagesTab = chapter >= 18 ? 4 : 3;
+  // Declarative, so the tab set, the Alt+C chord map and the rendered content all read from
+  // one place. Hand-computed indices used to have to be adjusted in two places whenever the
+  // Trade tab came and went with the chapter.
+  const tabs = React.useMemo<OverlayTab[]>(
+    () => [
+      { key: 'chat', label: 'Chat', shortcut: 'KeyC' },
+      ...(chapter >= 18 ? ([{ key: 'trade', label: 'Trade' }] satisfies OverlayTab[]) : []),
+      { key: 'ee', label: 'EE', shortcut: 'KeyE' },
+      { key: 'quests', label: 'Quests', shortcut: 'KeyQ' },
+      { key: 'messages', label: 'Messages', shortcut: 'KeyM' },
+      { key: 'swaps', label: 'Swaps', shortcut: 'KeyS', isNew: true },
+    ],
+    [chapter],
+  );
+
+  // Selection is held as a key rather than an index, so the Trade tab appearing once the
+  // chapter loads cannot silently shift which tab is showing.
+  const tabIndex = Math.max(
+    0,
+    tabs.findIndex((t) => t.key === tabKey),
+  );
+
+  // The chord listener is installed once, so it reads the current tabs through a ref.
+  const tabsRef = React.useRef(tabs);
+  React.useEffect(() => {
+    tabsRef.current = tabs;
+  }, [tabs]);
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
   const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
@@ -72,22 +105,16 @@ export function OverlayMain() {
         return;
       }
 
-      const tabDic = {
-        KeyC: chatTab,
-        KeyE: eeTab,
-        KeyQ: questsTab,
-        KeyM: messagesTab,
-      };
-      if (!(code in tabDic)) {
+      const requested = tabsRef.current.find((t) => t.shortcut === code);
+      if (!requested) {
         return;
       }
       const overlayExpanded = useOverlayStore.getState().overlayExpanded;
-      const requestedTab = tabDic[code as keyof typeof tabDic];
-      if (overlayExpanded && tabRef.current === requestedTab) {
+      if (overlayExpanded && tabRef.current === requested.key) {
         expandPanel(false);
       } else {
         expandPanel(true);
-        setTab(requestedTab); // Set the tab based on the captured key
+        setTabKey(requested.key); // Set the tab based on the captured key
       }
     };
 
@@ -96,8 +123,8 @@ export function OverlayMain() {
   }, []);
 
   React.useEffect(() => {
-    tabRef.current = tab;
-  }, [tab]);
+    tabRef.current = tabKey;
+  }, [tabKey]);
 
   React.useEffect(() => {
     const newMessages = chatMessages.filter((m) => !storeChatMessages?.some((sm) => sm.uuid === m.uuid));
@@ -154,7 +181,7 @@ export function OverlayMain() {
     if (autoOpen) {
       expandPanel(offeredGoods.length > 0);
       if (offeredGoods.length > 0) {
-        setTab(tradeTab);
+        setTabKey('trade');
       }
     }
   }, [tradesMsg, chapter, autoOpen]);
@@ -188,7 +215,7 @@ export function OverlayMain() {
   }, []);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTab(newValue);
+    setTabKey(tabs[newValue].key);
   };
 
   useEffect(() => {
@@ -253,15 +280,36 @@ export function OverlayMain() {
     processFile(file);
   };
 
-  const renderLabel = (text: string) => {
-    const tooltip = `Alt+C, ${text[0]}`;
-    return (
-      <span title={tooltip}>
-        <span style={{ fontSize: '1.2em', fontWeight: 700, textDecoration: 'underline' }}>{text[0]}</span>
-        {text.slice(1)}
-      </span>
-    );
-  };
+  // The chord's second key is always the label's initial, so the underline doubles as the hint.
+  const renderLabel = ({ label, shortcut, isNew }: OverlayTab) => (
+    <span style={{ display: 'inline-flex', alignItems: 'flex-start' }}>
+      {shortcut ? (
+        <span title={`Alt+C, ${label[0]}`}>
+          <span style={{ fontSize: '1.2em', fontWeight: 700, textDecoration: 'underline' }}>{label[0]}</span>
+          {label.slice(1)}
+        </span>
+      ) : (
+        label
+      )}
+      {isNew && (
+        <span
+          style={{
+            marginLeft: 4,
+            marginTop: -2,
+            padding: '1px 4px',
+            fontSize: '0.55rem',
+            fontWeight: 700,
+            lineHeight: 1.4,
+            color: '#fff',
+            background: '#9c27b0',
+            borderRadius: 8,
+          }}
+        >
+          NEW
+        </span>
+      )}
+    </span>
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -276,35 +324,12 @@ export function OverlayMain() {
           pr: 2,
         }}
       >
-        <Tabs value={tab} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
-          <Tab label={renderLabel('Chat')} />
-          {chapter >= 18 && <Tab label='Trade' />}
-          <Tab label={renderLabel('EE')} />
-          <Tab label={renderLabel('Quests')} />
-          <Tab
-            label={
-              <span style={{ display: 'inline-flex', alignItems: 'flex-start' }}>
-                {renderLabel('Messages')}
-                <span
-                  style={{
-                    marginLeft: 4,
-                    marginTop: -2,
-                    padding: '1px 4px',
-                    fontSize: '0.55rem',
-                    fontWeight: 700,
-                    lineHeight: 1.4,
-                    color: '#fff',
-                    background: '#9c27b0',
-                    borderRadius: 8,
-                  }}
-                >
-                  NEW
-                </span>
-              </span>
-            }
-          />
+        <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
+          {tabs.map((t) => (
+            <Tab key={t.key} label={renderLabel(t)} />
+          ))}
         </Tabs>
-        {tab === chatTab && (
+        {tabKey === 'chat' && (
           <>
             <IconButton aria-label='Search chat' size='small' sx={{ ml: 1 }} onClick={() => setSearchActive((v) => !v)}>
               <SearchIcon fontSize='small' />
@@ -340,12 +365,12 @@ export function OverlayMain() {
         </IconButton>
         <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
       </Box>
-      {tab === chatTab && (
+      {tabKey === 'chat' && (
         <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
       )}
-      {chapter >= 18 && tab === tradeTab && <TradeView />}
-      {tab == eeTab && <EeView />}
-      {tab === questsTab &&
+      {chapter >= 18 && tabKey === 'trade' && <TradeView />}
+      {tabKey === 'ee' && <EeView />}
+      {tabKey === 'quests' &&
         (quests === undefined ? (
           <Box
             onDrop={handleDrop}
@@ -426,7 +451,8 @@ export function OverlayMain() {
             onClearQuests={() => setQuests(undefined)}
           />
         ))}{' '}
-      {tab === messagesTab && <MessagesView />}
+      {tabKey === 'messages' && <MessagesView />}
+      {tabKey === 'swaps' && <SwapsView />}
     </div>
   );
 }

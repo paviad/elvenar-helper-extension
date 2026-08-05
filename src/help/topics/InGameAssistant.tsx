@@ -3,6 +3,8 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ChatIcon from '@mui/icons-material/Chat';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
+import MailOutlineIcon from '@mui/icons-material/MailOutlined';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { Box, Chip, Divider, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 
 export const InGameAssistant = () => (
@@ -74,6 +76,69 @@ export const InGameAssistant = () => (
           sx={{ my: 1 }}
         />
       </ListItem>
+
+      <ListItem>
+        <ListItemIcon sx={{ minWidth: 40 }}>
+          <MailOutlineIcon color='action' />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Chip label='Alt + C' size='small' /> <Typography variant='caption'>then</Typography>{' '}
+              <Chip label='M' size='small' />
+            </Box>
+          }
+          secondary='Opens the Messages tab.'
+          sx={{ my: 1 }}
+        />
+      </ListItem>
+
+      <ListItem>
+        <ListItemIcon sx={{ minWidth: 40 }}>
+          <SwapHorizIcon color='action' />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Chip label='Alt + C' size='small' /> <Typography variant='caption'>then</Typography>{' '}
+              <Chip label='S' size='small' />
+            </Box>
+          }
+          secondary='Opens the Swaps tab.'
+          sx={{ my: 1 }}
+        />
+      </ListItem>
     </List>
+
+    <Divider sx={{ my: 2 }} />
+
+    <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <SwapHorizIcon color='primary' fontSize='small' /> Swaps — knowledge point tally
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
+      Knowledge point swap threads run as a chain: you give KP to whoever posted last, then post the wonder you would
+      like next. The Swaps tab keeps track of who you owe, so you can work through every thread first and repay
+      afterwards.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
+      It keys off <strong>your own post</strong>. Post exactly{' '}
+      <Chip label='<Ancient Wonder> please' size='small' sx={{ fontFamily: 'monospace' }} /> — the wonder&apos;s full
+      in-game name followed by the word &ldquo;please&rdquo;, nothing before or after it — and whoever posted before you
+      appears in the tab, along with the amount taken from the thread&apos;s title and the wonder they asked for.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
+      The list is deliberately short-lived. It shows the current round only, so posting again in a thread replaces that
+      thread&apos;s row. Tick rows off as you donate, or use <strong>Clear all</strong> once you have finished; the tab
+      refills by itself next time you log in and the threads have moved on.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom sx={{ color: 'text.secondary' }}>
+      The amount comes from the number next to &ldquo;KP&rdquo; in the thread title, so <em>60 KP Thread</em>,{' '}
+      <em>40 KP AW swap (give to get)</em> and <em>10KP SWAP THREAD - AUGUST</em> all read correctly. If a title has no
+      readable amount, or names two of them, the thread is listed separately at the bottom rather than counted, so you
+      can still see you owe somebody there.
+    </Typography>
+    <Typography component='p' variant='body2' sx={{ color: 'text.secondary' }}>
+      Swaps reads the threads the Messages tab has captured, so open the in-game Messages window to bring it up to date.
+    </Typography>
   </Box>
 );

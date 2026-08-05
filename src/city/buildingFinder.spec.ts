@@ -457,6 +457,47 @@ describe('initialisation', () => {
   });
 });
 
+describe('getAncientWonders', () => {
+  it('collapses a wonder to one entry, whatever its level count', async () => {
+    const finder = await finderWith({
+      buildings: makeBuildingLevels('Z_Abyss', 3, { type: 'ancient_wonder', name: 'Golden Abyss' }),
+    });
+
+    expect(finder.getAncientWonders()).toEqual([{ baseName: 'Z_Abyss', name: 'Golden Abyss' }]);
+  });
+
+  it('leaves out everything that is not a wonder, including the A_ buildings', async () => {
+    const finder = await finderWith({
+      buildings: [
+        makeBuilding({ id: 'Z_Abyss_1', base_name: 'Z_Abyss', type: 'ancient_wonder', name: 'Golden Abyss' }),
+        makeBuilding({ id: 'A_Evt_Tent_1', base_name: 'A_Evt_Tent', type: 'culture', name: 'Festival Tent' }),
+        makeBuilding({ id: 'A_Ch3_Statue_1', base_name: 'A_Ch3_Statue', type: 'culture', name: 'Statue' }),
+        makeBuilding({ id: 'G_Steel_1', base_name: 'G_Steel', type: 'goods' }),
+      ],
+    });
+
+    expect(finder.getAncientWonders().map((w) => w.name)).toEqual(['Golden Abyss']);
+  });
+
+  it('sorts by display name', async () => {
+    const finder = await finderWith({
+      buildings: [
+        makeBuilding({ id: 'Z_Needles_1', base_name: 'Z_Needles', type: 'ancient_wonder', name: 'Needles' }),
+        makeBuilding({ id: 'Z_Abyss_1', base_name: 'Z_Abyss', type: 'ancient_wonder', name: 'Golden Abyss' }),
+        makeBuilding({ id: 'Z_Martial_1', base_name: 'Z_Martial', type: 'ancient_wonder', name: 'Martial Monastery' }),
+      ],
+    });
+
+    expect(finder.getAncientWonders().map((w) => w.name)).toEqual(['Golden Abyss', 'Martial Monastery', 'Needles']);
+  });
+
+  it('is empty before a catalog has been captured', async () => {
+    const finder = await finderWith({});
+
+    expect(finder.getAncientWonders()).toEqual([]);
+  });
+});
+
 describe('getBuildingFinder', () => {
   it('hands out one shared instance', async () => {
     mockedGetBuildings.mockResolvedValue(makeBuildingLevels('G_Steel', 1));

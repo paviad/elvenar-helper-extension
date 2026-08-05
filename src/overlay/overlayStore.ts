@@ -32,6 +32,11 @@ interface OverlayState {
   setMessagesDetailsReceived: (received: boolean) => void;
   quests: ParsedQuestExport | undefined;
   setQuests: (quests: ParsedQuestExport | undefined) => void;
+  // Swap rows ticked off as repaid, as swapPaidKey() strings. Each key carries the timestamp
+  // of the post it belongs to, so posting the next round in a thread retires its old key
+  // rather than hiding the new debt. The view prunes keys that no longer match a live row.
+  paidSwaps: string[];
+  setPaidSwaps: (keys: string[]) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -89,6 +94,8 @@ export const generateOverlayStore = (accountId: string) => {
         setMessagesDetailsReceived: (received) => set({ messagesDetailsReceived: received }),
         quests: undefined,
         setQuests: (quests) => set({ quests }),
+        paidSwaps: [],
+        setPaidSwaps: (keys) => set({ paidSwaps: keys }),
       }),
       {
         name: `overlay-store-${accountId}`,

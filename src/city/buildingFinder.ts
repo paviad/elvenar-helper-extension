@@ -14,6 +14,13 @@ interface bAndC {
   chapter?: number;
 }
 
+/** One ancient wonder, collapsed across its levels — the catalog lists one entry per level. */
+export interface AncientWonder {
+  baseName: string;
+  /** The game's own display name, in the player's language. */
+  name: string;
+}
+
 let sharedFinder: BuildingFinder | null = null;
 
 /**
@@ -39,6 +46,9 @@ export class BuildingFinder {
   private buildingsByLevelLowerCase: Record<string, Map<number, Building>> = {};
   /** Exact id -> building, for getBuildingExact. */
   private buildingsById: Map<string, Building> = new Map();
+
+  /** Ancient wonders only, one per base name, sorted by display name. */
+  private ancientWonders: AncientWonder[] = [];
 
   private hintsDictionary: Record<string, string> = {};
   private hintsDictionaryLowerCase: Record<string, string> = {};
@@ -130,6 +140,26 @@ export class BuildingFinder {
         byLevelLower.set(building.level, building);
       }
     }
+
+    // A wonder appears once per level, all sharing a display name, so collapse to base names.
+    // The `A_` prefix is no help here — it also covers culture and event buildings — so the
+    // discriminator is the type, as everywhere else in the app.
+    const wondersByBaseName = new Map<string, AncientWonder>();
+    for (const building of buildings) {
+      if (building.type !== 'ancient_wonder' || wondersByBaseName.has(building.base_name)) {
+        continue;
+      }
+      wondersByBaseName.set(building.base_name, { baseName: building.base_name, name: building.name });
+    }
+    this.ancientWonders = [...wondersByBaseName.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Every ancient wonder the game has told us about, one entry per wonder. Empty until a
+   * city load has populated the building catalog, so callers must handle the empty case.
+   */
+  public getAncientWonders(): AncientWonder[] {
+    return this.ancientWonders;
   }
 
   public getBuildingExact(id: string): BuildingEx | undefined {

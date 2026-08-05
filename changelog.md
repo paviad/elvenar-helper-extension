@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+- **New Feature: Swaps** — Added a "Swaps" tab to the in-game overlay that tallies your knowledge point swap debts automatically.
+- Post exactly "&lt;Ancient Wonder&gt; please" in a swap thread and whoever posted before you is added to the list, with the amount read from the thread title and the wonder they asked for.
+- Wonder names come from the game's own building catalog, so they match whatever language you play in.
+- Amounts are read from the number next to "KP" in the title, handling the usual spread of thread names ("60 KP Thread", "10KP SWAP THREAD - AUGUST"). Titles with no readable amount, or two of them, are listed separately instead of being counted.
+- The list covers the current round only: posting again in a thread replaces that thread's row, so it empties itself out between logins. Tick rows off as you donate, or use "Clear all".
+- Shows a per-player total alongside the individual rows, since the same player can come up in several threads.
+- Consecutive posts of your own count as changing your mind about which wonder you want, not as a second debt.
+- Keyboard chord navigation (Alt+C, S) to jump straight to the Swaps tab.
+
 ## v8.9.0
 - **New Feature: Messages** — Added a "Messages" tab to the in-game overlay for browsing your Inbox and Outbox. Includes a thread list with unread indicators and previews, a master/detail thread view (most recent first), and collapsible recipients.
 - **Search:** Filter threads by any term and jump between every match with next/previous and a running match count; matches are highlighted inside the thread.
