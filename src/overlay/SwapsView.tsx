@@ -75,6 +75,13 @@ async function copyText(text: string): Promise<boolean> {
 
 const requestTextFor = (wonderName: string) => `${wonderName} please`;
 
+/**
+ * Inside the panel's stacking context the popover already sits above the page, so this is only
+ * about its siblings there — chiefly the resize handle `overlay.ts` puts at 10000, which would
+ * otherwise take the clicks in the bottom-right corner.
+ */
+const OVERLAY_POPOVER_Z_INDEX = 10001;
+
 const centered = {
   display: 'flex',
   flexDirection: 'column',
@@ -321,6 +328,14 @@ export const SwapsView = () => {
         onClose={() => setWondersAnchor(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        // Popover is a Modal, and Modal portals to document.body by default. The overlay panel
+        // is a fixed, z-index 9999 element on the game page, so a popover on the body sits at
+        // MUI's modal layer (1300) — behind the panel, open and anchored but invisible.
+        // Rendering in place keeps it inside the panel's own stacking context, where it cannot
+        // be behind the panel whatever z-index the panel is given. Nothing between here and the
+        // panel sets overflow, so staying inline costs no clipping.
+        disablePortal
+        sx={{ zIndex: OVERLAY_POPOVER_Z_INDEX }}
         slotProps={{ paper: { sx: { width: 280, maxHeight: 360, background: gild.cardTop } } }}
       >
         <Box sx={{ px: 1.5, py: 1, ...gildedBar, position: 'sticky', top: 0, zIndex: 1 }}>
