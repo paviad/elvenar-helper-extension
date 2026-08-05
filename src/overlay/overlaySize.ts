@@ -8,12 +8,14 @@ export interface OverlaySize {
 export type OverlaySizePreset = 'small' | 'large';
 
 /**
- * The two sizes the panel can be reset to. "Small" is the size the panel has always opened at;
- * "Large" gives the roomier views (Chat, Messages, Swaps) space without dragging the corner.
- * Large's height matches the panel's own max-height, so it is as tall as the panel can get.
+ * The two sizes the panel can be reset to. Small is the 400x600 that Chat, Messages and Swaps
+ * each demand through `ensureMinWidthAndHeight`, so it is both the size the panel has settled at
+ * in practice and the smallest one those views will hold - a smaller preset would be undone the
+ * next time any of them had something to show. Large's height is the panel's own max-height, so
+ * it is as tall as the panel can get.
  */
 export const OVERLAY_SIZE_PRESETS: Record<OverlaySizePreset, OverlaySize> = {
-  small: { width: 250, height: 450 },
+  small: { width: 400, height: 600 },
   large: { width: 630, height: 800 },
 };
 
