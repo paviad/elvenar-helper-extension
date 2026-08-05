@@ -6,7 +6,7 @@
 - Wonder names come from the game's own building catalog, so they match whatever language you play in.
 - Amounts are read from the number next to "KP" in the title, handling the usual spread of thread names ("60 KP Thread", "10KP SWAP THREAD - AUGUST"). Titles with no readable amount, or two of them, are listed separately instead of being counted.
 - The list starts empty and fills only as you post, so rounds you did before enabling it are left alone. Tick rows off as you donate to keep your place, then use "Clear all" once you have repaid everybody — clearing is manual, since the extension can see your posts but not your donations.
-- Shows a per-player total alongside the individual rows, since the same player can come up in several threads.
+- Debts are grouped by the player you owe, since the same player can come up in several threads and you repay them in one visit. Each card shows what they are owed in total, broken down per thread with the wonder each one asked for.
 - Consecutive posts of your own count as changing your mind about which wonder you want, not as a second debt.
 - Keyboard chord navigation (Alt+C, S) to jump straight to the Swaps tab.
 

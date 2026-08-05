@@ -20,32 +20,12 @@ import {
   timestampType,
 } from './gild';
 import { computeSwapTally } from './kpSwaps/computeSwapTally';
+import { groupSwapsByPayee, PayeeGroup } from './kpSwaps/groupSwapsByPayee';
 import { getAccountId, getOverlayStore } from './overlayStore';
 
 interface AccountSnapshot {
   messagesData?: MessagesData;
   playerId?: number;
-}
-
-/** One player's outstanding debt, summed across however many threads it came from. */
-interface PlayerTotal {
-  name: string;
-  threads: number;
-  amount: number;
-}
-
-function playerTotals(entries: SwapEntry[]): PlayerTotal[] {
-  const totals = new Map<number, PlayerTotal>();
-  for (const entry of entries) {
-    const existing = totals.get(entry.recipientPlayerId);
-    if (existing) {
-      existing.threads += 1;
-      existing.amount += entry.amount;
-    } else {
-      totals.set(entry.recipientPlayerId, { name: entry.recipientName, threads: 1, amount: entry.amount });
-    }
-  }
-  return [...totals.values()].sort((a, b) => b.amount - a.amount || a.name.localeCompare(b.name));
 }
 
 const centered = {
@@ -121,9 +101,11 @@ export const SwapsView = () => {
   }, [swapsClearedAt, account, wonderNames, tally.latestRequestAt]);
 
   const paid = useMemo(() => new Set(paidSwaps), [paidSwaps]);
+  // Grouped from the full list, not just the unpaid ones, so a payee keeps their place in the
+  // list as you tick their threads off instead of jumping about under the cursor.
+  const groups = useMemo(() => groupSwapsByPayee(tally.entries), [tally]);
   const outstanding = useMemo(() => tally.entries.filter((e) => !paid.has(swapPaidKey(e))), [tally, paid]);
-  const totals = useMemo(() => playerTotals(outstanding), [outstanding]);
-  const totalKp = outstanding.reduce((sum, e) => sum + e.amount, 0);
+  const payeesLeft = new Set(outstanding.map((e) => e.recipientPlayerId)).size;
 
   // Ticking also drops any key that no longer matches a live row, so posting the next round
   // in a thread clears out its old key instead of leaving it to accumulate in storage.
@@ -132,13 +114,14 @@ export const SwapsView = () => {
     setPaidSwaps([...keys].filter((k) => live.has(k)));
   };
 
-  const togglePaid = (entry: SwapEntry) => {
-    const key = swapPaidKey(entry);
+  const togglePaid = (entries: SwapEntry[], nextPaid: boolean) => {
     const next = new Set(paid);
-    if (next.has(key)) {
-      next.delete(key);
-    } else {
-      next.add(key);
+    for (const entry of entries) {
+      if (nextPaid) {
+        next.add(swapPaidKey(entry));
+      } else {
+        next.delete(swapPaidKey(entry));
+      }
     }
     setPaid(next);
   };
@@ -176,8 +159,10 @@ export const SwapsView = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <Box sx={{ px: 1.5, py: 1, ...gildedBar, display: 'flex', alignItems: 'center', gap: 1 }}>
         <SwapHorizIcon fontSize='small' sx={{ color: gild.bronze }} />
+        {/* Deliberately just a label: the numbers that matter are the per-payee ones on each
+            card, which are what you actually act on. */}
         <Typography sx={{ fontFamily: gild.serif, fontWeight: 700, color: gild.ink, flex: 1 }}>
-          {outstanding.length === 0 ? 'Nothing to repay' : `${outstanding.length} to repay · ${totalKp} KP`}
+          {payeesLeft === 0 ? 'Nothing to repay' : 'To repay'}
         </Typography>
         {tally.entries.length > 0 && (
           <Button size='small' onClick={clearAll} sx={{ color: gild.bronze, fontSize: 12 }}>
@@ -217,35 +202,14 @@ export const SwapsView = () => {
         </Box>
       ) : (
         <Box sx={{ flexGrow: 1, overflowY: 'auto', minHeight: 0, background: gild.parchment, p: 1.5 }}>
-          {totals.length > 0 && (
-            <Box sx={{ ...plaqueBand, mb: 1.5 }}>
-              <Box sx={{ ...plaqueFace() }}>
-                <Typography sx={{ ...authorType }}>Give to</Typography>
-                <Box aria-hidden sx={{ ...engravedRule }} />
-                <Stack spacing={0.5}>
-                  {totals.map((total) => (
-                    <Stack key={total.name} direction='row' spacing={1} sx={{ alignItems: 'baseline' }}>
-                      <Typography sx={{ ...bodyType, flex: 1, minWidth: 0 }} noWrap>
-                        {total.name}
-                      </Typography>
-                      {total.threads > 1 && <Typography sx={{ ...timestampType }}>{total.threads} threads</Typography>}
-                      <Typography sx={{ ...authorType, fontVariantNumeric: 'tabular-nums' }}>
-                        {total.amount} KP
-                      </Typography>
-                    </Stack>
-                  ))}
-                </Stack>
-              </Box>
-            </Box>
-          )}
-
           <Stack spacing={1.25}>
-            {tally.entries.map((entry) => (
-              <SwapRow
-                key={swapPaidKey(entry)}
-                entry={entry}
-                paid={paid.has(swapPaidKey(entry))}
-                onToggle={() => togglePaid(entry)}
+            {groups.map((group) => (
+              <PayeeCard
+                key={group.playerId}
+                group={group}
+                paid={paid}
+                onToggleGroup={(nextPaid) => togglePaid(group.entries, nextPaid)}
+                onToggleEntry={(entry, nextPaid) => togglePaid([entry], nextPaid)}
               />
             ))}
           </Stack>
@@ -273,52 +237,109 @@ export const SwapsView = () => {
   );
 };
 
-interface SwapRowProps {
-  entry: SwapEntry;
-  paid: boolean;
-  onToggle: () => void;
+interface PayeeCardProps {
+  group: PayeeGroup;
+  paid: Set<string>;
+  onToggleGroup: (nextPaid: boolean) => void;
+  onToggleEntry: (entry: SwapEntry, nextPaid: boolean) => void;
 }
 
-const SwapRow = ({ entry, paid, onToggle }: SwapRowProps) => (
-  <Stack direction='row' spacing={1.25} sx={{ alignItems: 'flex-start', opacity: paid ? 0.45 : 1 }}>
-    <Avatar sx={{ ...gildedAvatar }} title={entry.recipientName}>
-      {entry.recipientName[0]}
-    </Avatar>
-    <Box sx={{ ...plaqueBand, flex: 1, minWidth: 0 }}>
-      <Box sx={{ ...plaqueFace() }}>
-        <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
-          <Typography component='span' sx={{ ...authorType, flex: 1, minWidth: 0 }} noWrap>
-            {entry.recipientName}
-          </Typography>
-          <Chip
-            size='small'
-            label={`${entry.amount} KP`}
-            sx={{
-              height: 20,
-              fontWeight: 700,
-              color: gild.bronze,
-              borderColor: gild.mid,
-              bgcolor: 'rgba(255, 253, 246, 0.8)',
-              textDecoration: paid ? 'line-through' : 'none',
-            }}
-            variant='outlined'
-          />
-          <Checkbox
-            size='small'
-            checked={paid}
-            onChange={onToggle}
-            slotProps={{ input: { 'aria-label': `Mark ${entry.amount} KP to ${entry.recipientName} as given` } }}
-            sx={{ p: 0.25, color: gild.mid, '&.Mui-checked': { color: gild.deep } }}
-          />
-        </Stack>
-        <Box aria-hidden sx={{ ...engravedRule }} />
-        <Typography align='left' sx={{ ...bodyType }}>
-          {entry.recipientPost}
-        </Typography>
-        <Typography sx={{ ...timestampType, display: 'block', mt: 0.5 }} noWrap>
-          {entry.subject} · you asked for {entry.requestedWonder}
-        </Typography>
+// One card per person to repay. The header carries what you owe them in total — that is the
+// number you act on — and the rows beneath break it down per thread, since each thread has
+// its own amount and may name a different wonder.
+const PayeeCard = ({ group, paid, onToggleGroup, onToggleEntry }: PayeeCardProps) => {
+  const paidCount = group.entries.filter((e) => paid.has(swapPaidKey(e))).length;
+  const allPaid = paidCount === group.entries.length;
+  const owed = group.entries.filter((e) => !paid.has(swapPaidKey(e))).reduce((sum, e) => sum + e.amount, 0);
+
+  return (
+    <Stack direction='row' spacing={1.25} sx={{ alignItems: 'flex-start', opacity: allPaid ? 0.45 : 1 }}>
+      <Avatar sx={{ ...gildedAvatar }} title={group.name}>
+        {group.name[0]}
+      </Avatar>
+      <Box sx={{ ...plaqueBand, flex: 1, minWidth: 0 }}>
+        <Box sx={{ ...plaqueFace() }}>
+          <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+            <Typography component='span' sx={{ ...authorType, flex: 1, minWidth: 0 }} noWrap>
+              {group.name}
+            </Typography>
+            <Chip
+              size='small'
+              label={`${allPaid ? group.total : owed} KP`}
+              sx={{
+                height: 20,
+                fontWeight: 700,
+                color: gild.bronze,
+                borderColor: gild.mid,
+                bgcolor: 'rgba(255, 253, 246, 0.8)',
+                textDecoration: allPaid ? 'line-through' : 'none',
+              }}
+              variant='outlined'
+            />
+            <Checkbox
+              size='small'
+              checked={allPaid}
+              indeterminate={paidCount > 0 && !allPaid}
+              onChange={() => onToggleGroup(!allPaid)}
+              slotProps={{ input: { 'aria-label': `Mark everything owed to ${group.name} as given` } }}
+              sx={{
+                p: 0.25,
+                color: gild.mid,
+                '&.Mui-checked': { color: gild.deep },
+                '&.MuiCheckbox-indeterminate': { color: gild.deep },
+              }}
+            />
+          </Stack>
+
+          <Box aria-hidden sx={{ ...engravedRule }} />
+
+          <Stack spacing={0.75}>
+            {group.entries.map((entry) => {
+              const entryPaid = paid.has(swapPaidKey(entry));
+              return (
+                <Box key={swapPaidKey(entry)} sx={{ opacity: !allPaid && entryPaid ? 0.5 : 1 }}>
+                  <Stack direction='row' spacing={1} sx={{ alignItems: 'flex-start' }}>
+                    {/* Per-thread ticks only earn their place when there is more than one. */}
+                    {group.entries.length > 1 && (
+                      <Checkbox
+                        size='small'
+                        checked={entryPaid}
+                        onChange={() => onToggleEntry(entry, !entryPaid)}
+                        slotProps={{
+                          input: {
+                            'aria-label': `Mark ${entry.amount} KP to ${group.name} for ${entry.subject} as given`,
+                          },
+                        }}
+                        sx={{ p: 0, mt: 0.25, color: gild.mid, '&.Mui-checked': { color: gild.deep } }}
+                      />
+                    )}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Stack direction='row' spacing={1} sx={{ alignItems: 'baseline' }}>
+                        <Typography
+                          sx={{
+                            ...authorType,
+                            fontSize: 13,
+                            fontVariantNumeric: 'tabular-nums',
+                            textDecoration: entryPaid ? 'line-through' : 'none',
+                          }}
+                        >
+                          {entry.amount} KP
+                        </Typography>
+                        <Typography align='left' sx={{ ...bodyType, fontSize: 13, flex: 1, minWidth: 0 }}>
+                          {entry.recipientPost}
+                        </Typography>
+                      </Stack>
+                      <Typography sx={{ ...timestampType, display: 'block' }} noWrap>
+                        {entry.subject} · you asked for {entry.requestedWonder}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Box>
+              );
+            })}
+          </Stack>
+        </Box>
       </Box>
-    </Box>
-  </Stack>
-);
+    </Stack>
+  );
+};
