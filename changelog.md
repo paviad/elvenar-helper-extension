@@ -5,7 +5,7 @@
 - Post exactly "&lt;Ancient Wonder&gt; please" in a swap thread and whoever posted before you is added to the list, with the amount read from the thread title and the wonder they asked for.
 - Wonder names come from the game's own building catalog, so they match whatever language you play in.
 - Amounts are read from the number next to "KP" in the title, handling the usual spread of thread names ("60 KP Thread", "10KP SWAP THREAD - AUGUST"). Titles with no readable amount, or two of them, are listed separately instead of being counted.
-- The list covers the current round only: posting again in a thread replaces that thread's row, so it empties itself out between logins. Tick rows off as you donate, or use "Clear all".
+- The list starts empty and fills only as you post, so rounds you did before enabling it are left alone. Tick rows off as you donate to keep your place, then use "Clear all" once you have repaid everybody — clearing is manual, since the extension can see your posts but not your donations.
 - Shows a per-player total alongside the individual rows, since the same player can come up in several threads.
 - Consecutive posts of your own count as changing your mind about which wonder you want, not as a second debt.
 - Keyboard chord navigation (Alt+C, S) to jump straight to the Swaps tab.

@@ -37,6 +37,12 @@ interface OverlayState {
   // rather than hiding the new debt. The view prunes keys that no longer match a live row.
   paidSwaps: string[];
   setPaidSwaps: (keys: string[]) => void;
+  // Watermark for the swap tally: only request posts of yours newer than this count as debts.
+  // Set on first use to whatever your newest existing post is, so the list opens empty rather
+  // than full of rounds you settled days ago, and moved forward again whenever you clear.
+  // In game time (unix seconds from the posts), not local clock time.
+  swapsClearedAt?: number;
+  setSwapsClearedAt: (at: number) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -96,6 +102,8 @@ export const generateOverlayStore = (accountId: string) => {
         setQuests: (quests) => set({ quests }),
         paidSwaps: [],
         setPaidSwaps: (keys) => set({ paidSwaps: keys }),
+        swapsClearedAt: undefined,
+        setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
       }),
       {
         name: `overlay-store-${accountId}`,

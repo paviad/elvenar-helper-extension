@@ -42,7 +42,8 @@ function inbox(...threads: GameMessage[]): MessagesData {
   };
 }
 
-const tally = (data: MessagesData) => computeSwapTally(data, WONDERS, ME);
+// Default the watermark to 0, so the bulk of the specs exercise the matching rules alone.
+const tally = (data: MessagesData, since = 0) => computeSwapTally(data, WONDERS, ME, since);
 
 beforeEach(() => {
   nextPostId = 1;
@@ -114,7 +115,8 @@ describe('computeSwapTally', () => {
   it('ignores a thread you started but nobody has answered', () => {
     const data = inbox(thread(7, '60 KP Thread', [post(ME, 'Golden Abyss please', 100)]));
 
-    expect(tally(data)).toEqual({ entries: [], skipped: [] });
+    expect(tally(data).entries).toEqual([]);
+    expect(tally(data).skipped).toEqual([]);
   });
 
   it('ignores a thread where your last post is not a request', () => {
@@ -224,12 +226,62 @@ describe('computeSwapTally', () => {
   it('yields nothing without a player id or a wonder catalog', () => {
     const data = inbox(thread(7, '60 KP Thread', [post(ALICE, 'x', 100), post(ME, 'Golden Abyss please', 200)]));
 
-    expect(computeSwapTally(data, WONDERS, undefined)).toEqual({ entries: [], skipped: [] });
-    expect(computeSwapTally(data, [], ME)).toEqual({ entries: [], skipped: [] });
+    expect(computeSwapTally(data, WONDERS, undefined)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
+    expect(computeSwapTally(data, [], ME)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
   });
 
   it('yields nothing when no messages are stored', () => {
-    expect(computeSwapTally(undefined, WONDERS, ME)).toEqual({ entries: [], skipped: [] });
-    expect(computeSwapTally({}, WONDERS, ME)).toEqual({ entries: [], skipped: [] });
+    expect(computeSwapTally(undefined, WONDERS, ME)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
+    expect(computeSwapTally({}, WONDERS, ME)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
+  });
+
+  // You post a request in every round, so a thread's most recent post of yours is a request
+  // whether the round is live or was settled days ago. The watermark is what tells them apart.
+  describe('watermark', () => {
+    const twoRounds = () =>
+      inbox(
+        thread(1, '10 KP SWAP', [post(ALICE, 'x', 100), post(ME, 'Golden Abyss please', 200)]),
+        thread(2, '60 KP Thread', [post(BOB, 'y', 300), post(ME, 'Martial Monastery please', 400)]),
+      );
+
+    it('leaves out rounds you posted at or before it', () => {
+      expect(tally(twoRounds(), 200).entries.map((e) => e.threadId)).toEqual(['2']);
+      expect(tally(twoRounds(), 400).entries).toEqual([]);
+    });
+
+    it('reports your newest request whatever the watermark, so clearing can move past it', () => {
+      expect(tally(twoRounds(), 0).latestRequestAt).toBe(400);
+      expect(tally(twoRounds(), 400).latestRequestAt).toBe(400);
+      expect(tally(twoRounds(), Infinity).latestRequestAt).toBe(400);
+    });
+
+    it('counts a request with no payable recipient towards the watermark', () => {
+      // Nothing to owe here, but clearing still has to move past it or it blocks the next one.
+      const data = inbox(thread(7, '60 KP Thread', [post(ME, 'Golden Abyss please', 500)]));
+
+      expect(tally(data).latestRequestAt).toBe(500);
+    });
+
+    it('ignores posts that are not requests when reporting the newest', () => {
+      const data = inbox(
+        thread(7, '60 KP Thread', [post(ALICE, 'x', 100), post(ME, 'Golden Abyss please', 200), post(ME, 'ta!', 900)]),
+      );
+
+      // Your latest post is chatter, so the thread has no live round at all.
+      expect(tally(data).latestRequestAt).toBe(0);
+      expect(tally(data).entries).toEqual([]);
+    });
+
+    it('holds everything back until a watermark is established', () => {
+      expect(tally(twoRounds(), Infinity).entries).toEqual([]);
+      expect(tally(twoRounds(), Infinity).skipped).toEqual([]);
+    });
+
+    it('leaves a thread with an unreadable amount out of the skipped list once settled', () => {
+      const data = inbox(thread(7, 'AW swap thread', [post(ALICE, 'x', 100), post(ME, 'Golden Abyss please', 200)]));
+
+      expect(tally(data, 0).skipped).toHaveLength(1);
+      expect(tally(data, 200).skipped).toEqual([]);
+    });
   });
 });

@@ -67,6 +67,8 @@ export const SwapsView = () => {
   const messagesDetailsReceived = overlayStore((state) => state.messagesDetailsReceived);
   const paidSwaps = overlayStore((state) => state.paidSwaps);
   const setPaidSwaps = overlayStore((state) => state.setPaidSwaps);
+  const swapsClearedAt = overlayStore((state) => state.swapsClearedAt);
+  const setSwapsClearedAt = overlayStore((state) => state.setSwapsClearedAt);
 
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
   const [wonderNames, setWonderNames] = useState<string[] | null>(null);
@@ -103,10 +105,20 @@ export const SwapsView = () => {
     void loadAccount();
   }, [messagesUpdate]);
 
+  // Until the watermark has been established, Infinity keeps every existing round out of the
+  // list — so it never flashes your whole swap history on first open.
   const tally: SwapTally = useMemo(
-    () => computeSwapTally(account?.messagesData, wonderNames ?? [], account?.playerId),
-    [account, wonderNames],
+    () => computeSwapTally(account?.messagesData, wonderNames ?? [], account?.playerId, swapsClearedAt ?? Infinity),
+    [account, wonderNames, swapsClearedAt],
   );
+
+  // First run on this account: adopt whatever your newest request post is, so the list starts
+  // empty and only fills as you post from here on.
+  useEffect(() => {
+    if (swapsClearedAt === undefined && account !== null && wonderNames !== null) {
+      setSwapsClearedAt(tally.latestRequestAt || Math.floor(Date.now() / 1000));
+    }
+  }, [swapsClearedAt, account, wonderNames, tally.latestRequestAt]);
 
   const paid = useMemo(() => new Set(paidSwaps), [paidSwaps]);
   const outstanding = useMemo(() => tally.entries.filter((e) => !paid.has(swapPaidKey(e))), [tally, paid]);
@@ -131,7 +143,12 @@ export const SwapsView = () => {
     setPaid(next);
   };
 
-  const clearAll = () => setPaid(new Set(tally.entries.map(swapPaidKey)));
+  // Clearing moves the watermark past every round on show, so they never come back — and,
+  // unlike ticking rows off, it does not depend on us knowing whether you actually repaid.
+  const clearAll = () => {
+    setSwapsClearedAt(Math.max(swapsClearedAt ?? 0, tally.latestRequestAt));
+    setPaidSwaps([]);
+  };
 
   if (account === null || wonderNames === null) {
     return (
@@ -162,7 +179,7 @@ export const SwapsView = () => {
         <Typography sx={{ fontFamily: gild.serif, fontWeight: 700, color: gild.ink, flex: 1 }}>
           {outstanding.length === 0 ? 'Nothing to repay' : `${outstanding.length} to repay · ${totalKp} KP`}
         </Typography>
-        {tally.entries.length > 0 && outstanding.length > 0 && (
+        {tally.entries.length > 0 && (
           <Button size='small' onClick={clearAll} sx={{ color: gild.bronze, fontSize: 12 }}>
             Clear all
           </Button>
@@ -194,8 +211,8 @@ export const SwapsView = () => {
         <Box sx={{ ...centered }}>
           <SwapHorizIcon fontSize='large' />
           <Typography variant='body2'>
-            Post “&lt;Ancient Wonder&gt; please” in a KP swap thread and whoever posted before you shows up here, with
-            the amount from the thread title.
+            Nothing owed. Post “&lt;Ancient Wonder&gt; please” in a KP swap thread and whoever posted before you shows
+            up here, with the amount from the thread title. Repay them, then hit Clear all to empty the list again.
           </Typography>
         </Box>
       ) : (

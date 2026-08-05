@@ -2,7 +2,7 @@ import { GameMessage, MessagePostVO, MessagesData } from '../../model/gameMessag
 import { SkippedSwapThread, SwapEntry, SwapTally } from '../../model/kpSwap';
 import { parseSwapAmount } from './parseSwapAmount';
 
-const EMPTY: SwapTally = { entries: [], skipped: [] };
+const EMPTY: SwapTally = { entries: [], skipped: [], latestRequestAt: 0 };
 
 // Game posts use bare "\r" for line breaks, so normalise before comparing.
 function normalize(text: string | undefined): string {
@@ -65,13 +65,17 @@ function buildTriggers(wonderNames: string[]): Map<string, string> {
  * wonder you want, which costs nothing extra. Once somebody else has posted in between it is
  * a new round, and they are the one you paid.
  *
- * Nothing is stored: your next post in a thread replaces that thread's entry, which is what
- * makes the list empty itself out between rounds.
+ * `since` is the watermark: a request post at or before it belongs to a round you have
+ * already dealt with, so it produces nothing. Without it the list would open full of every
+ * thread you have ever swapped in, since the chain has you posting a request every round.
+ *
+ * Nothing about the debts is stored — they are re-derived from the threads on every call.
  */
 export function computeSwapTally(
   messagesData: MessagesData | undefined,
   wonderNames: string[],
   myPlayerId: number | undefined,
+  since = 0,
 ): SwapTally {
   if (!myPlayerId || wonderNames.length === 0) {
     return EMPTY;
@@ -80,6 +84,7 @@ export function computeSwapTally(
   const triggers = buildTriggers(wonderNames);
   const entries: SwapEntry[] = [];
   const skipped: SkippedSwapThread[] = [];
+  let latestRequestAt = 0;
 
   for (const { id, message } of dedupeThreads(messagesData)) {
     const posts = chronological(message.posts ?? []);
@@ -97,6 +102,14 @@ export function computeSwapTally(
 
     const requestedWonder = triggers.get(normalize(posts[mine].post).toLowerCase());
     if (!requestedWonder) {
+      continue;
+    }
+
+    // Tracked before the watermark test, since clearing has to move past every round on
+    // show — including ones with no payable recipient.
+    const myPostedAt = posts[mine].created_at;
+    latestRequestAt = Math.max(latestRequestAt, myPostedAt);
+    if (myPostedAt <= since) {
       continue;
     }
 
@@ -130,12 +143,12 @@ export function computeSwapTally(
       recipientPost: normalize(recipientPost.post),
       recipientPostedAt: recipientPost.created_at,
       requestedWonder,
-      myPostedAt: posts[mine].created_at,
+      myPostedAt,
     });
   }
 
   entries.sort((a, b) => b.myPostedAt - a.myPostedAt);
   skipped.sort((a, b) => a.subject.localeCompare(b.subject));
 
-  return { entries, skipped };
+  return { entries, skipped, latestRequestAt };
 }

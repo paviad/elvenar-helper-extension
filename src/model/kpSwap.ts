@@ -9,6 +9,11 @@
 // The trigger is your own post, because that is the one thing you control: a post reading
 // exactly "<ancient wonder> please". Combined with an amount in the thread subject, that pair
 // identifies a swap post with certainty.
+//
+// That alone is not enough to know whether a debt is still owed: you post in every round, so
+// your most recent post in a thread is a request whether you settled it days ago or a minute
+// ago. A watermark separates the two. Only posts of yours newer than it count, and clearing
+// the list moves it forward past everything currently shown.
 
 export interface SwapEntry {
   threadId: string;
@@ -38,8 +43,16 @@ export interface SkippedSwapThread {
 }
 
 export interface SwapTally {
+  /** Debts from rounds you posted after the watermark. */
   entries: SwapEntry[];
   skipped: SkippedSwapThread[];
+  /**
+   * Newest request post of yours across every thread, ignoring the watermark. Clearing the
+   * list moves the watermark here, which is what retires the rounds currently shown. Taken
+   * from the game's own timestamps rather than the local clock, so server skew cannot
+   * suppress a genuinely new post. 0 when you have no request posts at all.
+   */
+  latestRequestAt: number;
 }
 
 /** Identifies a ticked-off row. Includes your post time, so a new round supersedes the tick. */

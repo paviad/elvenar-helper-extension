@@ -127,9 +127,9 @@ export const InGameAssistant = () => (
       appears in the tab, along with the amount taken from the thread&apos;s title and the wonder they asked for.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
-      The list is deliberately short-lived. It shows the current round only, so posting again in a thread replaces that
-      thread&apos;s row. Tick rows off as you donate, or use <strong>Clear all</strong> once you have finished; the tab
-      refills by itself next time you log in and the threads have moved on.
+      The list starts empty and only fills as you post — rounds you did before turning the tab on are left alone. Tick
+      rows off as you donate to keep your place, then press <strong>Clear all</strong> once you have repaid everybody.
+      Clearing is manual because the extension cannot see your donations, only your posts.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom sx={{ color: 'text.secondary' }}>
       The amount comes from the number next to &ldquo;KP&rdquo; in the thread title, so <em>60 KP Thread</em>,{' '}
