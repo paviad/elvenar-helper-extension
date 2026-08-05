@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -75,6 +75,9 @@ async function copyText(text: string): Promise<boolean> {
 
 const requestTextFor = (wonderName: string) => `${wonderName} please`;
 
+/** How long the "Copied" tick shows before the popover dismisses itself. */
+const COPIED_DISMISS_MS = 500;
+
 /**
  * Inside the panel's stacking context the popover already sits above the page, so this is only
  * about its siblings there — chiefly the resize handle `overlay.ts` puts at 10000, which would
@@ -108,6 +111,17 @@ export const SwapsView = () => {
   const [wonders, setWonders] = useState<AncientWonder[] | null>(null);
   const [wondersAnchor, setWondersAnchor] = useState<HTMLElement | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Switching back to Inbox unmounts this mid-countdown, so drop the pending dismissal.
+  useEffect(
+    () => () => {
+      if (closeTimer.current) {
+        clearTimeout(closeTimer.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     ensureMinWidthAndHeight(400, 600);
@@ -191,13 +205,20 @@ export const SwapsView = () => {
     setPaid(next);
   };
 
-  // The popover stays open after a copy: the confirmation is what tells you it worked, and
-  // you may want a second wonder for the next thread.
+  // Long enough for the tick to register as confirmation, short enough that it feels like the
+  // click dismissed it. On a failed copy the popover stays put rather than implying success.
   const copyRequest = async (wonder: AncientWonder) => {
-    if (await copyText(requestTextFor(wonder.name))) {
-      setCopied(wonder.baseName);
-      setTimeout(() => setCopied((c) => (c === wonder.baseName ? null : c)), 1500);
+    if (!(await copyText(requestTextFor(wonder.name)))) {
+      return;
     }
+    setCopied(wonder.baseName);
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+    }
+    closeTimer.current = setTimeout(() => {
+      setWondersAnchor(null);
+      setCopied(null);
+    }, COPIED_DISMISS_MS);
   };
 
   // Clearing moves the watermark past every round on show, so they never come back — and,
