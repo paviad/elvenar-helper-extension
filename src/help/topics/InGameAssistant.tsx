@@ -111,6 +111,11 @@ export const InGameAssistant = () => (
       appears in the list, along with the amount taken from the thread&apos;s title and the wonder they asked for.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
+      Because the wording has to match exactly, the bank icon in the Swaps header lists the ancient wonders standing in
+      your city. Pick one and the request text goes on your clipboard ready to paste, so a typo cannot leave you
+      wondering why nothing was tallied.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
       Debts are grouped by the player you owe, because you repay a person rather than a thread. Each card totals what
       that player is due and breaks it down per thread, since the amount and the wonder they asked for can differ
       between them.

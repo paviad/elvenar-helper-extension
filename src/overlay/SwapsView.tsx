@@ -1,10 +1,29 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import CheckIcon from '@mui/icons-material/Check';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import HistoryIcon from '@mui/icons-material/History';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import { Avatar, Box, Button, Checkbox, Chip, CircularProgress, Divider, Stack, Typography } from '@mui/material';
-import { getBuildingFinder } from '../city/buildingFinder';
+import {
+  Avatar,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  Divider,
+  IconButton,
+  List,
+  ListItemButton,
+  Popover,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { AncientWonder, getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
 import { SwapEntry, swapPaidKey, SwapTally } from '../model/kpSwap';
 import { ensureMinWidthAndHeight } from '../overlay';
@@ -20,13 +39,41 @@ import {
   timestampType,
 } from './gild';
 import { computeSwapTally } from './kpSwaps/computeSwapTally';
+import { getOwnedWonders } from './kpSwaps/getOwnedWonders';
 import { groupSwapsByPayee, PayeeGroup } from './kpSwaps/groupSwapsByPayee';
 import { getAccountId, getOverlayStore } from './overlayStore';
 
 interface AccountSnapshot {
   messagesData?: MessagesData;
   playerId?: number;
+  cityEntities?: CityEntity[];
 }
+
+// The exact-match rule means a typo posts a message that quietly does nothing, so the request
+// text is copied rather than typed. navigator.clipboard is the modern path; the textarea
+// fallback covers the odd context where it is unavailable.
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    try {
+      const scratch = document.createElement('textarea');
+      scratch.value = text;
+      scratch.style.position = 'fixed';
+      scratch.style.opacity = '0';
+      document.body.appendChild(scratch);
+      scratch.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(scratch);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
+const requestTextFor = (wonderName: string) => `${wonderName} please`;
 
 const centered = {
   display: 'flex',
@@ -51,7 +98,9 @@ export const SwapsView = () => {
   const setSwapsClearedAt = overlayStore((state) => state.setSwapsClearedAt);
 
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
-  const [wonderNames, setWonderNames] = useState<string[] | null>(null);
+  const [wonders, setWonders] = useState<AncientWonder[] | null>(null);
+  const [wondersAnchor, setWondersAnchor] = useState<HTMLElement | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
     ensureMinWidthAndHeight(400, 600);
@@ -63,9 +112,9 @@ export const SwapsView = () => {
       const finder = getBuildingFinder();
       try {
         await finder.ensureInitialized();
-        setWonderNames(finder.getAncientWonders().map((w) => w.name));
+        setWonders(finder.getAncientWonders());
       } catch {
-        setWonderNames([]);
+        setWonders([]);
       }
     }
     void loadWonders();
@@ -80,25 +129,34 @@ export const SwapsView = () => {
       }
       await loadSingleAccountFromStorage(accountId, true);
       const data = getAccountById(accountId);
-      setAccount({ messagesData: data?.messagesData, playerId: data?.cityQuery?.userData?.player_id });
+      setAccount({
+        messagesData: data?.messagesData,
+        playerId: data?.cityQuery?.userData?.player_id,
+        cityEntities: data?.cityQuery?.cityEntities,
+      });
     }
     void loadAccount();
   }, [messagesUpdate]);
 
   // Until the watermark has been established, Infinity keeps every existing round out of the
   // list — so it never flashes your whole swap history on first open.
+  const wonderNames = useMemo(() => (wonders ?? []).map((w) => w.name), [wonders]);
+
   const tally: SwapTally = useMemo(
-    () => computeSwapTally(account?.messagesData, wonderNames ?? [], account?.playerId, swapsClearedAt ?? Infinity),
+    () => computeSwapTally(account?.messagesData, wonderNames, account?.playerId, swapsClearedAt ?? Infinity),
     [account, wonderNames, swapsClearedAt],
   );
+
+  // Only the wonders you have built can be donated to, so that is the list worth offering.
+  const ownedWonders = useMemo(() => getOwnedWonders(account?.cityEntities, wonders ?? []), [account, wonders]);
 
   // First run on this account: adopt whatever your newest request post is, so the list starts
   // empty and only fills as you post from here on.
   useEffect(() => {
-    if (swapsClearedAt === undefined && account !== null && wonderNames !== null) {
+    if (swapsClearedAt === undefined && account !== null && wonders !== null) {
       setSwapsClearedAt(tally.latestRequestAt || Math.floor(Date.now() / 1000));
     }
-  }, [swapsClearedAt, account, wonderNames, tally.latestRequestAt]);
+  }, [swapsClearedAt, account, wonders, tally.latestRequestAt]);
 
   const paid = useMemo(() => new Set(paidSwaps), [paidSwaps]);
   // Grouped from the full list, not just the unpaid ones, so a payee keeps their place in the
@@ -126,6 +184,15 @@ export const SwapsView = () => {
     setPaid(next);
   };
 
+  // The popover stays open after a copy: the confirmation is what tells you it worked, and
+  // you may want a second wonder for the next thread.
+  const copyRequest = async (wonder: AncientWonder) => {
+    if (await copyText(requestTextFor(wonder.name))) {
+      setCopied(wonder.baseName);
+      setTimeout(() => setCopied((c) => (c === wonder.baseName ? null : c)), 1500);
+    }
+  };
+
   // Clearing moves the watermark past every round on show, so they never come back — and,
   // unlike ticking rows off, it does not depend on us knowing whether you actually repaid.
   const clearAll = () => {
@@ -133,7 +200,7 @@ export const SwapsView = () => {
     setPaidSwaps([]);
   };
 
-  if (account === null || wonderNames === null) {
+  if (account === null || wonders === null) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1, p: 4 }}>
         <CircularProgress size={32} />
@@ -142,7 +209,7 @@ export const SwapsView = () => {
   }
 
   // Without the catalog there is no way to tell a request post from any other post.
-  if (wonderNames.length === 0) {
+  if (wonders.length === 0) {
     return (
       <Box sx={{ ...centered }}>
         <SwapHorizIcon fontSize='large' />
@@ -166,6 +233,18 @@ export const SwapsView = () => {
         <Typography sx={{ fontFamily: gild.serif, fontWeight: 700, color: gild.ink, flex: 1 }}>
           {payeesLeft === 0 ? 'Nothing to repay' : 'To repay'}
         </Typography>
+        {/* Tucked behind a button: the list runs long and is only wanted at the moment of
+            posting, so it should not hold space away from the debts. */}
+        <Tooltip title='My wonders — copy a request'>
+          <IconButton
+            size='small'
+            aria-label='My ancient wonders'
+            onClick={(e) => setWondersAnchor(e.currentTarget)}
+            sx={{ color: gild.bronze }}
+          >
+            <AccountBalanceIcon fontSize='small' />
+          </IconButton>
+        </Tooltip>
         {tally.entries.length > 0 && (
           <Button size='small' onClick={clearAll} sx={{ color: gild.bronze, fontSize: 12 }}>
             Clear all
@@ -235,6 +314,54 @@ export const SwapsView = () => {
           )}
         </Box>
       )}
+
+      <Popover
+        open={wondersAnchor !== null}
+        anchorEl={wondersAnchor}
+        onClose={() => setWondersAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { sx: { width: 280, maxHeight: 360, background: gild.cardTop } } }}
+      >
+        <Box sx={{ px: 1.5, py: 1, ...gildedBar, position: 'sticky', top: 0, zIndex: 1 }}>
+          <Typography sx={{ ...authorType }}>Copy a request</Typography>
+          <Typography variant='caption' sx={{ color: gild.bronzeSoft, display: 'block', lineHeight: 1.3 }}>
+            {ownedWonders.length > 0
+              ? 'Your wonders. Pick one to put “<wonder> please” on the clipboard.'
+              : 'No wonders found in your city yet.'}
+          </Typography>
+        </Box>
+        {ownedWonders.length === 0 ? (
+          <Typography variant='body2' sx={{ color: gild.bronzeSoft, p: 2, textAlign: 'center' }}>
+            Open your city in the game to load it, then try again.
+          </Typography>
+        ) : (
+          <List disablePadding>
+            {ownedWonders.map((wonder) => {
+              const justCopied = copied === wonder.baseName;
+              return (
+                <ListItemButton
+                  key={wonder.baseName}
+                  onClick={() => void copyRequest(wonder)}
+                  sx={{ py: 0.75, '&:hover': { background: 'rgba(201, 162, 39, 0.12)' } }}
+                >
+                  <Typography sx={{ ...bodyType, fontSize: 13, flex: 1, minWidth: 0 }}>{wonder.name}</Typography>
+                  {justCopied ? (
+                    <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center', color: gild.deep }}>
+                      <CheckIcon fontSize='small' />
+                      <Typography variant='caption' sx={{ fontWeight: 700 }}>
+                        Copied
+                      </Typography>
+                    </Stack>
+                  ) : (
+                    <ContentCopyIcon fontSize='small' sx={{ color: gild.bronzeSoft }} />
+                  )}
+                </ListItemButton>
+              );
+            })}
+          </List>
+        )}
+      </Popover>
     </Box>
   );
 };

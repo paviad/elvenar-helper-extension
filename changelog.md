@@ -4,6 +4,7 @@
 - **New Feature: Swaps** — Added a "Swaps" button to the Messages tab, alongside Inbox and Outbox, that tallies your knowledge point swap debts automatically.
 - Post exactly "&lt;Ancient Wonder&gt; please" in a swap thread and whoever posted before you is added to the list, with the amount read from the thread title and the wonder they asked for.
 - Wonder names come from the game's own building catalog, so they match whatever language you play in.
+- A button in the Swaps header lists the ancient wonders standing in your city and copies "&lt;wonder&gt; please" to the clipboard, so the exact wording is never mistyped. It stays behind a button rather than taking up room in the list.
 - Amounts are read from the number next to "KP" in the title, handling the usual spread of thread names ("60 KP Thread", "10KP SWAP THREAD - AUGUST"). Titles with no readable amount, or two of them, are listed separately instead of being counted.
 - The list starts empty and fills only as you post, so rounds you did before enabling it are left alone. Tick rows off as you donate to keep your place, then use "Clear all" once you have repaid everybody — clearing is manual, since the extension can see your posts but not your donations.
 - Debts are grouped by the player you owe, since the same player can come up in several threads and you repay them in one visit. Each card shows what they are owed in total, broken down per thread with the wonder each one asked for.
