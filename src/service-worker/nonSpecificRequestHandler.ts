@@ -1,4 +1,5 @@
 import { InterceptedNonSpecificRequest } from '../chrome/messages';
+import { processBattleUnitTypes } from '../elvenar/processBattleUnitTypes';
 import { processBuildings } from '../elvenar/processBuildings';
 import { processEffects } from '../elvenar/processEffects';
 import { processEvolvingBuildings } from '../elvenar/processEvolvingBuildings';
@@ -32,6 +33,9 @@ export const nonSpecificRequestHandler = async (msg: InterceptedNonSpecificReque
       break;
     case 'EVOLVING_BUILDINGS':
       await processEvolvingBuildings(msg.payload.payload.decodedResponse);
+      break;
+    case 'BATTLE_UNIT_TYPES':
+      await processBattleUnitTypes(msg.payload.payload.decodedResponse);
       break;
     default:
       msg.payload satisfies never;

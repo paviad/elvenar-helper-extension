@@ -38,6 +38,7 @@
       "resources": [
         "icon32.png",
         "sprite.png",
+        "military_sprite.png",
         "elvenassist-inject.bundle.js",
         "elvenassist-vendors.bundle.js",
         "helper.png",

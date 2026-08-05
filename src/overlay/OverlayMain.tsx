@@ -28,6 +28,9 @@ import {
 } from '../chrome/messages';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { TournyProvinceInformation } from '../model/tourny/provinceInformation';
+import { TournyProvince } from '../model/tourny/provincesOverview';
+import { TournyTime } from '../model/tourny/tournamentTime';
 import { expandPanel, getOverlaySize, setOverlaySizePreset } from '../overlay';
 import { parseQuestExport } from '../util/parseQuestExport';
 import { DiscordButton } from '../widgets/DiscordButton';
@@ -39,9 +42,11 @@ import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizeP
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
+import { Tourny } from './Tourny';
+import { emptyTournyData } from './tournyData';
 import { TradeView } from './TradeView';
 
-type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages';
+type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'tourny';
 
 interface OverlayTab {
   key: OverlayTabKey;
@@ -99,6 +104,7 @@ export function OverlayMain() {
       { key: 'ee', label: 'EE', shortcut: 'KeyE' },
       { key: 'quests', label: 'Quests', shortcut: 'KeyQ' },
       { key: 'messages', label: 'Messages', shortcut: 'KeyM', isNew: true },
+      { key: 'tourny', label: 'Tourny', shortcut: 'KeyT', isNew: true },
     ],
     [chapter],
   );
@@ -270,6 +276,77 @@ export function OverlayMain() {
         if (progress === undefined) {
           setQuests(undefined);
         }
+      }),
+    );
+
+    listenerIds.push(
+      setupGenericResponseListener<TournyProvince[] | undefined>('R:TournamentService/getProvincesOverview', (msg) => {
+        const provinces = msg.payload;
+        if (!provinces) {
+          return;
+        }
+
+        const tournyData = {
+          ...(useOverlayStore.getState().tournyData || emptyTournyData()),
+        };
+
+        // A province that levelled up or finished upgrading is about to field a different
+        // encounter, so its cached details are dropped rather than shown stale.
+        for (const province of provinces) {
+          const previousProvince = tournyData.provincesOverview.find((p) => p.r === province.r && p.q === province.q);
+          if (!previousProvince) {
+            continue;
+          }
+          const leveledUp = province.level !== previousProvince.level;
+          const upgradeTimeElapsed = !province.upgradeTime && previousProvince.upgradeTime;
+          if (leveledUp || upgradeTimeElapsed) {
+            delete tournyData.provinceInformation[`${province.r},${province.q}`];
+          }
+        }
+
+        useOverlayStore.getState().setTournyData({ ...tournyData, provincesOverview: provinces });
+      }),
+    );
+
+    listenerIds.push(
+      setupGenericResponseListener<TournyProvinceInformation>('R:WorldMapService/getProvinceInformation', (msg) => {
+        const provinceInfo = msg.payload;
+        const tournyData = useOverlayStore.getState().tournyData || emptyTournyData();
+        useOverlayStore.getState().setTournyData({
+          ...tournyData,
+          provinceInformation: {
+            ...tournyData.provinceInformation,
+            [`${provinceInfo.r},${provinceInfo.q}`]: provinceInfo,
+          },
+        });
+      }),
+    );
+
+    listenerIds.push(
+      setupGenericResponseListener<TournyTime | undefined>('R:WorldMapService/updateTournamentTime', (msg) => {
+        const tournyTime = msg.payload;
+        if (!tournyTime) {
+          return;
+        }
+
+        const tournyData = useOverlayStore.getState().tournyData || emptyTournyData();
+        const overviewProvince = tournyData.provincesOverview.find((p) => p.r === tournyTime.r && p.q === tournyTime.q);
+        if (!overviewProvince) {
+          return;
+        }
+
+        if (tournyTime.remainingTime > 0) {
+          overviewProvince.upgradeTime = tournyTime.remainingTime;
+          overviewProvince.upgradeTimeEnd = Date.now() + tournyTime.remainingTime * 1000;
+        } else {
+          delete overviewProvince.upgradeTime;
+          delete overviewProvince.upgradeTimeEnd;
+        }
+
+        useOverlayStore.getState().setTournyData({
+          ...tournyData,
+          provincesOverview: [...tournyData.provincesOverview],
+        });
       }),
     );
 
@@ -528,6 +605,7 @@ export function OverlayMain() {
           />
         ))}{' '}
       {tabKey === 'messages' && <MessagesView />}
+      {tabKey === 'tourny' && <Tourny />}
     </div>
   );
 }

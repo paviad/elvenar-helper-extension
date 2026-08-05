@@ -55,4 +55,11 @@ export const nonSpecificMatchers: NonSpecificMatcherSpecification[] = [
     regex:
       /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.city\.EvolvingBuildings_[a-f0-9]{32}\.json$/,
   },
+  {
+    id: 'battleUnitTypes',
+    messageType: 'BATTLE_UNIT_TYPES',
+    regex:
+      // https://oxen.innogamescdn.com/frontend//static/en_DK/xml.balancing.battle.BattleUnitTypes_ecaccbbf02dccce070097adfb0c1dbf1.json
+      /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.battle\.BattleUnitTypes_[a-f0-9]{32}\.json$/,
+  },
 ];

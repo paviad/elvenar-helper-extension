@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { TournyData } from './tournyData';
 
 interface OverlayState {
   offeredGoods: string[];
@@ -43,6 +44,10 @@ interface OverlayState {
   // In game time (unix seconds from the posts), not local clock time.
   swapsClearedAt?: number;
   setSwapsClearedAt: (at: number) => void;
+  // Deliberately not persisted: it is only ever as good as the current tournament round, and a
+  // stale copy would show encounters that have since been fought.
+  tournyData?: TournyData;
+  setTournyData: (data: TournyData) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -104,6 +109,8 @@ export const generateOverlayStore = (accountId: string) => {
         setPaidSwaps: (keys) => set({ paidSwaps: keys }),
         swapsClearedAt: undefined,
         setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
+        tournyData: undefined,
+        setTournyData: (data) => set({ tournyData: data }),
       }),
       {
         name: `overlay-store-${accountId}`,
@@ -116,6 +123,7 @@ export const generateOverlayStore = (accountId: string) => {
             eeUpdate,
             messagesUpdate,
             messagesDetailsReceived,
+            tournyData,
             ...toPersist
           } = state;
           return toPersist;
