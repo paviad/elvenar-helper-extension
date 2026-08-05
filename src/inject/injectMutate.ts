@@ -203,8 +203,22 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
       },
     );
 
+    // de.innogames.onyx.city.engine.snake.components.layers.SnakeInteractiveLayerMediator
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.city.engine.snake.components.layers.SnakeInteractiveLayerMediator',
+      'aviad_silm',
+    );
+
     // de.innogames.onyx.city.model.ApplicationModel
     scriptText = patchCtorRegistryAssignment(scriptText, 'de.innogames.onyx.city.model.ApplicationModel', 'aviad_am');
+
+    // de.innogames.onyx.shared.ui.components.pagination.Pagination
+    scriptText = patchCtorRegistryAssignment(
+      scriptText,
+      'de.innogames.onyx.shared.ui.components.pagination.Pagination',
+      'aviad_pagination',
+    );
 
     const newScript = document.createElement('script');
     newScript.type = 'text/javascript';

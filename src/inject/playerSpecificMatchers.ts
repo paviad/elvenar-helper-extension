@@ -1,5 +1,8 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { localProcessGuildData } from './local/localProcessGuildData';
+import { localProcessRankingsData } from './local/localProcessRankingsData';
+import { localTrapVisitPlayer } from './local/localTrapVisitPlayer';
 
 export interface PlayerSpecificMatcherSpecification {
   requestSelector?: {
@@ -61,6 +64,13 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'OtherPlayerService',
       requestMethod: 'visitPlayer',
     },
+  },
+  {
+    responseSelector: {
+      requestClass: 'OtherPlayerService',
+      requestMethod: 'visitPlayer',
+    },
+    local: localTrapVisitPlayer,
   },
   {
     responseSelector: {
@@ -164,6 +174,28 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'replyMessage',
     },
   },
+  {
+    responseSelector: {
+      requestClass: 'AncientWonderService',
+      requestMethod: 'getOtherPlayerAncientWonders',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'RankingService',
+      requestMethod: 'getRankingList',
+    },
+    local: localProcessRankingsData,
+  },
+  // {
+  //   id: 'getGuild',
+  //   responseSelector: {
+  //     requestClass: 'GuildService',
+  //     requestMethod: 'getGuild',
+  //   },
+  //   messageType: 'GUILD_DATA_PROCESSED',
+  //   local: localProcessGuildData,
+  // },
   {
     responseSelector: {
       requestClass: 'TournamentService',

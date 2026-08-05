@@ -1,6 +1,10 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
-import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import {
+  setupCityDataUpdatedListener,
+  setupMessageListener,
+  setupRetrievingCounterUpdateListener,
+} from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { GameVars } from './inject/gameVars';
 import { createOverlayUi } from './overlay/createOverlayUi';
@@ -523,6 +527,10 @@ const initFunc = () => {
     setup(tabId, content, reactHeaderActions).catch((err) => {
       console.error('Error setting up overlay:', err);
     });
+  });
+  setupRetrievingCounterUpdateListener(({ tabId, retrievingCounter }) => {
+    const store = getOverlayStore();
+    store.getState().setRetrievingCounter(retrievingCounter);
   });
 };
 

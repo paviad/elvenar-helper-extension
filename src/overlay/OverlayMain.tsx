@@ -19,15 +19,26 @@ import { createPortal } from 'react-dom';
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
+  clearKpHuntOpportunityListener,
   clearMessagesUpdatedListener,
   clearTradeParsedListener,
   setupActiveEffectsUpdatedListener,
   setupGenericResponseListener,
+  setupKpHuntOpportunityListener,
   setupMessagesUpdatedListener,
   setupTradeParsedListener,
   TradeParsedMessage,
 } from '../chrome/messages';
+import {
+  getAccountById,
+  loadAccountManagerFromStorage,
+  loadSingleAccountFromStorage,
+  saveAllAccounts,
+} from '../elvenar/AccountManager';
+import { saveSingleAccount } from '../elvenar/Accounts';
+import { relayToGame } from '../inject/relayToGame';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
+import { KpHuntData } from '../model/kpHuntData';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { TournyProvinceInformation } from '../model/tourny/provinceInformation';
 import { TournyProvince } from '../model/tourny/provincesOverview';
@@ -38,12 +49,14 @@ import { DiscordButton } from '../widgets/DiscordButton';
 import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
+import { KpHuntOpportunities } from './KpHuntOpportunities';
 import { MessagesView } from './MessagesView';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
-import { getOverlayStore } from './overlayStore';
+import { getAccountId, getOverlayStore } from './overlayStore';
 import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
 import { parseSocketMessage } from './parseSocketMessage';
+import { playPrimaryOpportunityAlert } from './primaryOpportunityAlertService';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { emptyTournyData } from './tournyData';
@@ -79,6 +92,9 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const userMap = React.useRef<Record<string, string>>({});
   const tabRef = React.useRef<OverlayTabKey>(tabKey);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
+  const [kpHuntOpportunities, setKpHuntOpportunities] = React.useState<Record<string, KpHuntData>>({});
+  const [cityResources, setCityResources] = React.useState<Record<string, number>>({});
+  const [kpInstantsInventory, setKpInstantsInventory] = React.useState<Record<number, number>>({});
 
   const useOverlayStore = getOverlayStore();
   const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
@@ -88,6 +104,38 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const quests = useOverlayStore((state) => state.quests);
   const setQuests = useOverlayStore((state) => state.setQuests);
   const [dropError, setDropError] = React.useState<string | undefined>(undefined);
+
+  const retrievingCounterRaw = useOverlayStore((state) => state.retrievingCounter);
+  const [retrievingCounter, setRetrievingCounter] = React.useState(retrievingCounterRaw);
+  const autoKpHunt = useOverlayStore((state) => state.autoKpHunt);
+  const kpHuntImportantThreshold = useOverlayStore((state) => state.kpHuntImportantThreshold);
+
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (retrievingCounterRaw === 0 && retrievingCounter !== 0) {
+      timeoutRef.current = setTimeout(() => {
+        setRetrievingCounter(0);
+        console.log('Retrieving counter reached 0, checking for next page...', kpHuntOpportunities);
+        const primaryOpportunities = Object.values(kpHuntOpportunities || {}).filter(
+          (opportunity) => opportunity.standToGain >= kpHuntImportantThreshold,
+        );
+        if (primaryOpportunities.length === 0) {
+          if (autoKpHunt) {
+            console.log('Auto KP Hunt is enabled, relaying to game to go to next page...');
+            relayToGame('nextPage');
+          }
+        } else {
+          playPrimaryOpportunityAlert();
+        }
+      }, 500);
+    } else {
+      setRetrievingCounter(retrievingCounterRaw);
+    }
+  }, [retrievingCounterRaw, kpHuntOpportunities, autoKpHunt, kpHuntImportantThreshold]);
 
   // Declarative, so the tab set, the Alt+C chord map, the rendered content and the help dialog
   // all read from one place. Hand-computed indices used to have to be adjusted in two places
@@ -206,6 +254,30 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
         ]);
       }
     };
+    function fillData(accountData: ReturnType<typeof getAccountById>) {
+      setKpHuntOpportunities(accountData?.kpHuntOpportunities || {});
+      setCityResources(accountData?.cityQuery?.cityResources || {});
+      const inventory = accountData?.inventoryItems?.filter((item) => item.subtype?.startsWith('INS_KP_AW_')) || [];
+      const inventoryMap: Record<number, number> = {};
+      inventory.forEach((item) => {
+        const match = item.subtype.match(/INS_KP_AW_(\d+)/);
+        if (match) {
+          const instantId = parseInt(match[1], 10);
+          inventoryMap[instantId] = (inventoryMap[instantId] || 0) + item.amount;
+        }
+      });
+      setKpInstantsInventory(inventoryMap);
+    }
+
+    async function Do() {
+      await loadAccountManagerFromStorage();
+
+      const accountId = getAccountId();
+      if (accountId) {
+        const accountData = getAccountById(accountId);
+        fillData(accountData);
+      }
+    }
 
     window.addEventListener('message', messageHandler);
 
@@ -226,11 +298,26 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }
     });
 
+    setupKpHuntOpportunityListener((msg) => {
+      void (async () => {
+        expandPanel(true);
+        const accountId = getAccountId();
+        if (!accountId) return;
+        await loadAccountManagerFromStorage();
+        const accountData = getAccountById(accountId);
+        fillData(accountData);
+        setTabKey('kphunt');
+      })();
+    });
+
+    void Do();
+
     return () => {
       window.removeEventListener('message', messageHandler);
       clearTradeParsedListener();
       clearActiveEffectsUpdatedListener();
       clearMessagesUpdatedListener();
+      clearKpHuntOpportunityListener();
     };
   }, [useOverlayStore]);
 
@@ -249,6 +336,34 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   };
 
   const activeSizePreset = matchOverlaySizePreset(sizeAtMenuOpen);
+
+  const onClearAllOpportunities = async () => {
+    const accountId = getAccountId();
+    if (!accountId) return;
+    await loadSingleAccountFromStorage(accountId);
+    const accountData = getAccountById(accountId);
+    if (!accountData || !accountData.kpHuntOpportunities) return;
+    accountData.kpHuntOpportunities = {};
+    setKpHuntOpportunities({});
+    accountData.kpHuntOpportunities = {};
+    await saveSingleAccount(accountId);
+    // expandPanel(false);
+  };
+
+  const onClearOpportunity = async (id: string) => {
+    const accountId = getAccountId();
+    if (!accountId) return;
+    await loadSingleAccountFromStorage(accountId);
+    const accountData = getAccountById(accountId);
+    if (!accountData || !accountData.kpHuntOpportunities) return;
+    const { [id]: _, ...rest } = accountData.kpHuntOpportunities;
+    setKpHuntOpportunities({ ...rest });
+    accountData.kpHuntOpportunities = { ...rest };
+    await saveSingleAccount(accountId);
+    // if (Object.keys(rest).length === 0) {
+    //   expandPanel(false);
+    // }
+  };
 
   useEffect(() => {
     const listenerIds: string[] = [];
@@ -604,7 +719,31 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
           ))}{' '}
         {tabKey === 'messages' && <MessagesView />}
         {tabKey === 'tourny' && <Tourny />}
+        {tabKey === 'kphunt' && (
+          <KpHuntOpportunities
+            kpHuntOpportunities={kpHuntOpportunities}
+            onClearAllOpportunities={() => void onClearAllOpportunities()}
+            onClearOpportunity={(id) => void onClearOpportunity(id)}
+            cityResources={cityResources}
+            kpInstantsInventory={kpInstantsInventory}
+          />
+        )}
       </div>
+      {retrievingCounter > 0 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 40,
+            right: 16,
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            backgroundColor: '#1976d2',
+            border: '2px solid white',
+            zIndex: 100,
+          }}
+        />
+      )}
     </>
   );
 }

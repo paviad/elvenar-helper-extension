@@ -1,5 +1,7 @@
 import { CustomWebSocket } from './customWebSocket';
 import { injectMutate } from './injectMutate';
+import { localNextPage } from './local/localNextPage';
+import { localVisitPlayer } from './local/localVisitPlayer';
 import { setupKeyHandlers } from './setupKeyHandlers';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
@@ -32,5 +34,20 @@ if (document.readyState !== 'loading') {
 } else {
   document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 }
+
+window.addEventListener('message', (event) => {
+  if (event.source !== window) {
+    return;
+  }
+
+  switch (event.data.type) {
+    case 'visitPlayer':
+      localVisitPlayer(event.data.payload as { playerId: number; buildingId: string; baseName: string });
+      break;
+    case 'nextPage':
+      localNextPage();
+      break;
+  }
+});
 
 setupKeyHandlers();

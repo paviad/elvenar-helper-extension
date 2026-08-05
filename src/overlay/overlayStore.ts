@@ -66,6 +66,14 @@ interface OverlayState {
   lastTournament?: TournamentGood;
   setLastTournament: (good: TournamentGood) => void;
 
+  retrievingCounter: number;
+  setRetrievingCounter: (counter: number) => void;
+
+  autoKpHunt?: boolean;
+  setAutoKpHunt: (autoKpHunt: boolean) => void;
+  kpHuntImportantThreshold: number;
+  setKpHuntImportantThreshold: (threshold: number) => void;
+
   gameVars?: GameVars;
   setGameVars: (gameVars: GameVars) => void;
 }
@@ -138,6 +146,14 @@ export const generateOverlayStore = (accountId: string) => {
         lastTournament: undefined,
         setLastTournament: (good) => set({ lastTournament: good }),
 
+        retrievingCounter: 0,
+        setRetrievingCounter: (counter) => set({ retrievingCounter: counter }),
+
+        autoKpHunt: false,
+        setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
+        kpHuntImportantThreshold: 10,
+        setKpHuntImportantThreshold: (threshold) => set({ kpHuntImportantThreshold: threshold }),
+
         gameVars: undefined,
         setGameVars: (gameVars) => set({ gameVars }),
       }),
@@ -154,6 +170,8 @@ export const generateOverlayStore = (accountId: string) => {
             messagesUpdate,
             messagesDetailsReceived,
             wonderKpUpdate,
+            retrievingCounter,
+            autoKpHunt,
             // gameVars,
             ...toPersist
           } = state;
