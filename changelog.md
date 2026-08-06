@@ -1,6 +1,16 @@
 # Changelog
 
 ## Unreleased
+- **New Feature: Tourny** — Added a "Tourny" tab to the in-game overlay that works out what to field against each tournament province, and what to train for the round ahead. Reachable with the chord Alt+C, T.
+- **Counters:** Open a province on the Tournament Map in game and the tab suggests a squad for it — a blend across the five slots rather than five of a single unit, because the game accepts five different types, each sized by its own unit weight.
+- Suggestions are read from the game's own battle balancing data, so they follow the real counter values for your units at the levels you have unlocked, rather than a fixed table.
+- Where your troops cannot field the best answer, both are shown: the ideal composition to train towards, with what you hold set against what it asks for, and the strongest one you can actually field today.
+- Each province shows its enemy lineup, how many of the five enemies your squad answers, and a grade for how well it does so.
+- **Prep:** A briefing for the tournament running now and for the one coming next, switchable between the two — the enemy classes it favours, what to train from each of your military buildings with your current stock beside it, and battle tips.
+- The tournament coming next is worked out from the fixed rotation (Marble, Steel, Planks, Crystal, Scrolls, Silk, Elixir, Magic Dust, Gems). The most recent one seen is remembered, so the rotation still names the next one between rounds.
+- Training advice names your own units rather than the names in the guide, which change as units are promoted — so it points at the Divine Vallorian Guard you have, not the Vallorian Guard you had.
+- Tournament guidance is distilled from a player guide by Sapphyre (Beta), Queen of Kelp Islands (Arendyll) and KibbleKat (Arendyll), credited in the tab and in the help dialog.
+- **Help dialog** — Rebuilt around the panel list itself, so it stays current: every panel with its keyboard chord, and a short list of what is reached from elsewhere. It also opens in front of the helper window rather than behind it.
 - **Panel size is remembered** — Resize the helper window by its bottom-right corner and it opens at that size next time, instead of going back to the default on every page load.
 - A new button in the overlay header resets the panel to one of two sizes: Small (400 × 600), the size the panel has settled at in practice, or Large (630 × 800), which fits the Chat, Messages and Swaps views comfortably. The size in use is ticked.
 - The saved size is per browser, not per account, and only your own resizes are saved — a view that grows the panel to fit itself does not overwrite the size you chose.

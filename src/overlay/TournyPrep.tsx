@@ -56,7 +56,7 @@ export const TournyPrep = () => {
       try {
         setAlmanac(await getBattleUnitTypes());
       } catch (err) {
-        console.error('Failed to load the battle unit almanac:', err);
+        console.error('ElvenAssist: Failed to load the battle unit almanac:', err);
       }
     }
     void load();
