@@ -39,22 +39,13 @@ import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { MessagesView } from './MessagesView';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
+import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { emptyTournyData } from './tournyData';
 import { TradeView } from './TradeView';
-
-type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'tourny';
-
-interface OverlayTab {
-  key: OverlayTabKey;
-  label: string;
-  /** Second key of the Alt+C chord. Tabs without one are mouse-only. */
-  shortcut?: string;
-  isNew?: boolean;
-}
 
 const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
   small: 'Small',
@@ -94,20 +85,10 @@ export function OverlayMain() {
   const setQuests = useOverlayStore((state) => state.setQuests);
   const [dropError, setDropError] = React.useState<string | undefined>(undefined);
 
-  // Declarative, so the tab set, the Alt+C chord map and the rendered content all read from
-  // one place. Hand-computed indices used to have to be adjusted in two places whenever the
-  // Trade tab came and went with the chapter.
-  const tabs = React.useMemo<OverlayTab[]>(
-    () => [
-      { key: 'chat', label: 'Chat', shortcut: 'KeyC' },
-      ...(chapter >= 18 ? ([{ key: 'trade', label: 'Trade' }] satisfies OverlayTab[]) : []),
-      { key: 'ee', label: 'EE', shortcut: 'KeyE' },
-      { key: 'quests', label: 'Quests', shortcut: 'KeyQ' },
-      { key: 'messages', label: 'Messages', shortcut: 'KeyM', isNew: true },
-      { key: 'tourny', label: 'Tourny', shortcut: 'KeyT', isNew: true },
-    ],
-    [chapter],
-  );
+  // Declarative, so the tab set, the Alt+C chord map, the rendered content and the help dialog
+  // all read from one place. Hand-computed indices used to have to be adjusted in two places
+  // whenever the Trade tab came and went with the chapter.
+  const tabs = React.useMemo(() => visibleOverlayTabs(chapter), [chapter]);
 
   // Selection is held as a key rather than an index, so the Trade tab appearing once the
   // chapter loads cannot silently shift which tab is showing.
