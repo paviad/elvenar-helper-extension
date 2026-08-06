@@ -1968,6 +1968,7 @@ describe('calculatePhase', () => {
     otherHuntersKpAmounts: {},
   };
   const pageIndex = 0;
+  const playerId = 848895252;
 
   const testCasesTrue = [phase, phase2, phase5, phase6, phase7, phase8].map((r) => ({ case: r, expected: true }));
   const testCasesFalse = [phase1, phase3, phase4].map((r) => ({ case: r, expected: false }));
@@ -1977,6 +1978,18 @@ describe('calculatePhase', () => {
     const finder = {
       getBuilding: () => ({ name: 'Wonder1' }),
     } as unknown as BuildingFinder;
-    expect(calculatePhase(finder, phase, ownerGuild, playerName, huntersInfo, sharedInfo, pageIndex)).toBe(expected);
+    const awDictionary = { [phase.entityBaseName]: `${phase.entityBaseName}-1` };
+    const kpHuntRecord = calculatePhase(
+      finder,
+      phase,
+      ownerGuild,
+      playerName,
+      huntersInfo,
+      sharedInfo,
+      pageIndex,
+      playerId,
+      awDictionary,
+    );
+    expect(Boolean(kpHuntRecord)).toBe(expected);
   });
 });
