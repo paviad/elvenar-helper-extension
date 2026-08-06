@@ -33,6 +33,33 @@ console.log('ElvenAssist: Content script loaded');
  */
 const MAX_PANEL_HEIGHT = 800;
 
+/** Matches MUI's small IconButton, so the hand-built buttons and the React ones are one size. */
+const HEADER_BUTTON_SIZE = 30;
+
+/** The header's buttons are built by hand here and by MUI in React; this is what makes them match. */
+function styleAsHeaderButton(el: HTMLElement) {
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.justifyContent = 'center';
+  el.style.width = `${HEADER_BUTTON_SIZE}px`;
+  el.style.height = `${HEADER_BUTTON_SIZE}px`;
+  el.style.flex = '0 0 auto';
+  el.style.padding = '0';
+  el.style.border = 'none';
+  el.style.background = 'transparent';
+  el.style.borderRadius = '50%';
+  el.style.color = '#333';
+  el.style.cursor = 'pointer';
+  // Inline rather than a stylesheet: this panel is injected into the game's page, so it carries
+  // no CSS of its own, and MUI's buttons next to these do highlight on hover.
+  el.addEventListener('mouseenter', () => {
+    el.style.background = 'rgba(0, 0, 0, 0.06)';
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.background = 'transparent';
+  });
+}
+
 const initFunc = () => {
   // Remove existing panel if present
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
@@ -62,7 +89,7 @@ const initFunc = () => {
   // Header for dragging and collapse
   const header = document.createElement('div');
   header.style.cursor = 'move';
-  header.style.padding = '8px 12px';
+  header.style.padding = '3px 6px 3px 12px';
   header.style.background = '#f5f5f5';
   header.style.color = '#333';
   header.style.borderBottom = '1px solid #eee';
@@ -77,34 +104,43 @@ const initFunc = () => {
   title.style.textAlign = 'start';
   header.appendChild(title);
 
-  // Extension icon (hidden by default, shown when collapsed)
+  // Every control in the header sits in this one row, so they line up by layout instead of by
+  // hand-tuned offsets. The React buttons go in a slot at its start; the extension icon and the
+  // collapse toggle are built here because they have to work before React ever mounts - React
+  // only appears once the game has sent city data.
+  const headerActions = document.createElement('div');
+  headerActions.style.display = 'flex';
+  headerActions.style.alignItems = 'center';
+  headerActions.style.gap = '2px';
+  // The header is the drag surface, so a press that lands on a button must not also arm a drag.
+  headerActions.addEventListener('mousedown', (e) => e.stopPropagation());
+
+  const reactHeaderActions = document.createElement('div');
+  reactHeaderActions.style.display = 'flex';
+  reactHeaderActions.style.alignItems = 'center';
+  headerActions.appendChild(reactHeaderActions);
+
+  // Extension icon, in its own button-sized box so it lines up with the rest of the row.
+  const iconButton = document.createElement('div');
+  styleAsHeaderButton(iconButton);
+  iconButton.title = 'Open City Planner';
+
   const iconImg = document.createElement('img');
   iconImg.src = chrome.runtime.getURL('icon32.png');
   iconImg.alt = 'Extension Icon';
-  iconImg.style.cursor = 'pointer';
   iconImg.style.width = '20px';
   iconImg.style.height = '20px';
-  iconImg.style.marginRight = '4px';
-  iconImg.style.display = '';
-  iconImg.title = 'Open City Planner';
 
-  iconImg.addEventListener('click', () => {
+  iconButton.addEventListener('click', () => {
     if (isDragging) return;
     void (async () => {
       try {
         await chrome.runtime.sendMessage({ type: 'openExtensionTab' });
       } catch (error) {
         console.error('Error opening extension tab:', error);
-        // Show a red cross SVG in place of the icon
-        iconImg.src = '';
-        iconImg.alt = 'Error';
-        iconImg.style.background = 'none';
-        iconImg.style.display = '';
-        iconImg.style.width = '20px';
-        iconImg.style.height = '20px';
-        const parentNode = iconImg.parentNode;
-        const nextSibling = iconImg.nextSibling;
-        parentNode?.removeChild(iconImg);
+        // Show a red cross SVG in place of the icon. It swaps inside the icon's own box, so the
+        // rest of the row - including the collapse toggle - is untouched.
+        iconButton.removeChild(iconImg);
 
         const errorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         errorSvg.setAttribute('width', '20');
@@ -118,24 +154,16 @@ const initFunc = () => {
         const titleElem = document.createElementNS('http://www.w3.org/2000/svg', 'title');
         titleElem.textContent = 'Extension Updated, Please Refresh the Tab';
         errorSvg.appendChild(titleElem);
-        if (nextSibling) {
-          parentNode?.removeChild(nextSibling);
-        }
-        parentNode?.appendChild(errorSvg);
+        iconButton.appendChild(errorSvg);
       }
     })();
   });
-  header.appendChild(iconImg);
+  iconButton.appendChild(iconImg);
+  headerActions.appendChild(iconButton);
 
   // Collapse button with inline SVG icon
   const collapseBtn = document.createElement('button');
-  collapseBtn.style.border = 'none';
-  collapseBtn.style.background = 'transparent';
-  collapseBtn.style.fontSize = '18px';
-  collapseBtn.style.cursor = 'pointer';
-  collapseBtn.style.lineHeight = '1';
-  collapseBtn.style.display = 'flex';
-  collapseBtn.style.alignItems = 'center';
+  styleAsHeaderButton(collapseBtn);
   // SVG icons
   const svgPlus = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgPlus.setAttribute('width', '18');
@@ -154,7 +182,9 @@ const initFunc = () => {
 
   collapseBtn.appendChild(svgPlus);
   collapseBtn.appendChild(svgMinus);
-  header.appendChild(collapseBtn);
+  headerActions.appendChild(collapseBtn);
+
+  header.appendChild(headerActions);
 
   draggableDiv.appendChild(header);
 
@@ -299,13 +329,17 @@ const initFunc = () => {
 
     getOverlayStore()?.getState().setOverlayExpanded(!collapsed);
 
+    // The React buttons act on the panel's content, so they follow it out of sight when it is
+    // collapsed. They used to be part of the content and hidden with it; now that they live in
+    // the header they have to be hidden explicitly.
+    reactHeaderActions.style.display = collapsed ? 'none' : 'flex';
+
     if (collapsed) {
       // Minimize the draggableDiv width and set opacity for the collapse button
       draggableDiv.style.width = '';
       draggableDiv.style.height = '';
       header.style.justifyContent = 'flex-end';
       title.style.display = 'none';
-      iconImg.style.display = '';
       draggableDiv.style.opacity = '0.5';
       draggableDiv.title = 'ElvenAssist Helper Window';
       collapseBtn.title = 'Expand This Panel';
@@ -315,7 +349,6 @@ const initFunc = () => {
       draggableDiv.style.height = lastExpandedHeight;
       header.style.justifyContent = 'space-between';
       title.style.display = '';
-      iconImg.style.display = '';
       draggableDiv.style.opacity = '1';
       draggableDiv.title = '';
       collapseBtn.title = 'Collapse Panel';
@@ -412,13 +445,13 @@ const initFunc = () => {
 
   setupMessageListener();
   setupCityDataUpdatedListener(({ tabId }) => {
-    setup(tabId, content).catch((err) => {
+    setup(tabId, content, reactHeaderActions).catch((err) => {
       console.error('Error setting up overlay:', err);
     });
   });
 };
 
-async function setup(tabId: number, contentDiv: HTMLDivElement) {
+async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlot: HTMLDivElement) {
   await loadAccountManagerFromStorage();
   const accountId = getAccountByTabId(tabId);
   if (accountId) {
@@ -433,7 +466,7 @@ async function setup(tabId: number, contentDiv: HTMLDivElement) {
         state.setLastSeenChat(Date.now());
       }
 
-      createOverlayUi(contentDiv);
+      createOverlayUi(contentDiv, headerActionsSlot);
     });
   }
 }

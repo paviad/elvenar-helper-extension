@@ -15,6 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { createPortal } from 'react-dom';
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
@@ -40,8 +41,8 @@ import { HelpDialog } from './HelpDialog';
 import { MessagesView } from './MessagesView';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
-import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
 import { getOverlayStore } from './overlayStore';
+import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
@@ -55,7 +56,17 @@ const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
 
 const SIZE_PRESET_ORDER: OverlaySizePreset[] = ['small', 'large'];
 
-export function OverlayMain() {
+const DISCORD_INVITE_URL = 'https://discord.gg/zYzUUDcMrv';
+
+interface OverlayMainProps {
+  /**
+   * The header's slot for the React-owned buttons. The header is built as plain DOM before React
+   * mounts, so the buttons are rendered into it through a portal rather than positioned over it.
+   */
+  headerActionsSlot?: HTMLElement;
+}
+
+export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const [helpOpen, setHelpOpen] = React.useState(false);
   const [searchActive, setSearchActive] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -405,6 +416,21 @@ export function OverlayMain() {
     </span>
   );
 
+  // The panel-wide controls, as one group in the order they sit in the header. They are all
+  // plain small IconButtons, so the header row - which holds hand-built buttons of the same
+  // size - stays even without anyone nudging offsets.
+  const headerActions = (
+    <>
+      <IconButton aria-label='Panel size' title='Panel size' size='small' onClick={openSizeMenu}>
+        <AspectRatioIcon fontSize='small' />
+      </IconButton>
+      <DiscordButton discordUrl={DISCORD_INVITE_URL} size='small' />
+      <IconButton aria-label='Help' title='Help' size='small' onClick={() => setHelpOpen(true)}>
+        <HelpOutlineIcon fontSize='small' />
+      </IconButton>
+    </>
+  );
+
   return (
     <div style={{ height: '100%' }}>
       <Box
@@ -443,15 +469,7 @@ export function OverlayMain() {
           </>
         )}
 
-        <IconButton
-          aria-label='Panel size'
-          title='Panel size'
-          size='small'
-          sx={{ position: 'absolute', top: -46, right: 126, zIndex: 10 }}
-          onClick={openSizeMenu}
-        >
-          <AspectRatioIcon fontSize='small' />
-        </IconButton>
+        {headerActionsSlot ? createPortal(headerActions, headerActionsSlot) : headerActions}
         <Menu
           anchorEl={sizeAnchor}
           open={!!sizeAnchor}
@@ -477,20 +495,6 @@ export function OverlayMain() {
           })}
         </Menu>
 
-        <DiscordButton
-          discordUrl='https://discord.gg/zYzUUDcMrv'
-          size='small'
-          sx={{ position: 'absolute', top: -46, right: 94, zIndex: 10 }}
-        />
-
-        <IconButton
-          aria-label='Help'
-          size='small'
-          sx={{ position: 'absolute', top: -46, right: 62, zIndex: 10 }} // User can adjust top/right as needed
-          onClick={() => setHelpOpen(true)}
-        >
-          <HelpOutlineIcon fontSize='small' />
-        </IconButton>
         <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
       </Box>
       {tabKey === 'chat' && (
