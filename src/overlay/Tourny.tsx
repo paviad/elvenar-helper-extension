@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import { TournyAdvisor } from './TournyAdvisor';
+import { TournyPrep } from './TournyPrep';
 
 interface TournySubTab {
   key: string;
@@ -9,7 +10,10 @@ interface TournySubTab {
 }
 
 /** The bar is only drawn once there is more than one of these to choose between. */
-const SUB_TABS: TournySubTab[] = [{ key: 'counters', label: 'Counters', render: () => <TournyAdvisor /> }];
+const SUB_TABS: TournySubTab[] = [
+  { key: 'counters', label: 'Counters', render: () => <TournyAdvisor /> },
+  { key: 'prep', label: 'Prep', render: () => <TournyPrep /> },
+];
 
 export const Tourny = () => {
   const [subTabKey, setSubTabKey] = useState(SUB_TABS[0].key);

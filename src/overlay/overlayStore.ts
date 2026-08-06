@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { TournamentGood } from './tournamentGuide';
 import { TournyData } from './tournyData';
 
 interface OverlayState {
@@ -48,6 +49,10 @@ interface OverlayState {
   // stale copy would show encounters that have since been fought.
   tournyData?: TournyData;
   setTournyData: (data: TournyData) => void;
+  // The most recent tournament seen, running or just ended. Persisted so the fixed rotation can
+  // still name what is coming up when startup data mentions no tournament at all.
+  lastTournament?: TournamentGood;
+  setLastTournament: (good: TournamentGood) => void;
 }
 
 let overlayStore: ReturnType<typeof generateOverlayStore>;
@@ -111,6 +116,8 @@ export const generateOverlayStore = (accountId: string) => {
         setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
         tournyData: undefined,
         setTournyData: (data) => set({ tournyData: data }),
+        lastTournament: undefined,
+        setLastTournament: (good) => set({ lastTournament: good }),
       }),
       {
         name: `overlay-store-${accountId}`,

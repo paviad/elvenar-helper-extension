@@ -18,21 +18,10 @@ import {
   SQUAD_SLOTS,
 } from './counterComposition';
 import { getAccountId, getOverlayStore } from './overlayStore';
+import { formatSeconds, TROOP_LABELS, UnitSprite } from './tournyUnitDisplay';
 
 /** A province is done once it reaches level 6 and cannot be fought again this round. */
 const COMPLETED_LEVEL = 6;
-
-/** Frame order in `military_sprite.png`, a 110x22 sheet of five 22px frames. */
-const SPRITE_ORDER: TroopType[] = ['lm', 'hr', 'hm', 'ma', 'lr'];
-const SPRITE_FRAME = 22;
-
-const TROOP_LABELS: Record<TroopType, string> = {
-  lm: 'Light Melee',
-  lr: 'Light Ranged',
-  ma: 'Mage',
-  hm: 'Heavy Melee',
-  hr: 'Heavy Ranged',
-};
 
 const QUALITY_COLORS: Record<CounterQuality, string> = {
   Optimal: 'success.main',
@@ -42,33 +31,12 @@ const QUALITY_COLORS: Record<CounterQuality, string> = {
   Experimental: 'text.disabled',
 };
 
-const formatSeconds = (seconds: number) => {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  return [h, m, s].map((v) => v.toString().padStart(2, '0')).join(':');
-};
-
 /** `magic_dust` reads as `Magic Dust`. */
 const humanizeGood = (goodId: string) =>
   goodId
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-
-const UnitSprite = ({ troopType, spriteUrl }: { troopType: TroopType; spriteUrl: string }) => (
-  <Box
-    sx={{
-      width: 20,
-      height: 20,
-      flexShrink: 0,
-      backgroundImage: `url(${spriteUrl})`,
-      backgroundPosition: `-${SPRITE_ORDER.indexOf(troopType) * SPRITE_FRAME}px 0px`,
-      backgroundSize: `${SPRITE_ORDER.length * SPRITE_FRAME}px ${SPRITE_FRAME}px`,
-      imageRendering: 'pixelated',
-    }}
-  />
-);
 
 interface ProvinceRow {
   province: TournyProvince;
