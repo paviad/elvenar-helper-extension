@@ -111,8 +111,9 @@ export const TOURNAMENT_GUIDES: Record<TournamentGood, TournamentGuide> = {
       suggest('hb', 'lr', false),
       suggest('tg', 'hr'),
       suggest('tg', 'lr', false),
+      // "Drone Riders and Frogs" — the guide names both outright, neither as a fallback.
+      suggest('mc', 'lm'),
       suggest('mc', 'hr'),
-      suggest('mc', 'lm', false),
     ],
     tips: [
       'All three kinds of heavy ranged work this week, especially with an advanced Temple of the Toads.',
@@ -133,8 +134,10 @@ export const TOURNAMENT_GUIDES: Record<TournamentGood, TournamentGuide> = {
       suggest('hb', 'ma'),
       suggest('hb', 'hm', false),
       suggest('tg', 'lm'),
+      // "Wardens, Blossom Mage" — Warden being the old name for the mercenary light ranged line,
+      // whose 3 star tier the game now calls Pro Ranger. Both are named outright.
       suggest('mc', 'lr'),
-      suggest('mc', 'ma', false),
+      suggest('mc', 'ma'),
     ],
     tips: [
       'Mages are most useful when the enemy has two or fewer light ranged; use heavy ranged once there are more.',
@@ -199,6 +202,7 @@ export const TOURNAMENT_GUIDES: Record<TournamentGood, TournamentGuide> = {
       suggest('eb', 'hr'),
       suggest('hb', 'hr'),
       suggest('hb', 'hm', false),
+      suggest('hb', 'lr', false),
       suggest('tg', 'lr'),
       suggest('tg', 'hr', false),
       suggest('mc', 'hr'),
