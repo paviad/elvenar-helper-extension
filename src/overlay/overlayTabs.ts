@@ -55,17 +55,16 @@ export const OVERLAY_TABS: OverlayTab[] = [
     isNew: true,
     help: 'A counter composition for every tournament province you open, and what to train for the round ahead.',
   },
+  // Deliberately undocumented, so the help dialog reads the same here as everywhere else.
   {
     key: 'kphunt',
     label: 'KP Hunt',
     shortcut: 'KeyK',
-    help: 'Ancient wonders around you that are worth putting knowledge points into.',
   },
   {
     key: 'nhelp',
     label: 'N.Help',
     shortcut: 'KeyN',
-    help: 'Neighbours waiting on neighbourly help, and what helping each one is worth.',
   },
 ];
 
