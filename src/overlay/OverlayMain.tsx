@@ -140,7 +140,6 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     }
   }, [retrievingCounterRaw, kpHuntOpportunities, autoKpHunt, kpHuntImportantThreshold]);
 
-<<<<<<< HEAD
   // Declarative, so the tab set, the Alt+C chord map, the rendered content and the help dialog
   // all read from one place. Hand-computed indices used to have to be adjusted in two places
   // whenever the Trade tab came and went with the chapter.
