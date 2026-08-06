@@ -56,8 +56,21 @@ const suggest = (building: TrainingBuilding, troopType: TroopType, primary = tru
   primary,
 });
 
+/** The players whose guide this whole file is drawn from. Shown wherever that work is used. */
+export interface GuideAuthor {
+  name: string;
+  /** The world they play, which is how the community tells players apart. */
+  world: string;
+}
+
+export const GUIDE_AUTHORS: GuideAuthor[] = [
+  { name: 'Sapphyre', world: 'Beta' },
+  { name: 'Queen of Kelp Islands', world: 'Arendyll' },
+  { name: 'KibbleKat', world: 'Arendyll' },
+];
+
 /**
- * Distilled from the player guide by SapphyreStarLight (Aug 2026). The guide names units
+ * Distilled from the player guide by the authors above (Aug 2026). The guide names units
  * ("Treant", "Frog"); they are recorded here as building + class instead, so the view can resolve
  * each one to whatever the player actually has unlocked at whatever level.
  */

@@ -2,6 +2,7 @@ import React from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal, Paper, Typography } from '@mui/material';
 import { EXTENSION_NAME, EXTENSION_VERSION } from '../layout/extensionAboutInfo';
+import { GUIDE_AUTHORS } from './tournamentGuide';
 
 interface HelpDialogProps {
   open: boolean;
@@ -104,6 +105,16 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
           <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid #444', textAlign: 'center' }}>
             <Typography sx={{ fontSize: 13, color: '#888', fontStyle: 'italic' }}>
               Special Thanks to <span style={{ color: '#ccc', fontWeight: 600 }}>A S L A N</span>
+            </Typography>
+            <Typography sx={{ mt: 1, fontSize: 13, color: '#888', fontStyle: 'italic' }}>
+              Tournament guide by
+              <br />
+              {GUIDE_AUTHORS.map((author) => (
+                <React.Fragment key={author.name}>
+                  <span style={{ color: '#ccc', fontWeight: 600 }}>{author.name}</span> ({author.world})
+                  <br />
+                </React.Fragment>
+              ))}
             </Typography>
           </Box>
         </Box>

@@ -4,7 +4,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import TimerIcon from '@mui/icons-material/Timer';
 import { Alert, Box, Chip, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { TournamentGuide } from './tournamentGuide';
+import { GUIDE_AUTHORS, TournamentGuide } from './tournamentGuide';
 import { TournamentTips } from './TournamentTips';
 import { BuildingSuggestions, ResolvedSuggestion } from './trainingSuggestions';
 import {
@@ -164,7 +164,24 @@ export const TournamentBriefing = ({
         )}
       </Paper>
 
-      <TournamentTips guide={guide} sx={{ mt: 1.5, mb: 1 }} />
+      <TournamentTips guide={guide} sx={{ mt: 1.5 }} />
+
+      <Typography
+        variant='caption'
+        color='text.disabled'
+        sx={{ display: 'block', mt: 1, mb: 1, px: 0.5, fontSize: '0.65rem', lineHeight: 1.5 }}
+      >
+        Tournament guide by{' '}
+        {GUIDE_AUTHORS.map((author, index) => (
+          <React.Fragment key={author.name}>
+            {index > 0 && ' · '}
+            <Box component='span' sx={{ fontWeight: 600 }}>
+              {author.name}
+            </Box>{' '}
+            ({author.world})
+          </React.Fragment>
+        ))}
+      </Typography>
     </>
   );
 };
