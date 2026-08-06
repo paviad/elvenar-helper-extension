@@ -10,8 +10,8 @@ export interface OverlayTab {
   /** Second key of the Alt+C chord. Tabs without one are mouse-only. */
   shortcut?: string;
   isNew?: boolean;
-  /** One line, written for the help dialog. */
-  help: string;
+  /** One line for the help dialog. A tab without one is left out of it entirely. */
+  help?: string;
   /** Only shown from this chapter on. */
   fromChapter?: number;
 }
@@ -60,6 +60,10 @@ export const OVERLAY_TABS: OverlayTab[] = [
 /** The Trade tab only exists once the chapter unlocks it. */
 export const visibleOverlayTabs = (chapter: number) =>
   OVERLAY_TABS.filter((tab) => tab.fromChapter === undefined || chapter >= tab.fromChapter);
+
+/** What the help dialog lists, which is only ever the tabs that describe themselves. */
+export const documentedOverlayTabs = () =>
+  OVERLAY_TABS.filter((tab): tab is OverlayTab & { help: string } => !!tab.help);
 
 /** `KeyT` reads as `T` — the chord hint shown to the player. */
 export const shortcutLetter = (shortcut: string) => shortcut.replace(/^Key/, '');

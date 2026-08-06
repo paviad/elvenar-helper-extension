@@ -39,6 +39,7 @@ import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { MessagesView } from './MessagesView';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
+import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
 import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
 import { getOverlayStore } from './overlayStore';
 import { parseSocketMessage } from './parseSocketMessage';
@@ -53,13 +54,6 @@ const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
 };
 
 const SIZE_PRESET_ORDER: OverlaySizePreset[] = ['small', 'large'];
-
-/**
- * Same reasoning as the wonders popover in SwapsView: the menu renders inside the panel rather
- * than on the body, so this only has to clear the panel's own children — chiefly the resize
- * handle `overlay.ts` puts at 10000, which would otherwise take the clicks over the corner.
- */
-const OVERLAY_MENU_Z_INDEX = 10001;
 
 export function OverlayMain() {
   const [helpOpen, setHelpOpen] = React.useState(false);

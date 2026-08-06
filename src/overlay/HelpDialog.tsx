@@ -2,7 +2,8 @@ import React from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal, Paper, Typography } from '@mui/material';
 import { EXTENSION_NAME, EXTENSION_VERSION } from '../layout/extensionAboutInfo';
-import { OVERLAY_TABS, shortcutLetter } from './overlayTabs';
+import { OVERLAY_DIALOG_Z_INDEX } from './overlayStacking';
+import { documentedOverlayTabs, shortcutLetter } from './overlayTabs';
 import { GUIDE_AUTHORS } from './tournamentGuide';
 
 interface HelpDialogProps {
@@ -62,7 +63,15 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
   const iconAsset = chrome.runtime.getURL('icon32.png');
 
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby='help-modal-title' aria-describedby='help-modal-description'>
+    <Modal
+      open={open}
+      onClose={onClose}
+      aria-labelledby='help-modal-title'
+      aria-describedby='help-modal-description'
+      // Portals to the body, so it lands at MUI's modal layer beneath the panel and opens
+      // invisible unless it says otherwise.
+      sx={{ zIndex: OVERLAY_DIALOG_Z_INDEX }}
+    >
       <Paper
         sx={{
           position: 'absolute',
@@ -114,7 +123,7 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ open, onClose }) => {
           </Typography>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 3, rowGap: 1.75 }}>
-            {OVERLAY_TABS.map((tab) => (
+            {documentedOverlayTabs().map((tab) => (
               <Box key={tab.key}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.25 }}>
                   <Typography component='span' sx={{ fontSize: 13.5, fontWeight: 700, color: TEXT }}>
