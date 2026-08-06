@@ -1,50 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import ConstructionIcon from '@mui/icons-material/Construction';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
-import SecurityIcon from '@mui/icons-material/Security';
-import TimerIcon from '@mui/icons-material/Timer';
-import { Alert, Box, Chip, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { getBattleUnitTypes } from '../elvenar/getBattleUnitTypes';
-import { ArmyDetails, TrainingBuilding, TroopType } from '../model/armyDetails';
+import { ArmyDetails } from '../model/armyDetails';
 import { BattleUnitType } from '../model/battleUnitType';
 import { SeasonalEvent } from '../model/seasonalEvent';
 import { getAccountId, getOverlayStore } from './overlayStore';
-import { TOURNAMENT_GUIDES, TrainingSuggestion } from './tournamentGuide';
+import { TOURNAMENT_GUIDES } from './tournamentGuide';
 import { readTournamentStatus, upcomingTournament } from './tournamentSchedule';
-import { TournamentTips } from './TournamentTips';
-import {
-  BUILDING_LABELS,
-  formatSeconds,
-  SectionLabel,
-  TIER_COLORS,
-  TierColor,
-  TROOP_LABELS,
-  UnitSprite,
-} from './tournyUnitDisplay';
+import { TournamentBriefing } from './TournamentBriefing';
+import { resolveTrainingSuggestions } from './trainingSuggestions';
 
-/** The order buildings are listed in, matching how the guide presents its suggestions. */
-const BUILDING_ORDER: TrainingBuilding[] = ['eb', 'hb', 'tg', 'mc'];
-
-const TIER_BLURBS: Record<1 | 2 | 3, string> = {
-  1: 'One dominant enemy class',
-  2: 'Two dominant enemy classes — keep a varied stock',
-  3: 'Three dominant enemy classes — keep a varied stock',
-};
-
-interface ResolvedSuggestion extends TrainingSuggestion {
-  /** The player's own unit of this building and class, at its highest unlocked level. */
-  unit?: BattleUnitType;
-  held: number;
-}
+type Which = 'running' | 'upcoming';
 
 /**
- * What to train for the tournament that comes next.
+ * The guide's briefing for the tournament being fought and the one coming up.
  *
- * The rotation is fixed, so the tournament that just ended names the upcoming one, and the guide
- * says what it will field. Suggestions are recorded as building plus class rather than by unit
- * name, so each one resolves to whatever this player actually has unlocked.
+ * The rotation is fixed, so the tournament that just ended names the upcoming one; the running one
+ * the game reports directly. Both get the same briefing, so the difference is only which guide and
+ * whether there is a countdown.
  */
 export const TournyPrep = () => {
   const store = getOverlayStore();
@@ -57,6 +32,7 @@ export const TournyPrep = () => {
   // `remainingTime` is relative to when the events were read, so that moment is kept to count from.
   const [readAt, setReadAt] = useState<number | undefined>(undefined);
   const [now, setNow] = useState(Date.now());
+  const [chosen, setChosen] = useState<Which | undefined>(undefined);
 
   const spriteUrl = chrome.runtime.getURL('military_sprite.png');
 
@@ -96,51 +72,21 @@ export const TournyPrep = () => {
     }
   }, [status.anchor, lastTournament, setLastTournament]);
 
+  const runningGuide = status.running ? TOURNAMENT_GUIDES[status.running.good] : undefined;
   const upcoming = upcomingTournament(status, lastTournament);
-  const guide = upcoming ? TOURNAMENT_GUIDES[upcoming] : undefined;
+  const upcomingGuide = upcoming ? TOURNAMENT_GUIDES[upcoming] : undefined;
 
-  /** Only the buildings this player has — the two barracks are mutually exclusive. */
-  const ownedBuildings = useMemo(() => {
-    const owned = new Set<TrainingBuilding>();
-    armyDetails?.availableUnitTypeIds.forEach((id) => {
-      const building = id.split('_')[0] as TrainingBuilding;
-      if (BUILDING_ORDER.includes(building)) owned.add(building);
-    });
-    return owned;
-  }, [armyDetails]);
+  // Whichever the player picked, falling back to the round in progress since that is the one
+  // they can act on today.
+  const which: Which = chosen ?? (runningGuide ? 'running' : 'upcoming');
+  const guide = which === 'running' ? runningGuide : upcomingGuide;
 
-  const suggestionsByBuilding = useMemo(() => {
-    if (!guide) return [];
+  const suggestionsByBuilding = useMemo(
+    () => resolveTrainingSuggestions(guide, armyDetails, almanac),
+    [guide, armyDetails, almanac],
+  );
 
-    const stock: Record<string, number> = {};
-    armyDetails?.unitSquads.forEach((squad) => {
-      stock[squad.unitTypeId] = (stock[squad.unitTypeId] || 0) + squad.size;
-    });
-
-    /** The highest-level unit the player has of this building and class. */
-    const bestUnlocked = (building: TrainingBuilding, troopType: TroopType) => {
-      const prefix = `${building}_${troopType}_`;
-      const ids = (armyDetails?.availableUnitTypeIds || []).filter((id) => id.startsWith(prefix));
-      return ids.sort((a, b) => Number(b.slice(prefix.length)) - Number(a.slice(prefix.length)))[0];
-    };
-
-    return BUILDING_ORDER.filter((building) => ownedBuildings.has(building)).map((building) => ({
-      building,
-      suggestions: guide.training
-        .filter((suggestion) => suggestion.building === building)
-        .map<ResolvedSuggestion>((suggestion) => {
-          const unitTypeId = bestUnlocked(building, suggestion.troopType);
-          return {
-            ...suggestion,
-            unit: almanac.find((u) => u.unitTypeId === unitTypeId),
-            held: unitTypeId ? stock[unitTypeId] || 0 : 0,
-          };
-        })
-        .sort((a, b) => Number(b.primary) - Number(a.primary)),
-    }));
-  }, [guide, armyDetails, almanac, ownedBuildings]);
-
-  if (!guide || !upcoming) {
+  if (!runningGuide && !upcomingGuide) {
     return (
       <Box sx={{ mt: 4, textAlign: 'center', opacity: 0.8 }}>
         <EventBusyIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
@@ -154,209 +100,51 @@ export const TournyPrep = () => {
     );
   }
 
-  const runningGuide = status.running ? TOURNAMENT_GUIDES[status.running.good] : undefined;
-  const accent = TIER_COLORS[guide.tier];
+  const remainingSeconds =
+    which === 'running' && status.running?.remainingTime !== undefined && readAt !== undefined
+      ? Math.max(0, status.running.remainingTime - (now - readAt) / 1000)
+      : undefined;
 
   return (
-    <Box
-      sx={{
-        height: '100%',
-        overflowY: 'auto',
-        pr: 1,
-        '&::-webkit-scrollbar': { width: '6px' },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '10px' },
-      }}
-    >
-      {runningGuide && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            mb: 1.5,
-            px: 1.25,
-            py: 0.75,
-            borderRadius: 1,
-            bgcolor: 'action.hover',
-            flexWrap: 'wrap',
-          }}
-        >
-          <TimerIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
-          <Typography variant='caption' color='text.secondary'>
-            {runningGuide.name} is running
-          </Typography>
-          {status.running?.remainingTime !== undefined && readAt !== undefined && (
-            <Typography variant='caption' sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-              {formatSeconds(Math.max(0, status.running.remainingTime - (now - readAt) / 1000))} left
-            </Typography>
-          )}
-        </Box>
-      )}
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <ToggleButtonGroup
+        exclusive
+        size='small'
+        value={which}
+        onChange={(_, next: Which | null) => next && setChosen(next)}
+        sx={{ mb: 1.5, alignSelf: 'flex-start', '& .MuiToggleButton-root': { px: 1.5, py: 0.25, fontSize: '0.7rem' } }}
+      >
+        <ToggleButton value='running' disabled={!runningGuide}>
+          {runningGuide ? `Running: ${runningGuide.name}` : 'Running'}
+        </ToggleButton>
+        <ToggleButton value='upcoming' disabled={!upcomingGuide}>
+          {upcomingGuide ? `Up next: ${upcomingGuide.name}` : 'Up next'}
+        </ToggleButton>
+      </ToggleButtonGroup>
 
-      <Paper variant='outlined' sx={{ overflow: 'hidden' }}>
-        <Box
-          sx={{
-            px: 2,
-            py: 1.5,
-            borderLeft: '4px solid',
-            borderLeftColor: `${accent}.main`,
-            background: (theme) =>
-              `linear-gradient(135deg, ${alpha(theme.palette[accent].main, 0.14)}, ${alpha(
-                theme.palette[accent].main,
-                0.02,
-              )})`,
-          }}
-        >
-          <Typography
-            variant='caption'
-            sx={{ letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 700, color: `${accent}.dark` }}
-          >
-            Up next
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
-            <Typography variant='h5' sx={{ fontWeight: 800, lineHeight: 1.2 }}>
-              {guide.name}
-            </Typography>
-            <Chip
-              label={`Tier ${guide.tier}`}
-              size='small'
-              color={accent}
-              sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800 }}
-            />
-          </Box>
-          <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.25 }}>
-            {guide.difficulty ? `${guide.difficulty} · ${TIER_BLURBS[guide.tier]}` : TIER_BLURBS[guide.tier]}
-          </Typography>
-        </Box>
-
-        <Box sx={{ px: 2, py: 1.5 }}>
-          <SectionLabel icon={<SecurityIcon sx={{ fontSize: 14 }} />} text='What you will face' />
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1 }}>
-            {guide.dominant.map((troopType) => (
-              <Box
-                key={troopType}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  border: '1px solid',
-                  borderColor: (theme) => alpha(theme.palette[accent].main, 0.4),
-                  bgcolor: (theme) => alpha(theme.palette[accent].main, 0.07),
-                  borderRadius: 1,
-                  px: 1,
-                  height: 32,
-                }}
-              >
-                <UnitSprite troopType={troopType} spriteUrl={spriteUrl} />
-                <Typography variant='caption' sx={{ fontWeight: 700 }}>
-                  {TROOP_LABELS[troopType]}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      </Paper>
-
-      <Paper variant='outlined' sx={{ p: 1.5, px: 2, mt: 1.5 }}>
-        <SectionLabel icon={<ConstructionIcon sx={{ fontSize: 14 }} />} text='What to train' />
-        {suggestionsByBuilding.length === 0 ? (
-          <Alert severity='info' sx={{ mt: 1 }}>
-            Open the game so your army details load, and the suggestions will name your own units.
-          </Alert>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          pr: 1,
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '10px' },
+        }}
+      >
+        {guide ? (
+          <TournamentBriefing
+            guide={guide}
+            eyebrow={which === 'running' ? 'Running now' : 'Up next'}
+            remainingSeconds={remainingSeconds}
+            suggestionsByBuilding={suggestionsByBuilding}
+            spriteUrl={spriteUrl}
+          />
         ) : (
-          <Stack spacing={1.75} sx={{ mt: 1.25 }}>
-            {suggestionsByBuilding.map(({ building, suggestions }) => (
-              <Box key={building}>
-                <Typography
-                  variant='caption'
-                  sx={{
-                    display: 'block',
-                    mb: 0.75,
-                    pl: 1,
-                    borderLeft: '3px solid',
-                    borderLeftColor: `${accent}.light`,
-                    fontWeight: 800,
-                    letterSpacing: 0.4,
-                    textTransform: 'uppercase',
-                    color: 'text.secondary',
-                  }}
-                >
-                  {BUILDING_LABELS[building]}
-                </Typography>
-                <Stack spacing={0.5}>
-                  {suggestions.map((suggestion) => (
-                    <SuggestionRow
-                      key={`${suggestion.building}-${suggestion.troopType}`}
-                      suggestion={suggestion}
-                      spriteUrl={spriteUrl}
-                      accent={accent}
-                    />
-                  ))}
-                </Stack>
-              </Box>
-            ))}
-          </Stack>
+          <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
+            No tournament is running at the moment.
+          </Typography>
         )}
-      </Paper>
-
-      <TournamentTips guide={guide} sx={{ mt: 1.5, mb: 1 }} />
+      </Box>
     </Box>
   );
 };
-
-const SuggestionRow = ({
-  suggestion,
-  spriteUrl,
-  accent,
-}: {
-  suggestion: ResolvedSuggestion;
-  spriteUrl: string;
-  accent: TierColor;
-}) => (
-  <Box
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 1,
-      px: 1,
-      py: 0.5,
-      borderRadius: 1,
-      border: '1px solid',
-      borderColor: suggestion.primary ? (theme) => alpha(theme.palette[accent].main, 0.35) : 'transparent',
-      bgcolor: suggestion.primary ? (theme) => alpha(theme.palette[accent].main, 0.06) : 'transparent',
-      opacity: suggestion.unit ? 1 : 0.55,
-    }}
-  >
-    <UnitSprite troopType={suggestion.troopType} spriteUrl={spriteUrl} />
-
-    <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-      <Typography
-        variant='caption'
-        sx={{ display: 'block', fontWeight: suggestion.primary ? 700 : 500, lineHeight: 1.3 }}
-      >
-        {suggestion.unit?.name ?? TROOP_LABELS[suggestion.troopType]}
-      </Typography>
-      <Typography variant='caption' color='text.disabled' sx={{ fontSize: '0.6rem' }}>
-        {TROOP_LABELS[suggestion.troopType]}
-        {!suggestion.primary && ' · alternate'}
-      </Typography>
-    </Box>
-
-    {suggestion.unit ? (
-      <Typography
-        variant='caption'
-        color='text.secondary'
-        sx={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
-      >
-        <strong>{suggestion.held.toLocaleString()}</strong> in stock
-      </Typography>
-    ) : (
-      <Tooltip title='Not unlocked yet' arrow>
-        <Typography variant='caption' color='text.disabled' sx={{ whiteSpace: 'nowrap' }}>
-          locked
-        </Typography>
-      </Tooltip>
-    )}
-  </Box>
-);
-
