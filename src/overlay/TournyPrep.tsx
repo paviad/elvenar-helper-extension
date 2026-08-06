@@ -4,7 +4,8 @@ import EventBusyIcon from '@mui/icons-material/EventBusy';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import SecurityIcon from '@mui/icons-material/Security';
 import TimerIcon from '@mui/icons-material/Timer';
-import { Alert, Box, Chip, Divider, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Chip, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { getBattleUnitTypes } from '../elvenar/getBattleUnitTypes';
 import { ArmyDetails, TrainingBuilding, TroopType } from '../model/armyDetails';
@@ -17,6 +18,19 @@ import { BUILDING_LABELS, formatSeconds, TROOP_LABELS, UnitSprite } from './tour
 
 /** The order buildings are listed in, matching how the guide presents its suggestions. */
 const BUILDING_ORDER: TrainingBuilding[] = ['eb', 'hb', 'tg', 'mc'];
+
+/** More dominant enemy classes means a harder week, so the tier drives the accent colour. */
+const TIER_COLORS: Record<1 | 2 | 3, 'success' | 'warning' | 'error'> = {
+  1: 'success',
+  2: 'warning',
+  3: 'error',
+};
+
+const TIER_BLURBS: Record<1 | 2 | 3, string> = {
+  1: 'One dominant enemy class',
+  2: 'Two dominant enemy classes — keep a varied stock',
+  3: 'Three dominant enemy classes — keep a varied stock',
+};
 
 interface ResolvedSuggestion extends TrainingSuggestion {
   /** The player's own unit of this building and class, at its highest unlocked level. */
@@ -140,6 +154,7 @@ export const TournyPrep = () => {
   }
 
   const runningGuide = status.running ? TOURNAMENT_GUIDES[status.running.good] : undefined;
+  const accent = TIER_COLORS[guide.tier];
 
   return (
     <Box
@@ -152,147 +167,217 @@ export const TournyPrep = () => {
       }}
     >
       {runningGuide && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mb: 1.5,
+            px: 1.25,
+            py: 0.75,
+            borderRadius: 1,
+            bgcolor: 'action.hover',
+            flexWrap: 'wrap',
+          }}
+        >
+          <TimerIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
           <Typography variant='caption' color='text.secondary'>
-            Running now: <strong>{runningGuide.name}</strong>
+            {runningGuide.name} is running
           </Typography>
           {status.running?.remainingTime !== undefined && readAt !== undefined && (
-            <Chip
-              icon={<TimerIcon sx={{ fontSize: '14px !important' }} />}
-              label={formatSeconds(Math.max(0, status.running.remainingTime - (now - readAt) / 1000))}
-              size='small'
-              variant='outlined'
-              sx={{ height: 22, fontWeight: 'bold' }}
-            />
+            <Typography variant='caption' sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+              {formatSeconds(Math.max(0, status.running.remainingTime - (now - readAt) / 1000))} left
+            </Typography>
           )}
         </Box>
       )}
 
-      <Paper variant='outlined' sx={{ p: 1.5, px: 2, borderLeft: '4px solid', borderLeftColor: 'primary.main' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-            Up next: {guide.name}
+      <Paper variant='outlined' sx={{ overflow: 'hidden' }}>
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderLeft: '4px solid',
+            borderLeftColor: `${accent}.main`,
+            background: (theme) =>
+              `linear-gradient(135deg, ${alpha(theme.palette[accent].main, 0.14)}, ${alpha(
+                theme.palette[accent].main,
+                0.02,
+              )})`,
+          }}
+        >
+          <Typography
+            variant='caption'
+            sx={{ letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 700, color: `${accent}.dark` }}
+          >
+            Up next
           </Typography>
-          <Chip label={`T${guide.tier}`} size='small' color='primary' sx={{ height: 20, fontWeight: 'bold' }} />
-          {guide.difficulty && (
-            <Typography variant='caption' color='text.secondary'>
-              {guide.difficulty}
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant='h5' sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+              {guide.name}
             </Typography>
-          )}
+            <Chip
+              label={`Tier ${guide.tier}`}
+              size='small'
+              color={accent}
+              sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800 }}
+            />
+          </Box>
+          <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.25 }}>
+            {guide.difficulty ? `${guide.difficulty} · ${TIER_BLURBS[guide.tier]}` : TIER_BLURBS[guide.tier]}
+          </Typography>
         </Box>
 
-        <Divider sx={{ my: 1.5, opacity: 0.3 }} />
-
-        <SectionLabel icon={<SecurityIcon sx={{ fontSize: 14 }} />} text='What you will face' />
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1 }}>
-          {guide.dominant.map((troopType) => (
-            <Box
-              key={troopType}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
-                bgcolor: 'background.default',
-                px: 0.75,
-                height: 26,
-              }}
-            >
-              <UnitSprite troopType={troopType} spriteUrl={spriteUrl} />
-              <Typography variant='caption' sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
-                {TROOP_LABELS[troopType]}
-              </Typography>
-            </Box>
-          ))}
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <SectionLabel icon={<SecurityIcon sx={{ fontSize: 14 }} />} text='What you will face' />
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1 }}>
+            {guide.dominant.map((troopType) => (
+              <Box
+                key={troopType}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  border: '1px solid',
+                  borderColor: (theme) => alpha(theme.palette[accent].main, 0.4),
+                  bgcolor: (theme) => alpha(theme.palette[accent].main, 0.07),
+                  borderRadius: 1,
+                  px: 1,
+                  height: 32,
+                }}
+              >
+                <UnitSprite troopType={troopType} spriteUrl={spriteUrl} />
+                <Typography variant='caption' sx={{ fontWeight: 700 }}>
+                  {TROOP_LABELS[troopType]}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
-        <Typography variant='caption' color='text.disabled' sx={{ mt: 0.5, display: 'block' }}>
-          {guide.tier === 1
-            ? 'One dominant enemy class.'
-            : `${guide.tier === 2 ? 'Two' : 'Three'} dominant enemy classes, so keep a varied stock.`}
-        </Typography>
       </Paper>
 
       <Paper variant='outlined' sx={{ p: 1.5, px: 2, mt: 1.5 }}>
         <SectionLabel icon={<ConstructionIcon sx={{ fontSize: 14 }} />} text='What to train' />
-        <Stack spacing={1.5} sx={{ mt: 1 }}>
-          {suggestionsByBuilding.map(({ building, suggestions }) => (
-            <Box key={building}>
-              <Typography variant='caption' color='text.secondary' sx={{ fontWeight: 700 }}>
-                {BUILDING_LABELS[building]}
-              </Typography>
-              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                {suggestions.map((suggestion) => (
-                  <SuggestionRow
-                    key={`${suggestion.building}-${suggestion.troopType}`}
-                    suggestion={suggestion}
-                    spriteUrl={spriteUrl}
-                  />
-                ))}
-              </Stack>
-            </Box>
-          ))}
-          {suggestionsByBuilding.length === 0 && (
-            <Alert severity='info' sx={{ mt: 1 }}>
-              Open the game so your army details load, and the suggestions will name your own units.
-            </Alert>
-          )}
-        </Stack>
+        {suggestionsByBuilding.length === 0 ? (
+          <Alert severity='info' sx={{ mt: 1 }}>
+            Open the game so your army details load, and the suggestions will name your own units.
+          </Alert>
+        ) : (
+          <Stack spacing={1.75} sx={{ mt: 1.25 }}>
+            {suggestionsByBuilding.map(({ building, suggestions }) => (
+              <Box key={building}>
+                <Typography
+                  variant='caption'
+                  sx={{
+                    display: 'block',
+                    mb: 0.75,
+                    pl: 1,
+                    borderLeft: '3px solid',
+                    borderLeftColor: `${accent}.light`,
+                    fontWeight: 800,
+                    letterSpacing: 0.4,
+                    textTransform: 'uppercase',
+                    color: 'text.secondary',
+                  }}
+                >
+                  {BUILDING_LABELS[building]}
+                </Typography>
+                <Stack spacing={0.5}>
+                  {suggestions.map((suggestion) => (
+                    <SuggestionRow
+                      key={`${suggestion.building}-${suggestion.troopType}`}
+                      suggestion={suggestion}
+                      spriteUrl={spriteUrl}
+                      accent={accent}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+            ))}
+          </Stack>
+        )}
       </Paper>
 
       <Paper variant='outlined' sx={{ p: 1.5, px: 2, mt: 1.5, mb: 1 }}>
         <SectionLabel icon={<LightbulbOutlinedIcon sx={{ fontSize: 14 }} />} text='Battle tips' />
-        <Stack component='ul' spacing={0.75} sx={{ mt: 1, pl: 2.5, mb: 0 }}>
+        {/* Markers are drawn rather than left to `list-style`, which the host page's own list and
+            text rules would otherwise get a say in. */}
+        <Box component='ul' sx={{ listStyle: 'none', m: 0, mt: 1.25, p: 0, display: 'grid', gap: 1 }}>
           {guide.tips.map((tip, index) => (
-            <Typography key={index} component='li' variant='caption' color='text.secondary'>
-              {tip}
-            </Typography>
+            <Box component='li' key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <Box
+                sx={{
+                  mt: '6px',
+                  width: 5,
+                  height: 5,
+                  borderRadius: '50%',
+                  bgcolor: `${accent}.main`,
+                  flexShrink: 0,
+                }}
+              />
+              <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.55 }}>
+                {tip}
+              </Typography>
+            </Box>
           ))}
-        </Stack>
+        </Box>
       </Paper>
     </Box>
   );
 };
 
-const SuggestionRow = ({ suggestion, spriteUrl }: { suggestion: ResolvedSuggestion; spriteUrl: string }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.75,
-        border: '1px solid',
-        borderColor: suggestion.primary ? 'primary.light' : 'divider',
-        borderRadius: 1,
-        px: 1,
-        height: 28,
-        opacity: suggestion.unit ? 1 : 0.6,
-      }}
-    >
-      <UnitSprite troopType={suggestion.troopType} spriteUrl={spriteUrl} />
-      <Typography variant='caption' sx={{ fontWeight: suggestion.primary ? 700 : 500 }}>
+const SuggestionRow = ({
+  suggestion,
+  spriteUrl,
+  accent,
+}: {
+  suggestion: ResolvedSuggestion;
+  spriteUrl: string;
+  accent: 'success' | 'warning' | 'error';
+}) => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 1,
+      px: 1,
+      py: 0.5,
+      borderRadius: 1,
+      border: '1px solid',
+      borderColor: suggestion.primary ? (theme) => alpha(theme.palette[accent].main, 0.35) : 'transparent',
+      bgcolor: suggestion.primary ? (theme) => alpha(theme.palette[accent].main, 0.06) : 'transparent',
+      opacity: suggestion.unit ? 1 : 0.55,
+    }}
+  >
+    <UnitSprite troopType={suggestion.troopType} spriteUrl={spriteUrl} />
+
+    <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+      <Typography
+        variant='caption'
+        sx={{ display: 'block', fontWeight: suggestion.primary ? 700 : 500, lineHeight: 1.3 }}
+      >
         {suggestion.unit?.name ?? TROOP_LABELS[suggestion.troopType]}
       </Typography>
-      {!suggestion.unit && (
-        <Tooltip title='Not unlocked yet' arrow>
-          <Typography variant='caption' color='text.disabled'>
-            (locked)
-          </Typography>
-        </Tooltip>
-      )}
+      <Typography variant='caption' color='text.disabled' sx={{ fontSize: '0.6rem' }}>
+        {TROOP_LABELS[suggestion.troopType]}
+        {!suggestion.primary && ' · alternate'}
+      </Typography>
     </Box>
 
-    {!suggestion.primary && (
-      <Typography variant='caption' color='text.disabled' sx={{ fontStyle: 'italic' }}>
-        alternate
+    {suggestion.unit ? (
+      <Typography
+        variant='caption'
+        color='text.secondary'
+        sx={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
+      >
+        <strong>{suggestion.held.toLocaleString()}</strong> in stock
       </Typography>
-    )}
-
-    {suggestion.unit && (
-      <Typography variant='caption' color='text.secondary'>
-        {suggestion.held.toLocaleString()} in stock
-      </Typography>
+    ) : (
+      <Tooltip title='Not unlocked yet' arrow>
+        <Typography variant='caption' color='text.disabled' sx={{ whiteSpace: 'nowrap' }}>
+          locked
+        </Typography>
+      </Tooltip>
     )}
   </Box>
 );

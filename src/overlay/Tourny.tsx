@@ -33,6 +33,9 @@ export const Tourny = () => {
         overflow: 'hidden',
         bgcolor: 'background.default',
         color: 'text.primary',
+        // The game page leaks a centred text-align into the injected overlay — the same reason
+        // `overlay.ts` forces `start` on the panel title. Flex layouts hide it; plain text does not.
+        textAlign: 'start',
       }}
     >
       <Typography variant='h5' sx={{ fontWeight: 'bold', mb: 1 }}>
