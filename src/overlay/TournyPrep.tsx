@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
-import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import SecurityIcon from '@mui/icons-material/Security';
 import TimerIcon from '@mui/icons-material/Timer';
 import { Alert, Box, Chip, Paper, Stack, Tooltip, Typography } from '@mui/material';
@@ -14,17 +13,19 @@ import { SeasonalEvent } from '../model/seasonalEvent';
 import { getAccountId, getOverlayStore } from './overlayStore';
 import { TOURNAMENT_GUIDES, TrainingSuggestion } from './tournamentGuide';
 import { readTournamentStatus, upcomingTournament } from './tournamentSchedule';
-import { BUILDING_LABELS, formatSeconds, TROOP_LABELS, UnitSprite } from './tournyUnitDisplay';
+import { TournamentTips } from './TournamentTips';
+import {
+  BUILDING_LABELS,
+  formatSeconds,
+  SectionLabel,
+  TIER_COLORS,
+  TierColor,
+  TROOP_LABELS,
+  UnitSprite,
+} from './tournyUnitDisplay';
 
 /** The order buildings are listed in, matching how the guide presents its suggestions. */
 const BUILDING_ORDER: TrainingBuilding[] = ['eb', 'hb', 'tg', 'mc'];
-
-/** More dominant enemy classes means a harder week, so the tier drives the accent colour. */
-const TIER_COLORS: Record<1 | 2 | 3, 'success' | 'warning' | 'error'> = {
-  1: 'success',
-  2: 'warning',
-  3: 'error',
-};
 
 const TIER_BLURBS: Record<1 | 2 | 3, string> = {
   1: 'One dominant enemy class',
@@ -298,30 +299,7 @@ export const TournyPrep = () => {
         )}
       </Paper>
 
-      <Paper variant='outlined' sx={{ p: 1.5, px: 2, mt: 1.5, mb: 1 }}>
-        <SectionLabel icon={<LightbulbOutlinedIcon sx={{ fontSize: 14 }} />} text='Battle tips' />
-        {/* Markers are drawn rather than left to `list-style`, which the host page's own list and
-            text rules would otherwise get a say in. */}
-        <Box component='ul' sx={{ listStyle: 'none', m: 0, mt: 1.25, p: 0, display: 'grid', gap: 1 }}>
-          {guide.tips.map((tip, index) => (
-            <Box component='li' key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-              <Box
-                sx={{
-                  mt: '6px',
-                  width: 5,
-                  height: 5,
-                  borderRadius: '50%',
-                  bgcolor: `${accent}.main`,
-                  flexShrink: 0,
-                }}
-              />
-              <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.55 }}>
-                {tip}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      </Paper>
+      <TournamentTips guide={guide} sx={{ mt: 1.5, mb: 1 }} />
     </Box>
   );
 };
@@ -333,7 +311,7 @@ const SuggestionRow = ({
 }: {
   suggestion: ResolvedSuggestion;
   spriteUrl: string;
-  accent: 'success' | 'warning' | 'error';
+  accent: TierColor;
 }) => (
   <Box
     sx={{
@@ -382,12 +360,3 @@ const SuggestionRow = ({
   </Box>
 );
 
-const SectionLabel = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-  <Typography
-    variant='caption'
-    color='text.secondary'
-    sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 'bold', textTransform: 'uppercase' }}
-  >
-    {icon} {text}
-  </Typography>
-);

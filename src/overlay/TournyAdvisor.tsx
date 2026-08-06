@@ -18,7 +18,10 @@ import {
   SQUAD_SLOTS,
 } from './counterComposition';
 import { getAccountId, getOverlayStore } from './overlayStore';
-import { formatSeconds, TROOP_LABELS, UnitSprite } from './tournyUnitDisplay';
+import { TOURNAMENT_GUIDES, TournamentGood } from './tournamentGuide';
+import { readTournamentStatus } from './tournamentSchedule';
+import { TournamentTips } from './TournamentTips';
+import { formatSeconds, SectionLabel, TROOP_LABELS, UnitSprite } from './tournyUnitDisplay';
 
 /** A province is done once it reaches level 6 and cannot be fought again this round. */
 const COMPLETED_LEVEL = 6;
@@ -69,6 +72,7 @@ export const TournyAdvisor = () => {
   const [almanac, setAlmanac] = useState<BattleUnitType[]>([]);
   const [armyDetails, setArmyDetails] = useState<ArmyDetails | null>(null);
   const [tournamentRunning, setTournamentRunning] = useState(false);
+  const [runningGood, setRunningGood] = useState<TournamentGood | undefined>(undefined);
   const [now, setNow] = useState(Date.now());
 
   const spriteUrl = chrome.runtime.getURL('military_sprite.png');
@@ -90,6 +94,9 @@ export const TournyAdvisor = () => {
       // 'new' covers the window between a round being announced and the first fight.
       const tournaments = accountData?.cityQuery?.tournaments;
       setTournamentRunning(!!tournaments?.some((t) => t.state === 'running' || t.state === 'new'));
+      // Kept separate from the gate above, which stays deliberately permissive: a good this
+      // build does not recognise should still show the province list, just without the tips.
+      setRunningGood(readTournamentStatus(tournaments).running?.good);
 
       try {
         setAlmanac(await getBattleUnitTypes());
@@ -161,22 +168,25 @@ export const TournyAdvisor = () => {
     );
   }
 
+  // The guide's advice for the round being fought, rather than the one being prepared for.
+  const runningGuide = runningGood ? TOURNAMENT_GUIDES[runningGood] : undefined;
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {rows.length === 0 ? (
-        <Alert severity='info' sx={{ mt: 2 }}>
-          Open a province on the Tournament Map in game and its suggested composition will appear here.
-        </Alert>
-      ) : (
-        <Box
-          sx={{
-            flexGrow: 1,
-            overflowY: 'auto',
-            pr: 1,
-            '&::-webkit-scrollbar': { width: '6px' },
-            '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '10px' },
-          }}
-        >
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          pr: 1,
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '10px' },
+        }}
+      >
+        {rows.length === 0 ? (
+          <Alert severity='info' sx={{ mb: 2 }}>
+            Open a province on the Tournament Map in game and its suggested composition will appear here.
+          </Alert>
+        ) : (
           <Stack spacing={1.5}>
             {orderedRows.map((row) => (
               <ProvinceCard
@@ -188,8 +198,12 @@ export const TournyAdvisor = () => {
               />
             ))}
           </Stack>
-        </Box>
-      )}
+        )}
+
+        {runningGuide && (
+          <TournamentTips guide={runningGuide} label={`${runningGuide.name} battle tips`} sx={{ mt: 1.5, mb: 1 }} />
+        )}
+      </Box>
     </Box>
   );
 };
@@ -373,16 +387,6 @@ const CompositionView = ({
       </Typography>
     )}
   </Box>
-);
-
-const SectionLabel = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-  <Typography
-    variant='caption'
-    color='text.secondary'
-    sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 'bold', textTransform: 'uppercase' }}
-  >
-    {icon} {text}
-  </Typography>
 );
 
 const UnitChip = ({ unitTypeId, spriteUrl }: { unitTypeId: string; spriteUrl: string }) => {
