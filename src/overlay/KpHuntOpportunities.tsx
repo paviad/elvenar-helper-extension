@@ -64,7 +64,7 @@ export const KpHuntOpportunities: React.FC<KpHuntOpportunitiesProps> = ({
     return Object.entries(kpHuntOpportunities)
       .map(([id, data]) => ({ id, ...data }))
       .sort((a, b) => b.standToGain - a.standToGain);
-  }, [kpHuntOpportunities, cityResources]);
+  }, [kpHuntOpportunities]);
 
   // Format inventory string: "Have: 5x20, 10x10... (Total: 200)"
   const inventorySubheader = useMemo(() => {

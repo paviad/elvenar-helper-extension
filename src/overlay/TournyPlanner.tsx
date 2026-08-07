@@ -257,6 +257,12 @@ export const TournyPlanner = () => {
     });
 
     return withCounter;
+    // `now` is read to skip provinces still upgrading, but is deliberately not a dependency:
+    // it ticks every second and this recomputes a counter for every open province, so
+    // listing it would redo the whole analysis once a second. A province finishing its
+    // upgrade is something the game reports, which lands in tournyData and refreshes this
+    // anyway, so the snapshot cannot stay stale for long.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournyData, runningTourny, availableRoster, unitAlmanac, armyDetails, modifiers]);
 
   const isProvinceOpen = (province: ExtendedProvince): boolean => {

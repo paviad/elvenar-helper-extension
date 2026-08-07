@@ -138,7 +138,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     } else {
       setRetrievingCounter(retrievingCounterRaw);
     }
-  }, [retrievingCounterRaw, kpHuntOpportunities, autoKpHunt, kpHuntImportantThreshold]);
+  }, [retrievingCounterRaw, retrievingCounter, kpHuntOpportunities, autoKpHunt, kpHuntImportantThreshold]);
 
   // Declarative, so the tab set, the Alt+C chord map, the rendered content and the help dialog
   // all read from one place. Hand-computed indices used to have to be adjusted in two places
