@@ -19,7 +19,11 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
   const setSavedPosition = useTabStore((state) => state.setAvatarPosition);
 
   // --- Dragging State ---
-  const [position, setPosition] = React.useState(savedPosition || { x: 0, y: 0 });
+  // Only a drag in flight is held locally; the store is the position between gestures. It
+  // used to be mirrored into state and kept in step by an effect, which meant the store
+  // write this component makes on release came straight back to it as an update.
+  const [dragPosition, setDragPosition] = React.useState<{ x: number; y: number } | null>(null);
+  const position = dragPosition ?? savedPosition ?? { x: 0, y: 0 };
   // The ref is what the pointer and click handlers read, since a click arrives before any
   // re-render would land and it has to know whether the gesture was a drag. The cursor is
   // rendered, though, and a ref does not trigger a render - it only appeared to work
@@ -29,18 +33,11 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
   const dragStartRef = React.useRef({ x: 0, y: 0 });
   const initialMousePos = React.useRef({ x: 0, y: 0 });
 
-  // Calculate if the avatar is on the left side of the screen
-  const isLeftSide = React.useMemo(() => {
-    // 24 (right spacing) + 56 (avatar width) = 80px from right edge initially
-    const currentX = window.innerWidth - 80 + position.x;
-    return currentX < window.innerWidth / 2;
-  }, [position.x]);
-
-  React.useEffect(() => {
-    if (savedPosition) {
-      setPosition(savedPosition);
-    }
-  }, [savedPosition]);
+  // Calculate if the avatar is on the left side of the screen.
+  // 24 (right spacing) + 56 (avatar width) = 80px from right edge initially. Not memoised:
+  // it is two subtractions, and a memo keyed on position alone would have pinned it across
+  // a window resize, which moves the very edge it is measured from.
+  const isLeftSide = window.innerWidth - 80 + position.x < window.innerWidth / 2;
 
   const handleAvatarClick = () => {
     if (onAvatarClick) {
@@ -72,7 +69,7 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
         setIsDragging(true);
       }
 
-      setPosition({
+      setDragPosition({
         x: e.clientX - dragStartRef.current.x,
         y: e.clientY - dragStartRef.current.y,
       });
@@ -86,6 +83,9 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
     if (isDraggingRef.current) {
       setSavedPosition(position);
     }
+    // Handing the position back to the store in the same batch, so the next render reads
+    // the value just written rather than snapping back to where the drag started.
+    setDragPosition(null);
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
