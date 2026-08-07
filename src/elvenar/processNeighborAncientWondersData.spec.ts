@@ -1621,77 +1621,77 @@ const phase: AncientWonderPhases = {
   contributions: [
     {
       rank: 1,
-      player: { player_id: 2, name: 'Aleksandr', guild_info: { name: 'OtherGuild', id: 1 } } as Player,
+      player: { player_id: 2, name: 'Aleksandr', guild_info: { name: 'OtherGuild', id: 1 } },
       knowledgePoints: 997,
       reward: {
         rewards: [
-          { type: 'good', subType: 'goodType', amount: 4 } as RewardElement,
-          { type: 'item', subType: 'INST_20', amount: 3 } as RewardElement,
-          { type: 'item', subType: 'INST_5', amount: 1 } as RewardElement,
+          { type: 'good', subType: 'goodType', amount: 4 },
+          { type: 'item', subType: 'INST_20', amount: 3 },
+          { type: 'item', subType: 'INST_5', amount: 1 },
         ],
       } as ContributionReward,
     } as Contribution,
     {
       rank: 2,
-      player: { player_id: 3, name: 'Kikog', guild_info: { name: 'OtherGuild2', id: 2 } } as Player,
+      player: { player_id: 3, name: 'Kikog', guild_info: { name: 'OtherGuild2', id: 2 } },
       knowledgePoints: 3,
       reward: {
         rewards: [
-          { type: 'good', subType: 'goodType', amount: 2 } as RewardElement,
-          { type: 'item', subType: 'INST_20', amount: 2 } as RewardElement,
-          { type: 'item', subType: 'INST_5', amount: 2 } as RewardElement,
+          { type: 'good', subType: 'goodType', amount: 2 },
+          { type: 'item', subType: 'INST_20', amount: 2 },
+          { type: 'item', subType: 'INST_5', amount: 2 },
         ],
       } as ContributionReward,
     } as Contribution,
     {
       rank: 3,
-      player: { player_id: -3, name: '-3' } as Player,
+      player: { player_id: -3, name: '-3' },
       knowledgePoints: 0,
       reward: {
         rewards: [
-          { type: 'good', subType: 'goodType', amount: 2 } as RewardElement,
-          { type: 'item', subType: 'INST_20', amount: 1 } as RewardElement,
-          { type: 'item', subType: 'INST_5', amount: 3 } as RewardElement,
+          { type: 'good', subType: 'goodType', amount: 2 },
+          { type: 'item', subType: 'INST_20', amount: 1 },
+          { type: 'item', subType: 'INST_5', amount: 3 },
         ],
       } as ContributionReward,
     } as Contribution,
     {
       rank: 4,
-      player: { player_id: -4, name: '-4' } as Player,
+      player: { player_id: -4, name: '-4' },
       knowledgePoints: 0,
       reward: {
         rewards: [
-          { type: 'good', subType: 'goodType', amount: 1 } as RewardElement,
-          { type: 'item', subType: 'INST_20', amount: 1 } as RewardElement,
-          { type: 'item', subType: 'INST_5', amount: 1 } as RewardElement,
+          { type: 'good', subType: 'goodType', amount: 1 },
+          { type: 'item', subType: 'INST_20', amount: 1 },
+          { type: 'item', subType: 'INST_5', amount: 1 },
         ],
       } as ContributionReward,
     } as Contribution,
     {
       rank: 5,
-      player: { player_id: -5, name: '-5' } as Player,
+      player: { player_id: -5, name: '-5' },
       knowledgePoints: 0,
       reward: {
         rewards: [
-          { type: 'good', subType: 'goodType', amount: 1 } as RewardElement,
-          { type: 'item', subType: 'INST_5', amount: 3 } as RewardElement,
+          { type: 'good', subType: 'goodType', amount: 1 },
+          { type: 'item', subType: 'INST_5', amount: 3 },
         ],
       } as ContributionReward,
     } as Contribution,
     {
       rank: 6,
-      player: { player_id: -6, name: '-6' } as Player,
+      player: { player_id: -6, name: '-6' },
       knowledgePoints: 0,
       reward: {
-        rewards: [{ type: 'item', subType: 'INST_5', amount: 2 } as RewardElement],
+        rewards: [{ type: 'item', subType: 'INST_5', amount: 2 }],
       } as ContributionReward,
     } as Contribution,
     {
       rank: 7,
-      player: { player_id: -7, name: '-7' } as Player,
+      player: { player_id: -7, name: '-7' },
       knowledgePoints: 0,
       reward: {
-        rewards: [{ type: 'item', subType: 'INST_5', amount: 1 } as RewardElement],
+        rewards: [{ type: 'item', subType: 'INST_5', amount: 1 }],
       } as ContributionReward,
     } as Contribution,
   ],
