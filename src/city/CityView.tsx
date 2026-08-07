@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Box } from '@mui/material';
 import { getAccountById } from '../elvenar/AccountManager';
-import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { State } from '../model/cityEntity';
 import { formatResourceName } from '../util/formatResourceName';
 import { CityProvider, useCity } from './CityContext';
@@ -13,7 +12,12 @@ import { RenderMoveLog } from './MoveLog/RenderMoveLog';
 import { RuneShards } from './RuneShards';
 import { SwitchableProduction, SwitchableProductionViewModel } from './SwitchableProduction';
 import { TranscendenceStatus, TranscendenceViewModel } from './TranscendenceStatus';
+import { useSettledValue } from './useSettledValue';
 import { WorkingState } from './WorkingState';
+
+/** Stable empty defaults, so a city with nothing to show does not hand out fresh arrays. */
+const NO_TRANSCENDENCE: TranscendenceViewModel[] = [];
+const NO_SWITCHABLE_PRODUCTION: SwitchableProductionViewModel[] = [];
 
 export function CityView() {
   return (
@@ -34,145 +38,125 @@ const getCurrentProduct = (state: State | undefined): string => {
 
 function CityViewInner() {
   const city = useCity();
-  const [switchableProductionViewModels, setSwitchableProductionViewModels] = useState<SwitchableProductionViewModel[]>(
-    [],
-  );
-  const [transcendenceViewModels, setTranscendenceViewModels] = useState<TranscendenceViewModel[]>([]);
 
-  useEffect(() => {
-    function Do() {
-      if (!city.accountId) {
-        return;
-      }
+  // Both panels below are a function of which buildings exist, not where they sit, so they
+  // read the settled layout rather than recomputing on every frame of a drag - the same
+  // reason the context's own whole-city figures do. It replaces the dragIndex guard these
+  // two used to carry, which froze them mid-drag by leaving stale state in place.
+  const settledBlocks = useSettledValue(city.blocks, city.dragIndex === null);
 
-      // Nothing here depends on where a block sits, only on which buildings exist,
-      // so there is no reason to rebuild it on every frame of a drag.
-      if (city.dragIndex !== null) {
-        return;
-      }
+  const transcendenceViewModels = useMemo(() => {
+    if (!city.accountId) {
+      return NO_TRANSCENDENCE;
+    }
 
-      const accountData = getAccountById(city.accountId);
+    // Account data is only replaced when the city is switched or reloaded, and a reload
+    // bumps forceUpdate, so those two cover every change to what this reads.
+    const transcendenceData = getAccountById(city.accountId)?.transcendenceData;
 
-      if (!accountData) {
-        return;
-      }
+    if (!transcendenceData) {
+      return NO_TRANSCENDENCE;
+    }
 
-      const transcendenceData = accountData.transcendenceData;
+    const byEntityId = Object.values(settledBlocks).reduce(
+      (acc, block) => {
+        acc[block.entity.id] = block;
+        return acc;
+      },
+      {} as Record<string, (typeof settledBlocks)[number]>,
+    );
 
-      if (!transcendenceData) {
-        return;
-      }
-
-      const byEntityId = Object.values(city.blocks).reduce(
-        (acc, block) => {
-          acc[block.entity.id] = block;
-          return acc;
-        },
-        {} as Record<string, (typeof city.blocks)[number]>,
-      );
-
-      const buildings = transcendenceData.map((t) => {
+    return transcendenceData
+      .map((t) => {
         const block = byEntityId[t.buildingId];
         return {
           building: block?.gameId ? city.buildingFinder.getBuildingExact(block?.gameId) : undefined,
           transcendence: t,
         };
-      });
+      })
+      .filter((b) => !!b.building)
+      .map(
+        (b) =>
+          ({
+            buildingName: b.building!.name,
+            volatile_sigils_cost: b.transcendence.costs.resources.volatile_sigils,
+            purchasableTime: b.transcendence.purchasableTime,
+            state: b.transcendence.state,
+            stageToUnlock: b.transcendence.stageToUnlock,
+            endTime: b.transcendence.endTime,
+          }) satisfies TranscendenceViewModel,
+      );
+  }, [settledBlocks, city.buildingFinder, city.accountId, city.forceUpdate]);
 
-      const transcendenceViewModels = buildings
-        .filter((b) => !!b.building)
-        .map(
-          (b) =>
-            ({
-              buildingName: b.building!.name,
-              volatile_sigils_cost: b.transcendence.costs.resources.volatile_sigils,
-              purchasableTime: b.transcendence.purchasableTime,
-              state: b.transcendence.state,
-              stageToUnlock: b.transcendence.stageToUnlock,
-              endTime: b.transcendence.endTime,
-            }) satisfies TranscendenceViewModel,
-        );
+  const switchableProductionViewModels = useMemo(() => {
+    // The goods names come from the context, which already loads them once for the whole
+    // city. Awaiting getGoodsNames() here was the only asynchronous step in this
+    // derivation, and the sole reason it had to be an effect at all.
+    const goodsNames = city.goodsNames;
+    const boostedGoods = city.boostedGoods;
 
-      setTranscendenceViewModels(transcendenceViewModels);
+    const buildings = Object.values(settledBlocks)
+      .map((r) => ({ building: city.buildingFinder.getBuildingExact(r.gameId), state: r.entity.state }))
+      .filter((r) => !!r.building)
+      .map((r) => ({
+        building: r.building!,
+        currentProduct: getCurrentProduct(r.state),
+      }));
+
+    const switchableProductionBuildings = buildings.filter((b) => b.building.sourceBuilding.production?.isSwitchable);
+
+    if (switchableProductionBuildings.length === 0) {
+      return NO_SWITCHABLE_PRODUCTION;
     }
 
-    void Do();
-  }, [city.blocks, city.buildingFinder, city.dragIndex]);
-
-  useEffect(() => {
-    async function Do() {
-      // As above: switchable production depends on the buildings present, not their
-      // positions, and this path also awaits the goods names.
-      if (city.dragIndex !== null) {
-        return;
-      }
-
-      const buildings = Object.values(city.blocks)
-        .map((r) => ({ building: city.buildingFinder.getBuildingExact(r.gameId), state: r.entity.state }))
-        .filter((r) => !!r.building)
-        .map((r) => ({
-          building: r.building!,
-          currentProduct: getCurrentProduct(r.state),
-        }));
-
-      const goodsNames = await getGoodsNames();
-      const boostedGoods = city.boostedGoods;
-
-      const switchableProductionBuildings = buildings.filter((b) => b.building.sourceBuilding.production?.isSwitchable);
-
-      const viewModel = switchableProductionBuildings
-        .map((b) => ({
-          name: b.building.name,
-          currentProduct: b.currentProduct,
-          production: b.building.sourceBuilding
-            .production!.products.map((p) => Object.keys(p.revenue.resources))
-            .flatMap((x) => x),
-        }))
-        .map((b) => ({
-          id: JSON.stringify({ name: b.name, production: b.production, currentProduct: b.currentProduct }),
-          count: 1,
-          display: '',
-          name: b.name,
-          production: b.production.map((x) => formatResourceName(goodsNames, boostedGoods, x)),
-          currentProductIndex: b.production.indexOf(b.currentProduct),
-        }))
-        .reduce(
-          (acc, b) => {
-            const existing = acc.find((x) => x.id === b.id);
-            if (existing) {
-              existing.production = Array.from(new Set([...(existing.production || []), ...(b.production || [])]));
-              existing.count += 1;
-              existing.display = `${existing.name} (${existing.count})`;
-              existing.currentProductIndex = b.currentProductIndex;
-            } else {
-              b.display = `${b.name} (${b.count})`;
-              acc.push(b);
-            }
-            return acc;
-          },
-          [] as {
-            id: string;
-            name: string;
-            production?: string[];
-            count: number;
-            display: string;
-            currentProductIndex: number;
-          }[],
-        )
-        .map(
-          (b) =>
-            ({
-              title: b.display,
-              production: b.production,
-              currentProductIndex: b.currentProductIndex,
-            }) satisfies SwitchableProductionViewModel,
-        );
-
-      setSwitchableProductionViewModels(viewModel);
-    }
-
-    void Do();
-  }, [city.blocks, city.buildingFinder, city.boostedGoods, city.dragIndex]);
+    return switchableProductionBuildings
+      .map((b) => ({
+        name: b.building.name,
+        currentProduct: b.currentProduct,
+        production: b.building.sourceBuilding
+          .production!.products.map((p) => Object.keys(p.revenue.resources))
+          .flatMap((x) => x),
+      }))
+      .map((b) => ({
+        id: JSON.stringify({ name: b.name, production: b.production, currentProduct: b.currentProduct }),
+        count: 1,
+        display: '',
+        name: b.name,
+        production: b.production.map((x) => formatResourceName(goodsNames, boostedGoods, x)),
+        currentProductIndex: b.production.indexOf(b.currentProduct),
+      }))
+      .reduce(
+        (acc, b) => {
+          const existing = acc.find((x) => x.id === b.id);
+          if (existing) {
+            existing.production = Array.from(new Set([...(existing.production || []), ...(b.production || [])]));
+            existing.count += 1;
+            existing.display = `${existing.name} (${existing.count})`;
+            existing.currentProductIndex = b.currentProductIndex;
+          } else {
+            b.display = `${b.name} (${b.count})`;
+            acc.push(b);
+          }
+          return acc;
+        },
+        [] as {
+          id: string;
+          name: string;
+          production?: string[];
+          count: number;
+          display: string;
+          currentProductIndex: number;
+        }[],
+      )
+      .map(
+        (b) =>
+          ({
+            title: b.display,
+            production: b.production,
+            currentProductIndex: b.currentProductIndex,
+          }) satisfies SwitchableProductionViewModel,
+      );
+  }, [settledBlocks, city.buildingFinder, city.boostedGoods, city.goodsNames]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
