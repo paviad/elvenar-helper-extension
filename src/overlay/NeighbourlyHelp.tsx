@@ -29,8 +29,6 @@ import { getAccountId, getOverlayStore } from './overlayStore';
 // Extend the base interface to include our calculated metrics
 type NeighborWithMetrics = WorldNeighbor & { distance: number; angle: number };
 
-let debugCounter = 0;
-
 export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
   const store = getOverlayStore();
   const initialWorldMapData = store((state) => state.initialWorldMapData);
@@ -61,8 +59,6 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
     if (isHelping) {
       return;
     }
-    const localDebug = debugCounter++;
-    console.log('debug counter', localDebug);
     let ignore = false;
     const accountId = getAccountId();
 
@@ -172,15 +168,12 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
         setNeighboursOffCooldownSorted(offCooldown);
         setOverflowMoney(overflowMoney);
         setOverflowSupplies(overflowSupplies);
-      } else {
-        console.log('Ignoring state update due to reentrancy');
       }
     };
 
     void Do();
 
     return () => {
-      console.log('Setting ignore to true for cleanup', localDebug);
       ignore = true;
     };
   }, [worldNeighbors, initialWorldMapData, refresh, isHelping]);
