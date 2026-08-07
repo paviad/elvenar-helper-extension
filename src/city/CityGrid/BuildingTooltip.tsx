@@ -16,6 +16,10 @@ interface BuildingTooltipProps {
 
 export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMaxLevel, stage, expirationEnd }) => {
   const city = useCity();
+  // The tooltip is mounted on hover and lives for a few seconds, so "days left" is fixed
+  // at the moment it opened. Reading the clock during render instead made the figure
+  // change on any unrelated re-render, with nothing telling React it had.
+  const [openedAt] = React.useState(() => Date.now());
   const currentChapter = city.chapter;
   const source = building.sourceBuilding;
   const { popRequired, residentialPop, awLevels, mhRankingPoints } = city.cityTotals;
@@ -34,14 +38,13 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   const extraAvailablePopulation = Math.ceil(popRequired * availablePopulationBonus);
   const extraCultureFromRanking = Math.round(cultureByRankingPoints * mhRankingPoints * awLevels);
 
-  // Extract Provisions (Population, Culture, etc.)
-  let provisions = source?.provisions?.resources?.resources && { ...source?.provisions?.resources?.resources };
+  // Extract Provisions (Population, Culture, etc.). Copied up front rather than behind an
+  // `&&`, so it reads as a copy at a glance: the branches below add the city's bonuses to
+  // it, and the building definition it comes from is shared and must not pick those up.
+  const provisions: Record<string, number> = { ...source?.provisions?.resources?.resources };
 
   if (extraAvailableCulture || extraCultureFromRanking || cultureFactor !== 1) {
-    if (!provisions) {
-      provisions = {};
-    }
-    let culture = Math.floor((provisions?.['culture'] || 0) * cultureFactor);
+    let culture = Math.floor((provisions['culture'] || 0) * cultureFactor);
     if (extraAvailableCulture) {
       culture += extraAvailableCulture;
     }
@@ -52,10 +55,7 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   }
 
   if (extraAvailablePopulation || extraResidential || populationFactor !== 1) {
-    if (!provisions) {
-      provisions = {};
-    }
-    let population = Math.floor((provisions?.['population'] || 0) * populationFactor);
+    let population = Math.floor((provisions['population'] || 0) * populationFactor);
     if (extraAvailablePopulation) {
       population += extraAvailablePopulation;
     }
@@ -65,7 +65,7 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
     provisions['population'] = population;
   }
 
-  const hasProvisions = provisions && Object.keys(provisions).length > 0;
+  const hasProvisions = Object.keys(provisions).length > 0;
 
   // Extract Requirements (Population, Culture cost, etc.)
   const requirements = source?.requirements?.resources;
@@ -87,7 +87,7 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
 
   const formatExpirationleft = (expirationEnd?: number) => {
     if (expirationEnd) {
-      const expirationLeft = Math.round((expirationEnd - Date.now()) / 86400000); // Convert seconds to days
+      const expirationLeft = Math.round((expirationEnd - openedAt) / 86400000); // Convert seconds to days
       return expirationLeft;
     }
     return 0;

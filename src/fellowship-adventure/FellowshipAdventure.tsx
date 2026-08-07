@@ -19,7 +19,7 @@ import { ProductionTimeline } from './ProductionTimeline';
 
 export function FellowshipAdventure() {
   const [badgesInProduction, setBadgesInProduction] = React.useState<Record<string, Record<number, number>>>({});
-  const [timestamp, setTimestamp] = React.useState(Date.now());
+  const [timestamp, setTimestamp] = React.useState(() => Date.now());
   const [faRequirements, setFaRequirements] = React.useState<Record<string, FaQuest>>({});
   const [badges, setBadges] = React.useState<Badges | undefined>(undefined);
 

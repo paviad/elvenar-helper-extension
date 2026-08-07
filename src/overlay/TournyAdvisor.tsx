@@ -69,7 +69,7 @@ export const TournyAdvisor = () => {
   const [almanac, setAlmanac] = useState<BattleUnitType[]>([]);
   const [armyDetails, setArmyDetails] = useState<ArmyDetails | null>(null);
   const [tournamentRunning, setTournamentRunning] = useState(false);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   const spriteUrl = chrome.runtime.getURL('military_sprite.png');
 

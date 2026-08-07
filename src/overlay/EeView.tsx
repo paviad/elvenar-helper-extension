@@ -13,7 +13,7 @@ export const EeView = () => {
   const eeUpdate = overlayStore((state) => state.eeUpdate);
 
   const [buildings, setBuildings] = useState<EeMissingBuilding[] | null>(null);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     // Refresh the component every minute to update the "time left" counters automatically

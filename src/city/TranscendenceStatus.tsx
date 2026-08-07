@@ -28,7 +28,7 @@ const formatPurchasableTime = (seconds: number): string => {
 export const TranscendenceStatus = (props: TranscendenceProps) => {
   const { transcendenceData } = props;
   const [collapsed, setCollapsed] = useState(true);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     // Refresh the component every minute to update the "time left" counters automatically
@@ -58,7 +58,10 @@ export const TranscendenceStatus = (props: TranscendenceProps) => {
               {transcendenceData.map((item, index) => {
                 const isActive = item.state === 'active';
                 const expiryDate = new Date(item.endTime);
-                const isExpired = Date.now() >= item.endTime;
+                // Read from the same ticking clock as the counter below, so the two cannot
+                // disagree - a live Date.now() here could call an entry expired while the
+                // counter beside it, working off `now`, still showed time on it.
+                const isExpired = now >= item.endTime;
 
                 return (
                   <Box key={`${item.buildingName}-${index}`}>

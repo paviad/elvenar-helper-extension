@@ -31,7 +31,7 @@ export const TournyPrep = () => {
   const [tournaments, setTournaments] = useState<SeasonalEvent[] | undefined>(undefined);
   // `remainingTime` is relative to when the events were read, so that moment is kept to count from.
   const [readAt, setReadAt] = useState<number | undefined>(undefined);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
   const [chosen, setChosen] = useState<Which | undefined>(undefined);
 
   const spriteUrl = chrome.runtime.getURL('military_sprite.png');
