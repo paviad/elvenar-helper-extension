@@ -24,8 +24,9 @@ export const LayoutMain = () => {
   // Dummy account list for dropdown
   const accountList = getAllStoredAccounts();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [accountName, setAccountName] = React.useState('Select Account');
-  const [cityName, setCityName] = React.useState('');
+  const selectedAccount = accountList.find(([id]) => id === accountId)?.[1];
+  const accountName = selectedAccount?.cityQuery?.accountName || 'Select Account';
+  const cityName = selectedAccount?.cityQuery?.cityName || '';
   const open = Boolean(anchorEl);
 
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
@@ -83,20 +84,16 @@ export const LayoutMain = () => {
     setAnchorEl(null);
   };
 
+  // Picking an account when none is selected is a real side effect, so it stays an effect.
+  // Reading the selected account's names is not, so it does not - they were held in state
+  // and written from here, which meant the title bar lagged a render behind the selection
+  // and, because accountList was never a dependency, could miss a rename outright.
   React.useEffect(() => {
-    if (!accountId) {
-      const firstNonDetachedAccount = accountList.find(([id, data]) => !data.isDetached);
-      if (firstNonDetachedAccount) {
-        setAccountId(firstNonDetachedAccount[0]);
-      } else {
-        setAccountId(accountList[0]?.[0]);
-      }
+    if (accountId) {
+      return;
     }
-    const accountData = accountList.find(([id]) => id === accountId)?.[1];
-    const name = accountData?.cityQuery?.accountName || 'Select Account';
-    setAccountName(name);
-    const city = accountData?.cityQuery?.cityName || '';
-    setCityName(city);
+    const firstNonDetachedAccount = accountList.find(([, data]) => !data.isDetached);
+    setAccountId(firstNonDetachedAccount ? firstNonDetachedAccount[0] : accountList[0]?.[0]);
   }, [accountId, forceUpdate]);
 
   const otherCityUpdated = useTabStore((state) => state.otherCityUpdated);

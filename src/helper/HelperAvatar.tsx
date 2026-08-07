@@ -9,7 +9,10 @@ interface HelperAvatarProps {
 const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
   const avatarUrl = chrome.runtime.getURL('helper.png');
   const { message, hideMessage, showThrottledMessages } = useHelper();
-  const [isVisible, setIsVisible] = React.useState(false);
+  // The bubble is shown exactly when there is a message, so this is a read of the message
+  // rather than a copy of it kept in step by an effect - which showed the bubble a render
+  // late and, on the way out, animated it away a render after the text had already gone.
+  const isVisible = !!message;
 
   // Zustand Tab Store Integration
   const savedPosition = useTabStore((state) => state.avatarPosition);
@@ -27,14 +30,6 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
     const currentX = window.innerWidth - 80 + position.x;
     return currentX < window.innerWidth / 2;
   }, [position.x]);
-
-  React.useEffect(() => {
-    if (message) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  }, [message]);
 
   React.useEffect(() => {
     if (savedPosition) {

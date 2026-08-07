@@ -24,8 +24,6 @@ export function FellowshipAdventure() {
   const [badges, setBadges] = React.useState<Badges | undefined>(undefined);
 
   const [endTime, setEndTime] = React.useState<number | undefined>(undefined);
-  // New state for detached check
-  const [isDetached, setIsDetached] = React.useState<boolean>(false);
 
   const [mmEnchantmentEnabled, setMmEnchantmentEnabled] = React.useState<boolean>(false);
   const [enchantmentBonus, setEnchantmentBonus] = React.useState<number>(50);
@@ -45,6 +43,9 @@ export function FellowshipAdventure() {
 
   // Extract ONLY the stock imported for the currently viewed account
   const currentImportedStock = accountId ? importedStockByAccount[accountId] || {} : {};
+
+  // A read of the account, not a copy of it kept in step by the effect below.
+  const isDetached = !!accountData?.isDetached;
 
   React.useEffect(() => {
     if (!accountId) {
@@ -96,8 +97,6 @@ export function FellowshipAdventure() {
     if (!paramsLoaded) {
       return;
     }
-
-    setIsDetached(accountData.isDetached);
 
     let cancelled = false;
 

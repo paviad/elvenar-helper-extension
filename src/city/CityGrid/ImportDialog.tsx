@@ -12,7 +12,6 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
   const [dataString, setDataString] = React.useState('');
   const [name, setName] = React.useState('');
   const [isConfirming, setIsConfirming] = React.useState(false);
-  const [isValid, setIsValid] = React.useState(false);
 
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const nameInputRef = React.useRef<HTMLInputElement>(null);
@@ -31,10 +30,9 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
     }
   };
 
-  // Re-validate whenever dataString changes
-  React.useEffect(() => {
-    setIsValid(validateInput(dataString));
-  }, [dataString]);
+  // Re-read whenever dataString changes. As an effect writing state this ran a render
+  // behind the textarea, so the Import button was enabled against the previous keystroke.
+  const isValid = validateInput(dataString);
 
   // Reset state & Check Clipboard when dialog opens
   React.useEffect(() => {
@@ -43,7 +41,6 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
       setDataString('');
       setName('');
       setIsConfirming(false);
-      setIsValid(false);
 
       // 2. Attempt to read clipboard automatically
       const checkClipboard = async () => {
