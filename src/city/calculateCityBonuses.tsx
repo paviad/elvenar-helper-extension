@@ -1,8 +1,9 @@
-import { CityContextType } from './CityContext';
+import { Effect } from '../model/effect';
 
-export function calculateCityBonuses(city: CityContextType, blocks: { id: string; level: number }[]) {
-  const effects = city.effects;
-  const squadSize = city.squadSize;
+// Takes the two fields it reads rather than the whole city context. As a context argument
+// the callers' memo dependency lists had to name those fields by hand to stay honest,
+// with nothing but discipline keeping the two in step.
+export function calculateCityBonuses(effects: Effect[], squadSize: number, blocks: { id: string; level: number }[]) {
   const effectsResidentialPopulationBoost = effects.filter((r) => r.action === 'residential_population_boost');
   const effectsAvailablePopulationBonus = effects.filter((r) => r.action === 'available_population_bonus');
   const effectsAvailableCultureBonus = effects.filter((r) => r.action === 'available_culture_bonus');

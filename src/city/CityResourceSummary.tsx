@@ -31,7 +31,7 @@ export const CityResourceSummary = () => {
   const evolvingBuildings = city.evolvingBuildings;
 
   const { residentialBonus, availablePopulationBonus, cultureByRankingPoints, extraAvailableCulture } = React.useMemo(
-    () => calculateCityBonuses(city, blocksIdAndLevel),
+    () => calculateCityBonuses(city.effects, city.squadSize, blocksIdAndLevel),
     [city.effects, city.squadSize, blocksIdAndLevel],
   );
 

@@ -26,7 +26,9 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
   const populationFactor = evolvingBuilding?.stages.find((s) => s.id === stage)?.population || 1;
 
   const { residentialBonus, availablePopulationBonus, cultureByRankingPoints, extraAvailableCulture } =
-    calculateCityBonuses(city, [{ id: building.sourceBuilding.id, level: building.sourceBuilding.level }]);
+    calculateCityBonuses(city.effects, city.squadSize, [
+      { id: building.sourceBuilding.id, level: building.sourceBuilding.level },
+    ]);
 
   const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
   const extraAvailablePopulation = Math.ceil(popRequired * availablePopulationBonus);
