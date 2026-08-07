@@ -227,7 +227,9 @@ export const useCityGridState = () => {
   // it is reached through a ref: depending on blocks directly detached and reattached
   // this window listener on every frame of a drag.
   const saveCityRef = React.useRef(saveCity);
-  saveCityRef.current = saveCity;
+  React.useEffect(() => {
+    saveCityRef.current = saveCity;
+  });
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

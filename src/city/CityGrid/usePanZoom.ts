@@ -79,13 +79,17 @@ export function usePanZoom({ zoomLevels, anchorScroll, idleCursor }: PanZoomOpti
   const startPan = React.useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // The wheel listener is registered once, so read the callers' latest callbacks
-  // through refs rather than capturing the first render's copies.
+  // through refs rather than capturing the first render's copies. Synced in an effect
+  // rather than during render: every reader is a wheel or mouse handler, so none of them
+  // can run before the commit that updates these.
   const anchorScrollRef = React.useRef(anchorScroll);
-  anchorScrollRef.current = anchorScroll;
   const zoomLevelsRef = React.useRef(zoomLevels);
-  zoomLevelsRef.current = zoomLevels;
   const idleCursorRef = React.useRef(idleCursor);
-  idleCursorRef.current = idleCursor;
+  React.useEffect(() => {
+    anchorScrollRef.current = anchorScroll;
+    zoomLevelsRef.current = zoomLevels;
+    idleCursorRef.current = idleCursor;
+  });
 
   React.useLayoutEffect(() => {
     if (pendingScrollUpdate.current && containerRef.current) {

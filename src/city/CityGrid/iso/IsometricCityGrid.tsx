@@ -35,6 +35,8 @@ export function IsometricCityGrid() {
     chapter,
     allTypes,
     techSprite,
+    replacedArea,
+    svgRef,
   } = city;
 
   // --- Isometric Configuration ---
@@ -84,11 +86,15 @@ export function IsometricCityGrid() {
     );
   };
 
-  // Kept stable so the memoised blocks are not invalidated by every city change.
+  // Kept stable so the memoised blocks are not invalidated by every city change. Synced
+  // in an effect rather than during render: both readers are event handlers, which cannot
+  // run before the commit that updates these.
   const cityRef = React.useRef(city);
-  cityRef.current = city;
   const helperRef = React.useRef(helper);
-  helperRef.current = helper;
+  React.useEffect(() => {
+    cityRef.current = city;
+    helperRef.current = helper;
+  });
 
   const onPickUp = React.useCallback(
     (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => {
@@ -179,12 +185,12 @@ export function IsometricCityGrid() {
       {...panHandlers}
     >
       <svg
-        ref={city.svgRef}
+        ref={svgRef}
         width={totalWidth}
         height={totalHeight}
         style={{
           backgroundColor: '#1a1a2e',
-          cursor: city.dragIndex !== null ? 'grabbing' : 'crosshair',
+          cursor: dragIndex !== null ? 'grabbing' : 'crosshair',
           userSelect: 'none',
           display: 'block',
         }}
@@ -244,14 +250,14 @@ export function IsometricCityGrid() {
         {blockShapes}
 
         {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
-        {city.replacedArea && (
+        {replacedArea && (
           <g pointerEvents='none'>
             <animate attributeName='opacity' values='1;0.4;1' dur='1.4s' repeatCount='indefinite' />
             {renderPolygon(
-              city.replacedArea.x,
-              city.replacedArea.y,
-              city.replacedArea.width,
-              city.replacedArea.length,
+              replacedArea.x,
+              replacedArea.y,
+              replacedArea.width,
+              replacedArea.length,
               'rgba(255, 23, 68, 0.45)',
               '#ff1744',
               0,

@@ -14,7 +14,8 @@ const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 export function CityGrid() {
   const city = useCity();
   const helper = useHelper();
-  const { dragIndex, blocks, highlightedIds, chapter, allTypes, techSprite, unlockAreaMode, unlockedAreas } = city;
+  const { dragIndex, blocks, highlightedIds, chapter, allTypes, techSprite, unlockAreaMode, unlockedAreas, svgRef } =
+    city;
 
   const { containerRef, zoom, zoomTo, panHandlers } = usePanZoom({
     zoomLevels: ZOOM_LEVELS,
@@ -142,11 +143,15 @@ export function CityGrid() {
 
   // The blocks are memoised on their props, so their callbacks have to keep a stable
   // identity across renders. Reading the city through a ref keeps them current
-  // without making them change every time anything in the city does.
+  // without making them change every time anything in the city does. The sync happens
+  // in an effect rather than during render: both readers are event handlers, which
+  // cannot run before the commit that updates these.
   const cityRef = React.useRef(city);
-  cityRef.current = city;
   const helperRef = React.useRef(helper);
-  helperRef.current = helper;
+  React.useEffect(() => {
+    cityRef.current = city;
+    helperRef.current = helper;
+  });
 
   const onPickUp = React.useCallback(
     (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => {
@@ -228,7 +233,7 @@ export function CityGrid() {
       onMouseMove={onMouseMove}
     >
       <svg
-        ref={city.svgRef}
+        ref={svgRef}
         width={totalDimension}
         height={totalDimension}
         style={{
@@ -246,7 +251,7 @@ export function CityGrid() {
           {/* Main Playable Background (Optional visual aid) */}
           <rect x={0} y={0} width={gridDimension} height={gridDimension} fill='#145214' />
 
-          {city.unlockedAreas.map((area, idx) => (
+          {unlockedAreas.map((area, idx) => (
             <rect
               key={`unlocked-${idx}`}
               x={area.x * gridSizePx}
@@ -284,14 +289,14 @@ export function CityGrid() {
           {blockRects}
 
           {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
-          {city.replacedArea && (
+          {replacedArea && (
             <g pointerEvents='none'>
               <animate attributeName='opacity' values='1;0.4;1' dur='1.4s' repeatCount='indefinite' />
               <rect
-                x={city.replacedArea.x * gridSizePx}
-                y={city.replacedArea.y * gridSizePx}
-                width={city.replacedArea.width * gridSizePx}
-                height={city.replacedArea.length * gridSizePx}
+                x={replacedArea.x * gridSizePx}
+                y={replacedArea.y * gridSizePx}
+                width={replacedArea.width * gridSizePx}
+                height={replacedArea.length * gridSizePx}
                 fill='#ff1744'
                 fillOpacity={0.35}
                 stroke='#ff1744'
