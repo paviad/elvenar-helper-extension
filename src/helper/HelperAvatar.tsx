@@ -20,7 +20,12 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
 
   // --- Dragging State ---
   const [position, setPosition] = React.useState(savedPosition || { x: 0, y: 0 });
+  // The ref is what the pointer and click handlers read, since a click arrives before any
+  // re-render would land and it has to know whether the gesture was a drag. The cursor is
+  // rendered, though, and a ref does not trigger a render - it only appeared to work
+  // because dragging sets the position on every move. Hence the pair.
   const isDraggingRef = React.useRef(false);
+  const [isDragging, setIsDragging] = React.useState(false);
   const dragStartRef = React.useRef({ x: 0, y: 0 });
   const initialMousePos = React.useRef({ x: 0, y: 0 });
 
@@ -64,6 +69,7 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
 
       if (dx > 5 || dy > 5) {
         isDraggingRef.current = true;
+        setIsDragging(true);
       }
 
       setPosition({
@@ -75,6 +81,7 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.releasePointerCapture(e.pointerId);
+    setIsDragging(false);
 
     if (isDraggingRef.current) {
       setSavedPosition(position);
@@ -134,7 +141,7 @@ const HelperAvatar: React.FC<HelperAvatarProps> = ({ onAvatarClick }) => {
         onPointerUp={handlePointerUp}
         style={{
           ...styles.avatarCircle,
-          cursor: isDraggingRef.current ? 'grabbing' : 'grab',
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
         role='button'
         tabIndex={0}
