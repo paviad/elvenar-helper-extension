@@ -49,7 +49,12 @@ export const NeighbourlyHelp: React.FC<{ refresh: number }> = ({ refresh }) => {
 
   useEffect(() => {
     fetchWorldNeighbors();
-    return () => handleStop(); // Ensure we stop any ongoing automation when the component unmounts
+    // Stop any automation still running when the panel goes away. Raising the flag here
+    // rather than calling handleStop: that is declared two hundred lines below, so this
+    // reached forward to it and captured the first render's copy for the panel's lifetime.
+    return () => {
+      stopRequestedRef.current = true;
+    };
   }, []);
 
   useEffect(() => {

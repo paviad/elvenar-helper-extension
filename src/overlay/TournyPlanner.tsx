@@ -119,7 +119,7 @@ export const TournyPlanner = () => {
 
   const spriteUrl = chrome.runtime.getURL('military_sprite.png');
 
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   // Priority UI Control State
   const [modBuilding, setModBuilding] = useState<TrainingBuilding | 'any'>('any');
@@ -131,7 +131,7 @@ export const TournyPlanner = () => {
   const cooldownTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
-    // Refresh the component every minute to update the "time left" counters automatically
+    // Refresh the component every second to update the "time left" counters automatically
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -152,10 +152,17 @@ export const TournyPlanner = () => {
   };
 
   useEffect(() => {
+    // The game pushes tournament updates in bursts, so this can be restarted while an
+    // earlier run is still awaiting storage or the almanac. Without the guard the two
+    // race and whichever finishes last wins, which is not necessarily the newer one.
+    let cancelled = false;
+
     async function fetchData() {
       const accountId = getAccountId();
       if (!accountId) return;
       await loadSingleAccountFromStorage(accountId);
+      if (cancelled) return;
+
       const accountData = getAccountById(accountId);
       const armyDetails = accountData?.cityQuery?.armyDetails;
       if (!armyDetails) return;
@@ -174,6 +181,7 @@ export const TournyPlanner = () => {
 
       try {
         const almanac = await getBattleUnitTypes();
+        if (cancelled) return;
         setUnitAlmanac(almanac);
         const availableUnitTypeIds = armyDetails.availableUnitTypeIds as UnitType[];
         const rosterUnits = almanac.filter((unit) => availableUnitTypeIds.includes(unit.unitTypeId));
@@ -183,6 +191,10 @@ export const TournyPlanner = () => {
       }
     }
     void fetchData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [tournyData]);
 
   const sortedProvinces: ExtendedProvince[] = useMemo(() => {
