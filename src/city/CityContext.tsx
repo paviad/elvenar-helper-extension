@@ -138,8 +138,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [localRefresh, triggerLocalRefresh] = React.useReducer((x) => x + 1, 0);
 
-  const [emptySquares, setEmptySquares] = React.useState<number>(0);
-
   const [ready, setReady] = React.useState<boolean>(false);
   const [modified, setModified] = React.useState<boolean>(false);
 
@@ -271,35 +269,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }, [cityEntities]);
 
   React.useEffect(() => {
-    // don't calculate while dragging to avoid performance issues
-    if (dragIndex !== null) {
-      return;
-    }
-
-    const allSquares = unlockedAreas.flatMap((area) => {
-      const squares = [];
-      for (let x = area.x; x <= area.x + area.width - 1; x++) {
-        for (let y = area.y; y <= area.y + area.length - 1; y++) {
-          squares.push(`${x},${y}`);
-        }
-      }
-      return squares;
-    });
-    const blockSquares = Object.values(blocks).flatMap((b) => {
-      const squares = [];
-      for (let x = b.x; x <= b.x + b.width - 1; x++) {
-        for (let y = b.y; y <= b.y + b.length - 1; y++) {
-          squares.push(`${x},${y}`);
-        }
-      }
-      return squares;
-    });
-    const setOfBlockSquares: Set<string> = new Set(blockSquares);
-    const unoccupiedSquares = allSquares.filter((x) => !setOfBlockSquares.has(x));
-    setEmptySquares(unoccupiedSquares.length);
-  }, [blocks, dragIndex]);
-
-  React.useEffect(() => {
     async function Do() {
       await buildingFinder?.ensureInitialized();
     }
@@ -337,6 +306,33 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     Object.values(settledBlocks).forEach((b) => set.add(b.type));
     return Array.from(set);
   }, [settledBlocks]);
+
+  // Unlocked tiles no block sits on. Derived like the rest of the whole-city figures, off
+  // the settled layout - which is what the dragIndex guard it used to carry was for. As an
+  // effect it also listed only the blocks as a dependency, so unlocking an expansion left
+  // the count untouched until the next time a building moved.
+  const emptySquares = React.useMemo(() => {
+    const allSquares = unlockedAreas.flatMap((area) => {
+      const squares = [];
+      for (let x = area.x; x <= area.x + area.width - 1; x++) {
+        for (let y = area.y; y <= area.y + area.length - 1; y++) {
+          squares.push(`${x},${y}`);
+        }
+      }
+      return squares;
+    });
+    const blockSquares = Object.values(settledBlocks).flatMap((b) => {
+      const squares = [];
+      for (let x = b.x; x <= b.x + b.width - 1; x++) {
+        for (let y = b.y; y <= b.y + b.length - 1; y++) {
+          squares.push(`${x},${y}`);
+        }
+      }
+      return squares;
+    });
+    const setOfBlockSquares: Set<string> = new Set(blockSquares);
+    return allSquares.filter((x) => !setOfBlockSquares.has(x)).length;
+  }, [settledBlocks, unlockedAreas]);
 
   const clearRedoStack = React.useCallback(() => {
     setRedoStack([]);
