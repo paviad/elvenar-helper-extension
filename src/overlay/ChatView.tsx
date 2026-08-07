@@ -28,6 +28,9 @@ const currentMatchFace = 'linear-gradient(180deg, #ffe9a8 0%, #f7d98a 100%)';
 const matchFace = 'linear-gradient(180deg, #fffbe6 0%, #fbf1cd 100%)';
 const unreadStripe = 'inset 3px 0 0 #4c8a3f';
 
+/** Stable empty result, so an unsearched view does not hand out a fresh array each render. */
+const NO_MATCHES: number[] = [];
+
 // Extend the Window interface to include forceChatRerender
 declare global {
   interface Window {
@@ -47,7 +50,6 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   const containerRef = React.useRef<HTMLDivElement>(null);
   const useOverlayStore = getOverlayStore();
   const chatMessages = useOverlayStore((state) => state.chatMessages);
-  const [sortedMessages, setSortedMessages] = React.useState<ChatMessage[]>([]);
   const userMap = useOverlayStore((state) => state.userMap);
   const forceUpdate = useOverlayStore((state) => state.forceUpdate);
   const overlayExpanded = useOverlayStore((state) => state.overlayExpanded);
@@ -59,18 +61,15 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   // Array of refs for each message
   const messageRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
-  const [firstActivated, setFirstActivated] = React.useState(false);
-
-  // Search state
-  // searchActive and searchTerm now come from props
-  const [searchMatches, setSearchMatches] = React.useState<number[]>([]); // indices in sortedMessages
-  const [searchIndex, setSearchIndex] = React.useState(0);
+  // Scrolling to the newest message is a one-off on open, so it is tracked with a ref -
+  // as state it forced a second render on mount for something nothing renders.
+  const hasScrolledToEnd = React.useRef(false);
 
   React.useEffect(() => {
     const handler = () => setSearchActive(true);
     window.addEventListener('chat-search-activate', handler);
     return () => window.removeEventListener('chat-search-activate', handler);
-  }, []);
+  }, [setSearchActive]);
 
   // Helper to get user display name and avatar
   function getUserInfo(userId: string) {
@@ -81,35 +80,40 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
   }
 
   // Sort messages by timestamp ascending (ensure numeric sort)
-  React.useEffect(() => {
-    const sortedMessages = chatMessages
-      ? [...chatMessages].sort((a, b) => {
-          const aNum = parseInt(a.timestamp, 10);
-          const bNum = parseInt(b.timestamp, 10);
-          return aNum - bNum;
-        })
-      : [];
-    setSortedMessages(sortedMessages);
-  }, [chatMessages]);
+  const sortedMessages = React.useMemo(
+    () =>
+      chatMessages
+        ? [...chatMessages].sort((a, b) => {
+            const aNum = parseInt(a.timestamp, 10);
+            const bNum = parseInt(b.timestamp, 10);
+            return aNum - bNum;
+          })
+        : [],
+    [chatMessages],
+  );
 
   // Search logic
-  React.useEffect(() => {
-    if (!searchTerm) {
-      setSearchMatches([]);
-      setSearchIndex(0);
-      return;
-    }
+  const searchMatches = React.useMemo(() => {
+    if (!searchTerm) return NO_MATCHES;
     const term = searchTerm.toLowerCase();
-    const matches = sortedMessages
+    return sortedMessages
       .map((msg, idx) =>
         msg.text.toLowerCase().includes(term) || (userMap[msg.user] || msg.user).toLowerCase().includes(term)
           ? idx
           : -1,
       )
       .filter((idx) => idx !== -1);
-    setSearchMatches(matches);
-    setSearchIndex(matches.length > 0 ? matches.length - 1 : 0);
   }, [searchTerm, sortedMessages, userMap]);
+
+  // Where the ▲/▼ buttons have moved to, tagged with the match list it was chosen from.
+  // When a new list comes along - a different query, or a message arriving mid-search -
+  // the tag no longer matches and the cursor falls back to the newest hit, which is what
+  // the effect that used to reset searchIndex did.
+  const [searchCursor, setSearchCursor] = React.useState<{ matches: number[]; index: number } | null>(null);
+  const searchIndex =
+    searchCursor && searchCursor.matches === searchMatches ? searchCursor.index : Math.max(0, searchMatches.length - 1);
+  const moveSearchIndex = (next: (i: number) => number) =>
+    setSearchCursor({ matches: searchMatches, index: next(searchIndex) });
 
   // Scroll highlighted match into view
   React.useEffect(() => {
@@ -141,16 +145,17 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
     }
   }, [sortedMessages]);
 
+  // Open at the newest message, once. This used to fire on mount against the empty initial
+  // state - the sort had not landed yet - so it scrolled a container with nothing in it and
+  // then marked itself done, and the chat opened at the top. Waiting for the first non-empty
+  // render is what makes it land on the bottom. A layout effect already runs after the rows
+  // are in the DOM, so scrollHeight is final here and the deferring setTimeout is not needed.
   React.useLayoutEffect(() => {
-    if (!firstActivated) {
-      const el = containerRef.current;
-      setTimeout(() => {
-        if (el) {
-          el.scrollTop = el.scrollHeight;
-        }
-      }, 0);
-      setFirstActivated(true);
-    }
+    if (hasScrolledToEnd.current || sortedMessages.length === 0) return;
+    const el = containerRef.current;
+    if (!el) return;
+    hasScrolledToEnd.current = true;
+    el.scrollTop = el.scrollHeight;
   }, [sortedMessages]);
 
   React.useEffect(() => {
@@ -164,37 +169,27 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
         el.scrollTop = el.scrollHeight;
       }
     }
-  }, [overlayExpanded]);
-
-  const [unreadUuid, setUnreadUuid] = React.useState<string | undefined>(undefined);
-
-  React.useEffect(() => {
-    if (searchActive || !lastSeenChat) {
-      setUnreadUuid(undefined);
-      return;
-    }
-    // Update last seen chat timestamp
-    const firstUnread = sortedMessages.find((msg) => {
-      const tsNum = parseInt(msg.timestamp, 10);
-      return tsNum > lastSeenChat;
-    });
-    setUnreadUuid(firstUnread?.uuid);
-  }, [sortedMessages, lastSeenChat, searchActive]);
+  }, [overlayExpanded, setSearchActive]);
 
   // Determine which messages to show
   const total = sortedMessages.length;
-  let firstUnreadIdx = total;
+
+  // Where the unread run starts, or `total` when there is nothing unread to mark. Both the
+  // separator and the size of the visible window are cut from this, and it used to be
+  // computed twice - once here, and once in state a render behind, which is how the marker
+  // and the window they are meant to agree on could disagree.
+  const firstUnreadIdx = (() => {
+    if (searchActive || !lastSeenChat) return total;
+    const idx = sortedMessages.findIndex((msg) => parseInt(msg.timestamp, 10) > lastSeenChat);
+    return idx === -1 ? total : idx; // all read
+  })();
+  const unreadUuid = firstUnreadIdx < total ? sortedMessages[firstUnreadIdx].uuid : undefined;
+
   let visMsg: ChatMessage[];
   if (searchActive && searchTerm) {
     visMsg = sortedMessages;
   } else if (lastSeenChat && !searchActive) {
     // Show messages since last seen
-    firstUnreadIdx = sortedMessages.findIndex((msg) => {
-      const tsNum = parseInt(msg.timestamp, 10);
-      return tsNum > lastSeenChat;
-    });
-
-    if (firstUnreadIdx === -1) firstUnreadIdx = total; // all read
     const realVisibleCount = total - firstUnreadIdx + visibleCount;
     const startIdx = total > realVisibleCount ? total - realVisibleCount : 0;
     visMsg = sortedMessages.slice(startIdx);
@@ -260,7 +255,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
             size='small'
             sx={{ ml: 1, color: gild.bronze }}
             disabled={searchMatches.length === 0}
-            onClick={() => setSearchIndex((i) => (i - 1 + searchMatches.length) % searchMatches.length)}
+            onClick={() => moveSearchIndex((i) => (i - 1 + searchMatches.length) % searchMatches.length)}
           >
             <span style={{ fontSize: 16 }}>▲</span>
           </IconButton>
@@ -269,7 +264,7 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
             size='small'
             sx={{ ml: 0.5, color: gild.bronze }}
             disabled={searchMatches.length === 0}
-            onClick={() => setSearchIndex((i) => (i + 1) % searchMatches.length)}
+            onClick={() => moveSearchIndex((i) => (i + 1) % searchMatches.length)}
           >
             <span style={{ fontSize: 16 }}>▼</span>
           </IconButton>
