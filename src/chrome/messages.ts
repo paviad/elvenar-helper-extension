@@ -1,6 +1,7 @@
 import { NonSpecificMessage } from '../inject/nonSpecificMessages';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { TradeSummary } from '../model/tradeSummary';
+import { reportPossibleContextLoss } from './extensionContext';
 
 // ============================================================================
 // 1. RUNTIME MESSAGES (Global / Background Bound) - TYPES
@@ -129,6 +130,8 @@ export const sendInterceptedPlayerSpecificRequest = async (payload: PlayerSpecif
       payload,
     } satisfies InterceptedPlayerSpecificRequest);
   } catch (e) {
+    // The game keeps this one busy, so it is usually the first to notice the extension going away.
+    reportPossibleContextLoss(e);
     console.log('ElvenAssist: Error sending interceptedPlayerSpecificRequest:', e, payload);
   }
 };
@@ -140,6 +143,7 @@ export const sendInterceptedNonSpecificRequest = async (payload: NonSpecificMess
       payload,
     } satisfies InterceptedNonSpecificRequest);
   } catch (e) {
+    reportPossibleContextLoss(e);
     console.log('ElvenAssist: Error sending interceptedNonSpecificRequest:', e);
   }
 };
@@ -165,6 +169,7 @@ export const sendCityEntitiesUpdatedMessage = async (tabId: number) => {
       tabId,
     } satisfies CityEntitiesUpdatedMessage);
   } catch (e) {
+    reportPossibleContextLoss(e);
     console.log('ElvenAssist: Error sending cityEntitiesUpdated message:', e);
   }
 };
@@ -173,6 +178,7 @@ export const sendOtherPlayerCityDataUpdatedMessage = async () => {
   try {
     await chrome.runtime.sendMessage({ type: 'otherPlayerCityUpdated' } satisfies OtherPlayerCityUpdatedMessage);
   } catch (e) {
+    reportPossibleContextLoss(e);
     console.log('ElvenAssist: Error sending otherPlayerCityUpdated message:', e);
   }
 };
@@ -184,6 +190,7 @@ export const sendCitySavedMessage = async (accountId: string) => {
       accountId,
     } satisfies CitySavedMessage);
   } catch (e) {
+    reportPossibleContextLoss(e);
     console.log('ElvenAssist: Error sending citySaved message:', e);
   }
 };
@@ -194,6 +201,7 @@ export const sendTradeOpenedMessage = async () => {
       type: 'tradeOpened',
     } satisfies TradeOpenedMessage);
   } catch (e) {
+    reportPossibleContextLoss(e);
     console.log('ElvenAssist: Error sending tradeOpened message:', e);
   }
 };

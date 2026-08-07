@@ -1,4 +1,5 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
+import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
 import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
@@ -35,6 +36,8 @@ const MAX_PANEL_HEIGHT = 800;
 
 /** Matches MUI's small IconButton, so the hand-built buttons and the React ones are one size. */
 const HEADER_BUTTON_SIZE = 30;
+
+const REFRESH_REQUIRED_TITLE = 'Extension Updated, Please Refresh the Tab';
 
 /** The header's buttons are built by hand here and by MUI in React; this is what makes them match. */
 function styleAsHeaderButton(el: HTMLElement) {
@@ -160,6 +163,38 @@ const initFunc = () => {
   iconImg.style.width = '20px';
   iconImg.style.height = '20px';
 
+  // Swap the icon for a red cross: the extension is out of reach and only reloading the tab will
+  // bring it back. Called both by a send that failed and by the watch that spots the context going
+  // away on its own, so it has to survive being called twice - the second call must not strip an
+  // icon that is no longer there.
+  let refreshRequired = false;
+  function showRefreshRequired() {
+    if (refreshRequired) return;
+    refreshRequired = true;
+
+    // Whatever we were waiting on is not coming now.
+    waitingIcon.remove();
+
+    // The cross swaps inside the icon's own box, so the rest of the row - including the collapse
+    // toggle - is untouched.
+    iconImg.remove();
+
+    const errorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    errorSvg.setAttribute('width', '20');
+    errorSvg.setAttribute('height', '20');
+    errorSvg.setAttribute('viewBox', '0 0 20 20');
+    errorSvg.innerHTML = `
+        <circle cx="10" cy="10" r="9" fill="#fff" stroke="#e53935" stroke-width="2"/>
+        <line x1="6" y1="6" x2="14" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+        <line x1="14" y1="6" x2="6" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+      `;
+    const titleElem = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    titleElem.textContent = REFRESH_REQUIRED_TITLE;
+    errorSvg.appendChild(titleElem);
+    iconButton.appendChild(errorSvg);
+    iconButton.title = REFRESH_REQUIRED_TITLE;
+  }
+
   iconButton.addEventListener('click', () => {
     if (isDragging) return;
     void (async () => {
@@ -167,23 +202,8 @@ const initFunc = () => {
         await chrome.runtime.sendMessage({ type: 'openExtensionTab' });
       } catch (error) {
         console.error('Error opening extension tab:', error);
-        // Show a red cross SVG in place of the icon. It swaps inside the icon's own box, so the
-        // rest of the row - including the collapse toggle - is untouched.
-        iconButton.removeChild(iconImg);
-
-        const errorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        errorSvg.setAttribute('width', '20');
-        errorSvg.setAttribute('height', '20');
-        errorSvg.setAttribute('viewBox', '0 0 20 20');
-        errorSvg.innerHTML = `
-        <circle cx="10" cy="10" r="9" fill="#fff" stroke="#e53935" stroke-width="2"/>
-        <line x1="6" y1="6" x2="14" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
-        <line x1="14" y1="6" x2="6" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
-      `;
-        const titleElem = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        titleElem.textContent = 'Extension Updated, Please Refresh the Tab';
-        errorSvg.appendChild(titleElem);
-        iconButton.appendChild(errorSvg);
+        reportPossibleContextLoss(error);
+        showRefreshRequired();
       }
     })();
   });
@@ -471,6 +491,12 @@ const initFunc = () => {
   draggableDiv.style.display = 'block';
   draggableDiv.style.pointerEvents = 'auto';
   document.body.appendChild(draggableDiv);
+
+  // The extension can be reloaded, updated or disabled at any moment, and this script would carry
+  // on with no way to reach it and no reason to say so. Watching for that means the cross appears
+  // by itself rather than waiting for someone to click the icon and find out the hard way.
+  onExtensionContextLost(showRefreshRequired);
+  watchExtensionContext();
 
   setupMessageListener();
   setupCityDataUpdatedListener(({ tabId }) => {
