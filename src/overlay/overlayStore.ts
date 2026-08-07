@@ -45,8 +45,9 @@ interface OverlayState {
   // In game time (unix seconds from the posts), not local clock time.
   swapsClearedAt?: number;
   setSwapsClearedAt: (at: number) => void;
-  // Deliberately not persisted: it is only ever as good as the current tournament round, and a
-  // stale copy would show encounters that have since been fought.
+  // Persisted, so a page refresh does not blank the tab until the game happens to resend the
+  // tournament responses. Every field is refreshed the moment a new one arrives, and the upgrade
+  // timers are stored as absolute times so a reloaded copy still counts down correctly.
   tournyData?: TournyData;
   setTournyData: (data: TournyData) => void;
   // The most recent tournament seen, running or just ended. Persisted so the fixed rotation can
@@ -130,7 +131,6 @@ export const generateOverlayStore = (accountId: string) => {
             eeUpdate,
             messagesUpdate,
             messagesDetailsReceived,
-            tournyData,
             ...toPersist
           } = state;
           return toPersist;
