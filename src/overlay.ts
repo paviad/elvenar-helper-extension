@@ -120,6 +120,35 @@ const initFunc = () => {
   reactHeaderActions.style.alignItems = 'center';
   headerActions.appendChild(reactHeaderActions);
 
+  // Until the game sends city data there is no store, no React and no content - collapsed, the
+  // panel is just an icon and a plus, with nothing to say it is still coming up. The hourglass
+  // fills that gap and is removed the moment the data lands.
+  const waitingIcon = document.createElement('div');
+  styleAsHeaderButton(waitingIcon);
+  waitingIcon.style.cursor = 'default';
+  waitingIcon.title = 'Waiting for city data...';
+  // Sized like a header button so the row stays even, but it is not one: this cancels the hover
+  // highlight the styling adds, so it does not read as something to click.
+  waitingIcon.addEventListener('mouseenter', () => {
+    waitingIcon.style.background = 'transparent';
+  });
+
+  const svgHourglass = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svgHourglass.setAttribute('width', '18');
+  svgHourglass.setAttribute('height', '18');
+  svgHourglass.setAttribute('viewBox', '0 0 24 24');
+  svgHourglass.innerHTML =
+    '<path fill="currentColor" d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"/>';
+  waitingIcon.appendChild(svgHourglass);
+  // Animated through the Web Animations API rather than a keyframes rule: the panel is injected
+  // into the game's page and carries no stylesheet of its own. The shape is symmetric under a
+  // half turn, so the jump back to 0 at the end of each iteration is invisible.
+  waitingIcon.animate(
+    [{ transform: 'rotate(0deg)' }, { offset: 0.7, transform: 'rotate(0deg)' }, { transform: 'rotate(180deg)' }],
+    { duration: 2000, iterations: Infinity },
+  );
+  headerActions.appendChild(waitingIcon);
+
   // Extension icon, in its own button-sized box so it lines up with the rest of the row.
   const iconButton = document.createElement('div');
   styleAsHeaderButton(iconButton);
@@ -445,6 +474,7 @@ const initFunc = () => {
 
   setupMessageListener();
   setupCityDataUpdatedListener(({ tabId }) => {
+    waitingIcon.remove();
     setup(tabId, content, reactHeaderActions).catch((err) => {
       console.error('Error setting up overlay:', err);
     });
