@@ -142,7 +142,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [modified, setModified] = React.useState<boolean>(false);
 
   // Account data is only replaced when the city is switched or reloaded, and a reload
-  // bumps forceUpdate, so those two cover every change to what this reads.
+  // bumps forceUpdate, so those two cover every change to what this reads. forceUpdate is
+  // not referenced in the body — getAccountById reads a module-level store, which the lint
+  // rule cannot see, so the bump is the only thing telling us that store has moved on.
   const { race, boostedGoods, isDetached } = React.useMemo(() => {
     const accountData = accountId ? getAccountById(accountId) : undefined;
     return {
@@ -150,7 +152,21 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       boostedGoods: accountData?.cityQuery?.boostedGoods ?? NO_BOOSTED_GOODS,
       isDetached: accountData?.isDetached ?? true,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId, forceUpdate]);
+
+  // Values the effects below read at the moment they fire, but which are not themselves
+  // reasons to fire. Listing them as dependencies would turn each into a trigger — a
+  // chapter change would write the city out on its own, and undoing back to an empty move
+  // log would reload the city out from under the user. Reading them through a ref instead
+  // means an effect picks up the current value rather than whichever one it last closed
+  // over: switching account between a move and its save used to write the new layout to
+  // the old city. This sync is declared above its readers, so it has already run by the
+  // time they do in the same commit.
+  const latest = React.useRef({ accountId, chapter, isDetached, moveLogLength: moveLog.length });
+  React.useEffect(() => {
+    latest.current = { accountId, chapter, isDetached, moveLogLength: moveLog.length };
+  });
 
   const previousAccountId = React.useRef<string | undefined>(accountId);
 
@@ -176,7 +192,8 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   }, [accountId]);
 
   React.useEffect(() => {
-    if (moveLog.length !== 0) {
+    // Unsaved moves outrank fresh data from the game: reloading here would discard them.
+    if (latest.current.moveLogLength !== 0) {
       return;
     }
 
@@ -193,6 +210,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   React.useEffect(() => {
     setReady(false);
     async function fetchCityData() {
+      const { accountId } = latest.current;
       if (!accountId) {
         return;
       }
@@ -225,6 +243,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
 
   const firstLoad = React.useRef(true);
 
+  // The layout landing is what writes the city out. saveCityAuto used to live below this
+  // as a separate function, so the effect reached forward to a binding declared after it
+  // and got a fresh copy on every render; folded in here it is simply part of the effect.
   React.useEffect(() => {
     if (!ready || dragIndex !== null) {
       return;
@@ -233,26 +254,33 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       firstLoad.current = false;
       return;
     }
-    setModified(true);
-    if (isDetached) {
-      const cityEntities = saveBack(Object.values(blocks));
-      void saveCityInPlace(accountId!, cityEntities, chapter, unlockedAreas);
-    } else {
-      void saveCityAuto();
-    }
-  }, [blocks, unlockedAreas, ready, dragIndex]);
 
-  async function saveCityAuto() {
-    if (!accountId) return;
+    const { accountId, chapter, isDetached } = latest.current;
+    setModified(true);
+    if (!accountId) {
+      return;
+    }
+
+    const cityEntities = saveBack(Object.values(blocks));
+    if (isDetached) {
+      void saveCityInPlace(accountId, cityEntities, chapter, unlockedAreas);
+      return;
+    }
+
     const accountName = getAccountById(accountId)?.cityQuery?.accountName || accountId;
+    // Autosaving an autosave would fork the city again on every move.
     if (accountName.endsWith(' (autosave)')) {
       return;
     }
-    const cityEntities = saveBack(Object.values(blocks));
-    const name = `${accountName} (autosave)`;
-    const autoSaveAccountId = `${accountId} (autosave)`;
-    await saveCurrentCityAs(accountId, autoSaveAccountId, cityEntities, chapter, name, unlockedAreas);
-  }
+    void saveCurrentCityAs(
+      accountId,
+      `${accountId} (autosave)`,
+      cityEntities,
+      chapter,
+      `${accountName} (autosave)`,
+      unlockedAreas,
+    );
+  }, [blocks, unlockedAreas, ready, dragIndex]);
 
   React.useEffect(() => {
     if (cityEntities[0].length === 0) {
@@ -337,8 +365,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const clearRedoStack = React.useCallback(() => {
     setRedoStack([]);
   }, []);
-
-  const opacity = BlockOpacity;
 
   // Close menu on click outside
   React.useEffect(() => {
@@ -487,7 +513,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       GridSize,
       GridMax,
       PaddingTiles,
-      opacity,
+      opacity: BlockOpacity,
       allTypes,
       unlockedAreas,
       setUnlockedAreas,
