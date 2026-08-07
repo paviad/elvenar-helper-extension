@@ -202,6 +202,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     setReady(false);
+    // eslint-disable-next-line react-hooks/immutability
     firstLoad.current = true;
     setModified(false);
     triggerLocalRefresh();
@@ -241,6 +242,11 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     void fetchCityData();
   }, [localRefresh]);
 
+  // A latch, not a value anything renders: it is raised whenever a reload is about to
+  // replace the blocks, and lowered by the save effect below to let that one replacement
+  // through without writing the city straight back out. Both ends live in effects, so the
+  // immutability rule sees a ref crossing between them and objects; there is nothing to
+  // express differently, since the whole job is to carry a flag from one effect to another.
   const firstLoad = React.useRef(true);
 
   // The layout landing is what writes the city out. saveCityAuto used to live below this
@@ -251,6 +257,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     if (firstLoad.current) {
+      // eslint-disable-next-line react-hooks/immutability
       firstLoad.current = false;
       return;
     }

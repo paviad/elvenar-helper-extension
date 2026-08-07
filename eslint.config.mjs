@@ -24,16 +24,21 @@ export default defineConfig(
       // after an early return) or a render loop, so neither is allowed to accumulate.
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/set-state-in-render': 'error',
-      // The remaining React Compiler rules describe real problems but the codebase
-      // predates them by ~100 sites, so they ride as warnings and get promoted to
-      // 'error' a rule at a time as each is driven to zero. Warnings do not fail
-      // `npm run lint`, so the gate above stays meaningful in the meantime.
-      'react-hooks/exhaustive-deps': 'warn',
+      // Was a warning while ~29 findings were worked through; at zero, so it gates now.
+      'react-hooks/exhaustive-deps': 'error',
+      // The rest have been triaged down to a residue that is correct as written: effects
+      // that genuinely sequence an async load or reset a dialog on open, a ref latch
+      // carried between two effects, and a handful the compiler misreads. They stay as
+      // warnings rather than being suppressed one by one to make the count zero - a new
+      // one is worth a look, which is what a warning is for.
       'react-hooks/refs': 'warn',
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/purity': 'warn',
       'react-hooks/immutability': 'warn',
-      'react-hooks/preserve-manual-memoization': 'warn',
+      // Reports where React Compiler declined to optimize a component. The build is
+      // ts-loader only, with no compiler in it, so there is no optimization being lost
+      // and nothing here is ever actionable. Turn it back on if the compiler is adopted.
+      'react-hooks/preserve-manual-memoization': 'off',
       'react-hooks/static-components': 'warn',
       'react-hooks/use-memo': 'warn',
       'react-hooks/error-boundaries': 'warn',
