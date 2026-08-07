@@ -11,7 +11,10 @@ import React from 'react';
  *
  * Writing a ref during render is safe here because it is idempotent: the same inputs
  * always store the same value, so a double render stores it twice and changes nothing.
+ * The whole point is to return the held value during the render that asks for it, so an
+ * effect-based sync cannot express this - it would hand back last render's value.
  */
+/* eslint-disable react-hooks/refs */
 export function useSettledValue<T>(value: T, settled: boolean): T {
   const settledValue = React.useRef(value);
 
@@ -21,3 +24,4 @@ export function useSettledValue<T>(value: T, settled: boolean): T {
 
   return settledValue.current;
 }
+/* eslint-enable react-hooks/refs */

@@ -40,6 +40,11 @@ export const CityContextMenu: React.FC<CityContextMenuProps> = ({
   onUnlockArea,
   block,
 }) => {
+  // Read during render on purpose: the menu is a portal onto the body, so it has to be
+  // positioned in the same paint it first appears in. Measuring in a layout effect instead
+  // would render it at the wrong place and then move it. The grid it measures is always
+  // mounted by the time this exists - the menu only opens from a click on that grid.
+  // eslint-disable-next-line react-hooks/refs
   const svgElem = svgRef.current;
   const coords = svgToPageCoords(svgElem, menu.x, menu.y);
 

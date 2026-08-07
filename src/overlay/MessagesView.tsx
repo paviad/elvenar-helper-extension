@@ -621,7 +621,10 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
 
   // Refs to each rendered <mark>, keyed by per-thread occurrence index, so we can scroll to
   // the current match. Reset on every render; refs are re-registered during commit below.
+  // The reset has to happen before the marks are rendered, and is idempotent, so a repeated
+  // render clears an already-empty map and changes nothing.
   const markRefs = useRef<Record<number, HTMLElement | null>>({});
+  // eslint-disable-next-line react-hooks/refs
   markRefs.current = {};
   let markCounter = 0;
   const ctx: HighlightCtx = {
