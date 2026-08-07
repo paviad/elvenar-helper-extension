@@ -29,6 +29,11 @@ export function FellowshipAdventure() {
 
   const [mmEnchantmentEnabled, setMmEnchantmentEnabled] = React.useState<boolean>(false);
   const [enchantmentBonus, setEnchantmentBonus] = React.useState<number>(50);
+  // The badge maths feeds off both of the above, and reading them from storage is async.
+  // Without this gate the maths ran once with the defaults and again with the stored
+  // values, two overlapping async passes whose results landed in whichever order they
+  // finished — so the badge counts could settle on the wrong enchantment bonus.
+  const [paramsLoaded, setParamsLoaded] = React.useState(false);
 
   const accountId = useTabStore((state) => state.accountId);
   const accountData = useTabStore((state) => state.accountData);
@@ -42,13 +47,19 @@ export function FellowshipAdventure() {
   const currentImportedStock = accountId ? importedStockByAccount[accountId] || {} : {};
 
   React.useEffect(() => {
-    async function loadFaParameters() {
-      if (!accountId) {
-        return;
-      }
+    if (!accountId) {
+      return;
+    }
 
+    let cancelled = false;
+    setParamsLoaded(false);
+
+    async function loadFaParameters() {
       try {
         const faParameters = await getFromStorage(`faParameters_${accountId}`);
+        if (cancelled) {
+          return;
+        }
         if (faParameters) {
           const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters) as {
             mmEnchantmentEnabled: boolean;
@@ -60,9 +71,17 @@ export function FellowshipAdventure() {
       } catch (error) {
         /* ignore */
       }
+      // Set even when nothing was stored, or when parsing threw: the defaults are then
+      // the settled answer and the maths below is free to run.
+      if (!cancelled) {
+        setParamsLoaded(true);
+      }
     }
 
     void loadFaParameters();
+    return () => {
+      cancelled = true;
+    };
   }, [accountId]);
 
   React.useEffect(() => {
@@ -74,7 +93,13 @@ export function FellowshipAdventure() {
       return;
     }
 
+    if (!paramsLoaded) {
+      return;
+    }
+
     setIsDetached(accountData.isDetached);
+
+    let cancelled = false;
 
     async function fetchCityData(accountData: AccountData) {
       if (!accountData.cityQuery || !accountData.cityQuery.cityEntities) {
@@ -83,6 +108,9 @@ export function FellowshipAdventure() {
 
       const entities = await generateCity(accountData);
       const effects = await getEffects();
+      if (cancelled) {
+        return;
+      }
       const goodsProductionEffects = effects.filter((r) => r.action === 'manufactories_production_boost');
       let factor = 1;
       for (const effect of goodsProductionEffects) {
@@ -128,7 +156,10 @@ export function FellowshipAdventure() {
       setEndTime(accountData.faEndTime);
     }
     void fetchCityData(accountData);
-  }, [accountId, accountData, mmEnchantmentEnabled, enchantmentBonus, forceUpdate]);
+    return () => {
+      cancelled = true;
+    };
+  }, [accountId, accountData, mmEnchantmentEnabled, enchantmentBonus, forceUpdate, paramsLoaded]);
 
   const setMmEnchantmentEnabled2 = React.useCallback(
     (enabled: boolean) => {
