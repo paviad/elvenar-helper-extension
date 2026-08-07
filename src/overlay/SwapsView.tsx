@@ -177,7 +177,7 @@ export const SwapsView = () => {
     if (swapsClearedAt === undefined && account !== null && wonders !== null) {
       setSwapsClearedAt(tally.latestRequestAt || Math.floor(Date.now() / 1000));
     }
-  }, [swapsClearedAt, account, wonders, tally.latestRequestAt]);
+  }, [swapsClearedAt, account, wonders, tally.latestRequestAt, setSwapsClearedAt]);
 
   const paid = useMemo(() => new Set(paidSwaps), [paidSwaps]);
   // Grouped from the full list, not just the unpaid ones, so a payee keeps their place in the

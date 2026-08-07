@@ -58,7 +58,7 @@ export const LayoutMain = () => {
       }
     }
     void Do();
-  }, [saved]);
+  }, [saved, helper]);
 
   React.useEffect(() => {
     async function getSpriteUrl() {
@@ -71,7 +71,7 @@ export const LayoutMain = () => {
       img.src = url;
     }
     void getSpriteUrl();
-  }, []);
+  }, [setTechSprite]);
 
   const handleAccountClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -88,13 +88,17 @@ export const LayoutMain = () => {
   // Reading the selected account's names is not, so it does not - they were held in state
   // and written from here, which meant the title bar lagged a render behind the selection
   // and, because accountList was never a dependency, could miss a rename outright.
+  // Both effects below re-read the accounts rather than closing over the render's copy:
+  // getAllStoredAccounts builds a new array on every call, so as a dependency it would
+  // fire them on every render, and as an omitted one it left them reading a stale list.
   React.useEffect(() => {
     if (accountId) {
       return;
     }
-    const firstNonDetachedAccount = accountList.find(([, data]) => !data.isDetached);
-    setAccountId(firstNonDetachedAccount ? firstNonDetachedAccount[0] : accountList[0]?.[0]);
-  }, [accountId, forceUpdate]);
+    const accounts = getAllStoredAccounts();
+    const firstNonDetachedAccount = accounts.find(([, data]) => !data.isDetached);
+    setAccountId(firstNonDetachedAccount ? firstNonDetachedAccount[0] : accounts[0]?.[0]);
+  }, [accountId, forceUpdate, setAccountId]);
 
   const otherCityUpdated = useTabStore((state) => state.otherCityUpdated);
   const setOtherCityUpdated = useTabStore((state) => state.setOtherCityUpdated);
@@ -102,10 +106,10 @@ export const LayoutMain = () => {
     if (otherCityUpdated) {
       // Reset the flag
       setOtherCityUpdated(false);
-      const visitedCity = accountList.find((r) => r[0] === 'Visited')?.[1].cityQuery?.accountName || '???';
+      const visitedCity = getAllStoredAccounts().find((r) => r[0] === 'Visited')?.[1].cityQuery?.accountName || '???';
       helper.showMessage('visited_other', { params: [visitedCity] });
     }
-  }, [otherCityUpdated]);
+  }, [otherCityUpdated, setOtherCityUpdated, helper]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchor(event.currentTarget);

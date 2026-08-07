@@ -69,40 +69,37 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   // 2. Show Message
-  const showMessage = React.useCallback(
-    (id: HelperMessageId, options: ShowMessageOptions = {}) => {
-      const rawText = HELPER_MESSAGES[id];
-      if (!rawText) return;
+  const showMessage = React.useCallback((id: HelperMessageId, options: ShowMessageOptions = {}) => {
+    const rawText = HELPER_MESSAGES[id];
+    if (!rawText) return;
 
-      const { force = false, params = [] } = options;
+    const { force = false, params = [] } = options;
 
-      const now = Date.now();
-      const lastEntry = historyRef.current[id];
-      const lastShown = lastEntry ? lastEntry.timestamp : 0;
+    const now = Date.now();
+    const lastEntry = historyRef.current[id];
+    const lastShown = lastEntry ? lastEntry.timestamp : 0;
 
-      // Check Throttle
-      if (!force && now - lastShown < THROTTLE_LIMIT) {
-        return;
-      }
+    // Check Throttle
+    if (!force && now - lastShown < THROTTLE_LIMIT) {
+      return;
+    }
 
-      // Format the text with params
-      const finalMessage = formatString(rawText, params);
-      setMessage(finalMessage);
+    // Format the text with params
+    const finalMessage = formatString(rawText, params);
+    setMessage(finalMessage);
 
-      // Save new entry with params
-      const newEntry: HistoryEntry = { timestamp: now, params };
-      const newHistory = { ...historyRef.current, [id]: newEntry };
+    // Save new entry with params
+    const newEntry: HistoryEntry = { timestamp: now, params };
+    const newHistory = { ...historyRef.current, [id]: newEntry };
 
-      historyRef.current = newHistory;
+    historyRef.current = newHistory;
 
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ [STORAGE_KEY]: newHistory }).catch((err) => {
-          console.warn('ElvenAssist: Failed to save helper message history:', err);
-        });
-      }
-    },
-    [],
-  );
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ [STORAGE_KEY]: newHistory }).catch((err) => {
+        console.warn('ElvenAssist: Failed to save helper message history:', err);
+      });
+    }
+  }, []);
 
   // 3. Show History (Updated to use stored params)
   const showThrottledMessages = React.useCallback(() => {

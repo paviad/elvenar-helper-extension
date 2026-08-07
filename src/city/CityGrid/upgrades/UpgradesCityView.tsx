@@ -325,7 +325,10 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
           ))
         : rows.map(renderRow),
     // renderRow and toggleCollapsed are rebuilt every render; the values they close over
-    // are listed here instead, in the same spirit as the city context's memo.
+    // are listed here instead, in the same spirit as the city context's memo. Listing
+    // renderRow itself would rebuild every row on every render, which is the second or so
+    // of delay this memo exists to avoid.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [groups, rows, collapsed, columnCount, result, city.goodsNames, city.boostedGoods, onReplace],
   );
 

@@ -108,7 +108,7 @@ export function CityGrid() {
       }
       hasCentered.current = true;
     }
-  }, [totalDimension]);
+  }, [totalDimension, gridSizePx, paddingPx, containerRef]);
 
   // Bring a freshly marked replacement footprint into the middle of the viewport, at
   // 1:1 zoom. Assigning an out-of-range scroll offset is clamped by the browser, so a
@@ -132,7 +132,7 @@ export function CityGrid() {
     centredFor.current = replacedArea;
     // Suppress the one-off mount centring, which would otherwise fight this.
     hasCentered.current = true;
-  }, [replacedArea, zoom, zoomTo]);
+  }, [replacedArea, zoom, zoomTo, gridSizePx, paddingPx, containerRef]);
 
   // Panning is handled by the hook; the grid also tracks the cursor for drag/drop.
   const onMouseMove = (e: React.MouseEvent) => {

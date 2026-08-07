@@ -38,8 +38,12 @@ export function IsometricCityGrid() {
   } = city;
 
   // --- Isometric Configuration ---
-  // The grid constants are stable, so a projection is only a function of zoom.
-  const projectionAt = (z: number) => createIsoProjection({ GridSize, GridMax, PaddingTiles, zoom: z });
+  // The grid constants are stable, so a projection is only a function of zoom. Memoised on
+  // them so the callbacks below can depend on it without changing identity every render.
+  const projectionAt = React.useCallback(
+    (z: number) => createIsoProjection({ GridSize, GridMax, PaddingTiles, zoom: z }),
+    [GridSize, GridMax, PaddingTiles],
+  );
 
   const { containerRef, zoom, panHandlers } = usePanZoom({
     zoomLevels: ZOOM_LEVELS,
@@ -116,7 +120,7 @@ export function IsometricCityGrid() {
 
       current.setMenu({ x, y, key: blockKey });
     },
-    [zoom],
+    [zoom, projectionAt],
   );
 
   const sortedEntries = React.useMemo(() => {
@@ -160,7 +164,7 @@ export function IsometricCityGrid() {
       containerRef.current.scrollTop = PaddingTiles * 10;
       hasCentered.current = true;
     }
-  }, [totalWidth]);
+  }, [totalWidth, PaddingTiles, containerRef]);
 
   return (
     <div

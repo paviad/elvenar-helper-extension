@@ -22,7 +22,7 @@ export function Activate() {
       }
     }
     void loadData();
-  }, []);
+  }, [routeAccountId, setAccountId, nav]);
 
   return (
     <>

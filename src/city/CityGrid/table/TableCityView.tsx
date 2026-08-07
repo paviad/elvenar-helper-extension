@@ -142,7 +142,7 @@ export const TableCityView = () => {
       setAllResourceKeys(sortedKeys);
     }
     void buildData();
-  }, [blocks, race, city.evolvingBuildings]);
+  }, [blocks, race, city.evolvingBuildings, city.chapter]);
 
   const handleRequestSort = (property: string) => {
     const isAsc = orderBy === property && order === 'asc';

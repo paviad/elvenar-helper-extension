@@ -86,6 +86,9 @@ function CityViewInner() {
             endTime: b.transcendence.endTime,
           }) satisfies TranscendenceViewModel,
       );
+    // forceUpdate is not referenced in the body: getAccountById reads a module-level store,
+    // which the lint rule cannot see, so the bump is the only signal that it has moved on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settledBlocks, city.buildingFinder, city.accountId, city.forceUpdate]);
 
   const switchableProductionViewModels = useMemo(() => {
