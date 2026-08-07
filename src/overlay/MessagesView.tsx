@@ -158,9 +158,16 @@ export const MessagesView = () => {
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
-  const [navigated, setNavigated] = useState(false); // true once the user cycles into a match
   const term = searchTerm.trim().toLowerCase();
+
+  // Where the user has cycled to, tagged with the query and folder it was cycled in. A
+  // change to either leaves the tag no longer matching, which is the "not navigated yet"
+  // state an effect used to reset this into - a render later than the results it belonged
+  // to. Same shape as the chat pane's cursor.
+  const [matchCursor, setMatchCursor] = useState<{ key: string; index: number } | null>(null);
+  const cursorKey = `${folder}::${term}`;
+  const navigated = matchCursor?.key === cursorKey; // true once the user cycles into a match
+  const currentMatchIndex = navigated ? matchCursor.index : 0;
 
   useEffect(() => {
     ensureMinWidthAndHeight(400, 600);
@@ -215,17 +222,10 @@ export const MessagesView = () => {
     return result;
   }, [filteredThreads, term]);
 
-  // Reset match cursor whenever the query or folder changes.
-  useEffect(() => {
-    setCurrentMatchIndex(0);
-    setNavigated(false);
-  }, [term, folder]);
-
   const gotoMatch = (rawIndex: number) => {
     if (matches.length === 0) return;
     const index = ((rawIndex % matches.length) + matches.length) % matches.length;
-    setNavigated(true);
-    setCurrentMatchIndex(index);
+    setMatchCursor({ key: cursorKey, index });
     setSelectedId(matches[index].threadId); // open the thread the match lives in
   };
   const nextMatch = () => gotoMatch(navigated ? currentMatchIndex + 1 : 0);
@@ -513,7 +513,7 @@ export const MessagesView = () => {
                   alignItems='flex-start'
                   onClick={() => {
                     setSelectedId(id);
-                    setNavigated(false); // manual browse: don't point the match cursor here
+                    setMatchCursor(null); // manual browse: don't point the match cursor here
                   }}
                   sx={{
                     py: 1,
