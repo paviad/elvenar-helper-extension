@@ -77,7 +77,6 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const [tabKey, setTabKey] = React.useState<OverlayTabKey>('chat');
   const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
-  const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
   const tabRef = React.useRef<OverlayTabKey>(tabKey);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
 
@@ -109,10 +108,6 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   }, [tabs]);
 
   const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
-  const storeSetUserMap = useOverlayStore((state) => state.setUserMap);
-
-  const storeChatMessages = useOverlayStore((state) => state.chatMessages);
-  const storeSetChatMessages = useOverlayStore((state) => state.setChatMessages);
 
   // Keyboard shortcut: 'C' expands overlay and goes to chat tab
   React.useEffect(() => {
@@ -142,57 +137,11 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
 
     window.addEventListener('message', handleKeyC);
     return () => window.removeEventListener('message', handleKeyC);
-  }, []);
+  }, [useOverlayStore]);
 
   React.useEffect(() => {
     tabRef.current = tabKey;
   }, [tabKey]);
-
-  React.useEffect(() => {
-    const newMessages = chatMessages.filter((m) => !storeChatMessages?.some((sm) => sm.uuid === m.uuid));
-
-    storeSetChatMessages([...storeChatMessages, ...newMessages]);
-  }, [chatMessages]);
-
-  const messageHandler = (event: MessageEvent<ReceivedWebsocketMessage>) => {
-    // We must verify the sender and the message type for security
-    if (event.source !== window || event.data.type !== 'RECEIVED_WEBSOCKET_MESSAGE') {
-      return;
-    }
-
-    const socketMessage = parseSocketMessage(event.data.payload.value);
-
-    if (!socketMessage) return;
-
-    if (socketMessage?.type === 'chat/rpc/get-history') {
-      userMap.current =
-        socketMessage.body.payload.users.reduce<Record<string, string>>((map, user) => {
-          map[user.id] = user.metadata.public_name;
-          return map;
-        }, {}) || {};
-
-      storeSetUserMap(userMap.current);
-
-      setChatMessages(socketMessage.body.payload.messages);
-    }
-
-    if (socketMessage?.type === 'chat/who') {
-      const userNames = socketMessage.body.payload.userIds.map((id) => userMap.current[id] || 'Unknown');
-    }
-
-    if (socketMessage?.type === 'chat/send') {
-      const user = userMap.current[socketMessage.body.user] || 'Unknown';
-      const msg = socketMessage.body.message;
-      const uuid = socketMessage.headers['X-UUID'] || new Date().getTime().toString();
-      const newMessage: ChatMessage = {
-        uuid,
-        user: socketMessage.body.user,
-        text: msg,
-        timestamp: socketMessage.body.timestamp,
-      };
-      setChatMessages((prev) => [...prev, newMessage]);
-    }
-  };
 
   React.useEffect(() => {
     if (chapter < 18 || !tradesMsg) {
@@ -206,9 +155,58 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
         setTabKey('trade');
       }
     }
-  }, [tradesMsg, chapter, autoOpen]);
+  }, [tradesMsg, chapter, autoOpen, setOfferedGoods]);
 
   React.useEffect(() => {
+    // The chat list lives in the store, which is where ChatView reads it. It used to be
+    // accumulated in local state here and copied across by an effect, so the two could
+    // disagree, and the copy merged against a stale snapshot of the store. Writing
+    // straight to the store through getState() also keeps this handler free of anything
+    // from the render that registered it - it was defined in the component body and
+    // registered once, so it held the first render's closure for the life of the panel.
+    const addChatMessages = (incoming: ChatMessage[]) => {
+      const store = useOverlayStore.getState();
+      const existing = store.chatMessages ?? [];
+      const fresh = incoming.filter((m) => !existing.some((sm) => sm.uuid === m.uuid));
+      if (fresh.length === 0) {
+        return;
+      }
+      store.setChatMessages([...existing, ...fresh]);
+    };
+
+    const messageHandler = (event: MessageEvent<ReceivedWebsocketMessage>) => {
+      // We must verify the sender and the message type for security
+      if (event.source !== window || event.data.type !== 'RECEIVED_WEBSOCKET_MESSAGE') {
+        return;
+      }
+
+      const socketMessage = parseSocketMessage(event.data.payload.value);
+
+      if (!socketMessage) return;
+
+      if (socketMessage.type === 'chat/rpc/get-history') {
+        userMap.current =
+          socketMessage.body.payload.users.reduce<Record<string, string>>((map, user) => {
+            map[user.id] = user.metadata.public_name;
+            return map;
+          }, {}) || {};
+
+        useOverlayStore.getState().setUserMap(userMap.current);
+        addChatMessages(socketMessage.body.payload.messages);
+      }
+
+      if (socketMessage.type === 'chat/send') {
+        addChatMessages([
+          {
+            uuid: socketMessage.headers['X-UUID'] || new Date().getTime().toString(),
+            user: socketMessage.body.user,
+            text: socketMessage.body.message,
+            timestamp: socketMessage.body.timestamp,
+          },
+        ]);
+      }
+    };
+
     window.addEventListener('message', messageHandler);
 
     setupTradeParsedListener((tradesMsg) => {
@@ -234,7 +232,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       clearActiveEffectsUpdatedListener();
       clearMessagesUpdatedListener();
     };
-  }, []);
+  }, [useOverlayStore]);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabKey(tabs[newValue].key);
@@ -341,7 +339,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
         clearGenericResponseListener(id);
       });
     };
-  }, []);
+  }, [useOverlayStore, setQuests]);
 
   // Handlers for the file drop area
   const processFile = (file: File | undefined | null) => {
