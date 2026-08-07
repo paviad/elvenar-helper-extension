@@ -17,19 +17,14 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
 }) => {
   const [BADGE_MAP, setBadgeMap] = React.useState<Record<string, string>>({});
 
+  // Every hook has to run on every render, so the "no account" and "no data" cases are
+  // handled by early returns placed *below* the whole hook list. They used to sit in the
+  // middle of it, which meant deselecting an account rendered fewer hooks than the
+  // previous render and crashed the tab outright.
   const accountId = useTabStore((state) => state.accountId);
-  if (!accountId) return <Typography>No account selected.</Typography>;
-
   const removeImportedStock = useTabStore((state) => state.removeImportedStock);
   const clearImportedStock = useTabStore((state) => state.clearImportedStock);
-
   const accountData = useTabStore((state) => state.accountData);
-  if (!accountData) return <Typography>Account data not found.</Typography>;
-
-  // Fetch our own readable name so we don't accidentally import our own clipboard export
-  const myOwnerName = accountData?.cityQuery?.userData?.user_name || accountId;
-
-  const [currentStage, setCurrentStage] = React.useState<number>(1);
 
   React.useEffect(() => {
     async function fetchBadgeMap() {
@@ -40,14 +35,14 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
   }, []);
 
   const stats = useMemo(() => {
+    if (!accountData) return null;
+
     const { chests, currentStage } = accountData.faDataStore || {
       waypoints: {},
       chests: {},
       currentStage: 1,
     };
     const chestList = Object.values(chests);
-
-    setCurrentStage(currentStage);
 
     const getBadgeTotals = (chestSubset: typeof chestList) => {
       const totals: Record<string, { current: number; max: number }> = {};
@@ -88,8 +83,20 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
         multiChests.filter((c) => c.color !== 'green'),
       ),
       total: getBadgeTotals(stageChests),
+      // Returned rather than pushed into state from in here: the stage is a plain read of
+      // the account data, and the setState this memo used to make left the heading showing
+      // stage 1 for a frame before catching up.
+      currentStage,
     };
   }, [accountData]);
+
+  if (!accountId) return <Typography>No account selected.</Typography>;
+  if (!accountData || !stats) return <Typography>Account data not found.</Typography>;
+
+  const { currentStage } = stats;
+
+  // Fetch our own readable name so we don't accidentally import our own clipboard export
+  const myOwnerName = accountData?.cityQuery?.userData?.user_name || accountId;
 
   // Ignore items matching either our raw ID or our friendly name
   const importedIds = Object.keys(importedStock).filter((id) => id !== accountId && id !== myOwnerName);
