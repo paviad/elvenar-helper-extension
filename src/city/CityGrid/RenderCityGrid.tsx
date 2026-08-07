@@ -28,20 +28,30 @@ export const RenderCityGrid = () => {
   const state = useCityGridState();
 
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // A buildId in the query is what triggers this; the grid state is only what carries the
+  // build out. useCityGridState hands back a fresh object every render, so listing it would
+  // re-run the build on every render, and leaving it out left this closing over the state
+  // from whichever render first registered it - and so building into a stale layout.
+  const onBuildFromInventoryRef = React.useRef(state.onBuildFromInventory);
+  React.useEffect(() => {
+    onBuildFromInventoryRef.current = state.onBuildFromInventory;
+  });
+
   useEffect(() => {
     async function Do() {
       const rc = searchParams.get('buildId');
       if (!rc) {
         return;
       }
-      await state.onBuildFromInventory(Number(rc));
+      await onBuildFromInventoryRef.current(Number(rc));
 
       const nextParams = new URLSearchParams(searchParams);
       nextParams.delete('buildId');
       setSearchParams(nextParams, { replace: true });
     }
     void Do();
-  }, [searchParams]);
+  }, [searchParams, setSearchParams]);
 
   // Mouse Subscription Effects (UI specific)
   React.useEffect(() => {
