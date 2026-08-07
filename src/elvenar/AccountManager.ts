@@ -10,6 +10,11 @@ export function setSaveHook(hook: () => void) {
   saveHook = hook;
 }
 
+/** Paired with setSaveHook so the layout can drop its hook when it unmounts. */
+export function clearSaveHook() {
+  saveHook = null;
+}
+
 export function generateAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
 }

@@ -4,7 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
-import { getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
+import { clearSaveHook, getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
 import HelperAvatar from '../helper/HelperAvatar';
 import { useHelper } from '../helper/HelperContext';
 import { useTabStore } from '../util/tabStore';
@@ -39,9 +39,14 @@ export const LayoutMain = () => {
 
   const [saved, triggerSaved] = React.useReducer((x) => x + 1, 0);
 
-  setSaveHook(() => {
-    triggerSaved();
-  });
+  // Registering the hook is a side effect on module-level state, so it belongs in an
+  // effect rather than the render body — it used to run on every render, and left a
+  // closure over this component behind after unmount. triggerSaved is stable, so this
+  // registers once.
+  React.useEffect(() => {
+    setSaveHook(triggerSaved);
+    return () => clearSaveHook();
+  }, []);
 
   React.useEffect(() => {
     async function Do() {
