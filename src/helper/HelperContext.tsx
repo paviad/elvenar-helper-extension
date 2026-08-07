@@ -36,8 +36,11 @@ const formatString = (template: string, args?: string[]) => {
 export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [message, setMessage] = React.useState<React.ReactNode | null>(null);
 
-  // Updated State Type
-  const [history, setHistory] = React.useState<Record<string, HistoryEntry>>({});
+  // Nothing renders the history — it is only ever read at the moment a message is shown,
+  // to decide whether the throttle has expired. Holding it in a ref rather than state
+  // keeps showMessage and showThrottledMessages referentially stable, which is what lets
+  // the context value below stay memoised across a message change.
+  const historyRef = React.useRef<Record<string, HistoryEntry>>({});
 
   // 1. Load History (with migration support)
   React.useEffect(() => {
@@ -59,7 +62,7 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             }
           });
 
-          setHistory(normalized);
+          historyRef.current = normalized;
         }
       });
     }
@@ -74,7 +77,7 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const { force = false, params = [] } = options;
 
       const now = Date.now();
-      const lastEntry = history[id];
+      const lastEntry = historyRef.current[id];
       const lastShown = lastEntry ? lastEntry.timestamp : 0;
 
       // Check Throttle
@@ -88,9 +91,9 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       // Save new entry with params
       const newEntry: HistoryEntry = { timestamp: now, params };
-      const newHistory = { ...history, [id]: newEntry };
+      const newHistory = { ...historyRef.current, [id]: newEntry };
 
-      setHistory(newHistory);
+      historyRef.current = newHistory;
 
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ [STORAGE_KEY]: newHistory }).catch((err) => {
@@ -98,12 +101,13 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
       }
     },
-    [history],
+    [],
   );
 
   // 3. Show History (Updated to use stored params)
   const showThrottledMessages = React.useCallback(() => {
     const now = Date.now();
+    const history = historyRef.current;
 
     // Filter active IDs
     const activeIds = Object.keys(history).filter((id) => {
@@ -140,17 +144,22 @@ export const HelperProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       </div>
     );
     setMessage(listContent);
-  }, [history]);
+  }, []);
 
   const hideMessage = React.useCallback(() => {
     setMessage(null);
   }, []);
 
-  return (
-    <HelperContext.Provider value={{ message, showMessage, hideMessage, showThrottledMessages }}>
-      {children}
-    </HelperContext.Provider>
+  // Memoised because every consumer of useHelper re-renders when this object changes
+  // identity, and the three callbacks are stable, so only a new message is a real change.
+  // Handing out a fresh literal each render also made `helper` unusable as an effect
+  // dependency — callers had to stash it in a ref to stop their effects re-firing.
+  const value: HelperContextType = React.useMemo(
+    () => ({ message, showMessage, hideMessage, showThrottledMessages }),
+    [message, showMessage, hideMessage, showThrottledMessages],
   );
+
+  return <HelperContext.Provider value={value}>{children}</HelperContext.Provider>;
 };
 
 export const useHelper = () => {
