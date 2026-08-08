@@ -3,7 +3,6 @@ import React from 'react';
 import { Box, Stack } from '@mui/material';
 import { getFromStorage, saveToStorage } from '../chrome/storage';
 import { generateCity } from '../city/generateCity';
-import { getAccountById } from '../elvenar/AccountManager';
 import { AccountData, FaQuest } from '../elvenar/Accounts';
 import { getEffects } from '../elvenar/getEffects';
 import { Badges } from '../model/badges';
@@ -16,6 +15,20 @@ import { FaStockImport } from './FaStockImport';
 import { FaStockSidePanel } from './FaStockSidePanel';
 import { FaSummary } from './FaSummary';
 import { ProductionTimeline } from './ProductionTimeline';
+
+interface FaParameters {
+  mmEnchantmentEnabled: boolean;
+  enchantmentBonus: number;
+}
+
+// Both settings share one storage key, so every write has to carry both values.
+async function persistFaParameters(accountId: string, faParameters: FaParameters): Promise<void> {
+  try {
+    await saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
+  } catch (error) {
+    console.error('ElvenAssist: Failed to save fellowship adventure parameters:', error);
+  }
+}
 
 export function FellowshipAdventure() {
   const [badgesInProduction, setBadgesInProduction] = React.useState<Record<string, Record<number, number>>>({});
@@ -62,10 +75,7 @@ export function FellowshipAdventure() {
           return;
         }
         if (faParameters) {
-          const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters) as {
-            mmEnchantmentEnabled: boolean;
-            enchantmentBonus: number;
-          };
+          const { mmEnchantmentEnabled, enchantmentBonus } = JSON.parse(faParameters) as FaParameters;
           setMmEnchantmentEnabled(mmEnchantmentEnabled);
           setEnchantmentBonus(enchantmentBonus);
         }
@@ -160,36 +170,26 @@ export function FellowshipAdventure() {
     };
   }, [accountId, accountData, mmEnchantmentEnabled, enchantmentBonus, forceUpdate, paramsLoaded]);
 
-  const setMmEnchantmentEnabled2 = React.useCallback(
+  // State moves first and storage catches up: the slider calls this on every drag tick, so making
+  // the redraw wait on a storage round trip would make it feel like it was sticking.
+  const handleToggleMmEnchantment = React.useCallback(
     (enabled: boolean) => {
-      async function setAndSave(enabled: boolean) {
-        const faParameters = {
-          mmEnchantmentEnabled: enabled,
-          enchantmentBonus,
-        };
-
-        await saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
-        setMmEnchantmentEnabled(enabled);
+      setMmEnchantmentEnabled(enabled);
+      if (accountId) {
+        void persistFaParameters(accountId, { mmEnchantmentEnabled: enabled, enchantmentBonus });
       }
-      void setAndSave(enabled);
     },
-    [setMmEnchantmentEnabled, enchantmentBonus, accountId],
+    [enchantmentBonus, accountId],
   );
 
-  const setEnchantmentBonus2 = React.useCallback(
+  const handleEnchantmentBonusChange = React.useCallback(
     (bonus: number) => {
-      async function setAndSave(bonus: number) {
-        const faParameters = {
-          mmEnchantmentEnabled,
-          enchantmentBonus: bonus,
-        };
-
-        await saveToStorage(`faParameters_${accountId}`, JSON.stringify(faParameters));
-        setEnchantmentBonus(bonus);
+      setEnchantmentBonus(bonus);
+      if (accountId) {
+        void persistFaParameters(accountId, { mmEnchantmentEnabled, enchantmentBonus: bonus });
       }
-      void setAndSave(bonus);
     },
-    [setEnchantmentBonus, mmEnchantmentEnabled, accountId],
+    [mmEnchantmentEnabled, accountId],
   );
 
   const badgeList = Object.values(faRequirements)
@@ -273,9 +273,9 @@ export function FellowshipAdventure() {
           <Box>
             <FaControlPanel
               mmEnchantmentEnabled={mmEnchantmentEnabled}
-              onToggleMmEnchantment={setMmEnchantmentEnabled}
+              onToggleMmEnchantment={handleToggleMmEnchantment}
               enchantmentBonus={enchantmentBonus}
-              onEnchantmentBonusChange={setEnchantmentBonus}
+              onEnchantmentBonusChange={handleEnchantmentBonusChange}
             />
           </Box>
           <Box>
