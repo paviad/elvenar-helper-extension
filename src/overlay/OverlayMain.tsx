@@ -32,7 +32,6 @@ import {
   getAccountById,
   loadAccountManagerFromStorage,
   loadSingleAccountFromStorage,
-  saveAllAccounts,
 } from '../elvenar/AccountManager';
 import { saveSingleAccount } from '../elvenar/Accounts';
 import { relayToGame } from '../inject/relayToGame';

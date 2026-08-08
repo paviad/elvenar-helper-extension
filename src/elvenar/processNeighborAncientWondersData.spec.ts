@@ -6,8 +6,6 @@ import type {
   Contribution,
   ContributionReward,
   HuntersInformation,
-  Player,
-  RewardElement,
 } from './processNeighborAncientWondersData';
 
 const phase8: AncientWonderPhases = {
@@ -1973,7 +1971,6 @@ describe('calculatePhase', () => {
   const testCasesTrue = [phase, phase2, phase5, phase6, phase7, phase8].map((r) => ({ case: r, expected: true }));
   const testCasesFalse = [phase1, phase3, phase4].map((r) => ({ case: r, expected: false }));
   const testCases = [...testCasesTrue, ...testCasesFalse];
-  const testCases1 = [{ case: phase8, expected: true }];
   it.each(testCases)('returns true if there is a KP steal opportunity', ({ case: phase, expected }) => {
     const finder = {
       getBuilding: () => ({ name: 'Wonder1' }),
