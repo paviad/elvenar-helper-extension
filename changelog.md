@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- **Swaps:** The wonder list now shows how much knowledge each of yours can still take, read from the game, so you can pick a thread the wonder has room for. Copying a request starts a count for that wonder, shown above the debts and counted down by each request you post, so it is clear when to stop asking.
+- The count comes down per request rather than being re-read, because a request is knowledge that is owed to you but has not arrived yet — re-reading would offer the same room twice and leave the giver's points to overflow.
+- "Clear all" in Swaps now collapses the helper window, the way "Mark all as read" does in Chat — the list is empty at that point, so the panel has nothing left to show.
+
+## v10.0.0
 - **New Feature: Tourny** — Added a "Tourny" tab to the in-game overlay that works out what to field against each tournament province, and what to train for the round ahead. Reachable with the chord Alt+C, T.
 - **Counters:** Open a province on the Tournament Map in game and the tab suggests a squad for it — a blend across the five slots rather than five of a single unit, because the game accepts five different types, each sized by its own unit weight.
 - Suggestions are read from the game's own battle balancing data, so they follow the real counter values for your units at the levels you have unlocked, rather than a fixed table.
@@ -22,9 +27,24 @@
 - The list starts empty and fills only as you post, so rounds you did before enabling it are left alone. Tick rows off as you donate to keep your place, then use "Clear all" once you have repaid everybody — clearing is manual, since the extension can see your posts but not your donations.
 - Debts are grouped by the player you owe, since the same player can come up in several threads and you repay them in one visit. Each card shows what they are owed in total, broken down per thread with the wonder each one asked for.
 - Consecutive posts of your own count as changing your mind about which wonder you want, not as a second debt.
-- The wonder list shows how much knowledge each of yours can still take, read from the game, so you can pick a thread the wonder has room for. Copying a request starts a count for that wonder, shown above the list and counted down by each request you post, so it is clear when to stop asking.
-- The count comes down per request rather than being re-read, because a request is knowledge that is owed to you but has not arrived yet — re-reading would offer the same room twice and leave the giver's points to overflow.
 - Reachable through the existing Messages chord (Alt+C, M), then the Swaps button.
+
+## v9.0.0
+- **New Feature: Upgrade Finder** — A fourth view in the City Planner toolbar, beside Top-Down, Isometric and Table, that compares the event buildings sitting in your inventory against the ones you have placed and lists only the swaps that cannot lose. Open your in-game inventory once (the Summonings tab) so it has something to work from.
+- A suggestion has to match or beat the placed building on mana, seeds, orcs, unurium, nox and culture, never cost population, and do more per square — so a larger building has to earn its extra ground. A building that trades one resource for another is not offered.
+- Switchable production is respected: a building that switches between products is only replaced by one that covers every option. Set, evolving and expiring buildings already in your city are left alone, as are the ones you can simply build.
+- A 1xN building is never offered in place of one that is at least two tiles on both sides, since it collects less neighbourly help.
+- Every resource shows the gain per day and, underneath, the gain per square; hover a figure for the before and after it came from. Anything outside the tracked resources — coins, supplies, goods, spell fragments — is listed under each building, so a swap cannot quietly give something up.
+- Evolving replacements are measured at the highest stage your artifacts can actually reach, and the row says which: "Stage 1 to 5 (max)" against "Stage 1 to 3 of 10".
+- The Size column is coloured by fit — green where the replacement drops into the footprint it inherits, red where it grows — and sorting it puts the swaps that keep the footprint first.
+- Group the rows by either the placed building or the inventory item; each copy groups on its own, so two of the same building can be dealt with separately.
+- **Replace** removes the placed building and hands you the replacement ready to position, at the evolved stage the row was compared at. The vacated squares are marked in red and the view jumps there at 1:1. Placing it is yours, as is making room when it is larger — nothing changes in your real city.
+- **Unlock expansions from the planner** — Edit ▸ Unlock Area shades the locked 5×5 expansions and lets you click one to unlock it; right-clicking a locked expansion offers the same action. It goes through the move log, undo/redo and autosave like any other edit.
+- **City toolbar reorganised** — File and delete actions collapsed into a City menu, and the actions that change the city's contents into a separate Edit menu.
+- **Messages:** A reply posted in the game now appears in the thread automatically, and the thread sorts back to the top.
+- **A drag no longer redraws the city** — Dragging a block re-renders that block instead of every block on the grid, with the whole-city derivations and per-block catalog lookups kept off the drag path entirely.
+- The upgrade list keeps its table headers live while rows are recomputed, and shows progress while regrouping, so a long recount no longer looks like a freeze.
+- NEW badges retired from the older features, and moved onto the City tab and Help while the Upgrade Finder is new.
 
 ## v8.9.0
 - **New Feature: Messages** — Added a "Messages" tab to the in-game overlay for browsing your Inbox and Outbox. Includes a thread list with unread indicators and previews, a master/detail thread view (most recent first), and collapsible recipients.
