@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { debounceTime, groupBy, mergeMap, Subject } from 'rxjs';
+import { debounceTime, groupBy, last, mergeMap, Subject } from 'rxjs';
 import { AggregateRequestResponse } from '../chrome/aggregateRequestResponse';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
@@ -19,10 +19,17 @@ declare global {
 }
 
 const requestMap = new Map<number, AggregateRequestResponse>();
+
+// A request whose response never arrives is never aggregated, so nothing else would ever evict it.
+// This runs in the game tab, which stays open for hours; entries normally live ~300ms.
+const MAX_PENDING_REQUESTS = 200;
+
 const responseSubject = new Subject<number>();
 const responseObservable = responseSubject.pipe(
-  groupBy((requestId) => requestId),
-  mergeMap((group) => group.pipe(debounceTime(300))),
+  // The duration selector tears the group down once its responses stop arriving. Without it groupBy
+  // holds a subject per requestId for the life of the page, and requestIds are never reused.
+  groupBy((requestId) => requestId, { duration: (group) => group.pipe(debounceTime(300)) }),
+  mergeMap((group) => group.pipe(last())),
 );
 
 const addRequest = (request: ElvenarRequestResponseEntry, nonce: string, sharedInfo: ExtensionSharedInfo): void => {
@@ -30,6 +37,14 @@ const addRequest = (request: ElvenarRequestResponseEntry, nonce: string, sharedI
     return;
   }
   requestMap.set(request.requestId, { request, nonce, sharedInfo, response: [] });
+
+  // Map iterates in insertion order, so this drops the longest-waiting requests first.
+  for (const pendingId of requestMap.keys()) {
+    if (requestMap.size <= MAX_PENDING_REQUESTS) {
+      break;
+    }
+    requestMap.delete(pendingId);
+  }
 };
 
 const addResponse = (response: ElvenarRequestResponseEntry): void => {
@@ -47,6 +62,10 @@ export class GlobalHttpInterceptorService {
 
     responseObservable.subscribe((requestId) => {
       const entry = requestMap.get(requestId);
+      // The aggregate is complete once the responses stop arriving, so nothing needs the entry after
+      // this point. A response that shows up later finds no entry and is dropped rather than
+      // re-posting the whole aggregate a second time.
+      requestMap.delete(requestId);
       if (entry) {
         for (const matcher of playerSpecificMatchers.filter((r) => r.responseSelector && r.local)) {
           for (const response of entry.response) {
