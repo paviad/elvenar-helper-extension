@@ -52,7 +52,8 @@ X-Correlation:848933052
   if (lines.length < 3) {
     return null;
   }
-  const type = lines[0].trim();
+  // lines[0] is the STOMP command (MESSAGE, CONNECTED, ...); the callers key off the
+  // plugin/method headers instead, so it is skipped rather than parsed.
   const headers: Record<string, string> = {};
   let i = 1;
   for (; i < lines.length; i++) {

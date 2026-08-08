@@ -45,7 +45,14 @@ export default defineConfig(
       'react-hooks/globals': 'warn',
       'react-hooks/config': 'warn',
       'react-hooks/gating': 'warn',
-      '@typescript-eslint/no-unused-vars': 'off',
+      // The omit idiom (`const { [id]: _, ...rest } = map`) is what this rule was turned off
+      // for; ignoreRestSiblings and the _ pattern cover it, so it can gate again. It earns its
+      // keep on handlers that are written but never wired up, which reads as a working feature
+      // until someone checks. Was off while ~31 findings were cleared; at zero, so it gates.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { args: 'none', ignoreRestSiblings: true, varsIgnorePattern: '^_', caughtErrors: 'none' },
+      ],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',

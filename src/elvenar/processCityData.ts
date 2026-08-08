@@ -102,9 +102,11 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     return;
   }
 
-  const { user_data, featureFlags, city_map, relic_boost_good, resources } = startupService;
+  const { user_data, city_map, relic_boost_good, resources } = startupService;
 
-  // const maxChapter = Number(featureFlags?.find((r) => r.feature.startsWith('ch'))?.feature.replace('ch', ''));
+  // const maxChapter = Number(
+  //   startupService.featureFlags?.find((r) => r.feature.startsWith('ch'))?.feature.replace('ch', ''),
+  // );
   const maxChapter = 25; // Temporarily hardcoded until we can reliably extract it from game data
 
   const boostedGoods =
@@ -151,10 +153,6 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       ([k, v]: [string, number]) => [k as keyof Relics, boostsTable.find(([req]) => v >= req)?.[1] || 0] as const,
     ),
   ) as Record<keyof Relics, number>;
-
-  const seasonPass = startupService.seasonal_events?.find((r) => r.type === 'seasonPass') as {
-    type: string;
-  };
 
   const tournaments = startupService.seasonal_events?.filter((r) => r.type === 'tournament') || [];
 

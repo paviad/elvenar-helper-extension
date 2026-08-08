@@ -1,7 +1,6 @@
 // src/fellowship-adventure/FaStockSidePanel.tsx
 import React from 'react';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
-import { getAccountById } from '../elvenar/AccountManager';
 import { Badges, getBadgeMap } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
 

@@ -4,7 +4,7 @@ import { useTabStore } from '../../util/tabStore';
 import { CityContextType } from '../CityContext';
 
 export async function refreshCity(city: CityContextType) {
-  const { accountId, triggerForceUpdate, searchTerm } = city;
+  const { accountId, triggerForceUpdate } = city;
   const setGlobalError = useTabStore.getState().setGlobalError;
 
   if (!accountId) {

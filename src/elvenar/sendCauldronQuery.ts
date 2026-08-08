@@ -1,5 +1,4 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { processCauldron } from './processCauldron';
 
 export async function sendCauldronQuery(sharedInfo: ExtensionSharedInfo) {
   const { reqUrl: url, reqReferrer: referrer, reqBody } = sharedInfo;
@@ -32,6 +31,7 @@ export async function sendCauldronQuery(sharedInfo: ExtensionSharedInfo) {
     );
   }
 
-  const untypedJson = await response.json();
-  // await processCauldron(untypedJson, sharedInfo);
+  // Cauldron processing is on hold - processCauldron is unregistered in the dispatcher too - so the
+  // body is drained but not handed anywhere.
+  await response.json();
 }

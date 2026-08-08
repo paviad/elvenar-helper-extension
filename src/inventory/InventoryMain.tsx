@@ -22,8 +22,6 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router';
 import { getBuildingFinder } from '../city/buildingFinder';
-import { getAccountById } from '../elvenar/AccountManager';
-import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { InventoryItem } from '../model/inventoryItem';
 import { formatResourceName } from '../util/formatResourceName';
@@ -103,8 +101,6 @@ export const InventoryMain = () => {
 
       const enrichedInventory: InventoryItemWithStats[] = [];
       const resourceKeys = new Set<string>();
-
-      const evolvingBuildings = await getEvolvingBuildings();
 
       for (const item of rawInventory) {
         const enrichedItem: InventoryItemWithStats = {

@@ -1,6 +1,5 @@
 import { ActiveEffectsResponse } from '../model/active-effect';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
-import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountBySessionId } from './AccountManager';
 

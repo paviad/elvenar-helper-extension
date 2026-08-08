@@ -9,7 +9,6 @@ export const getCulturalBuildings = (
   minWidth = 2,
   minLength = 2,
 ): CityEntity[] => {
-  const keysSet = new Set<string>();
   const petBuildings = effects
     .filter((e) => e.action === 'spell_pet_food_1')
     .map((e) => e.targets || [])

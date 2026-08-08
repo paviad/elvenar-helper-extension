@@ -6,7 +6,7 @@ import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
 import { CityEntityExData } from '../model/cityEntity';
 import { StageProvision } from '../model/stageProvision';
-import { BuildingCategory, BuildingDefinition, BuildingField, CATEGORIES } from './CATEGORIES';
+import { BuildingCategory, BuildingDefinition, BuildingField } from './CATEGORIES';
 import { getTypeFromEntity } from './getCityBlockFromCityEntity';
 
 interface bAndC {
@@ -267,8 +267,6 @@ export class BuildingFinder {
   }
 
   getAllBuildingsByCategory(race: string): BuildingDefinition[] {
-    const categories = CATEGORIES;
-
     const getCategory = (building: Building): BuildingCategory => {
       const baseName = building.base_name;
       if (building.type === 'ancient_wonder') {

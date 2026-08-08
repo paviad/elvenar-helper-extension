@@ -13,10 +13,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { Building } from '../model/building';
 import { calculateCityBonuses } from './calculateCityBonuses';
 import { useCity } from './CityContext';
-import { isOutOfGrid } from './isOutOfGrid';
 import { useSettledValue } from './useSettledValue';
 
 export const CityResourceSummary = () => {
@@ -27,9 +25,6 @@ export const CityResourceSummary = () => {
   const settledBlocks = useSettledValue(city.blocks, city.dragIndex === null);
   const blocks = React.useMemo(() => Object.values(settledBlocks), [settledBlocks]);
   const blocksIdAndLevel = React.useMemo(() => blocks.map((b) => ({ id: b.gameId, level: b.level })), [blocks]);
-  const buildingFinder = city.buildingFinder;
-  const evolvingBuildings = city.evolvingBuildings;
-
   const { residentialBonus, availablePopulationBonus, cultureByRankingPoints, extraAvailableCulture } = React.useMemo(
     () => calculateCityBonuses(city.effects, city.squadSize, blocksIdAndLevel),
     [city.effects, city.squadSize, blocksIdAndLevel],

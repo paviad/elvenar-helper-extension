@@ -135,7 +135,6 @@ export const processFaNodeDetails = (faDataStore: FAStoreData, nodeDetailsData: 
 
   const now = Date.now();
   const updatedWaypointIds = new Set<string>();
-  let ignoredCount = 0;
 
   nodeDetailsData.forEach((chestDetails) => {
     let parentWaypointId: string | null = null;
@@ -150,7 +149,6 @@ export const processFaNodeDetails = (faDataStore: FAStoreData, nodeDetailsData: 
 
     // 2. Ignore unrelated chests not present in the current map overview
     if (!parentWaypointId) {
-      ignoredCount++;
       return;
     }
 

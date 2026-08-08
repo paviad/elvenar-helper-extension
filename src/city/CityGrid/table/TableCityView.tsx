@@ -40,8 +40,6 @@ interface TableRowData {
   nextProduction?: Record<string, number>;
 }
 
-type Order = 'asc' | 'desc';
-
 export const TableCityView = () => {
   const city = useCity();
   const { blocks, race, searchTerm } = city;

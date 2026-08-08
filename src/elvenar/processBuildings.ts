@@ -21,7 +21,7 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
           resources:
             r.requirements.resources?.resources &&
             ((z) => {
-              const { prosperity, work, population, culture, __class__, ...rest } = z;
+              const { prosperity, work, population, culture } = z;
               return { prosperity, work, population, culture };
             })(r.requirements.resources.resources),
           chapter: r.requirements.chapter,

@@ -19,7 +19,7 @@ window.WebSocketUnchanged = window.WebSocket;
 window.WebSocket = CustomWebSocket;
 console.log('ElvenAssist: Finished adding interceptor to WebSocket');
 
-const xhrInterceptor = new GlobalHttpInterceptorService();
+new GlobalHttpInterceptorService();
 console.log('ElvenAssist: Finished adding interceptor to XMLHttpRequest');
 
 setupKeyHandlers();
