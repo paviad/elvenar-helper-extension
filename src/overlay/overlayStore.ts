@@ -1,9 +1,14 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { GameVars } from '../inject/gameVars';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
 import { WatchedWonder } from '../model/kpSwap';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { StrengthModifier } from './counterCalculation';
 import { TournamentGood } from './tournamentGuide';
 import { TournyData } from './tournyData';
 
@@ -64,6 +69,25 @@ interface OverlayState {
   // still name what is coming up when startup data mentions no tournament at all.
   lastTournament?: TournamentGood;
   setLastTournament: (good: TournamentGood) => void;
+
+  retrievingCounter: number;
+  setRetrievingCounter: (counter: number) => void;
+  initialWorldMapData: InitialWorldMapData | null;
+  setInitialWorldMapData: (data: InitialWorldMapData) => void;
+  worldNeighbors: WorldNeighbor[];
+  setWorldNeighbors: (neighbors: WorldNeighbor[]) => void;
+  neighbourHelpData?: NeighbourHelpData;
+  setNeighbourHelpData: (data: NeighbourHelpData) => void;
+  modifiers?: StrengthModifier[];
+  setModifiers: (modifiers: StrengthModifier[]) => void;
+
+  autoKpHunt?: boolean;
+  setAutoKpHunt: (autoKpHunt: boolean) => void;
+  kpHuntImportantThreshold: number;
+  setKpHuntImportantThreshold: (threshold: number) => void;
+
+  gameVars?: GameVars;
+  setGameVars: (gameVars: GameVars) => void;
 }
 
 let overlayStore: ReturnType<typeof createOverlayStore>;
@@ -147,11 +171,31 @@ const createOverlayStore = (accountId: string) => {
         setTournyData: (data) => set({ tournyData: data }),
         lastTournament: undefined,
         setLastTournament: (good) => set({ lastTournament: good }),
+
+        retrievingCounter: 0,
+        setRetrievingCounter: (counter) => set({ retrievingCounter: counter }),
+        initialWorldMapData: null,
+        setInitialWorldMapData: (data) => set({ initialWorldMapData: data }),
+        worldNeighbors: [],
+        setWorldNeighbors: (neighbors) => set({ worldNeighbors: neighbors }),
+        neighbourHelpData: undefined,
+        setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
+        modifiers: [],
+        setModifiers: (modifiers) => set({ modifiers }),
+
+        autoKpHunt: false,
+        setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
+        kpHuntImportantThreshold: 10,
+        setKpHuntImportantThreshold: (threshold) => set({ kpHuntImportantThreshold: threshold }),
+
+        gameVars: undefined,
+        setGameVars: (gameVars) => set({ gameVars }),
       }),
       {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
+          // Exclude certain states from being persisted
           const {
             offeredGoods,
             forceUpdate,
@@ -160,8 +204,15 @@ const createOverlayStore = (accountId: string) => {
             messagesUpdate,
             messagesDetailsReceived,
             wonderKpUpdate,
+            retrievingCounter,
+            initialWorldMapData,
+            worldNeighbors,
+            neighbourHelpData,
+            autoKpHunt,
+            // gameVars,
             ...toPersist
           } = state;
+          // avatarPosition remains in `toPersist` automatically
           return toPersist;
         },
       },

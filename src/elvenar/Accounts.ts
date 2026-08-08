@@ -8,6 +8,7 @@ import { FAStoreData } from '../model/faStageProgress';
 import { MessagesData } from '../model/gameMessage';
 import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
+import { KpHuntData } from '../model/kpHuntData';
 import { PotionEffect } from '../model/potionEffect';
 import { SeasonalEvent } from '../model/seasonalEvent';
 import { Trade } from '../model/trade';
@@ -46,6 +47,8 @@ export interface CityQuery {
   faRequirements: Record<string, FaQuest>;
   relicBoosts: Record<keyof Relics, number>;
   squadSize: number;
+  coinsCap: number;
+  suppliesCap: number;
   rankingPoints: number;
   cityResources?: Record<string, number>;
   armyDetails?: ArmyDetails;
@@ -82,6 +85,8 @@ export interface AccountData {
   faDataStore?: FAStoreData;
 
   messagesData?: MessagesData;
+
+  kpHuntOpportunities?: Record<string, KpHuntData>;
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};

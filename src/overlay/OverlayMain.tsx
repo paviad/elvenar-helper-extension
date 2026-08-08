@@ -19,14 +19,25 @@ import { createPortal } from 'react-dom';
 import {
   clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
+  clearKpHuntOpportunityListener,
   clearMessagesUpdatedListener,
   clearTradeParsedListener,
   setupActiveEffectsUpdatedListener,
   setupGenericResponseListener,
+  setupKpHuntOpportunityListener,
   setupMessagesUpdatedListener,
   setupTradeParsedListener,
 } from '../chrome/messages';
+import {
+  getAccountById,
+  loadAccountManagerFromStorage,
+  loadSingleAccountFromStorage,
+  saveAllAccounts,
+} from '../elvenar/AccountManager';
+import { saveSingleAccount } from '../elvenar/Accounts';
+import { relayToGame } from '../inject/relayToGame';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
+import { KpHuntData } from '../model/kpHuntData';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { TournyProvinceInformation } from '../model/tourny/provinceInformation';
 import { TournyProvince } from '../model/tourny/provincesOverview';
@@ -37,13 +48,16 @@ import { DiscordButton } from '../widgets/DiscordButton';
 import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
+import { KpHuntOpportunities } from './KpHuntOpportunities';
 import { MessagesView } from './MessagesView';
+import { NeighbourlyHelp } from './NeighbourlyHelp';
 import { sameOfferedGoods } from './offeredGoods';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
-import { getOverlayStore } from './overlayStore';
+import { getAccountId, getOverlayStore } from './overlayStore';
 import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
 import { parseSocketMessage } from './parseSocketMessage';
+import { playPrimaryOpportunityAlert } from './primaryOpportunityAlertService';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { emptyTournyData } from './tournyData';
@@ -78,14 +92,51 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const userMap = React.useRef<Record<string, string>>({});
   const tabRef = React.useRef<OverlayTabKey>(tabKey);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
+  const [kpHuntOpportunities, setKpHuntOpportunities] = React.useState<Record<string, KpHuntData>>({});
+  const [cityResources, setCityResources] = React.useState<Record<string, number>>({});
+  const [kpInstantsInventory, setKpInstantsInventory] = React.useState<Record<number, number>>({});
 
   const useOverlayStore = getOverlayStore();
   const chapter = useOverlayStore((state) => state.chapter);
+
+  const [refreshNeighborlyHelp, triggerRefreshNeighborlyHelp] = React.useReducer((x) => x + 1, 0);
 
   // Connect Quests from Zustand Store
   const quests = useOverlayStore((state) => state.quests);
   const setQuests = useOverlayStore((state) => state.setQuests);
   const [dropError, setDropError] = React.useState<string | undefined>(undefined);
+
+  const retrievingCounterRaw = useOverlayStore((state) => state.retrievingCounter);
+  const [retrievingCounter, setRetrievingCounter] = React.useState(retrievingCounterRaw);
+  const autoKpHunt = useOverlayStore((state) => state.autoKpHunt);
+  const kpHuntImportantThreshold = useOverlayStore((state) => state.kpHuntImportantThreshold);
+
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (retrievingCounterRaw === 0 && retrievingCounter !== 0) {
+      timeoutRef.current = setTimeout(() => {
+        setRetrievingCounter(0);
+        console.log('Retrieving counter reached 0, checking for next page...', kpHuntOpportunities);
+        const primaryOpportunities = Object.values(kpHuntOpportunities || {}).filter(
+          (opportunity) => opportunity.standToGain >= kpHuntImportantThreshold,
+        );
+        if (primaryOpportunities.length === 0) {
+          if (autoKpHunt) {
+            console.log('Auto KP Hunt is enabled, relaying to game to go to next page...');
+            relayToGame('nextPage');
+          }
+        } else {
+          playPrimaryOpportunityAlert();
+        }
+      }, 500);
+    } else {
+      setRetrievingCounter(retrievingCounterRaw);
+    }
+  }, [retrievingCounterRaw, retrievingCounter, kpHuntOpportunities, autoKpHunt, kpHuntImportantThreshold]);
 
   // Declarative, so the tab set, the Alt+C chord map, the rendered content and the help dialog
   // all read from one place. Hand-computed indices used to have to be adjusted in two places
@@ -188,6 +239,30 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
         ]);
       }
     };
+    function fillData(accountData: ReturnType<typeof getAccountById>) {
+      setKpHuntOpportunities(accountData?.kpHuntOpportunities || {});
+      setCityResources(accountData?.cityQuery?.cityResources || {});
+      const inventory = accountData?.inventoryItems?.filter((item) => item.subtype?.startsWith('INS_KP_AW_')) || [];
+      const inventoryMap: Record<number, number> = {};
+      inventory.forEach((item) => {
+        const match = item.subtype.match(/INS_KP_AW_(\d+)/);
+        if (match) {
+          const instantId = parseInt(match[1], 10);
+          inventoryMap[instantId] = (inventoryMap[instantId] || 0) + item.amount;
+        }
+      });
+      setKpInstantsInventory(inventoryMap);
+    }
+
+    async function Do() {
+      await loadAccountManagerFromStorage();
+
+      const accountId = getAccountId();
+      if (accountId) {
+        const accountData = getAccountById(accountId);
+        fillData(accountData);
+      }
+    }
 
     window.addEventListener('message', messageHandler);
 
@@ -239,11 +314,26 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }
     });
 
+    setupKpHuntOpportunityListener((msg) => {
+      void (async () => {
+        expandPanel(true);
+        const accountId = getAccountId();
+        if (!accountId) return;
+        await loadAccountManagerFromStorage();
+        const accountData = getAccountById(accountId);
+        fillData(accountData);
+        setTabKey('kphunt');
+      })();
+    });
+
+    void Do();
+
     return () => {
       window.removeEventListener('message', messageHandler);
       clearTradeParsedListener();
       clearActiveEffectsUpdatedListener();
       clearMessagesUpdatedListener();
+      clearKpHuntOpportunityListener();
     };
   }, [useOverlayStore]);
 
@@ -262,6 +352,34 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   };
 
   const activeSizePreset = matchOverlaySizePreset(sizeAtMenuOpen);
+
+  const onClearAllOpportunities = async () => {
+    const accountId = getAccountId();
+    if (!accountId) return;
+    await loadSingleAccountFromStorage(accountId);
+    const accountData = getAccountById(accountId);
+    if (!accountData || !accountData.kpHuntOpportunities) return;
+    accountData.kpHuntOpportunities = {};
+    setKpHuntOpportunities({});
+    accountData.kpHuntOpportunities = {};
+    await saveSingleAccount(accountId);
+    // expandPanel(false);
+  };
+
+  const onClearOpportunity = async (id: string) => {
+    const accountId = getAccountId();
+    if (!accountId) return;
+    await loadSingleAccountFromStorage(accountId);
+    const accountData = getAccountById(accountId);
+    if (!accountData || !accountData.kpHuntOpportunities) return;
+    const { [id]: _, ...rest } = accountData.kpHuntOpportunities;
+    setKpHuntOpportunities({ ...rest });
+    accountData.kpHuntOpportunities = { ...rest };
+    await saveSingleAccount(accountId);
+    // if (Object.keys(rest).length === 0) {
+    //   expandPanel(false);
+    // }
+  };
 
   useEffect(() => {
     const listenerIds: string[] = [];
@@ -352,6 +470,16 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
           ...tournyData,
           provincesOverview: [...tournyData.provincesOverview],
         });
+      }),
+    );
+
+    listenerIds.push(
+      setupGenericResponseListener<Record<string, number>>('R:CityResourcesService/getResources', (msg) => {
+        async function Do() {
+          await loadSingleAccountFromStorage(getAccountId()!);
+          triggerRefreshNeighborlyHelp();
+        }
+        void Do();
       }),
     );
 
@@ -451,159 +579,198 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   );
 
   return (
-    <div style={{ height: '100%' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          position: 'sticky',
-          top: 0,
-          zIndex: 2,
-          background: '#f9f9fb',
-          pr: 2,
-        }}
-      >
-        <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
-          {tabs.map((t) => (
-            <Tab key={t.key} label={renderLabel(t)} />
-          ))}
-        </Tabs>
-        {tabKey === 'chat' && (
-          <>
-            <IconButton aria-label='Search chat' size='small' sx={{ ml: 1 }} onClick={() => setSearchActive((v) => !v)}>
-              <SearchIcon fontSize='small' />
-            </IconButton>
-            {searchActive && (
-              <TextField
-                autoFocus
-                size='small'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder='Search chat...'
-                sx={{ ml: 1, minWidth: 180 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onKeyUp={(e) => e.stopPropagation()}
-              />
-            )}
-          </>
-        )}
-
-        {headerActionsSlot ? createPortal(headerActions, headerActionsSlot) : headerActions}
-        <Menu
-          anchorEl={sizeAnchor}
-          open={!!sizeAnchor}
-          onClose={() => setSizeAnchor(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          // Menu is a Modal, and Modal portals to document.body by default, where it would land
-          // at MUI's modal layer (1300) behind this z-index 9999 panel - open, anchored and
-          // invisible. Rendering in place keeps it in the panel's own stacking context.
-          disablePortal
-          sx={{ zIndex: OVERLAY_MENU_Z_INDEX }}
+    <>
+      <div style={{ height: '100%' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            background: '#f9f9fb',
+            pr: 2,
+          }}
         >
-          {SIZE_PRESET_ORDER.map((preset) => {
-            const { width, height } = OVERLAY_SIZE_PRESETS[preset];
-            return (
-              <MenuItem key={preset} onClick={() => chooseSizePreset(preset)} selected={activeSizePreset === preset}>
-                <ListItemIcon sx={{ minWidth: 32 }}>
-                  {activeSizePreset === preset && <CheckIcon fontSize='small' />}
-                </ListItemIcon>
-                <ListItemText primary={SIZE_PRESET_LABELS[preset]} secondary={`${width} × ${height}`} />
-              </MenuItem>
-            );
-          })}
-        </Menu>
-
-        <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
-      </Box>
-      {tabKey === 'chat' && (
-        <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
-      )}
-      {chapter >= 18 && tabKey === 'trade' && <TradeView />}
-      {tabKey === 'ee' && <EeView />}
-      {tabKey === 'quests' &&
-        (quests === undefined ? (
-          <Box
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onClick={() => document.getElementById('quest-file-upload')?.click()}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              boxSizing: 'border-box',
-              minHeight: 300,
-              p: 4,
-              m: 2,
-              textAlign: 'center',
-              border: '2px dashed',
-              borderColor: dropError ? 'error.main' : 'divider',
-              borderRadius: 2,
-              bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
-              cursor: 'pointer',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
-              },
-            }}
+          <Tabs
+            value={tabIndex}
+            onChange={handleChange}
+            variant='scrollable'
+            scrollButtons='auto'
+            aria-label='Overlay Tabs'
+            sx={{ flex: 1 }}
           >
-            <input
-              type='file'
-              id='quest-file-upload'
-              accept='.txt'
-              style={{ display: 'none' }}
-              onChange={handleFileInput}
+            {tabs.map((t) => (
+              <Tab key={t.key} label={renderLabel(t)} />
+            ))}
+          </Tabs>
+          {tabKey === 'chat' && (
+            <>
+              <IconButton
+                aria-label='Search chat'
+                size='small'
+                sx={{ ml: 1 }}
+                onClick={() => setSearchActive((v) => !v)}
+              >
+                <SearchIcon fontSize='small' />
+              </IconButton>
+              {searchActive && (
+                <TextField
+                  autoFocus
+                  size='small'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder='Search chat...'
+                  sx={{ ml: 1, minWidth: 180 }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onKeyUp={(e) => e.stopPropagation()}
+                />
+              )}
+            </>
+          )}
+
+          {headerActionsSlot ? createPortal(headerActions, headerActionsSlot) : headerActions}
+          <Menu
+            anchorEl={sizeAnchor}
+            open={!!sizeAnchor}
+            onClose={() => setSizeAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            // Menu is a Modal, and Modal portals to document.body by default, where it would land
+            // at MUI's modal layer (1300) behind this z-index 9999 panel - open, anchored and
+            // invisible. Rendering in place keeps it in the panel's own stacking context.
+            disablePortal
+            sx={{ zIndex: OVERLAY_MENU_Z_INDEX }}
+          >
+            {SIZE_PRESET_ORDER.map((preset) => {
+              const { width, height } = OVERLAY_SIZE_PRESETS[preset];
+              return (
+                <MenuItem key={preset} onClick={() => chooseSizePreset(preset)} selected={activeSizePreset === preset}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    {activeSizePreset === preset && <CheckIcon fontSize='small' />}
+                  </ListItemIcon>
+                  <ListItemText primary={SIZE_PRESET_LABELS[preset]} secondary={`${width} × ${height}`} />
+                </MenuItem>
+              );
+            })}
+          </Menu>
+
+          <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+        </Box>
+        {tabKey === 'chat' && (
+          <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
+        )}
+        {chapter >= 18 && tabKey === 'trade' && <TradeView />}
+        {tabKey === 'ee' && <EeView />}
+        {tabKey === 'quests' &&
+          (quests === undefined ? (
+            <Box
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onClick={() => document.getElementById('quest-file-upload')?.click()}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                boxSizing: 'border-box',
+                minHeight: 300,
+                p: 4,
+                m: 2,
+                textAlign: 'center',
+                border: '2px dashed',
+                borderColor: dropError ? 'error.main' : 'divider',
+                borderRadius: 2,
+                bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
+                },
+              }}
+            >
+              <input
+                type='file'
+                id='quest-file-upload'
+                accept='.txt'
+                style={{ display: 'none' }}
+                onChange={handleFileInput}
+              />
+
+              {dropError ? (
+                <>
+                  <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
+                    Upload Failed
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
+                    {dropError}
+                  </Typography>
+                  <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+                    Click or drag a new file to try again.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
+                    No quests loaded
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'text.disabled' }}>
+                    Drag and drop a .txt quest export file here, or click to browse.
+                  </Typography>
+                </>
+              )}
+            </Box>
+          ) : initialQuestIndex === undefined ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                p: 4,
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant='h6' sx={{ color: 'text.secondary' }}>
+                There is no event currently in progress.
+              </Typography>
+            </Box>
+          ) : (
+            <QuestJournal
+              quests={quests}
+              initialQuestIndex={initialQuestIndex}
+              onClearQuests={() => setQuests(undefined)}
             />
-
-            {dropError ? (
-              <>
-                <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
-                  Upload Failed
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
-                  {dropError}
-                </Typography>
-                <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-                  Click or drag a new file to try again.
-                </Typography>
-              </>
-            ) : (
-              <>
-                <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
-                  No quests loaded
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'text.disabled' }}>
-                  Drag and drop a .txt quest export file here, or click to browse.
-                </Typography>
-              </>
-            )}
-          </Box>
-        ) : initialQuestIndex === undefined ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              p: 4,
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant='h6' sx={{ color: 'text.secondary' }}>
-              There is no event currently in progress.
-            </Typography>
-          </Box>
-        ) : (
-          <QuestJournal
-            quests={quests}
-            initialQuestIndex={initialQuestIndex}
-            onClearQuests={() => setQuests(undefined)}
+          ))}{' '}
+        {tabKey === 'messages' && <MessagesView />}
+        {tabKey === 'tourny' && <Tourny />}
+        {tabKey === 'kphunt' && (
+          <KpHuntOpportunities
+            kpHuntOpportunities={kpHuntOpportunities}
+            onClearAllOpportunities={() => void onClearAllOpportunities()}
+            onClearOpportunity={(id) => void onClearOpportunity(id)}
+            cityResources={cityResources}
+            kpInstantsInventory={kpInstantsInventory}
           />
-        ))}{' '}
-      {tabKey === 'messages' && <MessagesView />}
-      {tabKey === 'tourny' && <Tourny />}
-    </div>
+        )}
+        {tabKey === 'nhelp' && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
+      </div>
+      {retrievingCounter > 0 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 40,
+            right: 16,
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            backgroundColor: '#1976d2',
+            border: '2px solid white',
+            zIndex: 100,
+          }}
+        />
+      )}
+    </>
   );
 }

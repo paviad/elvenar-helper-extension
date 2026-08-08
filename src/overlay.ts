@@ -1,11 +1,20 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
-import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import {
+  setupCityDataUpdatedListener,
+  setupHelpPerformedUpdateProvinceListener,
+  setupInitialWorldMapDataListener,
+  setupMessageListener,
+  setupNeighbourHelpDataListener,
+  setupRetrievingCounterUpdateListener,
+  setupSpirePicksListener,
+  setupWorldNeighborsUpdatedListener,
+} from './chrome/messages';
 import { setupSocketResponseListener } from './chrome/socketResponse';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
+import { GameVars } from './inject/gameVars';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import {
-  DEFAULT_OVERLAY_SIZE,
   loadOverlaySize,
   OVERLAY_SIZE_PRESETS,
   OverlaySize,
@@ -14,6 +23,7 @@ import {
 } from './overlay/overlaySize';
 import { generateOverlayStore, getAccountId, getOverlayStore } from './overlay/overlayStore';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
+import { updateSpireBadge } from './overlay/spireBadge';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {
@@ -64,6 +74,24 @@ function styleAsHeaderButton(el: HTMLElement) {
   });
 }
 
+// This branch opens at the large preset rather than master's small default, which is too tight
+// for the extra views. Taken from the preset so the two cannot drift into a third size.
+const { width: defaultStartingWidth, height: defaultStartingHeight } = OVERLAY_SIZE_PRESETS.large;
+
+let gameVars: GameVars | undefined;
+
+const setupGameVarsListener = () => {
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || event.data?.type !== 'gameVars') {
+      return;
+    }
+
+    gameVars = event.data.payload as GameVars;
+
+    console.log('gameVars', gameVars);
+  });
+};
+
 const initFunc = () => {
   // Remove existing panel if present
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
@@ -73,6 +101,7 @@ const initFunc = () => {
     setupNonSpecificRequestInterceptedListener();
     setupAggregateRequestResponseListener();
     setupSocketResponseListener();
+    setupGameVarsListener();
   }
 
   // Create the div
@@ -81,8 +110,8 @@ const initFunc = () => {
   draggableDiv.style.position = 'fixed';
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
-  draggableDiv.style.width = `${DEFAULT_OVERLAY_SIZE.width}px`;
-  draggableDiv.style.height = `${DEFAULT_OVERLAY_SIZE.height}px`;
+  draggableDiv.style.width = `${defaultStartingWidth}px`;
+  draggableDiv.style.height = `${defaultStartingHeight}px`;
   draggableDiv.style.background = '#fff';
   draggableDiv.style.border = '1px solid #ccc';
   draggableDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
@@ -358,8 +387,8 @@ const initFunc = () => {
 
   // Collapse logic
   let collapsed = true;
-  let lastExpandedWidth = `${DEFAULT_OVERLAY_SIZE.width}px`;
-  let lastExpandedHeight = `${DEFAULT_OVERLAY_SIZE.height}px`;
+  let lastExpandedWidth = `${defaultStartingWidth}px`;
+  let lastExpandedHeight = `${defaultStartingHeight}px`;
   collapseBtn.addEventListener('click', () => {
     if (isDragging) return;
     if (!collapsed) {
@@ -507,6 +536,41 @@ const initFunc = () => {
       console.error('Error setting up overlay:', err);
     });
   });
+  setupRetrievingCounterUpdateListener(({ tabId, retrievingCounter }) => {
+    const store = getOverlayStore();
+    store.getState().setRetrievingCounter(retrievingCounter);
+  });
+  setupWorldNeighborsUpdatedListener(({ worldNeighbors }) => {
+    const store = getOverlayStore();
+    console.log('received world neighbors', worldNeighbors.filter((r) => r.cool_down).length);
+    store.getState().setWorldNeighbors(worldNeighbors);
+  });
+  setupInitialWorldMapDataListener(({ initialWorldMapData }) => {
+    const store = getOverlayStore();
+    store.getState().setInitialWorldMapData(initialWorldMapData);
+  });
+  setupNeighbourHelpDataListener(({ neighbourHelpData }) => {
+    const store = getOverlayStore();
+    store.getState().setNeighbourHelpData(neighbourHelpData);
+  });
+  setupHelpPerformedUpdateProvinceListener(({ updatedProvince }) => {
+    console.log('E Received helpPerformedUpdateProvince message:', updatedProvince);
+  });
+  setupSpirePicksListener(({ picks, prob, jokerGhost, turn, status }) => {
+    // On a fresh encounter there is no prob yet (the wizard only computes it from turn 2)
+    // and no joker, so the badge clears itself.
+    updateSpireBadge({ prob, jokerGhost, turn, status });
+    if (status) {
+      // Progress signal only — relaying it would hand the page an empty pick list and
+      // release whatever is waiting on the real one.
+      return;
+    }
+    const message = {
+      type: 'spirePicks',
+      payload: picks,
+    };
+    window.postMessage(message, '*');
+  });
 };
 
 async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlot: HTMLDivElement) {
@@ -534,6 +598,20 @@ async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlo
     if (!state.lastSeenChat) {
       // First time setup, set last seen chat to now
       state.setLastSeenChat(Date.now());
+    }
+
+    if (gameVars) {
+      state.setGameVars(gameVars);
+      const existingPanel = document.getElementById('elven-assist-draggable-panel');
+      if (existingPanel) {
+        if (gameVars.gameScriptUrl.includes('full')) {
+          existingPanel.style.border = '13px solid red';
+        } else {
+          // existingPanel.style.border = '13px solid green';
+        }
+      }
+    } else {
+      throw new Error('gameVars not set yet, cannot setup overlay store');
     }
 
     createOverlayUi(contentDiv, headerActionsSlot);
