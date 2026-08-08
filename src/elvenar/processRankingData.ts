@@ -15,7 +15,7 @@ interface NotifyData {
 
 const retrievingCounterSubject = new Subject<NotifyData>();
 
-const retrievingCounterNotify = retrievingCounterSubject
+retrievingCounterSubject
   .pipe(
     groupBy((data) => data.tabId),
     mergeMap((group) => group.pipe(debounceTime(50))),

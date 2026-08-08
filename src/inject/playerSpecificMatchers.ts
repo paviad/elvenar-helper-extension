@@ -1,6 +1,5 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { localCollectEventTreasure } from './local/localCollectEventTreasure';
-import { localProcessGuildData } from './local/localProcessGuildData';
 import { localProcessRankingsData } from './local/localProcessRankingsData';
 import { localProcessSpireDiplomacyGetData } from './local/localProcessSpireDiplomacyGetData';
 import { localTrapVisitPlayer } from './local/localTrapVisitPlayer';

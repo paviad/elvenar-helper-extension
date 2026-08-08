@@ -5,7 +5,7 @@ const processRewardSubject = new Subject<string>();
 
 const firstDelay = 10;
 
-const subscription = processRewardSubject
+processRewardSubject
   .pipe(
     concatMap((z, i) => {
       console.log(`waiting ${i === 0 ? firstDelay : 1} seconds`);

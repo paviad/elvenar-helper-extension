@@ -334,10 +334,6 @@ export const calculatePhase = (
     }
 
     if (maxPackProfit && maxPackProfit.firstStandToGain > 0 && maxPackProfit.secondStandToGain > 0) {
-      const dblStandToGain = maxPackProfit.firstStandToGain;
-      const nextStandToGain = maxPackProfit.secondStandToGain;
-      const dblContributeAtLeast = maxPackProfit.firstContribution;
-      const nextContributeAtLeast = maxPackProfit.secondContribution;
       packHunt = maxPackProfit;
     }
 

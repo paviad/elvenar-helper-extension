@@ -90,9 +90,8 @@ export function injectMutate() {
             }
           }
           if (/elvenar-release-min-[a-f0-9]{32}\.js$/.test(script.src)) {
-            const originalSrc = script.src;
             script.remove();
-            // fetchAndModify(originalSrc);
+            // fetchAndModify(script.src);
           }
         }
       }
