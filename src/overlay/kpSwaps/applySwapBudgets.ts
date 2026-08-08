@@ -1,4 +1,26 @@
 import { SwapBudget, SwapEntry } from '../../model/kpSwap';
+import { WonderKp, wonderKpRemaining } from '../../model/wonderKp';
+
+/**
+ * What the wonder can still take, once the requests you have already posted are allowed for.
+ *
+ * The game reports a wonder as needing everything it has not been given, and a request you
+ * posted is knowledge owed to you that has not arrived — so the figure on its own reads high
+ * by however much is already on its way. Undefined when the game has said nothing about the
+ * wonder, which is not the same as it having no room.
+ */
+export function roomLeftFor(
+  progress: WonderKp | undefined,
+  entries: SwapEntry[],
+  wonderName: string,
+): number | undefined {
+  if (!progress) {
+    return undefined;
+  }
+  const pending = entries.filter((e) => e.requestedWonder === wonderName).reduce((sum, e) => sum + e.amount, 0);
+
+  return Math.max(0, wonderKpRemaining(progress) - pending);
+}
 
 /**
  * Deducts the requests you have posted since each budget was last counted.
@@ -40,6 +62,10 @@ export function applySwapBudgets(budgets: SwapBudget[], entries: SwapEntry[]): S
  * knowledge still owed to you does not, so the lower of the two is the honest number. The
  * counting mark stays where it was for the same reason — the requests behind it are still
  * outstanding and must not be deducted twice.
+ *
+ * `remaining` is expected to have come from `roomLeftFor`, so the requests already showing in
+ * the tally are in it; `countedThrough` must then be set past them, or the count would take
+ * them off a second time.
  */
 export function seedSwapBudget(
   budgets: SwapBudget[],

@@ -1,5 +1,5 @@
 import { SwapBudget, SwapEntry } from '../../model/kpSwap';
-import { applySwapBudgets, seedSwapBudget } from './applySwapBudgets';
+import { applySwapBudgets, roomLeftFor, seedSwapBudget } from './applySwapBudgets';
 
 const budget = (overrides: Partial<SwapBudget> = {}): SwapBudget => ({
   baseName: 'A_Abyss',
@@ -20,6 +20,32 @@ const entry = (overrides: Partial<SwapEntry> = {}): SwapEntry => ({
   requestedWonder: 'Golden Abyss',
   myPostedAt: 1200,
   ...overrides,
+});
+
+describe('roomLeftFor', () => {
+  const progress = { baseName: 'A_Abyss', invested: 30, required: 175 };
+
+  it('reports what the game says when nothing has been asked for', () => {
+    expect(roomLeftFor(progress, [], 'Golden Abyss')).toBe(145);
+  });
+
+  it('takes off the requests already posted, which have not arrived yet', () => {
+    const entries = [entry(), entry({ threadId: 't2', amount: 40 })];
+
+    expect(roomLeftFor(progress, entries, 'Golden Abyss')).toBe(45);
+  });
+
+  it('ignores requests for other wonders', () => {
+    expect(roomLeftFor(progress, [entry({ requestedWonder: 'Needles of the Sun' })], 'Golden Abyss')).toBe(145);
+  });
+
+  it('bottoms out at no room rather than going negative', () => {
+    expect(roomLeftFor({ ...progress, required: 40 }, [entry()], 'Golden Abyss')).toBe(0);
+  });
+
+  it('says nothing when the game has said nothing about the wonder', () => {
+    expect(roomLeftFor(undefined, [], 'Golden Abyss')).toBeUndefined();
+  });
 });
 
 describe('applySwapBudgets', () => {

@@ -26,7 +26,7 @@ import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/Account
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
 import { SwapEntry, swapPaidKey, SwapTally } from '../model/kpSwap';
-import { WonderKp, wonderKpRemaining } from '../model/wonderKp';
+import { WonderKp } from '../model/wonderKp';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import {
   authorType,
@@ -39,7 +39,7 @@ import {
   plaqueFace,
   timestampType,
 } from './gild';
-import { applySwapBudgets, seedSwapBudget } from './kpSwaps/applySwapBudgets';
+import { applySwapBudgets, roomLeftFor, seedSwapBudget } from './kpSwaps/applySwapBudgets';
 import { computeSwapTally } from './kpSwaps/computeSwapTally';
 import { getOwnedWonders } from './kpSwaps/getOwnedWonders';
 import { groupSwapsByPayee, PayeeGroup } from './kpSwaps/groupSwapsByPayee';
@@ -180,6 +180,11 @@ export const SwapsView = () => {
 
   const kpByBaseName = useMemo(() => new Map((account?.wonderKp ?? []).map((kp) => [kp.baseName, kp])), [account]);
 
+  // The game's figure counts everything the wonder has not been given, including the rounds
+  // you have already asked for and are still waiting on, so those come off before it is shown
+  // or handed to a count.
+  const roomFor = (wonder: AncientWonder) => roomLeftFor(kpByBaseName.get(wonder.baseName), tally.entries, wonder.name);
+
   // First run on this account: adopt whatever your newest request post is, so the list starts
   // empty and only fills as you post from here on.
   useEffect(() => {
@@ -231,13 +236,16 @@ export const SwapsView = () => {
     }
     // Copying is the moment you commit to asking for this one, so that is when the count
     // starts. Nothing to start if the game has not told us what the wonder still needs.
-    const progress = kpByBaseName.get(wonder.baseName);
-    if (progress) {
+    // The seed already allows for every request on show, so the mark starts past them:
+    // latestRequestAt is the newest request of yours anywhere, and the tally cannot hold
+    // one beyond it.
+    const room = roomFor(wonder);
+    if (room !== undefined) {
       setSwapBudgets(
         seedSwapBudget(swapBudgets, {
           baseName: wonder.baseName,
           wonderName: wonder.name,
-          remaining: wonderKpRemaining(progress),
+          remaining: room,
           countedThrough: tally.latestRequestAt,
         }),
       );
@@ -447,7 +455,7 @@ export const SwapsView = () => {
           <List disablePadding>
             {ownedWonders.map((wonder) => {
               const justCopied = copied === wonder.baseName;
-              const progress = kpByBaseName.get(wonder.baseName);
+              const room = roomFor(wonder);
               return (
                 <ListItemButton
                   key={wonder.baseName}
@@ -459,9 +467,9 @@ export const SwapsView = () => {
                     {/* What the wonder can still take, so you can pick a thread it fits in
                         before you post rather than after. Silent when the game has not said
                         — a wonder collecting runes takes no knowledge at all. */}
-                    {progress && (
+                    {room !== undefined && (
                       <Typography sx={{ ...timestampType, display: 'block' }}>
-                        needs {wonderKpRemaining(progress)} KP
+                        {room === 0 ? 'no room left' : `needs ${room} KP`}
                       </Typography>
                     )}
                   </Box>
