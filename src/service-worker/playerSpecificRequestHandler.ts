@@ -1,4 +1,4 @@
-import { concatMap, from, Subject } from 'rxjs';
+import { catchError, concatMap, EMPTY, from, Subject } from 'rxjs';
 import {
   InterceptedPlayerSpecificRequest,
   sendActiveEffectsUpdatedMessage,
@@ -12,7 +12,6 @@ import { getAccountBySessionId, loadSingleAccountFromStorage } from '../elvenar/
 import { saveSingleAccount } from '../elvenar/Accounts';
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processAncientWonderPhaseUpdate } from '../elvenar/processAncientWonderPhaseUpdate';
-import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
@@ -55,17 +54,22 @@ const handlerSubject = new Subject<{
   sender: chrome.runtime.MessageSender;
 }>();
 
-const subscription = handlerSubject
+handlerSubject
   .pipe(
     concatMap(({ msg, sender }) => {
-      return from(playerSpecificRequestHandlerInternal(msg, sender));
+      // The processors read game JSON that Inno can reshape without warning, so a throw here is
+      // expected eventually. It has to be caught inside the concatMap: an error reaching the
+      // subscriber unsubscribes it, and from then on every response is silently dropped until the
+      // service worker restarts. Catching per message costs us that one message instead.
+      return from(playerSpecificRequestHandlerInternal(msg, sender)).pipe(
+        catchError((err: unknown) => {
+          console.error('Error processing player specific request:', msg.payload.type, err);
+          return EMPTY;
+        }),
+      );
     }),
   )
-  .subscribe({
-    error: (err) => {
-      console.error('Error processing player specific request:', err);
-    },
-  });
+  .subscribe();
 
 export const playerSpecificRequestHandler = async (
   msg: InterceptedPlayerSpecificRequest,
