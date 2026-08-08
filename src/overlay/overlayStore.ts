@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { SwapBudget } from '../model/kpSwap';
+import { WatchedWonder } from '../model/kpSwap';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
@@ -46,11 +46,11 @@ interface OverlayState {
   // In game time (unix seconds from the posts), not local clock time.
   swapsClearedAt?: number;
   setSwapsClearedAt: (at: number) => void;
-  // How much knowledge each wonder you have copied a request for can still take. Persisted
-  // because the count spans a login: you ask over several threads, and the knowledge only
-  // lands once the people after you post.
-  swapBudgets: SwapBudget[];
-  setSwapBudgets: (budgets: SwapBudget[]) => void;
+  // The wonders you have copied a request for, kept in front of you while you work through
+  // the threads. Only which wonders — how much room each has left is derived, so there is no
+  // stored figure to drift.
+  watchedWonders: WatchedWonder[];
+  setWatchedWonders: (wonders: WatchedWonder[]) => void;
   // Bumped when AncientWonderService reports a wonder's phase moving on, so the swap tab
   // re-reads the stored figures instead of waiting for the next city load.
   wonderKpUpdate: number;
@@ -125,8 +125,8 @@ export const generateOverlayStore = (accountId: string) => {
         setPaidSwaps: (keys) => set({ paidSwaps: keys }),
         swapsClearedAt: undefined,
         setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
-        swapBudgets: [],
-        setSwapBudgets: (budgets) => set({ swapBudgets: budgets }),
+        watchedWonders: [],
+        setWatchedWonders: (wonders) => set({ watchedWonders: wonders }),
         wonderKpUpdate: 0,
         triggerWonderKpUpdate: () => set((state) => ({ wonderKpUpdate: state.wonderKpUpdate + 1 })),
         tournyData: undefined,

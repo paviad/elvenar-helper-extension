@@ -1,8 +1,8 @@
 import { GameMessage, MessagePostVO, MessagesData } from '../../model/gameMessage';
-import { SkippedSwapThread, SwapEntry, SwapTally } from '../../model/kpSwap';
+import { PendingRequest, SkippedSwapThread, SwapEntry, SwapTally } from '../../model/kpSwap';
 import { parseSwapAmount } from './parseSwapAmount';
 
-const EMPTY: SwapTally = { entries: [], skipped: [], latestRequestAt: 0 };
+const EMPTY: SwapTally = { entries: [], pendingRequests: [], skipped: [], latestRequestAt: 0 };
 
 // Game posts use bare "\r" for line breaks, so normalise before comparing.
 function normalize(text: string | undefined): string {
@@ -83,6 +83,7 @@ export function computeSwapTally(
 
   const triggers = buildTriggers(wonderNames);
   const entries: SwapEntry[] = [];
+  const pendingRequests: PendingRequest[] = [];
   const skipped: SkippedSwapThread[] = [];
   let latestRequestAt = 0;
 
@@ -109,6 +110,18 @@ export function computeSwapTally(
     // show — including ones with no payable recipient.
     const myPostedAt = posts[mine].created_at;
     latestRequestAt = Math.max(latestRequestAt, myPostedAt);
+
+    const subject = message.subject || '(no subject)';
+    const amount = parseSwapAmount(message.subject);
+
+    // Nobody has posted after your request, so nobody has given to it yet — the chain pays
+    // whoever posted last. Recorded regardless of the watermark and of whether the thread
+    // owes anyone: clearing settles what you owe, not what is owed to you. Once somebody
+    // does post, they have paid, and the wonder's own invested total says so instead.
+    if (mine === posts.length - 1 && amount.kind === 'amount') {
+      pendingRequests.push({ threadId: id, requestedWonder, amount: amount.amount });
+    }
+
     if (myPostedAt <= since) {
       continue;
     }
@@ -125,9 +138,7 @@ export function computeSwapTally(
       continue;
     }
 
-    const subject = message.subject || '(no subject)';
     const recipientName = recipientPost.author?.name || 'Unknown';
-    const amount = parseSwapAmount(message.subject);
 
     if (amount.kind !== 'amount') {
       skipped.push({ threadId: id, subject, recipientName, ambiguous: amount.kind === 'ambiguous' });
@@ -150,5 +161,5 @@ export function computeSwapTally(
   entries.sort((a, b) => b.myPostedAt - a.myPostedAt);
   skipped.sort((a, b) => a.subject.localeCompare(b.subject));
 
-  return { entries, skipped, latestRequestAt };
+  return { entries, pendingRequests, skipped, latestRequestAt };
 }

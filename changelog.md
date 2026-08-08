@@ -1,8 +1,9 @@
 # Changelog
 
 ## Unreleased
-- **Swaps:** The wonder list now shows how much knowledge each of yours can still take, so you can pick a thread the wonder has room for. Requests you have already posted and are still waiting on come off that figure, since the game counts a wonder as needing knowledge that is already on its way. Copying a request starts a count for that wonder, shown above the debts and counted down by each request you post, so it is clear when to stop asking.
-- The count comes down per request rather than being re-read, because a request is knowledge that is owed to you but has not arrived yet — re-reading would offer the same room twice and leave the giver's points to overflow.
+- **Swaps:** The wonder list now shows how much knowledge each of yours has room to be asked for, so you can pick a thread it fits. Requests nobody has answered yet come off that figure first — the game counts a wonder as needing knowledge that is already on its way to you, and asking twice for the same room leaves the giver's points to overflow.
+- A request counts as unanswered while yours is the last post in its thread, since the chain gives to whoever posted last. Nothing is stored, so the figure holds steady at the moment you are paid instead of jumping: the payer's post retires the request and lifts the wonder's total by the same amount.
+- Copying a request pins that wonder above the debts to watch while you work through the threads; it falls as you post and reads "full" when there is no room left. Dismiss one with the cross on it, or all of them with "Clear all".
 - "Clear all" in Swaps now collapses the helper window, the way "Mark all as read" does in Chat — the list is empty at that point, so the panel has nothing left to show.
 
 ## v10.0.0

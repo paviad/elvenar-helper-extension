@@ -226,13 +226,17 @@ describe('computeSwapTally', () => {
   it('yields nothing without a player id or a wonder catalog', () => {
     const data = inbox(thread(7, '60 KP Thread', [post(ALICE, 'x', 100), post(ME, 'Golden Abyss please', 200)]));
 
-    expect(computeSwapTally(data, WONDERS, undefined)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
-    expect(computeSwapTally(data, [], ME)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
+    const empty = { entries: [], pendingRequests: [], skipped: [], latestRequestAt: 0 };
+
+    expect(computeSwapTally(data, WONDERS, undefined)).toEqual(empty);
+    expect(computeSwapTally(data, [], ME)).toEqual(empty);
   });
 
   it('yields nothing when no messages are stored', () => {
-    expect(computeSwapTally(undefined, WONDERS, ME)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
-    expect(computeSwapTally({}, WONDERS, ME)).toEqual({ entries: [], skipped: [], latestRequestAt: 0 });
+    const empty = { entries: [], pendingRequests: [], skipped: [], latestRequestAt: 0 };
+
+    expect(computeSwapTally(undefined, WONDERS, ME)).toEqual(empty);
+    expect(computeSwapTally({}, WONDERS, ME)).toEqual(empty);
   });
 
   // You post a request in every round, so a thread's most recent post of yours is a request
@@ -282,6 +286,67 @@ describe('computeSwapTally', () => {
 
       expect(tally(data, 0).skipped).toHaveLength(1);
       expect(tally(data, 200).skipped).toEqual([]);
+    });
+  });
+
+  // The chain gives to whoever posted last, so a request is unpaid exactly while it is still
+  // the last post in its thread. These are what the wonder's room-left figure is reduced by.
+  describe('pendingRequests', () => {
+    it('reports a request nobody has posted after', () => {
+      const data = inbox(
+        thread(7, '60 KP Thread', [post(ALICE, 'Martial Monastery please', 100), post(ME, 'Golden Abyss please', 200)]),
+      );
+
+      expect(tally(data).pendingRequests).toEqual([{ threadId: '7', requestedWonder: 'Golden Abyss', amount: 60 }]);
+    });
+
+    it('drops a request once somebody has posted after it, since that is the payment', () => {
+      const data = inbox(
+        thread(7, '60 KP Thread', [
+          post(ALICE, 'Martial Monastery please', 100),
+          post(ME, 'Golden Abyss please', 200),
+          post(BOB, 'Needles of the Tempest please', 300),
+        ]),
+      );
+
+      expect(tally(data).pendingRequests).toEqual([]);
+    });
+
+    it('survives the watermark, unlike the debts', () => {
+      const data = inbox(
+        thread(7, '60 KP Thread', [post(ALICE, 'Martial Monastery please', 100), post(ME, 'Golden Abyss please', 200)]),
+      );
+
+      // Clearing settles what you owe; what is owed to you is untouched by it.
+      expect(tally(data, 200).entries).toEqual([]);
+      expect(tally(data, 200).pendingRequests).toHaveLength(1);
+    });
+
+    it('counts a thread you opened yourself, which owes nobody but still pays you', () => {
+      const data = inbox(thread(7, '40 KP SWAP', [post(ME, 'Golden Abyss please', 100)]));
+
+      expect(tally(data).entries).toEqual([]);
+      expect(tally(data).pendingRequests).toEqual([{ threadId: '7', requestedWonder: 'Golden Abyss', amount: 40 }]);
+    });
+
+    it('counts a run of your own posts once, at the wonder you settled on', () => {
+      const data = inbox(
+        thread(7, '60 KP Thread', [
+          post(ALICE, 'Martial Monastery please', 100),
+          post(ME, 'Golden Abyss please', 200),
+          post(ME, 'Needles of the Tempest please', 300),
+        ]),
+      );
+
+      expect(tally(data).pendingRequests).toEqual([
+        { threadId: '7', requestedWonder: 'Needles of the Tempest', amount: 60 },
+      ]);
+    });
+
+    it('ignores a thread whose amount cannot be read', () => {
+      const data = inbox(thread(7, 'AW swap thread', [post(ME, 'Golden Abyss please', 100)]));
+
+      expect(tally(data).pendingRequests).toEqual([]);
     });
   });
 });

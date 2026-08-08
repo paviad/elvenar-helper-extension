@@ -39,10 +39,10 @@ import {
   plaqueFace,
   timestampType,
 } from './gild';
-import { applySwapBudgets, roomLeftFor, seedSwapBudget } from './kpSwaps/applySwapBudgets';
 import { computeSwapTally } from './kpSwaps/computeSwapTally';
 import { getOwnedWonders } from './kpSwaps/getOwnedWonders';
 import { groupSwapsByPayee, PayeeGroup } from './kpSwaps/groupSwapsByPayee';
+import { roomLeftFor } from './kpSwaps/roomLeftFor';
 import { getAccountId, getOverlayStore } from './overlayStore';
 
 interface AccountSnapshot {
@@ -109,8 +109,8 @@ export const SwapsView = () => {
   const setPaidSwaps = overlayStore((state) => state.setPaidSwaps);
   const swapsClearedAt = overlayStore((state) => state.swapsClearedAt);
   const setSwapsClearedAt = overlayStore((state) => state.setSwapsClearedAt);
-  const swapBudgets = overlayStore((state) => state.swapBudgets);
-  const setSwapBudgets = overlayStore((state) => state.setSwapBudgets);
+  const watchedWonders = overlayStore((state) => state.watchedWonders);
+  const setWatchedWonders = overlayStore((state) => state.setWatchedWonders);
   const wonderKpUpdate = overlayStore((state) => state.wonderKpUpdate);
 
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
@@ -180,10 +180,11 @@ export const SwapsView = () => {
 
   const kpByBaseName = useMemo(() => new Map((account?.wonderKp ?? []).map((kp) => [kp.baseName, kp])), [account]);
 
-  // The game's figure counts everything the wonder has not been given, including the rounds
-  // you have already asked for and are still waiting on, so those come off before it is shown
-  // or handed to a count.
-  const roomFor = (wonder: AncientWonder) => roomLeftFor(kpByBaseName.get(wonder.baseName), tally.entries, wonder.name);
+  // The game's figure counts everything the wonder has not been given, including the requests
+  // you have posted and are still waiting on, so those come off it. Derived on every render
+  // from the threads themselves rather than kept anywhere — see roomLeftFor.
+  const roomFor = (baseName: string, wonderName: string) =>
+    roomLeftFor(kpByBaseName.get(baseName), tally.pendingRequests, wonderName);
 
   // First run on this account: adopt whatever your newest request post is, so the list starts
   // empty and only fills as you post from here on.
@@ -192,15 +193,6 @@ export const SwapsView = () => {
       setSwapsClearedAt(tally.latestRequestAt || Math.floor(Date.now() / 1000));
     }
   }, [swapsClearedAt, account, wonders, tally.latestRequestAt, setSwapsClearedAt]);
-
-  // Requests are consumed as soon as they show up in the tally, not when the list is read, so
-  // clearing the tally later cannot hand you back knowledge you have already asked for.
-  useEffect(() => {
-    const next = applySwapBudgets(swapBudgets, tally.entries);
-    if (next !== swapBudgets) {
-      setSwapBudgets(next);
-    }
-  }, [swapBudgets, tally.entries, setSwapBudgets]);
 
   const paid = useMemo(() => new Set(paidSwaps), [paidSwaps]);
   // Grouped from the full list, not just the unpaid ones, so a payee keeps their place in the
@@ -234,21 +226,13 @@ export const SwapsView = () => {
     if (!(await copyText(requestTextFor(wonder.name)))) {
       return;
     }
-    // Copying is the moment you commit to asking for this one, so that is when the count
-    // starts. Nothing to start if the game has not told us what the wonder still needs.
-    // The seed already allows for every request on show, so the mark starts past them:
-    // latestRequestAt is the newest request of yours anywhere, and the tally cannot hold
-    // one beyond it.
-    const room = roomFor(wonder);
-    if (room !== undefined) {
-      setSwapBudgets(
-        seedSwapBudget(swapBudgets, {
-          baseName: wonder.baseName,
-          wonderName: wonder.name,
-          remaining: room,
-          countedThrough: tally.latestRequestAt,
-        }),
-      );
+    // Copying is the moment you commit to asking for this one, so that is when it starts
+    // being watched. Nothing worth watching if the game has said nothing about the wonder.
+    if (roomFor(wonder.baseName, wonder.name) !== undefined) {
+      setWatchedWonders([
+        ...watchedWonders.filter((w) => w.baseName !== wonder.baseName),
+        { baseName: wonder.baseName, wonderName: wonder.name },
+      ]);
     }
     setCopied(wonder.baseName);
     if (closeTimer.current) {
@@ -267,6 +251,9 @@ export const SwapsView = () => {
   const clearAll = () => {
     setSwapsClearedAt(Math.max(swapsClearedAt ?? 0, tally.latestRequestAt));
     setPaidSwaps([]);
+    // The watched wonders go with it: they are a worklist for the round you have just closed,
+    // and nothing is lost by dropping them, since each figure is derived rather than kept.
+    setWatchedWonders([]);
     expandPanel(false);
   };
 
@@ -322,7 +309,7 @@ export const SwapsView = () => {
         )}
       </Box>
 
-      {swapBudgets.length > 0 && (
+      {watchedWonders.length > 0 && (
         <Box
           sx={{
             display: 'flex',
@@ -339,24 +326,25 @@ export const SwapsView = () => {
           <Typography variant='caption' sx={{ color: gild.bronzeSoft, width: '100%', lineHeight: 1.3 }}>
             Room left to ask for
           </Typography>
-          {swapBudgets.map((budget) => (
-            <Chip
-              key={budget.baseName}
-              size='small'
-              variant='outlined'
-              label={
-                budget.remaining === 0 ? `${budget.wonderName} · full` : `${budget.wonderName} · ${budget.remaining} KP`
-              }
-              onDelete={() => setSwapBudgets(swapBudgets.filter((b) => b.baseName !== budget.baseName))}
-              sx={{
-                height: 22,
-                fontWeight: 700,
-                color: budget.remaining === 0 ? '#8a6d00' : gild.bronze,
-                borderColor: budget.remaining === 0 ? '#f0e0a0' : gild.mid,
-                bgcolor: budget.remaining === 0 ? '#fff8e1' : 'rgba(255, 253, 246, 0.8)',
-              }}
-            />
-          ))}
+          {watchedWonders.map((watched) => {
+            const room = roomFor(watched.baseName, watched.wonderName) ?? 0;
+            return (
+              <Chip
+                key={watched.baseName}
+                size='small'
+                variant='outlined'
+                label={room === 0 ? `${watched.wonderName} · full` : `${watched.wonderName} · ${room} KP`}
+                onDelete={() => setWatchedWonders(watchedWonders.filter((w) => w.baseName !== watched.baseName))}
+                sx={{
+                  height: 22,
+                  fontWeight: 700,
+                  color: room === 0 ? '#8a6d00' : gild.bronze,
+                  borderColor: room === 0 ? '#f0e0a0' : gild.mid,
+                  bgcolor: room === 0 ? '#fff8e1' : 'rgba(255, 253, 246, 0.8)',
+                }}
+              />
+            );
+          })}
         </Box>
       )}
 
@@ -455,7 +443,7 @@ export const SwapsView = () => {
           <List disablePadding>
             {ownedWonders.map((wonder) => {
               const justCopied = copied === wonder.baseName;
-              const room = roomFor(wonder);
+              const room = roomFor(wonder.baseName, wonder.name);
               return (
                 <ListItemButton
                   key={wonder.baseName}

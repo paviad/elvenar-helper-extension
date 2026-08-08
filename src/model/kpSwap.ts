@@ -42,9 +42,26 @@ export interface SkippedSwapThread {
   ambiguous: boolean;
 }
 
+/**
+ * A request of yours nobody has answered yet — knowledge owed to you that has not arrived.
+ *
+ * The chain gives to whoever posted last, so a request is unpaid exactly while it is still the
+ * last post in its thread: the moment somebody posts after you, they have paid you and the
+ * wonder's invested total has risen by this much. That makes these watermark-independent —
+ * clearing the tally settles what you owe, and says nothing about what is owed to you.
+ */
+export interface PendingRequest {
+  threadId: string;
+  /** The wonder you asked for, canonicalised to the game's spelling. */
+  requestedWonder: string;
+  amount: number;
+}
+
 export interface SwapTally {
   /** Debts from rounds you posted after the watermark. */
   entries: SwapEntry[];
+  /** Requests still awaiting payment, whatever the watermark. */
+  pendingRequests: PendingRequest[];
   skipped: SkippedSwapThread[];
   /**
    * Newest request post of yours across every thread, ignoring the watermark. Clearing the
@@ -56,25 +73,16 @@ export interface SwapTally {
 }
 
 /**
- * How much knowledge a wonder you are asking for can still take.
+ * A wonder you have copied a request for, and so want the room-left figure kept in front of
+ * you while you work through the threads.
  *
- * Seeded from the game's own figure the moment you copy a request, then counted down by each
- * request you post afterwards. It is counted down rather than recomputed because a request is
- * a pledge: the knowledge is owed to you but has not landed, so the game still reports the
- * wonder as needing it. Recomputing would invite you to ask for the same knowledge twice, and
- * a wonder that overflows leaves the giver's points wasted.
+ * Only the identity is held. The figure itself is derived from the game's count and the
+ * requests still outstanding, so there is nothing here to fall out of step with either.
  */
-export interface SwapBudget {
-  /** Keyed by base name, but matched against posts by `wonderName` — that is what you type. */
+export interface WatchedWonder {
   baseName: string;
+  /** Matched against posts, which name the wonder rather than its base name. */
   wonderName: string;
-  remaining: number;
-  /**
-   * The newest request post already deducted, in game time. Requests are consumed once and
-   * only once, so clearing the tally afterwards cannot resurrect knowledge you already asked
-   * for.
-   */
-  countedThrough: number;
 }
 
 /** Identifies a ticked-off row. Includes your post time, so a new round supersedes the tick. */

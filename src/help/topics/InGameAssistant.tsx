@@ -116,13 +116,20 @@ export const InGameAssistant = () => (
       wondering why nothing was tallied.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
-      Each wonder in that list shows how much knowledge it can still take, so you can pick a thread it has room for.
-      Requests you have already posted and are still waiting on come off that figure, since the game counts the wonder
-      as needing knowledge that is already on its way to you. Copying a request starts a count for that wonder, shown
-      above the debts and reduced by every request you post afterwards — when it reaches <em>full</em>, stop asking for
-      that one. The count comes down per request rather than being read afresh, because the knowledge you have asked for
-      has not arrived yet; asking twice for the same room leaves the giver&apos;s points to overflow. Dismiss a count
-      with the cross on it, or copy the request again to start over from what the game reports.
+      Each wonder in that list shows how much knowledge it has room to be asked for, so you can pick a thread it fits.
+      That is not simply what the game says the wonder still needs: a request nobody has answered yet is knowledge
+      already on its way to you, and it comes off first. Asking twice for the same room is what leaves the giver&apos;s
+      points to overflow.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
+      A request counts as unanswered while yours is the last post in its thread — the chain gives to whoever posted
+      last, so the moment somebody posts after you, they have paid you and the wonder&apos;s own total says so. Nothing
+      is kept between the two, which is why the figure holds steady at the moment you are paid rather than jumping.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
+      Copying a request pins that wonder above the debts so you can watch it while you work through the threads. It
+      falls as you post and reads <em>full</em> when there is no room left to ask for. Dismiss one with the cross on it;
+      <strong>Clear all</strong> dismisses them all, along with the debts.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
       Debts are grouped by the player you owe, because you repay a person rather than a thread. Each card totals what
