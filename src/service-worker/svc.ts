@@ -5,6 +5,8 @@ import {
   setupMessageListener,
   setupOpenExtensionTabListener,
   setupRefreshCityListener,
+  setupSpirePicksListener,
+  SpirePicksMessage,
 } from '../chrome/messages';
 import {
   getAccountById,
@@ -91,9 +93,24 @@ async function initialize() {
   });
   setupInterceptedNonSpecificRequestListener((msg) => void nonSpecificRequestHandler(msg));
   setupInterceptedPlayerSpecificRequestListener((msg, sender) => void playerSpecificRequestHandler(msg, sender));
+  setupSpirePicksListener((msg) => void forwardToOverlay(msg));
   await accountManagerReady;
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }
+
+const forwardToOverlay = async (msg: SpirePicksMessage) => {
+  console.log('Forwarding spirePicks message from Service Worker to overlay', msg);
+  const tabs = await chrome.tabs.query({});
+  for (const tab of tabs) {
+    if (tab.id) {
+      try {
+        await chrome.tabs.sendMessage(tab.id, { ...msg, type: 'spirePicks' });
+      } catch (error) {
+        // Ignore errors, likely due to tabs that don't have the content script injected
+      }
+    }
+  }
+};
 
 void initialize();
 
