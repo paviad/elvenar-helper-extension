@@ -28,37 +28,25 @@ export function ProductionTimeline(props: {
       result.push({ id, label: badgeName, markers });
     }
 
-    const titleMap: Record<string, string> = {
-      badge_brewery: 'Breweries',
-      badge_carpenters: 'Carpenters',
-      badge_farmers: 'Farmers',
-      badge_blacksmith: 'Blacksmiths',
-      golden_bracelet: 'Bracelets',
-      diamond_necklace: 'Necklaces',
-      elegant_statue: 'Statues',
-      witch_hat: 'Hats',
-      druid_staff: 'Staffs',
-      badge_wonderhelper: 'AW',
-      badge_unit: 'Elvarian',
-      money_sack: 'Money',
-      arcane_residue: 'Residue',
-      recycled_potion: 'Potions',
-      enchanted_tiara: 'Tiaras',
-      ghost_in_a_bottle: 'Ghosts',
-    };
-
     // Flatten for TimelineData
     let idx = 1;
     const timelineData: MarkerData[] = [];
     for (const entry of result) {
+      // badgeSpriteInfo carries the display name too, so it is the single source for both. A badge
+      // with no entry has no sprite to draw; FaProgress filters those out the same way, and without
+      // this one unlisted badge would take the whole timeline down.
+      const spriteInfo = badgeSpriteInfo[entry.label];
+      if (!spriteInfo) {
+        continue;
+      }
       for (const marker of entry.markers) {
         timelineData.push({
           id: `${entry.id}-${idx++}`,
-          title: titleMap[entry.label],
+          title: spriteInfo.name,
           time: new Date(marker.time.getTime()),
           value: marker.amount / 100,
-          spriteX: badgeSpriteInfo[entry.label].x * 26,
-          spriteY: badgeSpriteInfo[entry.label].y * 26,
+          spriteX: spriteInfo.x * 26,
+          spriteY: spriteInfo.y * 26,
         });
       }
     }
