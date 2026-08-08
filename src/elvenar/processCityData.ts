@@ -1,4 +1,5 @@
 import { saveToStorage } from '../chrome/storage';
+import { AncientWonderPhase } from '../model/ancientWonderPhase';
 import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { BoostedGoods } from '../model/boostedGoods';
@@ -10,12 +11,14 @@ import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 import { generateAccountId, getAccountBySessionId, setAccountData } from './AccountManager';
 import { AccountData, FaQuest } from './Accounts';
+import { extractWonderKp } from './extractWonderKp';
 
 export async function processCityData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];
 
   const startupService = json.find((r) => r.requestClass === 'StartupService')?.responseData as
     | {
+        ancient_wonder_phases: AncientWonderPhase[];
         user_data: ElvenarUserData;
         featureFlags: { feature: string }[];
         city_map: { entities: CityEntity[]; unlocked_areas: UnlockedArea[] };
@@ -194,6 +197,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       armyDetails: startupService.army_details,
       tournaments,
       expirationsEnd,
+      wonderKp: extractWonderKp(startupService.ancient_wonder_phases, user_data.player_id),
     },
     sharedInfo,
     isDetached: false,

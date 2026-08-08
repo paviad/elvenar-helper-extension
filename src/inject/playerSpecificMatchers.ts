@@ -188,4 +188,10 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'addUnit',
     },
   },
+  {
+    responseSelector: {
+      requestClass: 'AncientWonderService',
+      requestMethod: 'phaseUpdated',
+    },
+  },
 ];

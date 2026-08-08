@@ -116,6 +116,14 @@ export const InGameAssistant = () => (
       wondering why nothing was tallied.
     </Typography>
     <Typography component='p' variant='body2' gutterBottom>
+      Each wonder in that list shows how much knowledge it can still take, so you can pick a thread it has room for.
+      Copying a request starts a count for that wonder, shown above the debts and reduced by every request you post
+      afterwards — when it reaches <em>full</em>, stop asking for that one. The count comes down per request rather than
+      being read afresh, because the knowledge you have asked for has not arrived yet; asking twice for the same room
+      leaves the giver&apos;s points to overflow. Dismiss a count with the cross on it, or copy the request again to
+      start over from what the game reports.
+    </Typography>
+    <Typography component='p' variant='body2' gutterBottom>
       Debts are grouped by the player you owe, because you repay a person rather than a thread. Each card totals what
       that player is due and breaks it down per thread, since the amount and the wonder they asked for can differ
       between them.

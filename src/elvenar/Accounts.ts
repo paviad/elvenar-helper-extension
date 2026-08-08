@@ -14,6 +14,7 @@ import { Trade } from '../model/trade';
 import { Transcendence } from '../model/transcendence';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
+import { WonderKp } from '../model/wonderKp';
 
 export interface CauldronQuery {
   potionEffects: PotionEffect[];
@@ -50,6 +51,8 @@ export interface CityQuery {
   armyDetails?: ArmyDetails;
   tournaments?: SeasonalEvent[];
   expirationsEnd: Record<string, number>;
+  /** Your wonders currently taking knowledge points, kept current by AncientWonderService. */
+  wonderKp?: WonderKp[];
 }
 
 export interface AccountData {

@@ -55,6 +55,28 @@ export interface SwapTally {
   latestRequestAt: number;
 }
 
+/**
+ * How much knowledge a wonder you are asking for can still take.
+ *
+ * Seeded from the game's own figure the moment you copy a request, then counted down by each
+ * request you post afterwards. It is counted down rather than recomputed because a request is
+ * a pledge: the knowledge is owed to you but has not landed, so the game still reports the
+ * wonder as needing it. Recomputing would invite you to ask for the same knowledge twice, and
+ * a wonder that overflows leaves the giver's points wasted.
+ */
+export interface SwapBudget {
+  /** Keyed by base name, but matched against posts by `wonderName` — that is what you type. */
+  baseName: string;
+  wonderName: string;
+  remaining: number;
+  /**
+   * The newest request post already deducted, in game time. Requests are consumed once and
+   * only once, so clearing the tally afterwards cannot resurrect knowledge you already asked
+   * for.
+   */
+  countedThrough: number;
+}
+
 /** Identifies a ticked-off row. Includes your post time, so a new round supersedes the tick. */
 export function swapPaidKey(entry: Pick<SwapEntry, 'threadId' | 'myPostedAt'>): string {
   return `${entry.threadId}:${entry.myPostedAt}`;

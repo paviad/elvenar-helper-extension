@@ -22,6 +22,8 @@
 - The list starts empty and fills only as you post, so rounds you did before enabling it are left alone. Tick rows off as you donate to keep your place, then use "Clear all" once you have repaid everybody — clearing is manual, since the extension can see your posts but not your donations.
 - Debts are grouped by the player you owe, since the same player can come up in several threads and you repay them in one visit. Each card shows what they are owed in total, broken down per thread with the wonder each one asked for.
 - Consecutive posts of your own count as changing your mind about which wonder you want, not as a second debt.
+- The wonder list shows how much knowledge each of yours can still take, read from the game, so you can pick a thread the wonder has room for. Copying a request starts a count for that wonder, shown above the list and counted down by each request you post, so it is clear when to stop asking.
+- The count comes down per request rather than being re-read, because a request is knowledge that is owed to you but has not arrived yet — re-reading would offer the same room twice and leave the giver's points to overflow.
 - Reachable through the existing Messages chord (Alt+C, M), then the Swaps button.
 
 ## v8.9.0

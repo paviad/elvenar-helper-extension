@@ -26,6 +26,7 @@ import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/Account
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
 import { SwapEntry, swapPaidKey, SwapTally } from '../model/kpSwap';
+import { WonderKp, wonderKpRemaining } from '../model/wonderKp';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import {
   authorType,
@@ -38,6 +39,7 @@ import {
   plaqueFace,
   timestampType,
 } from './gild';
+import { applySwapBudgets, seedSwapBudget } from './kpSwaps/applySwapBudgets';
 import { computeSwapTally } from './kpSwaps/computeSwapTally';
 import { getOwnedWonders } from './kpSwaps/getOwnedWonders';
 import { groupSwapsByPayee, PayeeGroup } from './kpSwaps/groupSwapsByPayee';
@@ -47,6 +49,7 @@ interface AccountSnapshot {
   messagesData?: MessagesData;
   playerId?: number;
   cityEntities?: CityEntity[];
+  wonderKp?: WonderKp[];
 }
 
 // The exact-match rule means a typo posts a message that quietly does nothing, so the request
@@ -106,6 +109,9 @@ export const SwapsView = () => {
   const setPaidSwaps = overlayStore((state) => state.setPaidSwaps);
   const swapsClearedAt = overlayStore((state) => state.swapsClearedAt);
   const setSwapsClearedAt = overlayStore((state) => state.setSwapsClearedAt);
+  const swapBudgets = overlayStore((state) => state.swapBudgets);
+  const setSwapBudgets = overlayStore((state) => state.setSwapBudgets);
+  const wonderKpUpdate = overlayStore((state) => state.wonderKpUpdate);
 
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
   const [wonders, setWonders] = useState<AncientWonder[] | null>(null);
@@ -154,10 +160,11 @@ export const SwapsView = () => {
         messagesData: data?.messagesData,
         playerId: data?.cityQuery?.userData?.player_id,
         cityEntities: data?.cityQuery?.cityEntities,
+        wonderKp: data?.cityQuery?.wonderKp,
       });
     }
     void loadAccount();
-  }, [messagesUpdate]);
+  }, [messagesUpdate, wonderKpUpdate]);
 
   // Until the watermark has been established, Infinity keeps every existing round out of the
   // list — so it never flashes your whole swap history on first open.
@@ -171,6 +178,8 @@ export const SwapsView = () => {
   // Only the wonders you have built can be donated to, so that is the list worth offering.
   const ownedWonders = useMemo(() => getOwnedWonders(account?.cityEntities, wonders ?? []), [account, wonders]);
 
+  const kpByBaseName = useMemo(() => new Map((account?.wonderKp ?? []).map((kp) => [kp.baseName, kp])), [account]);
+
   // First run on this account: adopt whatever your newest request post is, so the list starts
   // empty and only fills as you post from here on.
   useEffect(() => {
@@ -178,6 +187,15 @@ export const SwapsView = () => {
       setSwapsClearedAt(tally.latestRequestAt || Math.floor(Date.now() / 1000));
     }
   }, [swapsClearedAt, account, wonders, tally.latestRequestAt, setSwapsClearedAt]);
+
+  // Requests are consumed as soon as they show up in the tally, not when the list is read, so
+  // clearing the tally later cannot hand you back knowledge you have already asked for.
+  useEffect(() => {
+    const next = applySwapBudgets(swapBudgets, tally.entries);
+    if (next !== swapBudgets) {
+      setSwapBudgets(next);
+    }
+  }, [swapBudgets, tally.entries, setSwapBudgets]);
 
   const paid = useMemo(() => new Set(paidSwaps), [paidSwaps]);
   // Grouped from the full list, not just the unpaid ones, so a payee keeps their place in the
@@ -210,6 +228,19 @@ export const SwapsView = () => {
   const copyRequest = async (wonder: AncientWonder) => {
     if (!(await copyText(requestTextFor(wonder.name)))) {
       return;
+    }
+    // Copying is the moment you commit to asking for this one, so that is when the count
+    // starts. Nothing to start if the game has not told us what the wonder still needs.
+    const progress = kpByBaseName.get(wonder.baseName);
+    if (progress) {
+      setSwapBudgets(
+        seedSwapBudget(swapBudgets, {
+          baseName: wonder.baseName,
+          wonderName: wonder.name,
+          remaining: wonderKpRemaining(progress),
+          countedThrough: tally.latestRequestAt,
+        }),
+      );
     }
     setCopied(wonder.baseName);
     if (closeTimer.current) {
@@ -282,6 +313,44 @@ export const SwapsView = () => {
           </Button>
         )}
       </Box>
+
+      {swapBudgets.length > 0 && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 0.75,
+            px: 1.5,
+            py: 0.75,
+            background: gild.cardTop,
+            borderBottom: '1px solid',
+            borderColor: gild.mid,
+          }}
+        >
+          <Typography variant='caption' sx={{ color: gild.bronzeSoft, width: '100%', lineHeight: 1.3 }}>
+            Room left to ask for
+          </Typography>
+          {swapBudgets.map((budget) => (
+            <Chip
+              key={budget.baseName}
+              size='small'
+              variant='outlined'
+              label={
+                budget.remaining === 0 ? `${budget.wonderName} · full` : `${budget.wonderName} · ${budget.remaining} KP`
+              }
+              onDelete={() => setSwapBudgets(swapBudgets.filter((b) => b.baseName !== budget.baseName))}
+              sx={{
+                height: 22,
+                fontWeight: 700,
+                color: budget.remaining === 0 ? '#8a6d00' : gild.bronze,
+                borderColor: budget.remaining === 0 ? '#f0e0a0' : gild.mid,
+                bgcolor: budget.remaining === 0 ? '#fff8e1' : 'rgba(255, 253, 246, 0.8)',
+              }}
+            />
+          ))}
+        </Box>
+      )}
 
       {stale && (
         <Box
@@ -378,13 +447,24 @@ export const SwapsView = () => {
           <List disablePadding>
             {ownedWonders.map((wonder) => {
               const justCopied = copied === wonder.baseName;
+              const progress = kpByBaseName.get(wonder.baseName);
               return (
                 <ListItemButton
                   key={wonder.baseName}
                   onClick={() => void copyRequest(wonder)}
                   sx={{ py: 0.75, '&:hover': { background: 'rgba(201, 162, 39, 0.12)' } }}
                 >
-                  <Typography sx={{ ...bodyType, fontSize: 13, flex: 1, minWidth: 0 }}>{wonder.name}</Typography>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ ...bodyType, fontSize: 13 }}>{wonder.name}</Typography>
+                    {/* What the wonder can still take, so you can pick a thread it fits in
+                        before you post rather than after. Silent when the game has not said
+                        — a wonder collecting runes takes no knowledge at all. */}
+                    {progress && (
+                      <Typography sx={{ ...timestampType, display: 'block' }}>
+                        needs {wonderKpRemaining(progress)} KP
+                      </Typography>
+                    )}
+                  </Box>
                   {justCopied ? (
                     <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center', color: gild.deep }}>
                       <CheckIcon fontSize='small' />

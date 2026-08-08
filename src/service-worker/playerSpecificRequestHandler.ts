@@ -11,6 +11,7 @@ import {
 import { getAccountBySessionId, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { saveSingleAccount } from '../elvenar/Accounts';
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
+import { processAncientWonderPhaseUpdate } from '../elvenar/processAncientWonderPhaseUpdate';
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
@@ -122,6 +123,7 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:CityMapService/reset': processCityMapServiceUpdate,
     'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
     'R:EffectsService/update': processActiveEffectsUpdate,
+    'R:AncientWonderService/phaseUpdated': processAncientWonderPhaseUpdate,
 
     'R:QuestMilestoneService/updateQuestMilestone': processQuestMilestoneUpdate,
 

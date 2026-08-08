@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { SwapBudget } from '../model/kpSwap';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
@@ -45,6 +46,15 @@ interface OverlayState {
   // In game time (unix seconds from the posts), not local clock time.
   swapsClearedAt?: number;
   setSwapsClearedAt: (at: number) => void;
+  // How much knowledge each wonder you have copied a request for can still take. Persisted
+  // because the count spans a login: you ask over several threads, and the knowledge only
+  // lands once the people after you post.
+  swapBudgets: SwapBudget[];
+  setSwapBudgets: (budgets: SwapBudget[]) => void;
+  // Bumped when AncientWonderService reports a wonder's phase moving on, so the swap tab
+  // re-reads the stored figures instead of waiting for the next city load.
+  wonderKpUpdate: number;
+  triggerWonderKpUpdate: () => void;
   // Persisted, so a page refresh does not blank the tab until the game happens to resend the
   // tournament responses. Every field is refreshed the moment a new one arrives, and the upgrade
   // timers are stored as absolute times so a reloaded copy still counts down correctly.
@@ -115,6 +125,10 @@ export const generateOverlayStore = (accountId: string) => {
         setPaidSwaps: (keys) => set({ paidSwaps: keys }),
         swapsClearedAt: undefined,
         setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
+        swapBudgets: [],
+        setSwapBudgets: (budgets) => set({ swapBudgets: budgets }),
+        wonderKpUpdate: 0,
+        triggerWonderKpUpdate: () => set((state) => ({ wonderKpUpdate: state.wonderKpUpdate + 1 })),
         tournyData: undefined,
         setTournyData: (data) => set({ tournyData: data }),
         lastTournament: undefined,
@@ -131,6 +145,7 @@ export const generateOverlayStore = (accountId: string) => {
             eeUpdate,
             messagesUpdate,
             messagesDetailsReceived,
+            wonderKpUpdate,
             ...toPersist
           } = state;
           return toPersist;
