@@ -181,8 +181,13 @@ export const playerSpecificRequestHandlerInternal = async (
       break;
     case 'Q:TradeService/getOtherPlayersTrades':
       {
-        if (accountData) {
-          await tradeOpenedCallback(accountData);
+        // Read again rather than reusing the reference taken at the top: the load above replaces
+        // the stored account object when another context saved it more recently, and the trades
+        // the processor just wrote went to the replacement. The old one still carries the
+        // previous fetch's trades and whatever tab id it was saved with.
+        const current = getAccountBySessionId(sharedInfo.sessionId);
+        if (current) {
+          await tradeOpenedCallback(current, sharedInfo.tabId);
         }
       }
       break;

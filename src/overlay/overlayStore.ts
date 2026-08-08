@@ -66,11 +66,25 @@ interface OverlayState {
   setLastTournament: (good: TournamentGood) => void;
 }
 
-let overlayStore: ReturnType<typeof generateOverlayStore>;
+let overlayStore: ReturnType<typeof createOverlayStore>;
 let overlayAccountId: string | null = null;
 
+/**
+ * One store per account, kept for as long as the account stays. Startup data arrives again every
+ * time the game re-syncs, and building a second store there left the mounted tree subscribed to a
+ * store nobody wrote to any more, while `chapter` flipped through 0 on the way to its real value -
+ * enough on its own to reopen the Trade tab.
+ */
 export const generateOverlayStore = (accountId: string) => {
+  if (overlayAccountId === accountId) {
+    return overlayStore;
+  }
   overlayAccountId = accountId;
+  overlayStore = createOverlayStore(accountId);
+  return overlayStore;
+};
+
+const createOverlayStore = (accountId: string) => {
   const store = create<OverlayState>()(
     persist(
       (set) => ({
@@ -153,7 +167,6 @@ export const generateOverlayStore = (accountId: string) => {
       },
     ),
   );
-  overlayStore = store;
   return store;
 };
 

@@ -11,7 +11,7 @@ import {
   OverlaySizePreset,
   saveOverlaySize,
 } from './overlay/overlaySize';
-import { generateOverlayStore, getOverlayStore } from './overlay/overlayStore';
+import { generateOverlayStore, getAccountId, getOverlayStore } from './overlay/overlayStore';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
@@ -510,21 +510,32 @@ const initFunc = () => {
 async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlot: HTMLDivElement) {
   await loadAccountManagerFromStorage();
   const accountId = getAccountByTabId(tabId);
-  if (accountId) {
-    generateOverlayStore(accountId);
-    const store = getOverlayStore();
-    store.persist.onFinishHydration((state) => {
-      const chapter = getAccountById(accountId)?.cityQuery?.chapter || 0;
-      state.setChapter(chapter);
-
-      if (!state.lastSeenChat) {
-        // First time setup, set last seen chat to now
-        state.setLastSeenChat(Date.now());
-      }
-
-      createOverlayUi(contentDiv, headerActionsSlot);
-    });
+  if (!accountId) {
+    return;
   }
+
+  // Startup data is delivered again whenever the game re-syncs, so this runs more than once per
+  // page. Only the first run builds anything; the later ones just take across what the fresh
+  // startup data can change, since hydration has long finished and the panel is already up.
+  const alreadySetUp = getAccountId() === accountId;
+  const store = generateOverlayStore(accountId);
+
+  if (alreadySetUp) {
+    store.getState().setChapter(getAccountById(accountId)?.cityQuery?.chapter || 0);
+    return;
+  }
+
+  store.persist.onFinishHydration((state) => {
+    const chapter = getAccountById(accountId)?.cityQuery?.chapter || 0;
+    state.setChapter(chapter);
+
+    if (!state.lastSeenChat) {
+      // First time setup, set last seen chat to now
+      state.setLastSeenChat(Date.now());
+    }
+
+    createOverlayUi(contentDiv, headerActionsSlot);
+  });
 }
 
 export const expandPanel = (state: boolean) => {

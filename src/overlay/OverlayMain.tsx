@@ -25,7 +25,6 @@ import {
   setupGenericResponseListener,
   setupMessagesUpdatedListener,
   setupTradeParsedListener,
-  TradeParsedMessage,
 } from '../chrome/messages';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
@@ -39,6 +38,7 @@ import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { MessagesView } from './MessagesView';
+import { sameOfferedGoods } from './offeredGoods';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
 import { getOverlayStore } from './overlayStore';
@@ -75,13 +75,11 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   // outside React, so there is nothing to subscribe to and nothing to go stale in between.
   const [sizeAtMenuOpen, setSizeAtMenuOpen] = React.useState<OverlaySize | undefined>(undefined);
   const [tabKey, setTabKey] = React.useState<OverlayTabKey>('chat');
-  const [tradesMsg, setTradesMsg] = React.useState<TradeParsedMessage | undefined>(undefined);
   const userMap = React.useRef<Record<string, string>>({});
   const tabRef = React.useRef<OverlayTabKey>(tabKey);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
 
   const useOverlayStore = getOverlayStore();
-  const autoOpen = useOverlayStore((state) => state.autoOpenTrade ?? true);
   const chapter = useOverlayStore((state) => state.chapter);
 
   // Connect Quests from Zustand Store
@@ -106,8 +104,6 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   React.useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
-
-  const setOfferedGoods = useOverlayStore((state) => state.setOfferedGoods);
 
   // Keyboard shortcut: 'C' expands overlay and goes to chat tab
   React.useEffect(() => {
@@ -142,20 +138,6 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   React.useEffect(() => {
     tabRef.current = tabKey;
   }, [tabKey]);
-
-  React.useEffect(() => {
-    if (chapter < 18 || !tradesMsg) {
-      return;
-    }
-    const offeredGoods = Array.from(new Set(tradesMsg.trades.map((trade) => trade.offer)));
-    setOfferedGoods(offeredGoods);
-    if (autoOpen) {
-      expandPanel(offeredGoods.length > 0);
-      if (offeredGoods.length > 0) {
-        setTabKey('trade');
-      }
-    }
-  }, [tradesMsg, chapter, autoOpen, setOfferedGoods]);
 
   React.useEffect(() => {
     // The chat list lives in the store, which is where ChatView reads it. It used to be
@@ -210,7 +192,38 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     window.addEventListener('message', messageHandler);
 
     setupTradeParsedListener((tradesMsg) => {
-      setTradesMsg(tradesMsg);
+      const store = useOverlayStore.getState();
+      if (store.chapter < 18) {
+        return;
+      }
+
+      const offeredGoods = Array.from(new Set(tradesMsg.trades.map((trade) => trade.offer)));
+
+      // The game refetches the trade list by itself - while the trader is open, after an offer is
+      // posted or taken, on a re-sync - and it usually comes back saying the same thing. Only a
+      // list that reads differently is worth taking the panel over; it used to reopen either way,
+      // which is what made the Trade tab appear unasked.
+      if (sameOfferedGoods(offeredGoods, store.offeredGoods)) {
+        return;
+      }
+      store.setOfferedGoods(offeredGoods);
+
+      if (!(store.autoOpenTrade ?? true)) {
+        return;
+      }
+
+      if (offeredGoods.length > 0) {
+        expandPanel(true);
+        setTabKey('trade');
+        return;
+      }
+
+      // The last trade worth taking is gone, so the panel that opened itself for them closes
+      // itself again. Only while it is still showing them, though: it used to close from any tab,
+      // which shut the panel in the middle of reading something else entirely.
+      if (tabRef.current === 'trade') {
+        expandPanel(false);
+      }
     });
 
     setupActiveEffectsUpdatedListener(() => {
