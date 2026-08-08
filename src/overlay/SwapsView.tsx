@@ -26,7 +26,7 @@ import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/Account
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
 import { SwapEntry, swapPaidKey, SwapTally } from '../model/kpSwap';
-import { ensureMinWidthAndHeight } from '../overlay';
+import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import {
   authorType,
   bodyType,
@@ -223,9 +223,12 @@ export const SwapsView = () => {
 
   // Clearing moves the watermark past every round on show, so they never come back — and,
   // unlike ticking rows off, it does not depend on us knowing whether you actually repaid.
+  // Collapsing afterwards mirrors "Mark all as read" in chat: the list is now empty, so the
+  // panel has nothing left to show and gets out of the way of the game.
   const clearAll = () => {
     setSwapsClearedAt(Math.max(swapsClearedAt ?? 0, tally.latestRequestAt));
     setPaidSwaps([]);
+    expandPanel(false);
   };
 
   if (account === null || wonders === null) {
