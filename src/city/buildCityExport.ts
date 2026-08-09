@@ -1,3 +1,4 @@
+import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { InventoryItem } from '../model/inventoryItem';
 import { UnlockedArea } from '../model/unlockedArea';
 import { CityBlock } from './CityBlock';
@@ -14,6 +15,7 @@ export interface ExportedEntity {
   level: number;
   expires_at?: number;
   enchanted_until?: number;
+  helped_until?: number;
 }
 
 export interface CityExport {
@@ -155,11 +157,20 @@ function buildProgress(resources: Record<string, number>): CityExport['progress'
   return Object.keys(block).length > 0 ? block : undefined;
 }
 
+/** Keyed by entity id, the way the EE tab looks help up. */
+export function toHelpEnd(neighborlyHelpEffects: EnsorcelledEndowment[] | undefined): Record<string, number> {
+  return Object.fromEntries((neighborlyHelpEffects || []).map((effect) => [String(effect.id), effect.endTime]));
+}
+
 /**
- * Entity ids are renumbered from 1, so the expiry and enchantment end times have to be read off
- * the block while the real game id is still in reach.
+ * Entity ids are renumbered from 1, so the expiry, enchantment and help end times have to be read
+ * off the block while the real game id is still in reach.
  */
-export function buildExportEntities(blocks: CityBlock[], enchantmentsEnd: Record<string, number>): ExportedEntity[] {
+export function buildExportEntities(
+  blocks: CityBlock[],
+  enchantmentsEnd: Record<string, number>,
+  helpEnd: Record<string, number>,
+): ExportedEntity[] {
   return blocks.map((block, idx) => ({
     id: idx + 1,
     cityentity_id: block.entity.cityentity_id,
@@ -170,6 +181,7 @@ export function buildExportEntities(blocks: CityBlock[], enchantmentsEnd: Record
     level: block.entity.level,
     expires_at: toEpochSeconds(block.expirationEnd),
     enchanted_until: toEpochSeconds(enchantmentsEnd[String(block.entity.id)]),
+    helped_until: toEpochSeconds(helpEnd[String(block.entity.id)]),
   }));
 }
 
@@ -180,6 +192,7 @@ export function buildCityExport({
   resources,
   inventoryItems,
   enchantmentsEnd,
+  helpEnd,
   now,
 }: {
   blocks: CityBlock[];
@@ -188,6 +201,7 @@ export function buildCityExport({
   resources: Record<string, number>;
   inventoryItems: InventoryItem[];
   enchantmentsEnd: Record<string, number>;
+  helpEnd: Record<string, number>;
   now: number;
 }): CityExport {
   return {
@@ -195,7 +209,7 @@ export function buildCityExport({
     exported_at: Math.floor(now / 1000),
     city_map: {
       unlocked_areas: unlockedAreas,
-      entities: buildExportEntities(blocks, enchantmentsEnd),
+      entities: buildExportEntities(blocks, enchantmentsEnd, helpEnd),
     },
     user_data: { race },
     resources: buildResources(resources),

@@ -17,7 +17,7 @@ import { UnlockedArea } from '../model/unlockedArea';
 import { generateUniqueId } from '../util/generateUniqueId';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { useTabStore } from '../util/tabStore';
-import { buildCityExport } from './buildCityExport';
+import { buildCityExport, toHelpEnd } from './buildCityExport';
 import { getBuildingFinder } from './buildingFinder';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { CityBlock } from './CityBlock';
@@ -455,6 +455,7 @@ export const useCityGridState = () => {
       resources: city.resources,
       inventoryItems: accountData.inventoryItems || [],
       enchantmentsEnd: accountData.cityQuery.enchantmentsEnd || {},
+      helpEnd: toHelpEnd(accountData.ensorcelledEndowmentData?.neighborlyHelpEffects),
       now: Date.now(),
     });
 

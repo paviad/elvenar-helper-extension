@@ -1,6 +1,6 @@
 import { InventoryItem } from '../model/inventoryItem';
 import { makeCityBlock, makeCityEntityEx } from '../testing/fixtures';
-import { buildCityExport } from './buildCityExport';
+import { buildCityExport, toHelpEnd } from './buildCityExport';
 
 const NOW = 1_786_309_197_407;
 
@@ -16,6 +16,7 @@ function exportWith(overrides: Partial<Parameters<typeof buildCityExport>[0]> = 
     resources: {},
     inventoryItems: [],
     enchantmentsEnd: {},
+    helpEnd: {},
     now: NOW,
     ...overrides,
   });
@@ -53,11 +54,12 @@ describe('buildCityExport', () => {
         level: 3,
         expires_at: undefined,
         enchanted_until: undefined,
+        helped_until: undefined,
       },
     ]);
   });
 
-  it('exports expiry and enchantment end times as epoch seconds', () => {
+  it('exports expiry, enchantment and help end times as epoch seconds', () => {
     const expiring = makeCityEntityEx({ id: 18788, type: 'expiring' });
     const enchanted = makeCityEntityEx({ id: 13287, type: 'goods' });
 
@@ -67,12 +69,25 @@ describe('buildCityExport', () => {
         makeCityBlock({ entity: enchanted, type: 'goods' }),
       ],
       enchantmentsEnd: { '13287': 1_786_309_197_407 },
+      helpEnd: { '13287': 1_786_327_477_407 },
     });
 
     expect(result.city_map.entities[0].expires_at).toBe(1_786_500_000);
     expect(result.city_map.entities[0].enchanted_until).toBeUndefined();
+    expect(result.city_map.entities[0].helped_until).toBeUndefined();
     expect(result.city_map.entities[1].enchanted_until).toBe(1_786_309_197);
+    expect(result.city_map.entities[1].helped_until).toBe(1_786_327_477);
     expect(result.city_map.entities[1].expires_at).toBeUndefined();
+  });
+
+  it('keys help end times by entity id, the way the EE tab looks them up', () => {
+    expect(
+      toHelpEnd([
+        { id: 18638, remainingTime: 65326, endTime: 1_786_327_477_407 },
+        { id: 12614, remainingTime: 65380, endTime: 1_786_327_531_407 },
+      ]),
+    ).toEqual({ '18638': 1_786_327_477_407, '12614': 1_786_327_531_407 });
+    expect(toHelpEnd(undefined)).toEqual({});
   });
 
   it('reads the resources block off the game resource bag', () => {
