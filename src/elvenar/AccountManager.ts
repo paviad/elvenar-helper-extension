@@ -44,9 +44,21 @@ export function getAccountBySessionId(sessionId: string): AccountData | undefine
   return account ? account[1] : undefined;
 }
 
+/**
+ * The account being played in a tab. `cityQuery.tabId` is stored with the account and Chrome hands
+ * the same tab ids out again in later sessions, so several stored accounts can carry the id we are
+ * asked about - all but one of them left over from a previous run. Taking the first match returned
+ * whichever account happened to load first, which is the top of the account list. The live account
+ * is the freshest one: its city data was written when the game loaded in that tab.
+ */
 export function getAccountByTabId(tabId: number): string | undefined {
-  const account = Object.entries(accounts).find(([k, r]) => r.cityQuery?.tabId === tabId);
-  return account ? account[0] : undefined;
+  const matches = Object.entries(accounts).filter(([, r]) => r.cityQuery?.tabId === tabId);
+  if (matches.length === 0) {
+    return undefined;
+  }
+  return matches.reduce((freshest, candidate) =>
+    (candidate[1].cityQuery?.timestamp ?? 0) > (freshest[1].cityQuery?.timestamp ?? 0) ? candidate : freshest,
+  )[0];
 }
 
 export function getAccountById(accountId: string): AccountData | undefined {

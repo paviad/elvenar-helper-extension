@@ -371,7 +371,7 @@ export const setupCitySavedListener = (callback: (message: CitySavedMessage) => 
 export const setupTradeOpenedListener = (callback: () => void) => (callbackMap['tradeOpened'] = callback);
 
 export const setupOpenExtensionTabListener = (
-  callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void,
+  callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void | Promise<void>,
 ) => (callbackMap['openExtensionTab'] = callback);
 
 /** --- 2. Tab Listeners --- **/

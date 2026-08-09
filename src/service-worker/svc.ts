@@ -27,14 +27,32 @@ if (typeof chrome.action === 'undefined') {
 
 console.log('Elvenar Extension: Service Worker Loaded');
 
+/**
+ * The accounts read back from storage, started as early as possible and awaited by any handler
+ * that looks an account up. The service worker is torn down whenever it goes idle, so a message
+ * can wake it and be delivered while `accounts` is still the empty object a fresh worker starts
+ * with - a lookup made then finds nothing at all.
+ */
+const accountManagerReady = loadAccountManagerFromStorage();
+
 async function initialize() {
   setupMessageListener();
-  setupOpenExtensionTabListener((msg, sender) => {
-    let accountId: string | undefined;
-    if (sender.tab?.id) {
-      accountId = getAccountByTabId(sender.tab.id);
+  setupOpenExtensionTabListener(async (msg, sender) => {
+    // The overlay is waiting on this handler's promise, and a rejection would reach it as a closed
+    // message port - which it reads as the extension having gone away, and puts up the reload
+    // cross for. Failures here are ours to report, not the overlay's.
+    try {
+      // Without this wait, a click that happens to wake the worker resolves to no account, and the
+      // tab then opens on whichever city the UI falls back to rather than the one that sent us here.
+      await accountManagerReady;
+      let accountId: string | undefined;
+      if (sender.tab?.id) {
+        accountId = getAccountByTabId(sender.tab.id);
+      }
+      await openOrRestoreTab(accountId);
+    } catch (error) {
+      console.error('ElvenAssist: Error opening the extension tab:', error);
     }
-    void openOrRestoreTab(accountId);
   });
   setupCitySavedListener((msg) => {
     void loadAccountManagerFromStorage(true);
@@ -63,7 +81,7 @@ async function initialize() {
   });
   setupInterceptedNonSpecificRequestListener((msg) => void nonSpecificRequestHandler(msg));
   setupInterceptedPlayerSpecificRequestListener((msg, sender) => void playerSpecificRequestHandler(msg, sender));
-  await loadAccountManagerFromStorage();
+  await accountManagerReady;
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }
 
