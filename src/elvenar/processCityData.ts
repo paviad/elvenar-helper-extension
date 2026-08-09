@@ -13,6 +13,25 @@ import { generateAccountId, getAccountBySessionId, setAccountData } from './Acco
 import { AccountData, FaQuest } from './Accounts';
 import { extractWonderKp } from './extractWonderKp';
 
+interface StartupEffect {
+  actionId: string;
+  ownerId: string;
+  type: string;
+  owner: string;
+  remainingTime: number;
+}
+
+/** Latest end time per owning building for one effect type, keyed by the game's entity id. */
+function collectEffectEndTimes(effects: StartupEffect[] | undefined, type: string): Record<string, number> {
+  const now = Date.now();
+  return (effects || [])
+    .filter((r) => r.type === type && r.owner === 'city_entity' && r.remainingTime !== undefined)
+    .reduce((acc: Record<string, number>, r) => {
+      acc[r.ownerId] = Math.max(acc[r.ownerId] || 0, now + r.remainingTime * 1000);
+      return acc;
+    }, {});
+}
+
 export async function processCityData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {
   const json = untypedJson as [{ requestClass: string; requestMethod: string; responseData: unknown }];
 
@@ -25,13 +44,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
         relic_boost_good: BoostedGoods[];
         resources: { resources: Badges & Relics };
         production_boost: { boost: number; relics_needed: number }[];
-        effects: {
-          actionId: string;
-          ownerId: string;
-          type: string;
-          owner: string;
-          remainingTime: number;
-        }[];
+        effects: StartupEffect[];
         seasonal_events?: SeasonalEvent[];
         army_details?: ArmyDetails;
       }
@@ -75,17 +88,8 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
 
   const squadSize = effectsService?.find((r) => r.name === 'squadSize')?.value || 0;
 
-  const expirationsEnd =
-    startupService?.effects
-      ?.filter((r) => r.type === 'expiring' && r.owner === 'city_entity' && r.remainingTime !== undefined)
-      ?.map((z) => ({ ownerId: z.ownerId, endTime: Date.now() + z.remainingTime * 1000, actionId: z.actionId }))
-      ?.reduce(
-        (acc: Record<string, number>, curr) => ({
-          ...acc,
-          [curr.ownerId]: Math.max(acc[curr.ownerId] || 0, curr.endTime),
-        }),
-        {},
-      ) || {};
+  const expirationsEnd = collectEffectEndTimes(startupService?.effects, 'expiring');
+  const enchantmentsEnd = collectEffectEndTimes(startupService?.effects, 'spell');
 
   const rankingService = json.find((r) => r.requestClass === 'RankingService' && r.requestMethod === 'newRank')
     ?.responseData as
@@ -195,6 +199,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       armyDetails: startupService.army_details,
       tournaments,
       expirationsEnd,
+      enchantmentsEnd,
       wonderKp: extractWonderKp(startupService.ancient_wonder_phases, user_data.player_id),
     },
     sharedInfo,

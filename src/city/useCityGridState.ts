@@ -17,6 +17,7 @@ import { UnlockedArea } from '../model/unlockedArea';
 import { generateUniqueId } from '../util/generateUniqueId';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { useTabStore } from '../util/tabStore';
+import { buildCityExport } from './buildCityExport';
 import { getBuildingFinder } from './buildingFinder';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { CityBlock } from './CityBlock';
@@ -447,20 +448,15 @@ export const useCityGridState = () => {
     const accountData = getAccountById(city.accountId);
     if (!accountData?.cityQuery) return;
 
-    const entities = Object.values(city.blocks).map((b, idx) => ({
-      id: idx + 1,
-      cityentity_id: b.entity.cityentity_id,
-      x: b.x,
-      y: b.y,
-      stage: b.entity.stage,
-      type: b.type.replace(/_[xy]$/, ''),
-      level: b.entity.level,
-    }));
-    const user_data = { race: accountData.cityQuery.userData.race };
-    const exportData = {
-      city_map: { unlocked_areas: city.unlockedAreas, entities },
-      user_data,
-    };
+    const exportData = buildCityExport({
+      blocks: Object.values(city.blocks),
+      unlockedAreas: city.unlockedAreas,
+      race: accountData.cityQuery.userData.race,
+      resources: city.resources,
+      inventoryItems: accountData.inventoryItems || [],
+      enchantmentsEnd: accountData.cityQuery.enchantmentsEnd || {},
+      now: Date.now(),
+    });
 
     const jsonStr = JSON.stringify(exportData);
     const base64Str = btoa(jsonStr);

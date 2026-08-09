@@ -51,6 +51,8 @@ export interface CityQuery {
   armyDetails?: ArmyDetails;
   tournaments?: SeasonalEvent[];
   expirationsEnd: Record<string, number>;
+  /** When the enchantment on a building runs out, keyed by the game's entity id. */
+  enchantmentsEnd?: Record<string, number>;
   /** Your wonders currently taking knowledge points, kept current by AncientWonderService. */
   wonderKp?: WonderKp[];
 }
