@@ -144,10 +144,29 @@ describe('buildCityExport', () => {
     });
   });
 
-  it('exports the Portal Profit stock and omits the inventory block without one', () => {
+  it('exports the Generous Guests stock off the resource bag', () => {
     expect(exportWith({ resources: { spell_settlement_production_boost_1: 78 } }).inventory).toEqual({
-      portal_profits: 78,
+      generous_guests: 78,
     });
+  });
+
+  it('collapses Portal Profits into whole portal productions', () => {
+    const result = exportWith({
+      inventoryItems: [
+        invItem('INS_RF_GRR_5', 787),
+        invItem('INS_RF_GRR_10', 417),
+        invItem('INS_RF_GRR_15', 4),
+        invItem('INS_RF_GRR_25', 4),
+        invItem('INS_RF_GRR_50', 4),
+        invItem('INS_RF_SPL_5', 395),
+      ],
+    });
+
+    // (787x5 + 417x10 + 4x15 + 4x25 + 4x50) / 100, with the supply refill left out
+    expect(result.inventory).toEqual({ portal_profits: 85 });
+  });
+
+  it('drops the inventory block when nothing in it is sourceable', () => {
     expect(exportWith().inventory).toBeUndefined();
   });
 

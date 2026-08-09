@@ -27,6 +27,7 @@ export interface CityExport {
   resources?: Record<string, number>;
   inventory?: {
     time_boosters?: Record<string, number>;
+    generous_guests?: number;
     portal_profits?: number;
   };
   progress?: {
@@ -38,8 +39,11 @@ export interface CityExport {
 /** `INS_TR_AMT_<minutes>` inventory rows are time boosters worth that many minutes. */
 const TIME_BOOSTER_PREFIX = 'INS_TR_AMT_';
 
-/** Portal Profit, the settlement production enchantment, is stocked in the resource bag. */
-const PORTAL_PROFIT_KEY = 'spell_settlement_production_boost_1';
+/** `INS_RF_GRR_<percent>` inventory rows are Portal Profits worth that share of a production. */
+const PORTAL_PROFIT_PREFIX = 'INS_RF_GRR_';
+
+/** Generous Guests, the settlement production enchantment, is stocked in the resource bag. */
+const GENEROUS_GUESTS_KEY = 'spell_settlement_production_boost_1';
 
 /** The Wisdoms that `wisdoms_produced` totals up. */
 const WISDOM_KEYS = ['ch25_wisdom_kid', 'ch25_wisdom_adult', 'ch25_wisdom_elder'];
@@ -88,21 +92,34 @@ function buildResources(resources: Record<string, number>): Record<string, numbe
   return Object.keys(block).length > 0 ? block : undefined;
 }
 
+/** Both booster families are one id per size, with the size spelled out in the suffix. */
+function readSizedItems(inventoryItems: InventoryItem[], prefix: string): { size: number; amount: number }[] {
+  return inventoryItems
+    .filter((item) => item.subtype?.startsWith(prefix))
+    .map((item) => ({ size: Number(item.subtype.slice(prefix.length)), amount: item.amount }))
+    .filter((row) => Number.isFinite(row.size) && row.size > 0 && Number.isFinite(row.amount));
+}
+
 /** Keyed by duration in hours as a decimal string, valued by how many are held. */
 function buildTimeBoosters(inventoryItems: InventoryItem[]): Record<string, number> | undefined {
   const boosters: Record<string, number> = {};
-  for (const item of inventoryItems) {
-    if (!item.subtype?.startsWith(TIME_BOOSTER_PREFIX)) {
-      continue;
-    }
-    const minutes = Number(item.subtype.slice(TIME_BOOSTER_PREFIX.length));
-    if (!Number.isFinite(minutes) || minutes <= 0 || !Number.isFinite(item.amount)) {
-      continue;
-    }
-    const hours = String(Number((minutes / 60).toFixed(4)));
-    boosters[hours] = (boosters[hours] || 0) + item.amount;
+  for (const { size, amount } of readSizedItems(inventoryItems, TIME_BOOSTER_PREFIX)) {
+    const hours = String(Number((size / 60).toFixed(4)));
+    boosters[hours] = (boosters[hours] || 0) + amount;
   }
   return Object.keys(boosters).length > 0 ? boosters : undefined;
+}
+
+/**
+ * Each row is worth its suffix as a percentage of a portal production, so the sizes collapse
+ * into how many whole productions the player is holding rather than a raw headcount.
+ */
+function buildPortalProfits(inventoryItems: InventoryItem[]): number | undefined {
+  const rows = readSizedItems(inventoryItems, PORTAL_PROFIT_PREFIX);
+  if (rows.length === 0) {
+    return undefined;
+  }
+  return Math.round(rows.reduce((acc, row) => acc + row.amount * row.size, 0) / 100);
 }
 
 function buildInventory(
@@ -114,7 +131,11 @@ function buildInventory(
   if (timeBoosters) {
     block.time_boosters = timeBoosters;
   }
-  const portalProfits = readResource(resources, PORTAL_PROFIT_KEY);
+  const generousGuests = readResource(resources, GENEROUS_GUESTS_KEY);
+  if (generousGuests !== undefined) {
+    block.generous_guests = generousGuests;
+  }
+  const portalProfits = buildPortalProfits(inventoryItems);
   if (portalProfits !== undefined) {
     block.portal_profits = portalProfits;
   }
