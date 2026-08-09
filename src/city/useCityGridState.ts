@@ -452,6 +452,7 @@ export const useCityGridState = () => {
       blocks: Object.values(city.blocks),
       unlockedAreas: city.unlockedAreas,
       race: accountData.cityQuery.userData.race,
+      chapter: accountData.cityQuery.chapter,
       resources: city.resources,
       inventoryItems: accountData.inventoryItems || [],
       enchantmentsEnd: accountData.cityQuery.enchantmentsEnd || {},

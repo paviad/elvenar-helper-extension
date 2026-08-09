@@ -13,6 +13,7 @@ function exportWith(overrides: Partial<Parameters<typeof buildCityExport>[0]> = 
     blocks: [],
     unlockedAreas: [],
     race: 'humans',
+    chapter: 25,
     resources: {},
     inventoryItems: [],
     enchantmentsEnd: {},
@@ -30,6 +31,16 @@ describe('buildCityExport', () => {
     expect(result.exported_at).toBe(Math.floor(NOW / 1000));
   });
 
+  it('names the chapter the city is in', () => {
+    expect(exportWith({ chapter: 25 }).user_data.chapter).toBe(25);
+    expect(exportWith({ chapter: 24 }).user_data.chapter).toBe(24);
+  });
+
+  it('leaves the chapter out when the stored city has no usable one', () => {
+    expect(exportWith({ chapter: undefined }).user_data).toEqual({ race: 'humans' });
+    expect(exportWith({ chapter: 0 }).user_data.chapter).toBeUndefined();
+  });
+
   it('keeps the v1 city_map and user_data shape', () => {
     const entity = makeCityEntityEx({ cityentity_id: 'B_Ch25_MSB_1', id: 4711, level: 3, stage: 2 });
     const unlockedAreas = [{ x: 15, y: 0, width: 10, length: 15 }];
@@ -40,7 +51,7 @@ describe('buildCityExport', () => {
       race: 'elves',
     });
 
-    expect(result.user_data).toEqual({ race: 'elves' });
+    expect(result.user_data).toEqual({ race: 'elves', chapter: 25 });
     expect(result.city_map.unlocked_areas).toBe(unlockedAreas);
     expect(result.city_map.entities).toEqual([
       {

@@ -25,7 +25,7 @@ export interface CityExport {
     unlocked_areas: UnlockedArea[];
     entities: ExportedEntity[];
   };
-  user_data: { race: string };
+  user_data: { race: string; chapter?: number };
   resources?: Record<string, number>;
   inventory?: {
     time_boosters?: Record<string, number>;
@@ -76,6 +76,14 @@ const RESOURCE_FIELDS: [string, (resources: Record<string, number>) => number | 
   ['wisdom_of_adults', (r) => readResource(r, 'ch25_wisdom_adult')],
   ['wisdom_of_age', (r) => readResource(r, 'ch25_wisdom_elder')],
 ];
+
+/**
+ * Read off the stored city rather than the city context, whose chapter starts at a sentinel
+ * meaning "unknown" - the consumer needs to trust the 25 it reads here.
+ */
+function readChapter(chapter: number | undefined): number | undefined {
+  return typeof chapter === 'number' && Number.isInteger(chapter) && chapter > 0 ? chapter : undefined;
+}
 
 function toEpochSeconds(milliseconds: number | undefined): number | undefined {
   return typeof milliseconds === 'number' && Number.isFinite(milliseconds) && milliseconds > 0
@@ -189,6 +197,7 @@ export function buildCityExport({
   blocks,
   unlockedAreas,
   race,
+  chapter,
   resources,
   inventoryItems,
   enchantmentsEnd,
@@ -198,6 +207,7 @@ export function buildCityExport({
   blocks: CityBlock[];
   unlockedAreas: UnlockedArea[];
   race: string;
+  chapter: number | undefined;
   resources: Record<string, number>;
   inventoryItems: InventoryItem[];
   enchantmentsEnd: Record<string, number>;
@@ -211,7 +221,7 @@ export function buildCityExport({
       unlocked_areas: unlockedAreas,
       entities: buildExportEntities(blocks, enchantmentsEnd, helpEnd),
     },
-    user_data: { race },
+    user_data: { race, chapter: readChapter(chapter) },
     resources: buildResources(resources),
     inventory: buildInventory(resources, inventoryItems),
     progress: buildProgress(resources),
