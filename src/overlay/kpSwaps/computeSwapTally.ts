@@ -25,14 +25,30 @@ function chronological(posts: MessagePostVO[]): MessagePostVO[] {
   });
 }
 
+interface StoredThread {
+  id: string;
+  message: GameMessage;
+  /**
+   * When the folder overview last saw this thread change, which is refreshed far more often
+   * than the thread itself. Zero when no overview mentions it.
+   */
+  overviewAt: number;
+}
+
 /**
  * One copy of each thread. A thread can sit in both folders; keep whichever copy holds more
- * posts, since a thread we only know from an overview may have been stored with fewer.
+ * posts, since a thread we only know from an overview may have been stored with fewer. The
+ * overview timestamp is taken as the newest either folder reports, since both describe the
+ * same thread and the fresher one is the one that knows about the latest post.
  */
-function dedupeThreads(messagesData: MessagesData | undefined): { id: string; message: GameMessage }[] {
+function dedupeThreads(messagesData: MessagesData | undefined): StoredThread[] {
   const best = new Map<string, GameMessage>();
+  const overviewAt = new Map<string, number>();
 
   for (const folder of Object.values(messagesData ?? {})) {
+    for (const [id, ts] of Object.entries(folder?.overview ?? {})) {
+      overviewAt.set(id, Math.max(overviewAt.get(id) ?? 0, ts ?? 0));
+    }
     for (const [id, message] of Object.entries(folder?.messages ?? {})) {
       const existing = best.get(id);
       if (!existing || (message.posts?.length ?? 0) > (existing.posts?.length ?? 0)) {
@@ -41,7 +57,7 @@ function dedupeThreads(messagesData: MessagesData | undefined): { id: string; me
     }
   }
 
-  return [...best.entries()].map(([id, message]) => ({ id, message }));
+  return [...best.entries()].map(([id, message]) => ({ id, message, overviewAt: overviewAt.get(id) ?? 0 }));
 }
 
 /** Lowercased "<wonder> please" -> the wonder's canonical spelling. */
@@ -70,6 +86,9 @@ function buildTriggers(wonderNames: string[]): Map<string, string> {
  * thread you have ever swapped in, since the chain has you posting a request every round.
  *
  * Nothing about the debts is stored — they are re-derived from the threads on every call.
+ *
+ * The debts survive a thread going stale, since what you owe somebody stays owed whatever is
+ * posted afterwards. What is owed to you does not: see `pendingRequests`.
  */
 export function computeSwapTally(
   messagesData: MessagesData | undefined,
@@ -87,8 +106,16 @@ export function computeSwapTally(
   const skipped: SkippedSwapThread[] = [];
   let latestRequestAt = 0;
 
-  for (const { id, message } of dedupeThreads(messagesData)) {
+  for (const { id, message, overviewAt } of dedupeThreads(messagesData)) {
     const posts = chronological(message.posts ?? []);
+
+    // The only thing that moves a thread's timestamp is a new post, so an overview newer than
+    // the copy we hold means somebody has posted since we last fetched it — we just cannot see
+    // who or what. The game sends the overview whenever the mail list refreshes but the posts
+    // themselves only when the thread is actually opened, so this gap is the normal state of
+    // affairs rather than an edge case.
+    const lastKnownAt = posts.reduce((newest, p) => Math.max(newest, p.created_at ?? 0), message.updatedAt ?? 0);
+    const stale = overviewAt > lastKnownAt;
 
     let mine = -1;
     for (let i = posts.length - 1; i >= 0; i--) {
@@ -118,7 +145,12 @@ export function computeSwapTally(
     // whoever posted last. Recorded regardless of the watermark and of whether the thread
     // owes anyone: clearing settles what you owe, not what is owed to you. Once somebody
     // does post, they have paid, and the wonder's own invested total says so instead.
-    if (mine === posts.length - 1 && amount.kind === 'amount') {
+    //
+    // A stale thread is dropped for the same reason rather than in spite of it: the newer
+    // timestamp is itself the news of a post after yours. Keeping it would go on subtracting
+    // knowledge the wonder has already been given, since the payment reached the wonder's
+    // invested total the moment it was made while the post reaches us only on the next fetch.
+    if (!stale && mine === posts.length - 1 && amount.kind === 'amount') {
       pendingRequests.push({ threadId: id, requestedWonder, amount: amount.amount });
     }
 

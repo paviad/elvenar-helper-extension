@@ -348,5 +348,32 @@ describe('computeSwapTally', () => {
 
       expect(tally(data).pendingRequests).toEqual([]);
     });
+
+    // Posts arrive only when a thread is actually fetched, while the overview arrives whenever
+    // the mail list refreshes. In between, the overview is all we know about the newest post.
+    describe('a thread the overview says has moved on', () => {
+      const stale = (overviewAt: number) => {
+        const data = inbox(
+          thread(7, '60 KP Thread', [
+            post(ALICE, 'Martial Monastery please', 100),
+            post(ME, 'Golden Abyss please', 200),
+          ]),
+        );
+        data.inbox!.overview['7'] = overviewAt;
+        return tally(data);
+      };
+
+      it('drops the request, since the newer timestamp is somebody posting after you', () => {
+        expect(stale(300).pendingRequests).toEqual([]);
+      });
+
+      it('keeps the request while the overview agrees with the posts we hold', () => {
+        expect(stale(200).pendingRequests).toHaveLength(1);
+      });
+
+      it('keeps what you owe, which no later post settles', () => {
+        expect(stale(300).entries).toMatchObject([{ recipientName: 'Alice', amount: 60 }]);
+      });
+    });
   });
 });

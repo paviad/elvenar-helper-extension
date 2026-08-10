@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- **Swaps:** A wonder's room to be asked for could read low and stay there. The game sends the mail list far more often than it sends the posts in a thread, so a request of yours that had already been answered went on being subtracted until the thread itself was fetched again — which is why a page refresh put it right. The list alone is now enough: a thread the game reports as having moved on has been posted in, and a post after yours is the payment.
 
 ## v10.1.0
 - **Swaps:** The wonder list now shows how much knowledge each of yours has room to be asked for, so you can pick a thread it fits. Requests nobody has answered yet come off that figure first — the game counts a wonder as needing knowledge that is already on its way to you, and asking twice for the same room leaves the giver's points to overflow.
