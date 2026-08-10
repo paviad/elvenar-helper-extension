@@ -1,0 +1,16 @@
+{
+  "elvenassist-shared-overlay-tab": [
+    "./src/city/buildingFinder.ts",
+    "./src/city/vestigeOfEternity.ts",
+    "./src/elvenar/Accounts.ts",
+    "./src/elvenar/getBuildings.ts",
+    "./src/elvenar/getEffects.ts",
+    "./src/elvenar/getEvolvingBuildings.ts",
+    "./src/elvenar/getExpirations.ts",
+    "./src/elvenar/getPremiumBuildingHints.ts",
+    "./src/elvenar/migrations.ts",
+    "./src/util/compression.ts",
+    "./src/util/formatTimeLeft.tsx",
+    "./src/widgets/DiscordButton.tsx"
+  ]
+}
