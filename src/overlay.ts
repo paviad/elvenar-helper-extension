@@ -1,6 +1,7 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
 import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import { setupSocketResponseListener } from './chrome/socketResponse';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import {
@@ -71,6 +72,7 @@ const initFunc = () => {
   } else {
     setupNonSpecificRequestInterceptedListener();
     setupAggregateRequestResponseListener();
+    setupSocketResponseListener();
   }
 
   // Create the div

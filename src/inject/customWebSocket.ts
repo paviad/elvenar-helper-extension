@@ -1,7 +1,9 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { parseSocketMessageRaw } from '../overlay/parseSocketMessage';
 import { playerSpecificMatchers } from './playerSpecificMatchers';
+import { matchedSocketResponses, SocketResponseMessage } from './socketResponses';
 import { ReceivedWebsocketMessage } from './websocketMessages';
+import { getLatestSharedInfo } from './xhrInterceptor';
 
 let globalSendHook: ((message: string) => void) | null = null;
 
@@ -51,6 +53,7 @@ export class CustomWebSocket extends WebSocket {
     if (typeof data.payload.value === 'string') {
       const { body } = parseSocketMessageRaw(data.payload.value) || {};
       matchAgainstLocalHandlers(body);
+      forwardMatchedResponses(body);
     }
 
     window.postMessage(data, '*');
@@ -91,6 +94,37 @@ export class CustomWebSocket extends WebSocket {
 export function getWebSocketSendHook(): ((message: string) => void) | null {
   return globalSendHook;
 }
+
+/**
+ * Hands socket-pushed responses to the service worker down the same road the HTTP ones take.
+ *
+ * The game answers some things by pushing them rather than by replying, and a contribution to
+ * one of your ancient wonders is one of them: nobody asked for it, so it arrives here and
+ * nowhere else. Without this the stored figures only moved when the page was reloaded.
+ *
+ * Local handlers are left out because `matchAgainstLocalHandlers` has already run them, here in
+ * the page where they belong.
+ */
+const forwardMatchedResponses = (body: unknown) => {
+  const matched = matchedSocketResponses(body);
+  if (matched.length === 0) {
+    return;
+  }
+
+  // Nothing has identified the session yet, which means the game has not made a request in this
+  // tab — there is no account for the service worker to attach these to, so they are dropped.
+  const sharedInfo = getLatestSharedInfo();
+  if (!sharedInfo) {
+    return;
+  }
+
+  const message = {
+    type: 'socketResponse',
+    payload: { responses: matched, sharedInfo },
+  } satisfies SocketResponseMessage;
+
+  window.postMessage(message, '*');
+};
 
 const matchAgainstLocalHandlers = (body: unknown) => {
   const respArr = body as ElvenarRequestResponseEntry[];
