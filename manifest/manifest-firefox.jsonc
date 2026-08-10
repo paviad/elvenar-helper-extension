@@ -66,7 +66,7 @@
       "js": [
         "elvenassist-vendors.bundle.js",
         "elvenassist-overlay.bundle.js",
-        "331.bundle.js"
+        "elvenassist-shared-overlay-tab.bundle.js"
       ],
       "run_at": "document_idle"
     },
