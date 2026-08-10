@@ -75,7 +75,6 @@
         "https://*.elvenar.com/*"
       ],
       "js": [
-        "elvenassist-vendors.bundle.js",
         "elvenassist-overlay-inject.bundle.js"
       ],
       "run_at": "document_start"
@@ -85,7 +84,6 @@
         "https://javascriptorian.com/*"
       ],
       "js": [
-        "elvenassist-vendors.bundle.js",
         "elvenassist-spirewizard.bundle.js"
       ],
       "run_at": "document_idle"
