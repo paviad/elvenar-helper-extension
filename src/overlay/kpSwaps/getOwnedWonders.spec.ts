@@ -48,4 +48,13 @@ describe('getOwnedWonders', () => {
   it('ignores a building that is not a wonder even when its name is close', () => {
     expect(getOwnedWonders([entity('Z_Abyssal_1')], CATALOG)).toEqual([]);
   });
+
+  // It is levelled by its own mechanism at every level, so a thread can give it nothing.
+  // Held by id, since the display name is whatever the player's language calls it.
+  it('leaves out the Vestige of Eternity even though it is built', () => {
+    const catalog = [...CATALOG, { baseName: 'B_All_Spire_AW', name: 'Vestige de la Eternidad' }];
+    const city = [entity('B_All_Spire_AW_9'), entity('Z_Abyss_9')];
+
+    expect(getOwnedWonders(city, catalog).map((w) => w.name)).toEqual(['Golden Abyss']);
+  });
 });

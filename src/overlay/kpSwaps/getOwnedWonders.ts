@@ -1,4 +1,5 @@
 import { AncientWonder } from '../../city/buildingFinder';
+import { isVestigeOfEternity } from '../../city/vestigeOfEternity';
 import { CityEntity } from '../../model/cityEntity';
 
 // The wonders you can actually be given knowledge points for are the ones standing in your
@@ -16,5 +17,7 @@ export function getOwnedWonders(cityEntities: CityEntity[] | undefined, wonders:
 
   const built = new Set(cityEntities.map((entity) => entity.cityentity_id?.replace(/_\d+$/, '')).filter(Boolean));
 
-  return wonders.filter((wonder) => built.has(wonder.baseName));
+  // The Vestige is levelled by a mechanism of its own at every level rather than by donated
+  // knowledge, so there is never anything to ask a thread for.
+  return wonders.filter((wonder) => built.has(wonder.baseName) && !isVestigeOfEternity(wonder.baseName));
 }

@@ -1,7 +1,9 @@
 # Changelog
 
 ## Unreleased
-- **Swaps:** A wonder's room to be asked for could read low and stay there. The game sends the mail list far more often than it sends the posts in a thread, so a request of yours that had already been answered went on being subtracted until the thread itself was fetched again — which is why a page refresh put it right. The list alone is now enough: a thread the game reports as having moved on has been posted in, and a post after yours is the payment.
+- **Swaps:** A request of yours that had already been answered could go on being subtracted from a wonder's room until the thread was fetched again. The mail list alone is enough to know better: a thread the game reports as having moved on has been posted in, and a post after yours is the payment.
+- **Swaps:** The Vestige of Eternity is no longer offered in the list of wonders to ask for. It is levelled by a mechanism of its own at every level, so a swap thread has nothing to give it.
+- **City Planner:** The Vestige of Eternity is recognised on a translated client. It stands outside the city grid by design and was exempted from the misplaced-building check by its English name, so on any other language it was counted as out of grid and its output left out of the city totals. Both places now hold it by the game's own id.
 
 ## v10.1.0
 - **Swaps:** The wonder list now shows how much knowledge each of yours has room to be asked for, so you can pick a thread it fits. Requests nobody has answered yet come off that figure first — the game counts a wonder as needing knowledge that is already on its way to you, and asking twice for the same room leaves the giver's points to overflow.

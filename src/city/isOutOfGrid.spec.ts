@@ -1,8 +1,8 @@
 import { GridMax } from './gridConstants';
 import { isOutOfGrid } from './isOutOfGrid';
 
-const block = (x: number, y: number, width = 2, length = 2, name = 'Steel Manufactory') => ({
-  name,
+const block = (x: number, y: number, width = 2, length = 2, gameId = 'G_Steel_1') => ({
+  gameId,
   x,
   y,
   width,
@@ -36,7 +36,8 @@ describe('isOutOfGrid', () => {
     expect(isOutOfGrid(block(GridMax - 5, 0, 6, 1))).toBe(true);
   });
 
+  // By id rather than by display name, which is whatever the player's language calls it.
   it('never rejects the Vestige of Eternity, which lives outside the grid', () => {
-    expect(isOutOfGrid(block(-30, -30, 4, 4, 'Vestige of Eternity'))).toBe(false);
+    expect(isOutOfGrid(block(-30, -30, 4, 4, 'B_All_Spire_AW_9'))).toBe(false);
   });
 });
