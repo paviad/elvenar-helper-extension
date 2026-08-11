@@ -20,6 +20,12 @@ export const setupSocketResponseListener = (): void => {
       const { responses, sharedInfo } = (event.data as SocketResponseMessage).payload;
 
       for (const response of responses) {
+        // Deliberately noisy, and matching the line the HTTP path logs. A pushed response is
+        // otherwise invisible: nothing asked for it, so its absence looks exactly like a quiet
+        // guild. This is what tells a frame that never arrived from one that arrived and was
+        // ignored, which is the difference between two very different bugs.
+        console.log('E:', 'socket', response.requestClass, response.requestMethod, response);
+
         const message = {
           type: `R:${response.requestClass}/${response.requestMethod}`,
           specific: true,
