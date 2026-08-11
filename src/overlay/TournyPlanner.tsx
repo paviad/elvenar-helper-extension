@@ -90,7 +90,41 @@ const CLICK_COOLDOWN_MS = 2000;
 
 type ProvinceAction = 'fight' | 'cater' | 'open';
 
-const cooldownKey = (province: TournyProvince, action: ProvinceAction) => `${province.q},${province.r}:${action}`;
+/**
+ * Fixed so that the lone open button can be given the width of the fight/cater pair it replaces.
+ * Wide enough for FIGHT and CATER at this size and weight without the chip ellipsising them.
+ */
+const ACTION_CHIP_WIDTH = 60;
+/** The `spacing={0.5}` between the fight and cater buttons, in pixels. */
+const ACTION_CHIP_GAP = 4;
+
+const actionChipSx = {
+  height: 42,
+  width: ACTION_CHIP_WIDTH,
+  fontSize: '0.65rem',
+  fontWeight: 900,
+  borderRadius: 0.5,
+};
+
+const provinceCoordKey = (province: TournyProvince) => `${province.q},${province.r}`;
+
+const cooldownKey = (province: TournyProvince, action: ProvinceAction) => `${provinceCoordKey(province)}:${action}`;
+
+/**
+ * Fighting and catering are two ways to settle the same encounter, so once one of them has been
+ * asked for the other is only ever a mistake. This records which one was asked for, against the
+ * level it was asked at - completing an encounter raises the level, and the next one is a fresh
+ * choice, so the level is what releases the lock without needing to hear back from the game.
+ */
+type TakenAction = { action: 'fight' | 'cater'; level: number | undefined };
+
+/**
+ * Roughly the width at which a typical wave and the recommendation both fit on one line spelled
+ * out - the small panel preset leaves the card about 320px, well under it. Below this the wordier
+ * half of each label is dropped and left to the tooltips. Asked of the card rather than of the
+ * viewport because the panel is resizable, so the same card is both wide and narrow in a session.
+ */
+const WIDE_CARD = '@container (min-width: 440px)';
 
 type ExtendedProvince = TournyProvince & {
   bestCounter?: CounterResult | null;
@@ -129,6 +163,9 @@ export const TournyPlanner = () => {
   // Keys of action buttons that are temporarily disabled after being clicked.
   const [cooldowns, setCooldowns] = useState<Record<string, boolean>>({});
   const cooldownTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Provinces that have already been fought or catered, by coordinate.
+  const [takenActions, setTakenActions] = useState<Record<string, TakenAction>>({});
 
   useEffect(() => {
     // Refresh the component every second to update the "time left" counters automatically
@@ -277,6 +314,15 @@ export const TournyPlanner = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournyData, runningTourny, availableRoster, unitAlmanac, armyDetails, modifiers]);
 
+  /** The action already taken on this province, or undefined once the province has moved on. */
+  const takenAction = (province: ExtendedProvince): TakenAction['action'] | undefined => {
+    const taken = takenActions[provinceCoordKey(province)];
+    return taken && taken.level === province.level ? taken.action : undefined;
+  };
+
+  const markActionTaken = (province: ExtendedProvince, action: TakenAction['action']) =>
+    setTakenActions((prev) => ({ ...prev, [provinceCoordKey(province)]: { action, level: province.level } }));
+
   const isProvinceOpen = (province: ExtendedProvince): boolean => {
     if (province.level === 6) return false;
     if (province.upgradeTimeEnd && province.upgradeTimeEnd > now) return false;
@@ -306,6 +352,7 @@ export const TournyPlanner = () => {
     console.log('Posting message for fight click with payload:', { q: province.q, r: province.r, unit });
 
     startCooldown(key);
+    markActionTaken(province, 'fight');
     relayToGame('tournyFight', { q: province.q, r: province.r, unit } satisfies TournyFight);
   };
 
@@ -313,6 +360,7 @@ export const TournyPlanner = () => {
     const key = cooldownKey(province, 'cater');
     if (cooldowns[key]) return;
     startCooldown(key);
+    markActionTaken(province, 'cater');
     relayToGame('tournyCater', { q: province.q, r: province.r });
   };
 
@@ -535,6 +583,7 @@ export const TournyPlanner = () => {
 
               const enemyArmy = provinceInfo?.encounters?.[0]?.enemyWaves?.[0]?.army || [];
               const bestCounter = province.bestCounter;
+              const taken = takenAction(province);
 
               return (
                 <Paper
@@ -549,6 +598,9 @@ export const TournyPlanner = () => {
                     opacity: isCompleted ? 0.6 : 1,
                     filter: isCompleted ? 'grayscale(0.8)' : 'none',
                     transition: 'all 0.15s ease-in-out',
+                    // So the enemy/recommendation row can answer to the card's width, which follows
+                    // the resizable panel, rather than to the viewport.
+                    containerType: 'inline-size',
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -590,102 +642,137 @@ export const TournyPlanner = () => {
                     <Box sx={{ mt: 1 }}>
                       <Divider sx={{ mb: 1.5, opacity: 0.3 }} />
 
-                      <Stack spacing={1.5}>
-                        <Box>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 0.5,
-                                fontWeight: 'bold',
-                                textTransform: 'uppercase',
-                              }}
-                            >
-                              <SecurityIcon sx={{ fontSize: 14 }} /> Enemy Wave
-                            </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography
+                          variant='caption'
+                          color='text.secondary'
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          <SecurityIcon sx={{ fontSize: 14 }} /> Enemy Wave
+                        </Typography>
 
-                            <Stack direction='row' spacing={0.5}>
-                              {isProvinceOpen(province) ? (
-                                <>
-                                  <Chip
-                                    label='FIGHT'
-                                    size='small'
-                                    color='primary'
-                                    clickable
-                                    disabled={!!cooldowns[cooldownKey(province, 'fight')]}
-                                    onClick={handleFightClick(province)}
-                                    sx={{ height: 42, fontSize: '0.65rem', fontWeight: 900, borderRadius: 0.5 }}
-                                  />
-                                  <Chip
-                                    label='CATER'
-                                    size='small'
-                                    variant='outlined'
-                                    clickable
-                                    disabled={!!cooldowns[cooldownKey(province, 'cater')]}
-                                    onClick={handleCaterClick(province)}
-                                    sx={{ height: 42, fontSize: '0.65rem', fontWeight: 900, borderRadius: 0.5 }}
-                                  />
-                                </>
-                              ) : (
+                        <Stack direction='row' spacing={0.5}>
+                          {isProvinceOpen(province) ? (
+                            <>
+                              {taken !== 'cater' && (
                                 <Chip
-                                  label='OPEN'
+                                  label='FIGHT'
+                                  size='small'
+                                  color='primary'
+                                  clickable
+                                  disabled={!!cooldowns[cooldownKey(province, 'fight')]}
+                                  onClick={handleFightClick(province)}
+                                  sx={actionChipSx}
+                                />
+                              )}
+                              {taken !== 'fight' && (
+                                <Chip
+                                  label='CATER'
                                   size='small'
                                   variant='outlined'
                                   clickable
-                                  disabled={!!cooldowns[cooldownKey(province, 'open')]}
-                                  onClick={handleOpenClick(province)}
-                                  sx={{ height: 42, fontSize: '0.65rem', fontWeight: 900, borderRadius: 0.5 }}
+                                  disabled={!!cooldowns[cooldownKey(province, 'cater')]}
+                                  onClick={handleCaterClick(province)}
+                                  sx={actionChipSx}
                                 />
                               )}
-                            </Stack>
-                          </Box>
+                            </>
+                          ) : (
+                            <Chip
+                              label='OPEN'
+                              size='small'
+                              variant='outlined'
+                              clickable
+                              disabled={!!cooldowns[cooldownKey(province, 'open')]}
+                              onClick={handleOpenClick(province)}
+                              // Spans exactly what fight and cater span together, gap included, so
+                              // the row's right edge does not move as provinces open.
+                              sx={{ ...actionChipSx, width: ACTION_CHIP_WIDTH * 2 + ACTION_CHIP_GAP }}
+                            />
+                          )}
+                        </Stack>
+                      </Box>
 
-                          {enemyArmy.length > 0 ? (
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                              {enemyArmy.map((unit, idx) => {
-                                const spriteIndex = getUnitSpriteIndex(unit.unitTypeId);
-                                return (
-                                  <Tooltip key={idx} title={formatUnitName(unit.unitTypeId)} arrow>
+                      {/*
+                        The enemy units and the recommendation share this row, and it keeps its
+                        height whether it holds them or the "visit on map" line, so opening a
+                        province does not make its card taller and shove the rest of the list down.
+                      */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 30 }}>
+                        {enemyArmy.length > 0 ? (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              gap: 0.75,
+                              flex: '1 1 auto',
+                              minWidth: 0,
+                              // The recommendation keeps its width; a wave too wide for what is
+                              // left scrolls rather than wraps, which would cost a second line.
+                              overflowX: 'auto',
+                              scrollbarWidth: 'none',
+                              '&::-webkit-scrollbar': { display: 'none' },
+                            }}
+                          >
+                            {enemyArmy.map((unit, idx) => {
+                              const spriteIndex = getUnitSpriteIndex(unit.unitTypeId);
+                              return (
+                                <Tooltip key={idx} title={formatUnitName(unit.unitTypeId)} arrow>
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      borderRadius: 1,
+                                      bgcolor: 'background.default',
+                                      flexShrink: 0,
+                                      height: 26,
+                                      pr: 0,
+                                      [WIDE_CARD]: { pr: 1 },
+                                    }}
+                                  >
                                     <Box
                                       sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                        borderRadius: 1,
-                                        bgcolor: 'background.default',
-                                        pr: 1,
-                                        height: 26,
+                                        width: 20,
+                                        height: 20,
+                                        backgroundImage: `url(${spriteUrl})`,
+                                        backgroundPosition: `-${spriteIndex * 22}px 0px`,
+                                        backgroundSize: '110px 22px',
+                                        imageRendering: 'pixelated',
+                                        mx: 0.5,
+                                      }}
+                                    />
+                                    <Typography
+                                      variant='caption'
+                                      sx={{
+                                        fontSize: '0.6rem',
+                                        fontWeight: 600,
+                                        display: 'none',
+                                        [WIDE_CARD]: { display: 'block' },
                                       }}
                                     >
-                                      <Box
-                                        sx={{
-                                          width: 20,
-                                          height: 20,
-                                          backgroundImage: `url(${spriteUrl})`,
-                                          backgroundPosition: `-${spriteIndex * 22}px 0px`,
-                                          backgroundSize: '110px 22px',
-                                          imageRendering: 'pixelated',
-                                          mx: 0.5,
-                                        }}
-                                      />
-                                      <Typography variant='caption' sx={{ fontSize: '0.6rem', fontWeight: 600 }}>
-                                        {formatBuildingName(unit.unitTypeId)}
-                                      </Typography>
-                                    </Box>
-                                  </Tooltip>
-                                );
-                              })}
-                            </Box>
-                          ) : (
-                            <Typography variant='caption' color='text.disabled' sx={{ fontStyle: 'italic' }}>
-                              Visit on map to load units...
-                            </Typography>
-                          )}
-                        </Box>
+                                      {formatBuildingName(unit.unitTypeId)}
+                                    </Typography>
+                                  </Box>
+                                </Tooltip>
+                              );
+                            })}
+                          </Box>
+                        ) : (
+                          <Typography
+                            variant='caption'
+                            color='text.disabled'
+                            sx={{ flex: '1 1 auto', fontStyle: 'italic' }}
+                          >
+                            Visit on map to load units...
+                          </Typography>
+                        )}
 
                         {bestCounter &&
                           (() => {
@@ -693,63 +780,85 @@ export const TournyPlanner = () => {
                             const needed = (province.neededUnitsForOneSquad || 0) * 5;
                             const available = province.availableUnitsOfType || 0;
                             const hasEnough = available >= needed;
+                            const score = Math.round(bestCounter.score * 10) / 10;
 
                             return (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    border: '1px solid',
-                                    borderColor: 'success.light',
-                                    borderRadius: 1,
-                                    bgcolor: 'success.lighter',
-                                    pr: 1.5,
-                                    height: 28,
-                                    width: 'fit-content',
-                                  }}
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                                <Tooltip
+                                  arrow
+                                  title={`${formatUnitName(bestCounter.unit.unitTypeId)} - ${bestCounter.quality} (${score})`}
                                 >
                                   <Box
                                     sx={{
-                                      width: 20,
-                                      height: 20,
-                                      backgroundImage: `url(${spriteUrl})`,
-                                      backgroundPosition: `-${getUnitSpriteIndex(bestCounter.unit.unitTypeId) * 22}px 0px`,
-                                      backgroundSize: '110px 22px',
-                                      imageRendering: 'pixelated',
-                                      mx: 1,
-                                    }}
-                                  />
-                                  <Typography
-                                    variant='caption'
-                                    sx={{
-                                      fontSize: '0.7rem',
-                                      fontWeight: 800,
-                                      color: getQualityColor(bestCounter.quality),
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      border: '1px solid',
+                                      borderColor: 'success.light',
+                                      borderRadius: 1,
+                                      bgcolor: 'success.lighter',
+                                      height: 28,
+                                      width: 'fit-content',
+                                      pr: 1,
+                                      [WIDE_CARD]: { pr: 1.5 },
                                     }}
                                   >
-                                    {formatBuildingName(bestCounter.unit.unitTypeId)}: {bestCounter.quality} (
-                                    {Math.round(bestCounter.score * 10) / 10})
-                                  </Typography>
-                                </Box>
+                                    <Box
+                                      sx={{
+                                        width: 20,
+                                        height: 20,
+                                        backgroundImage: `url(${spriteUrl})`,
+                                        backgroundPosition: `-${getUnitSpriteIndex(bestCounter.unit.unitTypeId) * 22}px 0px`,
+                                        backgroundSize: '110px 22px',
+                                        imageRendering: 'pixelated',
+                                        mx: 0.75,
+                                      }}
+                                    />
+                                    <Typography
+                                      variant='caption'
+                                      sx={{
+                                        fontSize: '0.7rem',
+                                        fontWeight: 800,
+                                        whiteSpace: 'nowrap',
+                                        color: getQualityColor(bestCounter.quality),
+                                      }}
+                                    >
+                                      {formatBuildingName(bestCounter.unit.unitTypeId)}
+                                      {/* Only a wide card has room for the wording; on a narrow one
+                                          the quality is still in the colour and in the tooltip. */}
+                                      <Box
+                                        component='span'
+                                        sx={{ display: 'none', [WIDE_CARD]: { display: 'inline' } }}
+                                      >
+                                        : {bestCounter.quality} ({score})
+                                      </Box>
+                                    </Typography>
+                                  </Box>
+                                </Tooltip>
 
                                 {/* Unit Availability Display */}
-                                {hasEnough ? (
-                                  <Typography variant='caption' color='text.secondary' sx={{ fontWeight: 600 }}>
-                                    Units: {needed.toLocaleString()} / {available.toLocaleString()}
+                                <Tooltip
+                                  arrow
+                                  title={
+                                    hasEnough
+                                      ? `${needed.toLocaleString()} needed, ${available.toLocaleString()} available`
+                                      : `Not enough units - ${needed.toLocaleString()} needed, ${available.toLocaleString()} available`
+                                  }
+                                >
+                                  <Typography
+                                    variant='caption'
+                                    color={hasEnough ? 'text.secondary' : 'error.main'}
+                                    sx={{ fontWeight: hasEnough ? 600 : 800, whiteSpace: 'nowrap' }}
+                                  >
+                                    <Box component='span' sx={{ display: 'none', [WIDE_CARD]: { display: 'inline' } }}>
+                                      Units:{' '}
+                                    </Box>
+                                    {needed.toLocaleString()}/{available.toLocaleString()}
                                   </Typography>
-                                ) : (
-                                  <Chip
-                                    size='small'
-                                    color='error'
-                                    label={`Not enough units (${needed.toLocaleString()} / ${available.toLocaleString()})`}
-                                    sx={{ height: 24, fontSize: '0.65rem', fontWeight: 'bold' }}
-                                  />
-                                )}
+                                </Tooltip>
                               </Box>
                             );
                           })()}
-                      </Stack>
+                      </Box>
                     </Box>
                   )}
                 </Paper>
