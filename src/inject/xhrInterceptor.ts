@@ -20,6 +20,15 @@ declare global {
 
 const requestMap = new Map<number, AggregateRequestResponse>();
 
+/**
+ * The session the game is playing, as of the last request it made. Websocket frames identify
+ * their recipient by player id and say nothing about the session, so the socket path borrows
+ * this — there is one game per tab, and the socket belongs to whoever is signed in to it.
+ */
+let latestSharedInfo: ExtensionSharedInfo | null = null;
+
+export const getLatestSharedInfo = (): ExtensionSharedInfo | null => latestSharedInfo;
+
 // A request whose response never arrives is never aggregated, so nothing else would ever evict it.
 // This runs in the game tab, which stays open for hours; entries normally live ~300ms.
 const MAX_PENDING_REQUESTS = 200;
@@ -146,6 +155,7 @@ export class GlobalHttpInterceptorService {
         this.sharedInfo.reqUrl = requestUrl;
         this.sharedInfo.sessionId = sessionId;
         this.sharedInfo.reqBody = decodedString;
+        latestSharedInfo = this.sharedInfo;
 
         const requestGeneric = JSON.parse(decodedString.substring(10)) as ElvenarRequestResponseEntry[];
 
