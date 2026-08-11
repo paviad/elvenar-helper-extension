@@ -59,9 +59,9 @@ export class CustomWebSocket extends WebSocket {
     }
 
     if (typeof data.payload.value === 'string') {
-      const { body } = parseSocketMessageRaw(data.payload.value) || {};
+      const { body, headers } = parseSocketMessageRaw(data.payload.value) || {};
       matchAgainstLocalHandlers(body);
-      forwardMatchedResponses(body);
+      forwardMatchedResponses(body, headers);
     }
 
     window.postMessage(data, '*');
@@ -99,11 +99,27 @@ export function getWebSocketSendHook(): ((message: string) => void) | null {
  * Local handlers are left out because `matchAgainstLocalHandlers` has already run them, here in
  * the page where they belong.
  */
-const forwardMatchedResponses = (body: unknown) => {
+const forwardMatchedResponses = (body: unknown, headers?: Record<string, string>) => {
   const matched = matchedSocketResponses(body);
   if (matched.length === 0) {
     return;
   }
+
+  // Logged here, in the page, where a frame is still a frame. The relay on the other side counts
+  // responses, so it cannot tell one frame arriving repeatedly from one arriving once - and if it
+  // is arriving repeatedly, these headers are what says which of them are the same news.
+  console.log(
+    'E:',
+    'socket frame',
+    'uuid',
+    headers?.['X-UUID'],
+    'message-id',
+    headers?.['message-id'],
+    'subscription',
+    headers?.['subscription'],
+    'matched',
+    matched.length,
+  );
 
   // Nothing has identified the session yet, which means the game has not made a request in this
   // tab — there is no account for the service worker to attach these to, so they are dropped.
