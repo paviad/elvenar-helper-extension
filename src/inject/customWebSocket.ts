@@ -28,13 +28,21 @@ export class CustomWebSocket extends WebSocket {
     });
 
     super.onmessage = (event: MessageEvent) => {
+      this.onmessageListenerCallbackOriginal(event);
+    };
+
+    // One interception per frame, whatever the game happens to be listening with. Doing it from
+    // the listeners themselves meant a frame was intercepted once for `onmessage` and again for
+    // every addEventListener('message') the game had registered - the STOMP client registers
+    // several, so a single wonder contribution arrived five times over and was processed, saved
+    // and relayed five times over with it.
+    super.addEventListener('message', (event: MessageEvent) => {
       try {
         this.interceptReceivedMessage(event);
       } catch (error) {
         console.warn('ElvenAssist: Error in intercepting WebSocket message', error);
       }
-      this.onmessageListenerCallbackOriginal(event);
-    };
+    });
   }
 
   // The onmessage property is handled via Object.defineProperty in the constructor for compatibility.
@@ -71,24 +79,10 @@ export class CustomWebSocket extends WebSocket {
     super.send(...args);
   }
 
-  override addEventListener<K extends keyof WebSocketEventMap>(
-    type: K,
-    listener: (this: WebSocket, ev: WebSocketEventMap[K]) => unknown,
-    options?: boolean | AddEventListenerOptions,
-  ): void {
-    if (type === 'message') {
-      super.addEventListener(
-        'message',
-        (event: MessageEvent) => {
-          this.interceptReceivedMessage(event);
-          listener.call(this, event as WebSocketEventMap[K]);
-        },
-        options,
-      );
-    } else {
-      super.addEventListener(type, listener as EventListenerOrEventListenerObject, options);
-    }
-  }
+  // addEventListener is deliberately not overridden. It used to be, only so that a 'message'
+  // listener could be wrapped in an interception - which is what made a frame arrive once per
+  // listener. Wrapping also meant removeEventListener was handed a function the game had never
+  // registered, so a message listener could never be taken off again.
 }
 
 export function getWebSocketSendHook(): ((message: string) => void) | null {
