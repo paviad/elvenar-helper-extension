@@ -60,8 +60,14 @@ export class CustomWebSocket extends WebSocket {
 
     if (typeof data.payload.value === 'string') {
       const { body, headers } = parseSocketMessageRaw(data.payload.value) || {};
-      matchAgainstLocalHandlers(body);
-      forwardMatchedResponses(body, headers);
+      logFrame(body, headers);
+
+      // Filtered once, above both consumers, so the local handlers are spared the server's
+      // repeats too - they act on the game rather than reading it, and doing that five times
+      // over is the one place the repetition could have been more than wasted work.
+      const fresh = withoutRepeatedResponses(body);
+      matchAgainstLocalHandlers(fresh);
+      forwardMatchedResponses(fresh);
     }
 
     window.postMessage(data, '*');
@@ -102,15 +108,26 @@ export function getWebSocketSendHook(): ((message: string) => void) | null {
 /** Shared across frames, since that is where the server's repeats show up. */
 const withoutRepeats = createRepeatFilter();
 
-const forwardMatchedResponses = (body: unknown, headers?: Record<string, string>) => {
+/**
+ * What the frame carries that nobody has just been told already.
+ *
+ * A body that is not a list of responses is handed back untouched: chat traffic and STOMP
+ * receipts are not what the server repeats, and chat discards what it has seen for itself.
+ */
+const withoutRepeatedResponses = (body: unknown): unknown =>
+  Array.isArray(body) ? withoutRepeats(body as ElvenarRequestResponseEntry[], Date.now()) : body;
+
+/**
+ * Logged in the page, where a frame is still a frame — the relay on the other side counts
+ * responses, so it cannot tell one frame arriving repeatedly from one arriving once. Above the
+ * filter, so the server repeating itself stays visible after the repeats stop being acted on.
+ */
+const logFrame = (body: unknown, headers?: Record<string, string>) => {
   const matched = matchedSocketResponses(body);
   if (matched.length === 0) {
     return;
   }
 
-  // Logged here, in the page, where a frame is still a frame. The relay on the other side counts
-  // responses, so it cannot tell one frame arriving repeatedly from one arriving once - and if it
-  // is arriving repeatedly, these headers are what says which of them are the same news.
   console.log(
     'E:',
     'socket frame',
@@ -123,10 +140,10 @@ const forwardMatchedResponses = (body: unknown, headers?: Record<string, string>
     'matched',
     matched.length,
   );
+};
 
-  // The server says the same thing several times over, so only what it has not just said gets
-  // relayed. Filtered after the log above, which counts frames as they arrive.
-  const responses = withoutRepeats(matched, Date.now());
+const forwardMatchedResponses = (body: unknown) => {
+  const responses = matchedSocketResponses(body);
   if (responses.length === 0) {
     return;
   }
