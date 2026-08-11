@@ -42,3 +42,47 @@ export function matchedSocketResponses(body: unknown): ElvenarRequestResponseEnt
       ),
   );
 }
+
+/** How long a response stays remembered. Repeats land within milliseconds of each other. */
+const REPEAT_WINDOW_MS = 5000;
+
+/** How many responses to remember. A burst is a handful; this is room to spare. */
+const REPEAT_CAPACITY = 32;
+
+/**
+ * Drops responses the server has only just sent us already.
+ *
+ * It sends the same notification several times over — one contribution to a wonder arrives as
+ * five separate STOMP messages, each with its own uuid and message id, all saying the same
+ * thing. Nothing in the frame marks a repeat, so the payload has to speak for itself.
+ *
+ * Safe to drop because every response the matchers want carries a state of the world rather
+ * than a change to it: a wonder's phase reports the total invested, not the increment. Acting
+ * on an identical one a second time would arrive at the state it is already in — the work was
+ * only ever wasted, never load-bearing. The window keeps that claim narrow: a genuine response
+ * that happens to be identical minutes later is still let through, since by then it is news
+ * that the state has come back round rather than an echo of the same event.
+ *
+ * `now` is passed in rather than read, so the window can be exercised without waiting on it.
+ */
+export function createRepeatFilter({ windowMs = REPEAT_WINDOW_MS, capacity = REPEAT_CAPACITY } = {}) {
+  let seen: { key: string; at: number }[] = [];
+
+  return (responses: ElvenarRequestResponseEntry[], now: number): ElvenarRequestResponseEntry[] => {
+    seen = seen.filter((entry) => now - entry.at <= windowMs);
+
+    const fresh = responses.filter((response) => {
+      const key = JSON.stringify(response);
+      if (seen.some((entry) => entry.key === key)) {
+        return false;
+      }
+      seen.push({ key, at: now });
+      return true;
+    });
+
+    if (seen.length > capacity) {
+      seen = seen.slice(-capacity);
+    }
+    return fresh;
+  };
+}

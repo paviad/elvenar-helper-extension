@@ -1,5 +1,6 @@
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { parseSocketMessageRaw } from '../overlay/parseSocketMessage';
-import { matchedSocketResponses } from './socketResponses';
+import { createRepeatFilter, matchedSocketResponses } from './socketResponses';
 
 /**
  * A STOMP frame as the game actually sends one, trimmed of the contribution ledger and the
@@ -54,5 +55,58 @@ describe('matchedSocketResponses', () => {
   it('yields nothing for a body that is not a list', () => {
     expect(matchedSocketResponses(undefined)).toEqual([]);
     expect(matchedSocketResponses({ requestClass: 'AncientWonderService' })).toEqual([]);
+  });
+});
+
+// The server sends one contribution as five separate STOMP messages, each with its own uuid and
+// message id, all saying the same thing. Only the payload marks a repeat.
+describe('createRepeatFilter', () => {
+  const phase = (invested: number): ElvenarRequestResponseEntry => ({
+    __class__: 'ServerResponseVO',
+    requestClass: 'AncientWonderService',
+    requestMethod: 'phaseUpdated',
+    requestId: 1,
+    requestData: [],
+    responseData: [{ entityBaseName: 'B_Fairies_AW2', investedKnowledgePoints: invested }],
+  });
+
+  it('lets the first arrival through and drops the burst behind it', () => {
+    const filter = createRepeatFilter();
+
+    expect(filter([phase(779)], 1000)).toHaveLength(1);
+    for (const at of [1001, 1002, 1003, 1004]) {
+      expect(filter([phase(779)], at)).toEqual([]);
+    }
+  });
+
+  it('keeps a response that says something different', () => {
+    const filter = createRepeatFilter();
+    filter([phase(779)], 1000);
+
+    expect(filter([phase(780)], 1001)).toEqual([phase(780)]);
+  });
+
+  it('lets an identical response through again once the window has passed', () => {
+    // Not an echo by then, but the state coming back round, which is news of its own.
+    const filter = createRepeatFilter({ windowMs: 5000 });
+    filter([phase(779)], 1000);
+
+    expect(filter([phase(779)], 5999)).toEqual([]);
+    expect(filter([phase(779)], 6001)).toHaveLength(1);
+  });
+
+  it('collapses repeats arriving together in one frame', () => {
+    const filter = createRepeatFilter();
+
+    expect(filter([phase(779), phase(779), phase(780)], 1000)).toEqual([phase(779), phase(780)]);
+  });
+
+  it('forgets the oldest once it is holding more than it has room for', () => {
+    const filter = createRepeatFilter({ capacity: 2 });
+    filter([phase(1), phase(2), phase(3)], 1000);
+
+    // Only the last two are still remembered, so the first is treated as new again.
+    expect(filter([phase(1)], 1001)).toHaveLength(1);
+    expect(filter([phase(3)], 1001)).toEqual([]);
   });
 });

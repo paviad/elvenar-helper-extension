@@ -1,7 +1,7 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { parseSocketMessageRaw } from '../overlay/parseSocketMessage';
 import { playerSpecificMatchers } from './playerSpecificMatchers';
-import { matchedSocketResponses, SocketResponseMessage } from './socketResponses';
+import { createRepeatFilter, matchedSocketResponses, SocketResponseMessage } from './socketResponses';
 import { ReceivedWebsocketMessage } from './websocketMessages';
 import { getLatestSharedInfo } from './xhrInterceptor';
 
@@ -99,6 +99,9 @@ export function getWebSocketSendHook(): ((message: string) => void) | null {
  * Local handlers are left out because `matchAgainstLocalHandlers` has already run them, here in
  * the page where they belong.
  */
+/** Shared across frames, since that is where the server's repeats show up. */
+const withoutRepeats = createRepeatFilter();
+
 const forwardMatchedResponses = (body: unknown, headers?: Record<string, string>) => {
   const matched = matchedSocketResponses(body);
   if (matched.length === 0) {
@@ -121,6 +124,13 @@ const forwardMatchedResponses = (body: unknown, headers?: Record<string, string>
     matched.length,
   );
 
+  // The server says the same thing several times over, so only what it has not just said gets
+  // relayed. Filtered after the log above, which counts frames as they arrive.
+  const responses = withoutRepeats(matched, Date.now());
+  if (responses.length === 0) {
+    return;
+  }
+
   // Nothing has identified the session yet, which means the game has not made a request in this
   // tab — there is no account for the service worker to attach these to, so they are dropped.
   const sharedInfo = getLatestSharedInfo();
@@ -130,7 +140,7 @@ const forwardMatchedResponses = (body: unknown, headers?: Record<string, string>
 
   const message = {
     type: 'socketResponse',
-    payload: { responses: matched, sharedInfo },
+    payload: { responses, sharedInfo },
   } satisfies SocketResponseMessage;
 
   window.postMessage(message, '*');
