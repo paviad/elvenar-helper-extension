@@ -119,8 +119,12 @@ const withoutRepeatedResponses = (body: unknown): unknown =>
 
 /**
  * Logged in the page, where a frame is still a frame — the relay on the other side counts
- * responses, so it cannot tell one frame arriving repeatedly from one arriving once. Above the
- * filter, so the server repeating itself stays visible after the repeats stop being acted on.
+ * responses, so it cannot tell one frame arriving repeatedly from one arriving once.
+ *
+ * Above the filter deliberately, and kept rather than removed once it had answered that: if a
+ * wonder's total goes stale again and no response is logged on the other side, this is what
+ * separates a frame that never arrived from one the filter mistook for a repeat. Those look
+ * identical from the far end and want opposite fixes.
  */
 const logFrame = (body: unknown, headers?: Record<string, string>) => {
   const matched = matchedSocketResponses(body);
