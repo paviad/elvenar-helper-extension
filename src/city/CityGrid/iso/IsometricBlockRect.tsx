@@ -139,9 +139,9 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
         </>
       )}
 
-      {isHovered && (
-        <path d={pathData} fill='#fff' fillOpacity={0.2} stroke='#fff' strokeWidth={2.5} pointerEvents='none' />
-      )}
+      {/* The wash sits here, under this block's own label; the outline is drawn once the
+          whole grid is down, by IsoHoverOutline. */}
+      {isHovered && <path d={pathData} fill='#fff' fillOpacity={0.2} pointerEvents='none' />}
 
       {dragging && <path d={pathData} fill='none' stroke='orange' strokeWidth={2} pointerEvents='none' />}
 

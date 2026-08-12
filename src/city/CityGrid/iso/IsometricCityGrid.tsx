@@ -6,6 +6,7 @@ import { commitDrop } from '../commitDrop';
 import { usePanZoom } from '../usePanZoom';
 import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown';
 import { handleIsoMouseMove } from './handleIsoMouseMove';
+import { IsoHoverOutline } from './IsoHoverOutline';
 import { IsometricBlockRect } from './IsometricBlockRect';
 import { createIsoProjection } from './isoProjection';
 
@@ -252,6 +253,8 @@ export function IsometricCityGrid() {
         </g>
 
         {blockShapes}
+
+        <IsoHoverOutline zoom={zoom} />
 
         {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
         {replacedArea && (

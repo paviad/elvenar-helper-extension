@@ -145,6 +145,8 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
           />
         </>
       )}
+      {/* The wash sits here, under this block's own label; the outline is drawn once the
+          whole grid is down, by HoverOutline. */}
       {isHovered && (
         <rect
           x={block.x * sGridSize}
@@ -153,8 +155,6 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
           height={block.length * sGridSize}
           fill='#fff'
           fillOpacity={0.2}
-          stroke='#fff'
-          strokeWidth={2.5}
           pointerEvents='none'
         />
       )}

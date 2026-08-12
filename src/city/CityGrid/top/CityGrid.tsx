@@ -9,6 +9,7 @@ import { usePanZoom } from '../usePanZoom';
 import { BlockRect } from './BlockRect';
 import { handleMouseDown } from './handleMouseDown';
 import { handleMouseMove } from './handleMouseMove';
+import { HoverOutline } from './HoverOutline';
 
 const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -293,6 +294,8 @@ export function CityGrid() {
           ))}
 
           {blockRects}
+
+          <HoverOutline zoom={zoom} />
 
           {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
           {replacedArea && (
