@@ -22,13 +22,22 @@ import { getBuildingFinder } from './buildingFinder';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { CityBlock } from './CityBlock';
 import { useCity } from './CityContext';
+import { isOverlapping } from './CityGrid/isOverlapping';
+import { blockAtLevel, isLevelKey, stepLevelAndStage } from './CityGrid/levelChange';
 import { resetMovedInPlace, saveBack } from './generateCity';
-import { getChapterFromEntity, getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
+import { getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
+import { getHoveredBlockId, setHoveredBlockId } from './hoveredBlockStore';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
 
 interface ShowLevelDialogData {
   open: boolean;
   index: number;
+}
+
+/** Whether the keyboard is feeding a text field, where '+' and '-' are just characters. */
+function isTypingTarget(element: Element | null): boolean {
+  if (!(element instanceof HTMLElement)) return false;
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) || element.isContentEditable;
 }
 
 export const useCityGridState = () => {
@@ -44,6 +53,7 @@ export const useCityGridState = () => {
     setSearchTerm,
     setMenu,
     dragIndex,
+    clearRedoStack,
   } = city;
 
   // Global Store State
@@ -90,7 +100,7 @@ export const useCityGridState = () => {
 
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Level up/down
-      if (['Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract', 'BracketRight', 'Slash'].includes(event.code)) {
+      if (isLevelKey(event.code)) {
         event.preventDefault();
         const block = blocks[dragIndex];
         if (!block) return;
@@ -100,23 +110,8 @@ export const useCityGridState = () => {
 
         const maxStage = finder.getBuilding(block.entity.cityentity_id, block.entity.level || 1)?.maxStage || 0;
 
-        let newStage = block.entity.stage;
-        let newLevel = block.entity.level || 1;
-        if (event.shiftKey) {
-          if (newStage !== undefined) {
-            if (['Equal', 'NumpadAdd', 'BracketRight'].includes(event.code)) {
-              if (newStage < maxStage) newStage++;
-            } else if (['Minus', 'NumpadSubtract', 'Slash'].includes(event.code)) {
-              if (newStage > 1) newStage--;
-            }
-          }
-        } else {
-          if (['Equal', 'NumpadAdd', 'BracketRight'].includes(event.code)) {
-            newLevel++;
-          } else if (['Minus', 'NumpadSubtract', 'Slash'].includes(event.code)) {
-            if (newLevel > 1) newLevel--;
-          }
-        }
+        const current = { level: block.entity.level || 1, stage: block.entity.stage };
+        const { level: newLevel, stage: newStage } = stepLevelAndStage(current, event.code, event.shiftKey, maxStage);
 
         const originalPos = city.originalPos;
         if (originalPos) {
@@ -124,23 +119,9 @@ export const useCityGridState = () => {
           if (newLevel !== block.entity.level || newStage !== block.entity.stage) {
             const newBuilding = finder.getBuilding(block.entity.cityentity_id, newLevel);
             if (!newBuilding) return;
-            const newChapter = getChapterFromEntity(undefined, newBuilding.id, block.type, newLevel);
 
             const newBlock = {
-              ...block,
-              gameId: block.gameId.replace(/_\d+$/, `_${newLevel}`),
-              entity: {
-                ...block.entity,
-                cityentity_id: block.entity.cityentity_id.replace(/_\d+$/, `_${newLevel}`),
-                level: newLevel,
-                stage: newStage,
-              },
-              width: newBuilding.width,
-              length: newBuilding.length,
-              level: newLevel,
-              stage: newStage,
-              chapter: newChapter,
-              label: `${newLevel}`,
+              ...blockAtLevel(block, { level: newLevel, stage: newStage }, newBuilding),
               id: generateUniqueId(),
             } satisfies CityBlock;
 
@@ -166,29 +147,14 @@ export const useCityGridState = () => {
             setDragIndex(newBlock.id);
           }
         } else {
-          // Subsequent level change
+          // Subsequent level change. Rebuilt from prev rather than from the block read
+          // above: the drag has moved it since this listener was registered.
           const newBuilding = finder.getBuilding(block.entity.cityentity_id, newLevel);
           if (!newBuilding) return;
-          const newChapter = getChapterFromEntity(undefined, newBuilding.id, block.type, newLevel);
 
           setBlocks((prev) => ({
             ...prev,
-            [dragIndex]: {
-              ...prev[dragIndex],
-              gameId: block.gameId.replace(/_\d+$/, `_${newLevel}`),
-              entity: {
-                ...prev[dragIndex].entity,
-                cityentity_id: prev[dragIndex].entity.cityentity_id.replace(/_\d+$/, `_${newLevel}`),
-                level: newLevel,
-                stage: newStage,
-              },
-              level: newLevel,
-              stage: newStage,
-              chapter: newChapter,
-              width: newBuilding.width,
-              length: newBuilding.length,
-              label: `${newLevel}`,
-            },
+            [dragIndex]: blockAtLevel(prev[dragIndex], { level: newLevel, stage: newStage }, newBuilding),
           }));
         }
       }
@@ -223,6 +189,90 @@ export const useCityGridState = () => {
     window.addEventListener('keydown', listener);
     return () => window.removeEventListener('keydown', listener);
   }, [dragIndex, blocks, setBlocks, setDragIndex, setDragOffset, setMoveLog, city.originalPos, setOriginalPos]);
+
+  // Keyboard Handler for the building under the cursor (Level Up/Down). The same keys
+  // as above, aimed at whatever the mouse is over, so a level can be changed without
+  // picking the building up first. While one is being carried the handler above owns
+  // them, which is why this one stands down for the length of a drag.
+  React.useEffect(() => {
+    if (dragIndex !== null) return;
+
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      if (!isLevelKey(event.code) || event.ctrlKey || event.metaKey || event.altKey) return;
+      // A '-' typed into the search box is part of a search term, not a level change.
+      if (isTypingTarget(document.activeElement)) return;
+
+      const hoveredId = getHoveredBlockId();
+      if (hoveredId === null) return;
+      const block = blocks[hoveredId];
+      if (!block) return;
+
+      event.preventDefault();
+
+      const finder = getBuildingFinder();
+      await finder.ensureInitialized();
+
+      const maxStage = finder.getBuilding(block.entity.cityentity_id, block.entity.level || 1)?.maxStage || 0;
+      const current = { level: block.entity.level || 1, stage: block.entity.stage };
+      const target = stepLevelAndStage(current, event.code, event.shiftKey, maxStage);
+      if (target.level === current.level && target.stage === current.stage) return;
+
+      // A level the catalog does not hold is the top of what this building goes to.
+      const newBuilding = finder.getBuilding(block.entity.cityentity_id, target.level);
+      if (!newBuilding) return;
+
+      const newBlock = blockAtLevel(block, target, newBuilding);
+
+      if (!isOverlapping(newBlock, hoveredId, newBlock.x, newBlock.y, blocks)) {
+        setBlocks((prev) => ({ ...prev, [hoveredId]: newBlock }));
+        setMoveLog((prev) => [
+          ...prev,
+          {
+            id: block.id,
+            name: block.name,
+            from: { x: block.x, y: block.y },
+            to: { x: block.x, y: block.y },
+            movedChanged: false,
+            type: 'level',
+            previousBlock: block,
+            nextBlock: newBlock,
+          } satisfies MoveLogInterface,
+        ]);
+        clearRedoStack();
+        return;
+      }
+
+      // The new footprint covers a neighbour, so the building is handed over to be
+      // placed rather than left overlapping - the same ending as changing a level from
+      // the context menu. The original is logged as deleted, which is what undo restores.
+      const dragged = { ...newBlock, id: generateUniqueId() } satisfies CityBlock;
+      setBlocks((prev) => {
+        const { [hoveredId]: _, ...updated } = prev;
+        updated[dragged.id] = dragged;
+        return updated;
+      });
+      setMoveLog((prev) => [
+        ...prev,
+        {
+          id: block.id,
+          name: block.name,
+          from: { x: block.x, y: block.y },
+          to: { x: block.x, y: block.y },
+          movedChanged: false,
+          type: 'delete',
+          deletedBlock: block,
+        } satisfies MoveLogInterface,
+      ]);
+      setHoveredBlockId(null);
+      setDragIndex(dragged.id);
+      setDragOffset({ x: 10, y: 10 });
+      setOriginalPos(null);
+    };
+
+    const listener = (event: KeyboardEvent) => void handleKeyDown(event);
+    window.addEventListener('keydown', listener);
+    return () => window.removeEventListener('keydown', listener);
+  }, [dragIndex, blocks, setBlocks, setDragIndex, setDragOffset, setMoveLog, setOriginalPos, clearRedoStack]);
 
   // Keyboard Shortcuts (Ctrl+S, Alt+B). saveCity closes over the current blocks, so
   // it is reached through a ref: depending on blocks directly detached and reattached

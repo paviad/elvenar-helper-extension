@@ -424,6 +424,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
         const { [g.id]: _, ...rest } = prev;
         return rest;
       });
+    } else if (last.type === 'level' && last.previousBlock) {
+      const g = last.previousBlock;
+      setBlocks((prev) => ({ ...prev, [g.id]: g }));
     } else {
       setBlocks((prev) => ({
         ...prev,
@@ -452,6 +455,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       setUnlockedAreas((prev) => [...prev, a]);
     } else if (last.type === 'duplicate' && last.duplicatedBlock) {
       const g = last.duplicatedBlock;
+      setBlocks((prev) => ({ ...prev, [g.id]: g }));
+    } else if (last.type === 'level' && last.nextBlock) {
+      const g = last.nextBlock;
       setBlocks((prev) => ({ ...prev, [g.id]: g }));
     } else {
       setBlocks((prev) => ({

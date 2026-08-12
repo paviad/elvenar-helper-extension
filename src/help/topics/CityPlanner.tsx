@@ -37,6 +37,12 @@ export const CityPlanner = () => (
           secondary='Click and drag anywhere on the grid to pan the view. Use the mouse wheel to zoom in and out.'
         />
       </ListItem>
+      <ListItem>
+        <ListItemText
+          primary='Hover'
+          secondary='The building under the mouse is outlined in white. That is the one the +/- keys act on when you are not holding anything.'
+        />
+      </ListItem>
     </List>
 
     <Box
@@ -130,14 +136,20 @@ export const CityPlanner = () => (
 
     {/* Hotkeys */}
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <KeyboardIcon color='primary' fontSize='small' /> Hotkeys (While Dragging)
+      <KeyboardIcon color='primary' fontSize='small' /> Hotkeys (While Dragging or Hovering)
     </Typography>
     <List dense disablePadding>
       <ListItem>
-        <ListItemText primary='Plus (+)' secondary='Increase the level or chapter of the building you are holding.' />
+        <ListItemText
+          primary='Plus (+)'
+          secondary='Increase the level or chapter of the building you are holding, or of the one the mouse is over.'
+        />
       </ListItem>
       <ListItem>
-        <ListItemText primary='Minus (-)' secondary='Decrease the level or chapter of the building you are holding.' />
+        <ListItemText
+          primary='Minus (-)'
+          secondary='Decrease the level or chapter of the building you are holding, or of the one the mouse is over.'
+        />
       </ListItem>
       <ListItem>
         <ListItemText primary='Shift + Plus (+)' secondary='Increase the stage of an evolving building.' />

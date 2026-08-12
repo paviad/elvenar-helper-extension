@@ -67,6 +67,13 @@ export const RenderMoveLog = () => {
               <span style={{ color: '#0a6', fontWeight: 500 }}>
                 Duplicated <span style={{ fontWeight: 400 }}>{log.name}</span> at ({log.from.x}, {log.from.y})
               </span>
+            ) : log.type === 'level' && log.previousBlock && log.nextBlock ? (
+              <span style={{ color: '#a60', fontWeight: 500 }}>
+                <span style={{ fontWeight: 400 }}>{log.name}</span>:{' '}
+                {log.previousBlock.stage !== log.nextBlock.stage
+                  ? `stage ${log.previousBlock.stage} → ${log.nextBlock.stage}`
+                  : `level ${log.previousBlock.level} → ${log.nextBlock.level}`}
+              </span>
             ) : log.type === 'unlock' ? (
               <span style={{ color: '#06b', fontWeight: 500 }}>
                 Unlocked area at ({log.from.x}, {log.from.y})
