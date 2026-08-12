@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router';
 import MyConfirmDialog from '../../widgets/MyConfirmDialog';
 import { useCity } from '../CityContext';
 import { CityContextMenu } from '../dialogs/CityContextMenu';
+import { setHoverForDrag } from '../hoveredBlockStore';
 import { LevelDialog } from '../dialogs/LevelDialog';
 import { NewBuildingSelector } from '../NewBuildingSelector';
 import { useCityGridState } from '../useCityGridState';
@@ -52,6 +53,13 @@ export const RenderCityGrid = () => {
     }
     void Do();
   }, [searchParams, setSearchParams]);
+
+  // The hover names whatever is being carried and holds there for the length of the drag;
+  // see the note in the store. It ends up on the building where it was dropped, which is
+  // where the cursor is. Kept here rather than in the views, so it covers both of them and
+  // survives a switch between them mid-drag.
+  const { dragIndex } = city;
+  React.useEffect(() => setHoverForDrag(dragIndex), [dragIndex]);
 
   // Mouse Subscription Effects (UI specific)
   React.useEffect(() => {
