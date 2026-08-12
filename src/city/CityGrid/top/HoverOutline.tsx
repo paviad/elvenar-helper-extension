@@ -10,9 +10,11 @@ import { useHoveredBlockStore } from '../../hoveredBlockStore';
  */
 export const HoverOutline: React.FC<{ zoom: number }> = ({ zoom }) => {
   const hoveredId = useHoveredBlockStore((state) => state.hoveredId);
-  const { blocks } = useCity();
+  const { blocks, dragIndex } = useCity();
 
-  if (hoveredId === null) return null;
+  // A building picked up is still the one under the cursor - it is carried there - and
+  // the ring it wears while held says so already. Two borders around it said nothing more.
+  if (hoveredId === null || dragIndex !== null) return null;
 
   const block = blocks[hoveredId];
   if (!block) return null;

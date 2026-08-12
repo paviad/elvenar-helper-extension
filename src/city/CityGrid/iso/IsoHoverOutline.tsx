@@ -7,9 +7,10 @@ import { createIsoProjection } from './isoProjection';
 /** The isometric counterpart of HoverOutline, drawn after every block for the same reason. */
 export const IsoHoverOutline: React.FC<{ zoom: number }> = ({ zoom }) => {
   const hoveredId = useHoveredBlockStore((state) => state.hoveredId);
-  const { blocks } = useCity();
+  const { blocks, dragIndex } = useCity();
 
-  if (hoveredId === null) return null;
+  // See HoverOutline: nothing wears a hover ring while it is being carried.
+  if (hoveredId === null || dragIndex !== null) return null;
 
   const block = blocks[hoveredId];
   if (!block) return null;
