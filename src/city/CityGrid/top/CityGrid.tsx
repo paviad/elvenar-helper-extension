@@ -2,6 +2,7 @@ import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
 import { ExpansionSize, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
+import { setHoveredBlockId } from '../../hoveredBlockStore';
 import { commitDrop } from '../commitDrop';
 import { unlockExpansion } from '../unlockExpansion';
 import { usePanZoom } from '../usePanZoom';
@@ -29,6 +30,11 @@ export function CityGrid() {
 
   // --- Initial Centering State ---
   const hasCentered = React.useRef(false);
+
+  // Leaving the view takes every block with it, and a block cannot report a hover it
+  // never got the chance to lose. Held on, it would aim the level keys at a building
+  // nothing is drawing.
+  React.useEffect(() => () => setHoveredBlockId(null), []);
 
   // --- Unlock Area mode ---
   const [hoveredLockedCell, setHoveredLockedCell] = React.useState<{ cx: number; cy: number } | null>(null);

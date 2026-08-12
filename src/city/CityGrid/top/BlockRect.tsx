@@ -3,6 +3,7 @@ import { Tooltip } from '@mui/material';
 import { getBuildingFinder } from '../../buildingFinder';
 import { CityBlock } from '../../CityBlock';
 import { BlockOpacity, GridSize } from '../../gridConstants';
+import { clearHoveredBlockId, setHoveredBlockId, useHoveredBlockStore } from '../../hoveredBlockStore';
 import { getBlockDecoration } from '../blockDecoration';
 import { BuildingTooltip } from '../BuildingTooltip';
 import { BlockLabel } from './BlockLabel';
@@ -52,8 +53,22 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
   const dragging = blockKey === 'dragged';
   const cursor = dragging ? 'grab' : 'grabbing';
 
+  // Read through a selector rather than a prop, so a hover only re-renders the two
+  // blocks whose own state flips instead of the whole grid.
+  const isHovered = useHoveredBlockStore((state) => state.hoveredId === blockKey);
+
   const handleClick = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
     if (!dragging) onPickUp(e, Number(blockKey));
+  };
+
+  // The copy carried under the cursor during a drag never takes the hover: the keys that
+  // act on a hovered building are the same ones that act on the one being held.
+  const handleMouseEnter = () => {
+    if (!dragging) setHoveredBlockId(Number(blockKey));
+  };
+
+  const handleMouseLeave = () => {
+    if (!dragging) clearHoveredBlockId(Number(blockKey));
   };
 
   const handleContextMenu = (e: React.MouseEvent<SVGRectElement, MouseEvent>) => {
@@ -103,6 +118,8 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
             style={{ cursor }}
             onClick={handleClick}
             onContextMenu={handleContextMenu}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           />
         </Tooltip>
       )}
@@ -127,6 +144,19 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
             pointerEvents='none'
           />
         </>
+      )}
+      {isHovered && (
+        <rect
+          x={block.x * sGridSize}
+          y={block.y * sGridSize}
+          width={block.width * sGridSize}
+          height={block.length * sGridSize}
+          fill='#fff'
+          fillOpacity={0.2}
+          stroke='#fff'
+          strokeWidth={2.5}
+          pointerEvents='none'
+        />
       )}
       {dragging && (
         <rect

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
+import { setHoveredBlockId } from '../../hoveredBlockStore';
 import { commitDrop } from '../commitDrop';
 import { usePanZoom } from '../usePanZoom';
 import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown';
@@ -38,6 +39,9 @@ export function IsometricCityGrid() {
     replacedArea,
     svgRef,
   } = city;
+
+  // See the note in CityGrid: a hover cannot outlive the blocks that report it.
+  React.useEffect(() => () => setHoveredBlockId(null), []);
 
   // --- Isometric Configuration ---
   // The grid constants are stable, so a projection is only a function of zoom. Memoised on

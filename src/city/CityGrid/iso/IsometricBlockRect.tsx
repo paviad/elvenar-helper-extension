@@ -3,6 +3,7 @@ import { Tooltip } from '@mui/material';
 import { getBuildingFinder } from '../../buildingFinder';
 import { CityBlock } from '../../CityBlock';
 import { BlockOpacity, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
+import { clearHoveredBlockId, setHoveredBlockId, useHoveredBlockStore } from '../../hoveredBlockStore';
 import { getBlockDecoration } from '../blockDecoration';
 import { BuildingTooltip } from '../BuildingTooltip';
 import { IsoBlockLabel } from './IsoBlockLabel';
@@ -49,8 +50,20 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
   const dragging = typeof blockKey === 'string';
   const cursor = dragging ? 'grab' : 'grabbing';
 
+  // Read through a selector for the same reason as its top-down counterpart, and the
+  // copy being carried is never a hover target either. See the notes in BlockRect.
+  const isHovered = useHoveredBlockStore((state) => state.hoveredId === blockKey);
+
   const handleClick = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
     if (!dragging) onPickUp(e, Number(blockKey));
+  };
+
+  const handleMouseEnter = () => {
+    if (!dragging) setHoveredBlockId(Number(blockKey));
+  };
+
+  const handleMouseLeave = () => {
+    if (!dragging) clearHoveredBlockId(Number(blockKey));
   };
 
   const handleContextMenu = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
@@ -82,6 +95,8 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
       style={{ cursor }}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     />
   );
 
@@ -122,6 +137,10 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
           <path d={pathData} fill={`url(#${patternId})`} pointerEvents='none' />
           <path d={pathData} fill='none' stroke='#ff0000' strokeWidth={3} pointerEvents='none' />
         </>
+      )}
+
+      {isHovered && (
+        <path d={pathData} fill='#fff' fillOpacity={0.2} stroke='#fff' strokeWidth={2.5} pointerEvents='none' />
       )}
 
       {dragging && <path d={pathData} fill='none' stroke='orange' strokeWidth={2} pointerEvents='none' />}
