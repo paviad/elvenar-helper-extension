@@ -41,6 +41,7 @@ import {
 } from './gild';
 import { computeSwapTally } from './kpSwaps/computeSwapTally';
 import { getOwnedWonders } from './kpSwaps/getOwnedWonders';
+import { getUpgradingWonders } from './kpSwaps/getUpgradingWonders';
 import { groupSwapsByPayee, PayeeGroup } from './kpSwaps/groupSwapsByPayee';
 import { roomLeftFor } from './kpSwaps/roomLeftFor';
 import { getAccountId, getOverlayStore } from './overlayStore';
@@ -179,6 +180,10 @@ export const SwapsView = () => {
   const ownedWonders = useMemo(() => getOwnedWonders(account?.cityEntities, wonders ?? []), [account, wonders]);
 
   const kpByBaseName = useMemo(() => new Map((account?.wonderKp ?? []).map((kp) => [kp.baseName, kp])), [account]);
+
+  // A wonder mid-upgrade already reports the next level's requirement, so it would otherwise
+  // read as a full round waiting to be asked for.
+  const upgrading = useMemo(() => getUpgradingWonders(account?.cityEntities), [account]);
 
   // The game's figure counts everything the wonder has not been given, including the requests
   // you have posted and are still waiting on, so those come off it. Derived on every render
@@ -328,19 +333,22 @@ export const SwapsView = () => {
           </Typography>
           {watchedWonders.map((watched) => {
             const room = roomFor(watched.baseName, watched.wonderName) ?? 0;
+            // Both mean "do not ask this one for anything", so both wear the warning colours.
+            const busy = upgrading.has(watched.baseName);
+            const closed = busy || room === 0;
             return (
               <Chip
                 key={watched.baseName}
                 size='small'
                 variant='outlined'
-                label={room === 0 ? `${watched.wonderName} · full` : `${watched.wonderName} · ${room} KP`}
+                label={`${watched.wonderName} · ${busy ? 'upgrading' : room === 0 ? 'full' : `${room} KP`}`}
                 onDelete={() => setWatchedWonders(watchedWonders.filter((w) => w.baseName !== watched.baseName))}
                 sx={{
                   height: 22,
                   fontWeight: 700,
-                  color: room === 0 ? '#8a6d00' : gild.bronze,
-                  borderColor: room === 0 ? '#f0e0a0' : gild.mid,
-                  bgcolor: room === 0 ? '#fff8e1' : 'rgba(255, 253, 246, 0.8)',
+                  color: closed ? '#8a6d00' : gild.bronze,
+                  borderColor: closed ? '#f0e0a0' : gild.mid,
+                  bgcolor: closed ? '#fff8e1' : 'rgba(255, 253, 246, 0.8)',
                 }}
               />
             );
@@ -454,11 +462,17 @@ export const SwapsView = () => {
                     <Typography sx={{ ...bodyType, fontSize: 13 }}>{wonder.name}</Typography>
                     {/* What the wonder can still take, so you can pick a thread it fits in
                         before you post rather than after. Silent when the game has not said
-                        — a wonder collecting runes takes no knowledge at all. */}
-                    {room !== undefined && (
-                      <Typography sx={{ ...timestampType, display: 'block' }}>
-                        {room === 0 ? 'no room left' : `needs ${room} KP`}
-                      </Typography>
+                        — a wonder collecting runes takes no knowledge at all. One building its
+                        new level says so instead: the figure alongside it belongs to the level
+                        going up, and reads as a whole round waiting to be asked for. */}
+                    {upgrading.has(wonder.baseName) ? (
+                      <Typography sx={{ ...timestampType, display: 'block' }}>upgrading</Typography>
+                    ) : (
+                      room !== undefined && (
+                        <Typography sx={{ ...timestampType, display: 'block' }}>
+                          {room === 0 ? 'no room left' : `needs ${room} KP`}
+                        </Typography>
+                      )
                     )}
                   </Box>
                   {justCopied ? (

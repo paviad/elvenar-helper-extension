@@ -31,6 +31,8 @@ export interface SetConnections {
 }
 
 export interface State {
+  /** The game's own name for the state: IdleVO, ProducingVO, UpgradingVO, and so on. */
+  __class__?: string;
   next_state_transition_in: number;
   current_product: CurrentProduct;
   resources: RequiredResourcesClass;
