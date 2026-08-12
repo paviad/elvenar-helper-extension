@@ -4,6 +4,7 @@ import { useCity } from '../../CityContext';
 import { ExpansionSize, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { setHoveredBlockId } from '../../hoveredBlockStore';
 import { commitDrop } from '../commitDrop';
+import { findCityOrigin, InitialFramingTiles } from '../findCityOrigin';
 import { unlockExpansion } from '../unlockExpansion';
 import { usePanZoom } from '../usePanZoom';
 import { BlockRect } from './BlockRect';
@@ -16,8 +17,18 @@ const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 export function CityGrid() {
   const city = useCity();
   const helper = useHelper();
-  const { dragIndex, blocks, highlightedIds, chapter, allTypes, techSprite, unlockAreaMode, unlockedAreas, svgRef } =
-    city;
+  const {
+    dragIndex,
+    blocks,
+    highlightedIds,
+    chapter,
+    allTypes,
+    techSprite,
+    unlockAreaMode,
+    unlockedAreas,
+    svgRef,
+    accountId,
+  } = city;
 
   const { containerRef, zoom, zoomTo, panHandlers } = usePanZoom({
     zoomLevels: ZOOM_LEVELS,
@@ -29,8 +40,9 @@ export function CityGrid() {
     idleCursor: () => (dragIndex !== null ? 'grabbing' : 'default'),
   });
 
-  // --- Initial Centering State ---
-  const hasCentered = React.useRef(false);
+  // --- Initial Framing State ---
+  // The account the view has already been framed for, so each city gets exactly one.
+  const framedFor = React.useRef<string | null>(null);
 
   // Leaving the view takes every block with it, and a block cannot report a hover it
   // never got the chance to lose. Held on, it would aim the level keys at a building
@@ -106,17 +118,23 @@ export function CityGrid() {
   const paddingPx = PaddingTiles * gridSizePx;
   const totalDimension = gridDimension + paddingPx * 2;
 
-  // Center the view on mount (only once)
-  React.useEffect(() => {
-    if (!hasCentered.current && containerRef.current && totalDimension > 0) {
-      const clientW = containerRef.current.clientWidth;
-      if (totalDimension > clientW) {
-        containerRef.current.scrollLeft = (totalDimension - clientW) / 2;
-        containerRef.current.scrollTop = paddingPx - 10 * gridSizePx; // Adjust to show some of the top area
-      }
-      hasCentered.current = true;
-    }
-  }, [totalDimension, gridSizePx, paddingPx, containerRef]);
+  // Open a city on its top-left corner, a few tiles in from the corner of the viewport,
+  // rather than on the middle of a mostly empty grid. Keyed on the account rather than
+  // raised on mount: the blocks arrive well after the grid does, and switching city has
+  // to re-frame on the layout that replaces them.
+  React.useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || !accountId || framedFor.current === accountId) return;
+
+    // No blocks at all is a city still loading, and worth waiting for. Blocks that are
+    // all parked outside the grid leave nothing to aim at, so aim at the grid's own corner.
+    if (Object.keys(blocks).length === 0) return;
+    const origin = findCityOrigin(blocks) ?? { x: 0, y: 0 };
+
+    container.scrollLeft = paddingPx + (origin.x - InitialFramingTiles) * gridSizePx;
+    container.scrollTop = paddingPx + (origin.y - InitialFramingTiles) * gridSizePx;
+    framedFor.current = accountId;
+  }, [blocks, accountId, gridSizePx, paddingPx, containerRef]);
 
   // Bring a freshly marked replacement footprint into the middle of the viewport, at
   // 1:1 zoom. Assigning an out-of-range scroll offset is clamped by the browser, so a
@@ -138,9 +156,9 @@ export function CityGrid() {
     container.scrollLeft = centerX - container.clientWidth / 2;
     container.scrollTop = centerY - container.clientHeight / 2;
     centredFor.current = replacedArea;
-    // Suppress the one-off mount centring, which would otherwise fight this.
-    hasCentered.current = true;
-  }, [replacedArea, zoom, zoomTo, gridSizePx, paddingPx, containerRef]);
+    // Suppress the one-off framing, which would otherwise fight this.
+    framedFor.current = accountId ?? null;
+  }, [replacedArea, zoom, zoomTo, gridSizePx, paddingPx, containerRef, accountId]);
 
   // Panning is handled by the hook; the grid also tracks the cursor for drag/drop.
   const onMouseMove = (e: React.MouseEvent) => {
