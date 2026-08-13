@@ -44,6 +44,10 @@ export interface BattleUnitTypesMessage extends NonSpecificMessageBase {
   type: 'BATTLE_UNIT_TYPES';
 }
 
+export interface ResearchTechnologiesMessage extends NonSpecificMessageBase {
+  type: 'RESEARCH_TECHNOLOGIES';
+}
+
 export type NonSpecificMessage =
   | BuildingsMessage
   | ItemsMessage
@@ -52,4 +56,5 @@ export type NonSpecificMessage =
   | PremiumBuildingHintsMessage
   | GoodsNamesMessage
   | EvolvingBuildingsMessage
-  | BattleUnitTypesMessage;
+  | BattleUnitTypesMessage
+  | ResearchTechnologiesMessage;

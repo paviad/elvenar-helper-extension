@@ -1,3 +1,5 @@
+import { ExportedTechnology } from '../elvenar/buildChapterResearchGraph';
+import { ChapterResearch } from '../elvenar/getChapterResearch';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { InventoryItem } from '../model/inventoryItem';
 import { UnlockedArea } from '../model/unlockedArea';
@@ -35,6 +37,15 @@ export interface CityExport {
   progress?: {
     wisdom_of_life_earned?: number;
     wisdoms_produced?: number;
+  };
+  /**
+   * The chapter's research as a graph: every technology in it with its costs, its rewards, the
+   * ids it joins to and whether the city has researched it, can research it now, or cannot yet.
+   * Absent until the game has sent the tree and the city's progress through it.
+   */
+  research?: {
+    chapter: number;
+    technologies: ExportedTechnology[];
   };
 }
 
@@ -202,6 +213,7 @@ export function buildCityExport({
   inventoryItems,
   enchantmentsEnd,
   helpEnd,
+  research,
   now,
 }: {
   blocks: CityBlock[];
@@ -212,6 +224,7 @@ export function buildCityExport({
   inventoryItems: InventoryItem[];
   enchantmentsEnd: Record<string, number>;
   helpEnd: Record<string, number>;
+  research?: ChapterResearch;
   now: number;
 }): CityExport {
   return {
@@ -225,5 +238,6 @@ export function buildCityExport({
     resources: buildResources(resources),
     inventory: buildInventory(resources, inventoryItems),
     progress: buildProgress(resources),
+    research,
   };
 }

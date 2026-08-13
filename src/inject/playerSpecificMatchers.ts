@@ -193,4 +193,10 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'phaseUpdated',
     },
   },
+  {
+    responseSelector: {
+      requestClass: 'ResearchService',
+      requestMethod: 'startup',
+    },
+  },
 ];

@@ -24,6 +24,7 @@ import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
 import { processQuestUpdates } from '../elvenar/processQuestUpdates';
 import { processReplyMessage } from '../elvenar/processReplyMessage';
+import { processResearchStatus } from '../elvenar/processResearchStatus';
 import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
 import { processSpireDiplomacySubmit } from '../elvenar/processSpireDiplomacySubmit';
 import { processSpireEncounterStart } from '../elvenar/processSpireEncounterStart';
@@ -128,6 +129,7 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
     'R:EffectsService/update': processActiveEffectsUpdate,
     'R:AncientWonderService/phaseUpdated': processAncientWonderPhaseUpdate,
+    'R:ResearchService/startup': processResearchStatus,
 
     'R:QuestMilestoneService/updateQuestMilestone': processQuestMilestoneUpdate,
 

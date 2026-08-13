@@ -18,6 +18,7 @@ import { matchTechTreeUrl } from './matchTechTreeUrl';
 import { nonSpecificRequestHandler } from './nonSpecificRequestHandler';
 import { openOrRestoreTab } from './openOrRestoreTab';
 import { playerSpecificRequestHandler } from './playerSpecificRequestHandler';
+import { researchResourcesReport } from './researchResourcesReport';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {
@@ -26,6 +27,15 @@ if (typeof chrome.action === 'undefined') {
 }
 
 console.log('Elvenar Extension: Service Worker Loaded');
+
+/**
+ * Diagnostics to call by hand from the service worker's own console, which is the one behind
+ * "Inspect views: service worker" on chrome://extensions. They are on the global rather than
+ * exported so that typing `ElvenAssist.` in that console lists what there is to run.
+ */
+(globalThis as unknown as { ElvenAssist: Record<string, unknown> }).ElvenAssist = {
+  researchResources: researchResourcesReport,
+};
 
 /**
  * The accounts read back from storage, started as early as possible and awaited by any handler

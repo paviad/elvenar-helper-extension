@@ -31,6 +31,25 @@ describe('buildCityExport', () => {
     expect(result.exported_at).toBe(Math.floor(NOW / 1000));
   });
 
+  it('carries the chapter research graph, and leaves the block out without one', () => {
+    const research = {
+      chapter: 25,
+      technologies: [
+        {
+          id: 'humans_ch25_barracks',
+          state: 'available' as const,
+          kp_cost: 120,
+          kp_missing: 120,
+          costs: { finity_gear: 2000 },
+          parents: ['humans_ch25_mainhall_1'],
+        },
+      ],
+    };
+
+    expect(exportWith({ research }).research).toEqual(research);
+    expect(exportWith().research).toBeUndefined();
+  });
+
   it('names the chapter the city is in', () => {
     expect(exportWith({ chapter: 25 }).user_data.chapter).toBe(25);
     expect(exportWith({ chapter: 24 }).user_data.chapter).toBe(24);

@@ -4,8 +4,8 @@ import { useSearchParams } from 'react-router';
 import MyConfirmDialog from '../../widgets/MyConfirmDialog';
 import { useCity } from '../CityContext';
 import { CityContextMenu } from '../dialogs/CityContextMenu';
-import { setHoverForDrag } from '../hoveredBlockStore';
 import { LevelDialog } from '../dialogs/LevelDialog';
+import { setHoverForDrag } from '../hoveredBlockStore';
 import { NewBuildingSelector } from '../NewBuildingSelector';
 import { useCityGridState } from '../useCityGridState';
 import { CityToolbar } from './CityToolbar';
@@ -106,7 +106,7 @@ export const RenderCityGrid = () => {
         onSellStreets={state.sellStreets}
         onBuild={() => state.setShowBuildDialog(true)}
         onImport={state.importCity}
-        onExport={state.exportCityAsJson}
+        onExport={() => void state.exportCityAsJson()}
         onSaveAs={state.saveCityAs}
         onDelete={state.deleteCity}
         onSave={state.saveCity}

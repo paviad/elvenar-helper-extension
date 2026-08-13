@@ -62,4 +62,11 @@ export const nonSpecificMatchers: NonSpecificMatcherSpecification[] = [
       // https://oxen.innogamescdn.com/frontend//static/en_DK/xml.balancing.battle.BattleUnitTypes_ecaccbbf02dccce070097adfb0c1dbf1.json
       /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.battle\.BattleUnitTypes_[a-f0-9]{32}\.json$/,
   },
+  {
+    id: 'researchTechnologies',
+    messageType: 'RESEARCH_TECHNOLOGIES',
+    regex:
+      // https://oxen.innogamescdn.com/frontend//static/en_DK/xml.balancing.research.ResearchTechnologiesHumans_9fa701953369071f3962fd3ffe897522.json
+      /^https:\/\/ox.*?\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.research\.ResearchTechnologies(?:Humans|Elves)_[a-f0-9]{32}\.json$/,
+  },
 ];

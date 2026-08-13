@@ -305,5 +305,5 @@ export const saveCityInPlace = async (
 
 export const deleteCityById = async (accountId: string) => {
   delete accounts[accountId];
-  await removeFromStorage([`accounts_${accountId}`, `accounts_last_saved_${accountId}`]);
+  await removeFromStorage([`accounts_${accountId}`, `accounts_last_saved_${accountId}`, `research_${accountId}`]);
 };

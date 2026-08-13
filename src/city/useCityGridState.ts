@@ -9,6 +9,7 @@ import {
   saveNewCityAs,
 } from '../elvenar/AccountManager';
 import { getBuildings } from '../elvenar/getBuildings';
+import { getChapterResearch } from '../elvenar/getChapterResearch';
 import { getExpirations } from '../elvenar/getExpirations';
 import { useHelper } from '../helper/HelperContext';
 import { generateInventory } from '../inventory/generateInventory';
@@ -493,10 +494,12 @@ export const useCityGridState = () => {
 
   // --- Dialog Triggers & Actions ---
 
-  function exportCityAsJson() {
+  async function exportCityAsJson() {
     if (!city.accountId) return;
     const accountData = getAccountById(city.accountId);
     if (!accountData?.cityQuery) return;
+
+    const research = await getChapterResearch(city.accountId);
 
     const exportData = buildCityExport({
       blocks: Object.values(city.blocks),
@@ -507,6 +510,7 @@ export const useCityGridState = () => {
       inventoryItems: accountData.inventoryItems || [],
       enchantmentsEnd: accountData.cityQuery.enchantmentsEnd || {},
       helpEnd: toHelpEnd(accountData.ensorcelledEndowmentData?.neighborlyHelpEffects),
+      research,
       now: Date.now(),
     });
 

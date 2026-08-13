@@ -6,6 +6,7 @@ import { processEvolvingBuildings } from '../elvenar/processEvolvingBuildings';
 import { processGoodsNames } from '../elvenar/processGoodsNames';
 import { processItems } from '../elvenar/processItems';
 import { processPremiumBuildingHints } from '../elvenar/processPremiumBuildingHints';
+import { processResearchTechnologies } from '../elvenar/processResearchTechnologies';
 import { processTomes } from '../elvenar/processTomes';
 
 export const nonSpecificRequestHandler = async (msg: InterceptedNonSpecificRequest): Promise<void> => {
@@ -36,6 +37,9 @@ export const nonSpecificRequestHandler = async (msg: InterceptedNonSpecificReque
       break;
     case 'BATTLE_UNIT_TYPES':
       await processBattleUnitTypes(msg.payload.payload.decodedResponse);
+      break;
+    case 'RESEARCH_TECHNOLOGIES':
+      await processResearchTechnologies(msg.payload.payload.decodedResponse);
       break;
     default:
       msg.payload satisfies never;
