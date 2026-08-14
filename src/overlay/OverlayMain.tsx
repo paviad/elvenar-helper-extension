@@ -266,13 +266,15 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   useEffect(() => {
     const listenerIds: string[] = [];
 
-    listenerIds.push(
-      setupGenericResponseListener<void>('R:AncientWonderService/phaseUpdated', () => {
-        // The service worker has already folded the new figures into the stored account;
-        // this only tells the swap tab to read them again.
-        useOverlayStore.getState().triggerWonderKpUpdate();
-      }),
-    );
+    for (const type of ['R:AncientWonderService/phaseUpdated', 'R:AncientWonderService/getOtherPlayerAncientWonders']) {
+      listenerIds.push(
+        setupGenericResponseListener<void>(type, () => {
+          // The service worker has already folded the new figures into the stored account;
+          // this only tells the swap tab to read them again.
+          useOverlayStore.getState().triggerWonderKpUpdate();
+        }),
+      );
+    }
 
     listenerIds.push(
       setupGenericResponseListener<number | undefined>('R:QuestMilestoneService/updateQuestMilestone', (msg) => {

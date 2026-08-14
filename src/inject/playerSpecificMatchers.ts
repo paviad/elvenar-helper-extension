@@ -195,6 +195,12 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   },
   {
     responseSelector: {
+      requestClass: 'AncientWonderService',
+      requestMethod: 'getOtherPlayerAncientWonders',
+    },
+  },
+  {
+    responseSelector: {
       requestClass: 'ResearchService',
       requestMethod: 'startup',
     },

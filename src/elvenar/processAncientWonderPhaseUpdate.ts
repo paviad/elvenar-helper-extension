@@ -6,9 +6,37 @@ import { getAccountBySessionId } from './AccountManager';
 import { extractElvenarResponse } from './extractElvenarResponse';
 import { extractWonderKp } from './extractWonderKp';
 
+/** What the game sends back when a wonder's own window is opened. */
+interface OtherPlayerAncientWonders {
+  ancientWonderPhases?: AncientWonderPhase[];
+}
+
+/**
+ * The wonder phases carried by either of the two things that report one.
+ *
+ * `phaseUpdated` is a bare list of phases; the wonder window's answer buries the same list
+ * inside the rest of what it took to draw the window.
+ */
+export function collectAncientWonderPhases(json: ElvenarRequestResponseEntry[]): AncientWonderPhase[] {
+  return [
+    ...extractElvenarResponse<AncientWonderPhase[]>(json, 'AncientWonderService', 'phaseUpdated').flat(),
+    ...extractElvenarResponse<OtherPlayerAncientWonders>(
+      json,
+      'AncientWonderService',
+      'getOtherPlayerAncientWonders',
+    ).flatMap((response) => response?.ancientWonderPhases ?? []),
+  ];
+}
+
 /**
  * Keeps the stored knowledge point standing current as contributions land, so the swap
  * tab does not have to wait for the next city load to notice a wonder filling up.
+ *
+ * Two things can say so. `phaseUpdated` is pushed as each contribution lands — but only
+ * while the game is listening, and a tab left in the background long enough stops being
+ * told. Opening a wonder's own window asks outright, and the answer that comes back is the
+ * server's current figure however much was missed in the meantime, which makes it the way
+ * out of a standing that has drifted.
  *
  * A wonder that finishes its research phase reports back as a runes phase, which
  * `extractWonderKp` drops — so the update has to be able to remove an entry as well as
@@ -25,7 +53,7 @@ export const processAncientWonderPhaseUpdate = async (
     return;
   }
 
-  const updated = extractElvenarResponse<AncientWonderPhase[]>(json, 'AncientWonderService', 'phaseUpdated').flat();
+  const updated = collectAncientWonderPhases(json);
 
   const playerId = cityQuery.userData?.player_id;
   const mine = updated.filter((phase) => phase?.entityBaseName && phase.playerId === playerId);

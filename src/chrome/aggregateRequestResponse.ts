@@ -25,50 +25,47 @@ export const setupAggregateRequestResponseListener = (): void => {
 
       console.log('E:', payload.request.requestId, requestClass, requestMethod, payload);
 
-      for (const matcher of playerSpecificMatchers) {
-        if (matcher.requestSelector) {
-          if (
-            matcher.requestSelector.requestClass === requestClass &&
-            matcher.requestSelector.requestMethod === requestMethod
-          ) {
-            // console.log('AggregateRequestResponse matches playerSpecificMatcher', matcher.id, payload);
+      // Asked of the table once per thing to send, rather than sending once per matcher that
+      // wants it. The table is allowed to name the same call twice, and what goes out says only
+      // which call it is — so a second send would put identical data through the same processors
+      // again rather than carrying anything new.
+      const wanted = (selector: 'requestSelector' | 'responseSelector', entry: ElvenarRequestResponseEntry) =>
+        playerSpecificMatchers.some(
+          (matcher) =>
+            matcher[selector]?.requestClass === entry.requestClass &&
+            matcher[selector]?.requestMethod === entry.requestMethod,
+        );
 
-            const message = {
-              type: `Q:${requestClass}/${requestMethod}`,
-              specific: true,
-              payload: {
-                request: payload.request,
-                response: payload.response,
-                sharedInfo: payload.sharedInfo,
-              },
-            } satisfies PlayerSpecificMessage;
+      if (wanted('requestSelector', payload.request)) {
+        const message = {
+          type: `Q:${requestClass}/${requestMethod}`,
+          specific: true,
+          payload: {
+            request: payload.request,
+            response: payload.response,
+            sharedInfo: payload.sharedInfo,
+          },
+        } satisfies PlayerSpecificMessage;
 
-            await sendInterceptedPlayerSpecificRequest(message);
-          }
+        await sendInterceptedPlayerSpecificRequest(message);
+      }
+
+      for (const response of payload.response) {
+        if (!wanted('responseSelector', response)) {
+          continue;
         }
 
-        if (matcher.responseSelector) {
-          for (const response of payload.response) {
-            if (
-              matcher.responseSelector.requestClass === response.requestClass &&
-              matcher.responseSelector.requestMethod === response.requestMethod
-            ) {
-              // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
+        const message = {
+          type: `R:${response.requestClass}/${response.requestMethod}`,
+          specific: true,
+          payload: {
+            request: payload.request,
+            response: [response],
+            sharedInfo: payload.sharedInfo,
+          },
+        } satisfies PlayerSpecificMessage;
 
-              const message = {
-                type: `R:${response.requestClass}/${response.requestMethod}`,
-                specific: true,
-                payload: {
-                  request: payload.request,
-                  response: [response],
-                  sharedInfo: payload.sharedInfo,
-                },
-              } satisfies PlayerSpecificMessage;
-
-              await sendInterceptedPlayerSpecificRequest(message);
-            }
-          }
-        }
+        await sendInterceptedPlayerSpecificRequest(message);
       }
     }
 

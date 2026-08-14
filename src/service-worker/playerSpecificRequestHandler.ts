@@ -41,14 +41,20 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 
-type Processors = Record<
-  string,
-  (
-    untypedResponseArray: ElvenarRequestResponseEntry[],
-    sharedInfo: ExtensionSharedInfo,
-    request: ElvenarRequestResponseEntry,
-  ) => Promise<unknown>
->;
+type Processor = (
+  untypedResponseArray: ElvenarRequestResponseEntry[],
+  sharedInfo: ExtensionSharedInfo,
+  request: ElvenarRequestResponseEntry,
+) => Promise<unknown>;
+
+/**
+ * A type holds either a processor or a list of them, run in the order given. One response can
+ * be of interest to more than one part of the extension, and a list says so plainly rather than
+ * having one processor call another for reasons unrelated to it. What is passed on afterwards is
+ * the last result that was not `undefined`, since a processor that only writes to the stored
+ * account has nothing to say.
+ */
+type Processors = Record<string, Processor | Processor[]>;
 
 const handlerSubject = new Subject<{
   msg: InterceptedPlayerSpecificRequest;
@@ -129,6 +135,7 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
     'R:EffectsService/update': processActiveEffectsUpdate,
     'R:AncientWonderService/phaseUpdated': processAncientWonderPhaseUpdate,
+    'R:AncientWonderService/getOtherPlayerAncientWonders': processAncientWonderPhaseUpdate,
     'R:ResearchService/startup': processResearchStatus,
 
     'R:QuestMilestoneService/updateQuestMilestone': processQuestMilestoneUpdate,
@@ -150,13 +157,19 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:ArmyService/addUnit': processTournyAddUnits,
   };
 
-  const processorFunction = processors[msg.payload.type];
-  if (!processorFunction) {
+  const processorsForType = processors[msg.payload.type];
+  if (!processorsForType) {
     console.warn(`ElvenAssist: No processor function found for message type: ${msg.payload.type}`);
     return;
   }
 
-  const result = await processorFunction(response, sharedInfo, request);
+  let result: unknown;
+  for (const processor of [processorsForType].flat()) {
+    const answer = await processor(response, sharedInfo, request);
+    if (answer !== undefined) {
+      result = answer;
+    }
+  }
 
   if (msg.payload.type === 'Q:StartupService/getData') {
     accountData = getAccountBySessionId(sharedInfo.sessionId);
