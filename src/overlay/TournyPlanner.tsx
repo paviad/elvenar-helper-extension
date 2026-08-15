@@ -287,7 +287,8 @@ export const TournyPlanner = () => {
           const unitFromAlmanac = unitAlmanac.find((u) => u.unitTypeId === unitTypeId);
           if (unitFromAlmanac) {
             const unitWeight = unitFromAlmanac.unitWeight;
-            const size = Math.floor(squadSize / unitWeight);
+            // The game rounds UP (ArmyModel.getSquadUnits); floor would field short squads.
+            const size = Math.ceil(squadSize / unitWeight);
             neededUnitsForOneSquad = size;
             availableUnitsOfType =
               armyDetails?.unitSquads.filter((s) => s.unitTypeId === unitTypeId).reduce((sum, s) => sum + s.size, 0) ||

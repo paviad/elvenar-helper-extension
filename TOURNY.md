@@ -272,7 +272,7 @@ building and troop filters match; matching modifiers multiply together.
 **Squad sizing** (in `Tourny.tsx`):
 
 ```
-neededUnitsForOneSquad = floor(playerSquadSize / unitWeight)
+neededUnitsForOneSquad = ceil(playerSquadSize / unitWeight)   // as the game does (ArmyModel.getSquadUnits)
 totalNeeded            = neededUnitsForOneSquad × 5     // 5 identical squads per encounter
 ```
 

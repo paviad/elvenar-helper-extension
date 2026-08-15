@@ -21,7 +21,7 @@ export const localVisitPlayer = (payload: { playerId: number; buildingId: string
     }
     console.log(`Trap hook triggered for playerId: ${payload.playerId}`);
     Do().catch((error) => {
-      console.error(`Error in trap hook for playerId ${payload.playerId}:`, error);
+      console.warn(`Error in trap hook for playerId ${payload.playerId}:`, error);
     });
   });
 

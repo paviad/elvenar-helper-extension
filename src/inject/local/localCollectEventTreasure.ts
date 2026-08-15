@@ -13,7 +13,7 @@ processRewardSubject
     }),
   )
   .subscribe({
-    error: (err) => console.error('Error processing rewards:', err),
+    error: (err) => console.warn('Error processing rewards:', err),
   });
 
 export const localCollectEventTreasure = async (json: ElvenarRequestResponseEntry[]): Promise<void> => {

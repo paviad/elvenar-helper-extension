@@ -85,7 +85,7 @@ export class GlobalHttpInterceptorService {
               // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
 
               matcher.local!([response]).catch((error) => {
-                console.error('Error in local handler for messageType', matcher, error);
+                console.warn('Error in local handler for messageType', matcher, error);
               });
             }
           }
@@ -192,7 +192,7 @@ export class GlobalHttpInterceptorService {
               }
             }
           } catch (error) {
-            console.error('Error parsing response JSON:', error);
+            console.warn('Error parsing response JSON:', error);
           }
         }
 

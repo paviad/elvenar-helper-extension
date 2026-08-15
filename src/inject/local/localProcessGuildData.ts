@@ -32,7 +32,7 @@ export const localProcessGuildData = async (responseText: string, sharedInfo: Ex
   const awService = serviceConstructor && new serviceConstructor();
 
   if (!awService) {
-    console.error('AncientWonderService is not available on window.aviad');
+    console.trace('AncientWonderService is not available on window.aviad');
     return;
   }
 

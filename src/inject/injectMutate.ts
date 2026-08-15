@@ -127,7 +127,7 @@ function patchCtorRegistryAssignment(scriptText: string, registryPath: string, w
 
   registryRegex.lastIndex = 0;
   scriptText = scriptText.replace(registryRegex, (_match, registry: string, ctor: string) => {
-    const replacement = `${ctor}=function(${argumentList}){${ctor}2aviad.call(this,${argumentList});console.error('${windowField} = ${registryPath}', this);window['${windowField}']=this;window['${windowField}_a']=window['${windowField}_a']||[];window['${windowField}_a'].push(this)};\n      ${registry}['${registryPath}']=${ctor};`;
+    const replacement = `var ${ctor}=function(${argumentList}){${ctor}2aviad.call(this,${argumentList});console.trace('${windowField} = ${registryPath}', this);window['${windowField}']=this;window['${windowField}_a']=window['${windowField}_a']||[];window['${windowField}_a'].push(this)};\n      ${registry}['${registryPath}']=${ctor};`;
     console.log(`Applied ${registryPath} replacement:`, replacement);
     ctorFound ??= ctor;
     return replacement;
@@ -146,7 +146,7 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
     const hookRegistry = (minText: string, fullText: string, hookName: string) => {
       const idx = version === 'min' ? scriptText.indexOf(minText) : scriptText.indexOf(fullText);
       if (idx === -1) {
-        console.error(`Couldn't find target code segment in tamper target ${minText} / ${fullText} / ${hookName}`);
+        console.warn(`Couldn't find target code segment in tamper target ${minText} / ${fullText} / ${hookName}`);
         throw new Error(`Couldn't find target code segment in tamper target ${minText} / ${fullText} / ${hookName}`);
       }
 
@@ -255,7 +255,7 @@ async function fetchAndModify(scriptSrc: string, version: 'min' | 'full') {
       (window as any).onGameCodeLoaded();
     }, 500);
   } catch (error) {
-    console.error('Failed to fetch script:', error);
+    console.warn('Failed to fetch script:', error);
   }
 }
 
