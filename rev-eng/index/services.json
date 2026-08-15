@@ -1,0 +1,4719 @@
+[
+ {
+  "name": "de.innogames.shared.networking.AbstractConnectionService",
+  "jsName": "de_innogames_shared_networking_AbstractConnectionService",
+  "line": 13105,
+  "startLine": 13101,
+  "endLine": 13123,
+  "serviceName": null,
+  "super": "de_innogames_networking_services_NetConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "postConstruct",
+    "args": "",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "dispatch",
+    "args": "event",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.strategycity.main.service.CityProductionService",
+  "jsName": "de_innogames_strategycity_main_service_CityProductionService",
+  "line": 13130,
+  "startLine": 13124,
+  "endLine": 13204,
+  "serviceName": "CityProductionService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getProductionQueue -> _onGetProductionQueue"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "cancelProduction",
+    "args": "entityId,slotId",
+    "reqs": [
+     "cancelProduction.withData([entityId,slotId])"
+    ],
+    "lines": 6
+   },
+   {
+    "mname": "discardProduction",
+    "args": "entityId,forceCleanStorage",
+    "reqs": [
+     "discardProduction.withData([entityId,forceCleanStorage])"
+    ],
+    "lines": 6
+   },
+   {
+    "mname": "pickupProduction",
+    "args": "entityId,callback",
+    "reqs": [],
+    "lines": 5
+   },
+   {
+    "mname": "pickupProductionDetails",
+    "args": "entityIds,callback",
+    "reqs": [],
+    "lines": 10
+   },
+   {
+    "mname": "instantStart",
+    "args": "entityId,productionOptionId,productionAmount",
+    "reqs": [
+     "instantStart.withData([entityId,productionOptionId,productionAmount]).immediate()"
+    ],
+    "lines": 6
+   },
+   {
+    "mname": "startProduction",
+    "args": "entityId,productionOptionId,productionAmount",
+    "reqs": [
+     "startProduction.withData([entityId,productionOptionId,productionAmount]).handleOnlyLastPushResponses([\"CityResourcesService\" + \".\" + \"getResources\"])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "startProductions",
+    "args": "buildingIds,optionId,amount",
+    "reqs": [
+     "startProductions.withData([buildingIds,optionId,amount]).handleOnlyLastPushResponses([\"CityResourcesService\" + \".\" + \"getResources\"])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantFinish",
+    "args": "entityId",
+    "reqs": [
+     "instantFinish.withData([entityId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "updateQueue",
+    "args": "queueId",
+    "reqs": [
+     "getProductionQueue.withData([queueId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "_onGetProductionQueue",
+    "args": "productionQueue",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "_pickupProduction",
+    "args": "callback",
+    "reqs": [
+     "pickupProduction.withData([this._pickupEntities.splice(0,this._pickupEntities.length)]).withCallback(callback).immediate()"
+    ],
+    "lines": 5
+   },
+   {
+    "mname": "_pickupProductionDetails",
+    "args": "callback",
+    "reqs": [
+     "pickupProductionDetails.withData([this._pickupEntitiesDetails.splice(0,this._pickupEntitiesDetails.length)]).withCallback(callback).immediate()"
+    ],
+    "lines": 5
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.service.OtherPlayerService",
+  "jsName": "de_innogames_onyx_city_service_OtherPlayerService",
+  "line": 14500,
+  "startLine": 14496,
+  "endLine": 14519,
+  "serviceName": "OtherPlayerService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updatePlayer -> _onPlayerUpdate"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "visitPlayer",
+    "args": "playerId,callback",
+    "reqs": [
+     "visitPlayer.withData([playerId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getNeighbourlyHelpBuildings",
+    "args": "playerId,callback",
+    "reqs": [
+     "getNeighbourlyHelpBuildings.withData([playerId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onPlayerUpdate",
+    "args": "list",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.ManifestService",
+  "jsName": "de_innogames_onyx_networking_services_ManifestService",
+  "line": 15479,
+  "startLine": 15476,
+  "endLine": 15495,
+  "serviceName": "ManifestService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getManifests",
+    "args": "",
+    "reqs": [
+     "getManifests (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.StartupService",
+  "jsName": "de_innogames_onyx_networking_services_StartupService",
+  "line": 17108,
+  "startLine": 17105,
+  "endLine": 17127,
+  "serviceName": "StartupService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getCrmData",
+    "args": "",
+    "reqs": [
+     "getCrmData (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getData",
+    "args": "",
+    "reqs": [
+     "getData (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.spire.service.SpireDiplomacyService",
+  "jsName": "de_innogames_onyx_spire_service_SpireDiplomacyService",
+  "line": 21013,
+  "startLine": 21010,
+  "endLine": 21033,
+  "serviceName": "SpireDiplomacyService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "submit",
+    "args": "pointId,chosenOptions,turnNumber,callback",
+    "reqs": [
+     "submit.immediate().withData([pointId,chosenOptions,turnNumber]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getData",
+    "args": "pointId,callback",
+    "reqs": [
+     "getData.immediate().withData([pointId]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "cancelDiplomacy",
+    "args": "pointId",
+    "reqs": [
+     "cancel.immediate().withData([pointId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "buyExtraTurn",
+    "args": "pointId,boughtTurn,callback",
+    "reqs": [
+     "buyExtraTurn.immediate().withData([pointId,boughtTurn]).withCallback(callback)"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.ancientwonders.services.AncientWonderService",
+  "jsName": "de_innogames_onyx_city_ancientwonders_services_AncientWonderService",
+  "line": 21115,
+  "startLine": 21107,
+  "endLine": 21163,
+  "serviceName": "AncientWonderService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "getContributions",
+    "args": "",
+    "reqs": [
+     "getContributions (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getPhase",
+    "args": "playerId,entityId",
+    "reqs": [
+     "getOtherPlayerAncientWonders (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getPhases",
+    "args": "playerId",
+    "reqs": [
+     "getPhases (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "insertRuneShard",
+    "args": "entityBaseName",
+    "reqs": [
+     "insertRuneShard.withData([entityBaseName]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "investKnowledgePoints",
+    "args": "playerId,entityBaseName,amount",
+    "reqs": [
+     "investKnowledgePoints.withData([playerId,entityBaseName,amount])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "investRuneShards",
+    "args": "playerId,entityBaseName,amount",
+    "reqs": [
+     "investKnowledgePointsBasedOnRuneShards.withData([playerId,entityBaseName,amount])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "investGuildProgressionFreeKp",
+    "args": "playerId,entityBaseName",
+    "reqs": [
+     "investGuildProgressionFreeKp.withData([playerId,entityBaseName])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "useBrokenShards",
+    "args": "entityBaseName,callback",
+    "reqs": [
+     "useBrokenShards.withCallback(callback).withData([entityBaseName]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "payBrokenShards",
+    "args": "entityBaseName,callback",
+    "reqs": [
+     "payBrokenShards.withCallback(callback).withData([entityBaseName]).parseLastResponse()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getOtherPlayerAncientWonders",
+    "args": "playerId,callback",
+    "reqs": [
+     "getOtherPlayerAncientWonders.withCallback(callback).withData([playerId]).parseLastResponse()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "updateFavourite",
+    "args": "playerId,entityBaseName,isFavorite",
+    "reqs": [
+     "updateFavourite.withData([playerId,entityBaseName,isFavorite]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onShowHelpReward",
+    "args": "vos",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.spire.service.SpireBattleService",
+  "jsName": "de_innogames_onyx_spire_service_SpireBattleService",
+  "line": 22578,
+  "startLine": 22575,
+  "endLine": 22610,
+  "serviceName": "SpireBattleService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "instantBattle",
+    "args": "pointId,unitSquads,callback",
+    "reqs": [
+     "instantBattle.withData([pointId,de_innogames_onyx_spire_service_SpireBattleService._getUnitsVO(unitSquads)]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "startBattle",
+    "args": "pointId,unitSquads,callback",
+    "reqs": [
+     "startBattle.withData([pointId,de_innogames_onyx_spire_service_SpireBattleService._getUnitsVO(unitSquads)]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantNextWave",
+    "args": "battleId,callback",
+    "reqs": [
+     "instantNextWave.withData([battleId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "startNextWave",
+    "args": "battleId,callback",
+    "reqs": [
+     "startNextWave.withData([battleId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getBattle",
+    "args": "battleId,callback",
+    "reqs": [
+     "getBattle.withData([battleId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.mainevents.shared.services.MergeEventService",
+  "jsName": "de_innogames_onyx_city_mainevents_shared_services_MergeEventService",
+  "line": 23184,
+  "startLine": 23179,
+  "endLine": 23224,
+  "serviceName": "MergeEventService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "initializeBoard -> onInitializeBoard",
+   "updateBoard -> onUpdateBoard"
+  ],
+  "methods": [
+   {
+    "mname": "getOverview",
+    "args": "",
+    "reqs": [
+     "getOverview.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getOrders",
+    "args": "callback",
+    "reqs": [
+     "getOrders.immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "generate",
+    "args": "chestIds",
+    "reqs": [
+     "generate.withData([chestIds]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "move",
+    "args": "fromPosition,toPosition",
+    "reqs": [
+     "move.withData([fromPosition,toPosition]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "discard",
+    "args": "position",
+    "reqs": [
+     "discard.withData([position]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "completeOrder",
+    "args": "chestId,callback",
+    "reqs": [
+     "completeOrder.withData([chestId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "discardOrder",
+    "args": "chestId",
+    "reqs": [
+     "discardOrder.withData([chestId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantSkipOrderCooldown",
+    "args": "slot",
+    "reqs": [
+     "instantSkipOrderCooldown.withData([slot]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onInitializeBoard",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onUpdateBoard",
+    "args": "vo",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.spire.service.SpireService",
+  "jsName": "de_innogames_onyx_spire_service_SpireService",
+  "line": 24594,
+  "startLine": 24590,
+  "endLine": 24636,
+  "serviceName": "SpireService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateMap -> _onUpdateMap"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getData",
+    "args": "callback",
+    "reqs": [
+     "getData.immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getEncounter",
+    "args": "pointId,callback",
+    "reqs": [
+     "getEncounter.withData([pointId]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "buyUnits",
+    "args": "pointId,unitId,callback",
+    "reqs": [
+     "buyUnits.withData([pointId,unitId]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openChest",
+    "args": "pointId,callback",
+    "reqs": [
+     "openChest.withData([pointId]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantOpenGate",
+    "args": "pointId,callback",
+    "reqs": [
+     "instantOpenGate.withData([pointId]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openGate",
+    "args": "pointId,callback",
+    "reqs": [
+     "openGate.withData([pointId]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openMysteryChest",
+    "args": "chestLocationId,callback",
+    "reqs": [
+     "openMysteryChest.withData([chestLocationId]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getArchivePoints",
+    "args": "",
+    "reqs": [
+     "getPointsArchive"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "unlockNextCrystalWithArchivePoints",
+    "args": "archivePoints",
+    "reqs": [
+     "unlockCrystalByArchive.withData([archivePoints])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "_onUpdateMap",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.LogService",
+  "jsName": "de_innogames_onyx_networking_services_LogService",
+  "line": 31231,
+  "startLine": 31228,
+  "endLine": 31292,
+  "serviceName": "LogService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "logGameLogin",
+    "args": "loadingTime",
+    "reqs": [
+     "logGameLogin.withData([loadingTime])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "logPerformanceMetrics",
+    "args": "vo",
+    "reqs": [
+     "logPerformanceMetrics.withData([vo])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackAppLifeCycle",
+    "args": "step",
+    "reqs": [
+     "trackAppLifeCycle.withData([step])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackCrossSell",
+    "args": "deviceId,campaignId",
+    "reqs": [
+     "trackCrossSell.withData([deviceId,campaignId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackDownloadFinishSize",
+    "args": "downloadCategory,retryCounter,elapsedTime,size",
+    "reqs": [
+     "trackDownloadFinishSize.withData([downloadCategory,retryCounter,elapsedTime,size])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackDownloadStartSize",
+    "args": "downloadCategory,size",
+    "reqs": [
+     "trackDownloadStartSize.withData([downloadCategory,size])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackDownloadStopSize",
+    "args": "downloadCategory,reason,size",
+    "reqs": [
+     "trackDownloadStopSize.withData([downloadCategory,reason,size])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackEventWindowOpen",
+    "args": "type",
+    "reqs": [
+     "trackEventWindowOpen.withData([type])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackGameStartup",
+    "args": "stepName",
+    "reqs": [
+     "trackGameStartup.withData([stepName])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackInstallSize",
+    "args": "installSize,freeSpace",
+    "reqs": [
+     "trackInstallSize.withData([installSize,freeSpace])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackRatingScreen",
+    "args": "action",
+    "reqs": [
+     "trackRatingScreen.withData([action])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackShopCancel",
+    "args": "sessionId",
+    "reqs": [
+     "trackShopCancel.withData([sessionId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackShopClose",
+    "args": "",
+    "reqs": [
+     "trackShopClose.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackShopError",
+    "args": "sessionId,type,errorCode,message",
+    "reqs": [
+     "trackShopError.withData([sessionId,type,errorCode,message])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackShopOpen",
+    "args": "sessionId",
+    "reqs": [
+     "trackShopOpen.withData([sessionId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackSocketConnection",
+    "args": "method",
+    "reqs": [
+     "trackSocketConnection.withData([method])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.ui.windows.academy.crafting.services.CraftService",
+  "jsName": "de_innogames_onyx_city_ui_windows_academy_crafting_services_CraftService",
+  "line": 36711,
+  "startLine": 36706,
+  "endLine": 36752,
+  "serviceName": "CraftService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateActiveRecipe -> _onUpdateActiveRecipe",
+   "updateProgress -> _onUpdateProgress"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getCraftingData",
+    "args": "",
+    "reqs": [
+     "getCraftingData.immediate().withCallback($bind(this,this._onUpdateData))"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "craft",
+    "args": "recipeId",
+    "reqs": [
+     "startCrafting.withData([recipeId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "premiumCraft",
+    "args": "recipeId",
+    "reqs": [
+     "startPremiumCrafting.withData([recipeId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "collectCraftedItem",
+    "args": "callback",
+    "reqs": [
+     "collectCraftedItems.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantFinish",
+    "args": "",
+    "reqs": [
+     "instantFinish.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "cancelCrafting",
+    "args": "",
+    "reqs": [
+     "cancelCrafting.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantGetSlots",
+    "args": "",
+    "reqs": [
+     "instantRefreshSlots.withCallback($bind(this,this._onUpdateData)).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "collectChest",
+    "args": "callback",
+    "reqs": [
+     "collectChestRewards.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateActiveRecipe",
+    "args": "activeRecipeVO",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateProgress",
+    "args": "progressVO",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateData",
+    "args": "craftVO",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.crm3.services.CRMService",
+  "jsName": "de_innogames_onyx_city_crm3_services_CRMService",
+  "line": 36925,
+  "startLine": 36917,
+  "endLine": 36966,
+  "serviceName": "Crm3Service",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getInterstitials -> _onGetInterstitials",
+   "addInterstitial -> _onAddInterstitial",
+   "removeInterstitial -> _onRemoveInterstitial",
+   "executeCallToAction -> _onExecuteCallToAction"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "acceptInterstitial",
+    "args": "targetId,displayPoint,buttonIndex,callback",
+    "reqs": [
+     "acceptInterstitial.withData([targetId,displayPoint,buttonIndex]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "rejectInterstitial",
+    "args": "targetId,displayPoint",
+    "reqs": [
+     "rejectInterstitial.withData([targetId,displayPoint])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "markInterstitialSeen",
+    "args": "targetId,displayPoint",
+    "reqs": [
+     "markInterstitialSeen.withData([targetId,displayPoint])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "isValidPlatform",
+    "args": "platforms",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetInterstitials",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "_onAddInterstitial",
+    "args": "vo",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "_onRemoveInterstitial",
+    "args": "targetId",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onExecuteCallToAction",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.CashShopService",
+  "jsName": "de_innogames_onyx_networking_services_CashShopService",
+  "line": 37190,
+  "startLine": 37187,
+  "endLine": 37212,
+  "serviceName": "CashShopService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getCashShopConfig",
+    "args": "",
+    "reqs": [
+     "getCashShopConfig (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getProducts",
+    "args": "",
+    "reqs": [
+     "getProducts (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getPurchaseLink",
+    "args": "productId",
+    "reqs": [
+     "getPurchaseLink (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.resources.service.ResourcesService",
+  "jsName": "de_innogames_onyx_resources_service_ResourcesService",
+  "line": 42751,
+  "startLine": 42743,
+  "endLine": 42798,
+  "serviceName": "CityResourcesService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "buyResourcePackage -> _onBuyResourcePackage",
+   "updateResourceConfigs -> _onUpdateResourceConfigs",
+   "updateResourceCaps -> _onResourceCapUpdate",
+   "getResources -> _onGetResources",
+   "getPremium -> _onGetPremium"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "buyResourcePackage",
+    "args": "id,ownerId,data,callback",
+    "reqs": [
+     "buyResourcePackage.withData([id,ownerId,data != null ? data.toVo() : null]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "buyAWInstantKP",
+    "args": "kpAmount,ownerId,data,callback",
+    "reqs": [
+     "buyInstantAwKp.withData([kpAmount,ownerId,data.toVo()]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "syncResources",
+    "args": "",
+    "reqs": [
+     "getResources.immediate().withCallback($bind(this,this._onGetResources))"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onResourceCapUpdate",
+    "args": "resource",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "_onGetResources",
+    "args": "resources",
+    "reqs": [],
+    "lines": 5
+   },
+   {
+    "mname": "_onGetPremium",
+    "args": "premium",
+    "reqs": [],
+    "lines": 7
+   },
+   {
+    "mname": "_onBuyResourcePackage",
+    "args": "packages",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateResourceConfigs",
+    "args": "vos",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.strategycity.main.service.PostStartupService",
+  "jsName": "de_innogames_strategycity_main_service_PostStartupService",
+  "line": 44713,
+  "startLine": 44710,
+  "endLine": 44724,
+  "serviceName": "PostStartupService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getPostStartupData",
+    "args": "",
+    "reqs": [
+     "getPostStartupData.immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.inventoryitems.service.DisenchantService",
+  "jsName": "de_innogames_onyx_city_inventoryitems_service_DisenchantService",
+  "line": 49662,
+  "startLine": 49659,
+  "endLine": 49676,
+  "serviceName": "DisenchantService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "disenchantItems",
+    "args": "inventoryItemId,count",
+    "reqs": [
+     "disenchantItems.withData([inventoryItemId,count]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "disenchantSpells",
+    "args": "inventoryItemId,count",
+    "reqs": [
+     "disenchantSpells.withData([inventoryItemId,count]).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.RewardSelectionKitService",
+  "jsName": "de_innogames_onyx_networking_services_RewardSelectionKitService",
+  "line": 49911,
+  "startLine": 49908,
+  "endLine": 49927,
+  "serviceName": "RewardSelectionKitService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "chooseOne",
+    "args": "inventoryItemId,rewardIndex",
+    "reqs": [
+     "chooseOne (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.services.DiplomacyCancelService",
+  "jsName": "de_innogames_onyx_city_services_DiplomacyCancelService",
+  "line": 50004,
+  "startLine": 50001,
+  "endLine": 50015,
+  "serviceName": "SpireDiplomacyService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "cancelDiplomacy",
+    "args": "pointId",
+    "reqs": [
+     "cancel.immediate().withData([pointId])"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.ingameshop.services.InGameShopService",
+  "jsName": "de_innogames_onyx_city_ingameshop_services_InGameShopService",
+  "line": 51393,
+  "startLine": 51390,
+  "endLine": 51411,
+  "serviceName": "InGameOfferService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getOffers",
+    "args": "offerId",
+    "reqs": [
+     "getOffers (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "buyOffer",
+    "args": "offerId",
+    "reqs": [
+     "buyOffer (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.tournaments.services.WorldMapTournamentService",
+  "jsName": "de_innogames_onyx_tournaments_services_WorldMapTournamentService",
+  "line": 51469,
+  "startLine": 51465,
+  "endLine": 51502,
+  "serviceName": "TournamentService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateAllTournamentProvinces -> _onUpdateAllTournamentProvinces"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "instantUpgrade",
+    "args": "rowIndex,columnIndex,cost,callback",
+    "reqs": [
+     "instantUpgrade.withData([columnIndex,rowIndex,cost]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getProvincesOverview",
+    "args": "callback",
+    "reqs": [
+     "getProvincesOverview.withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateAllTournamentProvinces",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "getArchivePoints",
+    "args": "",
+    "reqs": [
+     "getPointsArchive"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "unlockNextChestWithArchivePoints",
+    "args": "archivePoints",
+    "reqs": [
+     "unlockChestByArchive.withData([archivePoints]).withCallback($bind(this,this._onGetTournamentOverview))"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "_onGetTournamentOverview",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.quests.services.QuestMilestoneService",
+  "jsName": "de_innogames_onyx_shared_quests_services_QuestMilestoneService",
+  "line": 52838,
+  "startLine": 52834,
+  "endLine": 52852,
+  "serviceName": "QuestMilestoneService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateQuestMilestone -> _onUpdateQuestMilestone"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "collectReward",
+    "args": "callback",
+    "reqs": [
+     "collectReward.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateQuestMilestone",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.AbsolutionService",
+  "jsName": "de_innogames_onyx_networking_services_AbsolutionService",
+  "line": 57401,
+  "startLine": 57398,
+  "endLine": 57417,
+  "serviceName": "AbsolutionService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getData",
+    "args": "",
+    "reqs": [
+     "getData (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.spire.service.SpireStateService",
+  "jsName": "de_innogames_onyx_spire_service_SpireStateService",
+  "line": 58693,
+  "startLine": 58690,
+  "endLine": 58708,
+  "serviceName": "SpireStateService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getState",
+    "args": "",
+    "reqs": [
+     "getState.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.strategycity.main.service.PlayerProfileService",
+  "jsName": "de_innogames_strategycity_main_service_PlayerProfileService",
+  "line": 61111,
+  "startLine": 61106,
+  "endLine": 61158,
+  "serviceName": "PlayerProfileService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getUnlockedAvatars -> _onUnlockedAvatars",
+   "getAllUnlockedAvatars -> _onAllUnlockedAvatars"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "setCityName",
+    "args": "name",
+    "reqs": [
+     "setCityName.withData([name])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "setPortraitId",
+    "args": "portraitId",
+    "reqs": [
+     "setPortraitId.withData([portraitId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "setEmailOptin",
+    "args": "hasAcceptedEmails",
+    "reqs": [
+     "setEmailOptin.withData([hasAcceptedEmails]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUnlockedAvatars",
+    "args": "avatars",
+    "reqs": [],
+    "lines": 10
+   },
+   {
+    "mname": "_onAllUnlockedAvatars",
+    "args": "avatars",
+    "reqs": [],
+    "lines": 10
+   },
+   {
+    "mname": "_parseAvatarIds",
+    "args": "avatars",
+    "reqs": [],
+    "lines": 9
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.service.CityInformationService",
+  "jsName": "de_innogames_onyx_city_service_CityInformationService",
+  "line": 66843,
+  "startLine": 66840,
+  "endLine": 66858,
+  "serviceName": "CityInformationService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getCulture",
+    "args": "",
+    "reqs": [
+     "getCulture.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.EffectsService",
+  "jsName": "de_innogames_onyx_networking_services_EffectsService",
+  "line": 68947,
+  "startLine": 68944,
+  "endLine": 68966,
+  "serviceName": "EffectsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "refresh",
+    "args": "",
+    "reqs": [
+     "refresh.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "update",
+    "args": "",
+    "reqs": [
+     "update.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.SupportService",
+  "jsName": "de_innogames_onyx_networking_services_SupportService",
+  "line": 69211,
+  "startLine": 69208,
+  "endLine": 69230,
+  "serviceName": "SupportService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getSupportUrl",
+    "args": "data",
+    "reqs": [
+     "getSupportUrl (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getSupportUrlForClientData",
+    "args": "device,data",
+    "reqs": [
+     "getSupportUrlForClientData (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.mainevents.seasonpass.services.SeasonPassService",
+  "jsName": "de_innogames_onyx_city_mainevents_seasonpass_services_SeasonPassService",
+  "line": 80080,
+  "startLine": 80075,
+  "endLine": 80100,
+  "serviceName": "SeasonPassService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getSeasonPassReward -> onSeasonPassReward",
+   "getSeasonPassEndReward -> onSeasonPassEndReward"
+  ],
+  "methods": [
+   {
+    "mname": "claimReward",
+    "args": "level,rewardIndex,callback",
+    "reqs": [
+     "claimReward.withData([level,rewardIndex]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "rerollQuest",
+    "args": "questId",
+    "reqs": [
+     "rerollQuest.withData([questId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onSeasonPassReward",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onSeasonPassEndReward",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.TreasureService",
+  "jsName": "de_innogames_onyx_networking_services_TreasureService",
+  "line": 80843,
+  "startLine": 80840,
+  "endLine": 80865,
+  "serviceName": "TreasureService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getCurrencyEventTreasures",
+    "args": "",
+    "reqs": [
+     "getCurrencyEventTreasures (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openTreasure",
+    "args": "type",
+    "reqs": [
+     "openTreasure (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "refresh",
+    "args": "",
+    "reqs": [
+     "refresh.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.strategycity.main.service.NewsService",
+  "jsName": "de_innogames_strategycity_main_service_NewsService",
+  "line": 84528,
+  "startLine": 84524,
+  "endLine": 84564,
+  "serviceName": "NewsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "fetchNews -> _onFetchNews"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "trackNews",
+    "args": "news,trackType,tab",
+    "reqs": [
+     "trackNews (complex)"
+    ],
+    "lines": 12
+   },
+   {
+    "mname": "_createTrackVO",
+    "args": "news,action,tab",
+    "reqs": [],
+    "lines": 10
+   },
+   {
+    "mname": "_onFetchNews",
+    "args": "news",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.battle.services.BattleService",
+  "jsName": "de_innogames_onyx_battle_services_BattleService",
+  "line": 361366,
+  "startLine": 361363,
+  "endLine": 361384,
+  "serviceName": "BattleService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "submitStep",
+    "args": "battleId,step,isAutoBattle,callback",
+    "reqs": [
+     "submit.withData([battleId,step,isAutoBattle]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "surrenderBattle",
+    "args": "battleId,callback",
+    "reqs": [
+     "surrender.withData([battleId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getBattle",
+    "args": "battleId,callback",
+    "reqs": [
+     "getBattle.withData([battleId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.chests.services.ChestsService",
+  "jsName": "de_innogames_onyx_chests_services_ChestsService",
+  "line": 371004,
+  "startLine": 370997,
+  "endLine": 371053,
+  "serviceName": "ChestsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateUnavailableChests -> _onUpdateUnavailableChests",
+   "updateChestPayInProgress -> _onUpdateChestsPayInProgress",
+   "updateChestContributions -> _onUpdateChestContributions",
+   "getEventChestRotation -> _onGetEventChestRotation"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "openChest",
+    "args": "chestId,callback",
+    "reqs": [
+     "openChest.withData([chestId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openChestAndCollect",
+    "args": "chestId,seasonalEventId,callback",
+    "reqs": [
+     "openChestAndCollect.withData([chestId,seasonalEventId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "payIn",
+    "args": "chestId,amount,callback",
+    "reqs": [
+     "payIn.withData([chestId,amount]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "payInWithPremium",
+    "args": "chestId,amount,premiumCosts,callback",
+    "reqs": [
+     "payInWithPremium.withData([chestId,amount,premiumCosts]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getEventChestRotation",
+    "args": "seasonalEventId",
+    "reqs": [
+     "getEventChestRotation.withData([seasonalEventId]).withCallback($bind(this,this._onGetEventChestRotation)).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateUnavailableChests",
+    "args": "ids",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateChestsPayInProgress",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "_onUpdateChestContributions",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "_onGetEventChestRotation",
+    "args": "vos",
+    "reqs": [],
+    "lines": 10
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.challengeevents.services.ChallengeEventService",
+  "jsName": "de_innogames_onyx_city_challengeevents_services_ChallengeEventService",
+  "line": 383969,
+  "startLine": 383965,
+  "endLine": 383981,
+  "serviceName": "ChallengeEventService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getMilestoneRewards -> _onGetMilestoneRewards"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetMilestoneRewards",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.inventoryitems.service.InventoryService",
+  "jsName": "de_innogames_onyx_city_inventoryitems_service_InventoryService",
+  "line": 417003,
+  "startLine": 416999,
+  "endLine": 417036,
+  "serviceName": "InventoryService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateItems -> _onUpdateItems"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getItems",
+    "args": "",
+    "reqs": [
+     "getItems.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "placeBuilding",
+    "args": "inventoryItemId,x,y,callback",
+    "reqs": [
+     "placeBuilding.withData([inventoryItemId,x,y]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "useItem",
+    "args": "itemId",
+    "reqs": [
+     "useItem.withData([itemId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "useItemOn",
+    "args": "itemId,targetVO",
+    "reqs": [
+     "useItemOn.withData([itemId,targetVO]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_getInventoryItems",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "_onUpdateItems",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.mainevents.eventleague.services.EventLeagueService",
+  "jsName": "de_innogames_onyx_city_mainevents_eventleague_services_EventLeagueService",
+  "line": 423617,
+  "startLine": 423612,
+  "endLine": 423635,
+  "serviceName": "EventLeagueService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateEventLeagueProgress -> _onUpdateEventLeagueProgress",
+   "sendEventLeagueEndReward -> _onSendEventLeagueEndReward"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getLeagueProgress",
+    "args": "",
+    "reqs": [
+     "getEventLeagueProgress.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateEventLeagueProgress",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onSendEventLeagueEndReward",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.mainevents.royalpass.services.RoyalPassService",
+  "jsName": "de_innogames_onyx_city_mainevents_royalpass_services_RoyalPassService",
+  "line": 427267,
+  "startLine": 427263,
+  "endLine": 427291,
+  "serviceName": "RoyalPassService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "sendRoyalPassEndRewards -> _onSendRoyalPassEndRewards"
+  ],
+  "methods": [
+   {
+    "mname": "claimAllRewards",
+    "args": "callback",
+    "reqs": [
+     "claimAllRewards.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "claimNextGrandPrize",
+    "args": "callback",
+    "reqs": [
+     "claimNextGrandPrize.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "claimNextRoyalPrize",
+    "args": "callback",
+    "reqs": [
+     "claimNextRoyalPrize.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onSendRoyalPassEndRewards",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.mainevents.shared.services.ShuffleEventService",
+  "jsName": "de_innogames_onyx_city_mainevents_shared_services_ShuffleEventService",
+  "line": 444324,
+  "startLine": 444320,
+  "endLine": 444345,
+  "serviceName": "ShuffleEventService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateShuffleEvent -> _onUpdate"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getPackages",
+    "args": "",
+    "reqs": [
+     "getOverview.withCallback($bind(this,this._onUpdate)).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "shufflePackages",
+    "args": "",
+    "reqs": [
+     "shuffle.withCallback($bind(this,this._onUpdate)).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openPackage",
+    "args": "position,callback",
+    "reqs": [
+     "openPackage.withData([position]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdate",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.mainevents.shared.services.TileEventService",
+  "jsName": "de_innogames_onyx_city_mainevents_shared_services_TileEventService",
+  "line": 444353,
+  "startLine": 444346,
+  "endLine": 444401,
+  "serviceName": "TileEventService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateCells -> onUpdateCells",
+   "addColumn -> onAddColumn",
+   "autoCollectRewards -> onAutoCollectRewards",
+   "updateRevealChargePositions -> onUpdateRevealChargePositions"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getTileEvent",
+    "args": "",
+    "reqs": [
+     "getTileEvent.withCallback($bind(this,this.onGetTileEvent)).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "useTool",
+    "args": "toolId,cellX,cellY",
+    "reqs": [
+     "useTool.withData([toolId,cellX,cellY]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "collectReward",
+    "args": "cellX,cellY,callback",
+    "reqs": [
+     "collectReward.withData([cellX,cellY]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "onGetTileEvent",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onUpdateCells",
+    "args": "vos",
+    "reqs": [],
+    "lines": 8
+   },
+   {
+    "mname": "onAddColumn",
+    "args": "vos",
+    "reqs": [],
+    "lines": 8
+   },
+   {
+    "mname": "onAutoCollectRewards",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onUpdateRevealChargePositions",
+    "args": "vos",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.offers.services.OfferService",
+  "jsName": "de_innogames_onyx_city_offers_services_OfferService",
+  "line": 457723,
+  "startLine": 457719,
+  "endLine": 457738,
+  "serviceName": "OfferService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "refreshActiveOffers -> _onOffersUpdated"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onOffersUpdated",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.service.NeighborlyHelpService",
+  "jsName": "de_innogames_onyx_city_service_NeighborlyHelpService",
+  "line": 458771,
+  "startLine": 458768,
+  "endLine": 458789,
+  "serviceName": "NeighbourlyHelpService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "performAction",
+    "args": "action,entityId,playerId",
+    "reqs": [
+     "performHelp.withData([action,entityId,playerId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "pickup",
+    "args": "entityIds",
+    "reqs": [
+     "pickup.withData([entityIds])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "updateEntityCultureEffect",
+    "args": "playerId",
+    "reqs": [
+     "updateEntityCultureEffect.withData([playerId])"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.service.NotificationService",
+  "jsName": "de_innogames_onyx_city_service_NotificationService",
+  "line": 458794,
+  "startLine": 458790,
+  "endLine": 458816,
+  "serviceName": "NotificationService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getGlobalNotifications -> _onGlobalNotifications"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "cleanPendingNotifications",
+    "args": "scope,callback",
+    "reqs": [
+     "cleanPendingNotifications.withData([scope]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getAllNotifications",
+    "args": "callback",
+    "reqs": [
+     "getAllNotifications.withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getNotificationPreviews",
+    "args": "playerId,callback",
+    "reqs": [
+     "getPreviewNotifications.withData([playerId]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onGlobalNotifications",
+    "args": "notifications",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.services.BattleRetreatService",
+  "jsName": "de_innogames_onyx_city_services_BattleRetreatService",
+  "line": 458820,
+  "startLine": 458817,
+  "endLine": 458832,
+  "serviceName": "BattleService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "retreatBattle",
+    "args": "battleId,callback",
+    "reqs": [
+     "retreat.withData([battleId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.services.CityMapService",
+  "jsName": "de_innogames_onyx_city_services_CityMapService",
+  "line": 458840,
+  "startLine": 458833,
+  "endLine": 458921,
+  "serviceName": "CityMapService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateExpansions -> _onUpdateExpansions",
+   "replaceBuilding -> _onReplaceEntity",
+   "updateEntity -> _onUpdateEntity",
+   "reset -> _onResetEntities"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "placeEntity",
+    "args": "entity,isPremium,callback",
+    "reqs": [
+     "placeBuildingForPremium.withData([entity.get_entityConfig().get_id(),entity.get_x(),entity.get_y()]).withCallback(callback).immediate()",
+     "placeBuilding.withData([entity.get_entityConfig().get_id(),entity.get_x(),entity.get_y()]).withCallback(callback)"
+    ],
+    "lines": 10
+   },
+   {
+    "mname": "replaceEntities",
+    "args": "entities,callback",
+    "reqs": [
+     "replaceBuildings.withData([entities]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "removeEntity",
+    "args": "entity,callback",
+    "reqs": [
+     "removeBuilding.withData([entity.get_id()]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "moveEntity",
+    "args": "entity,callback",
+    "reqs": [
+     "moveBuilding.withData([entity.get_id(),entity.get_x(),entity.get_y()]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "upgradeEntity",
+    "args": "entity,isPremium,callback",
+    "reqs": [
+     "upgradeBuildingForPremium.withData([entity.get_id(),entity.get_x(),entity.get_y()]).withCallback(callback).immediate()",
+     "upgradeBuilding.withData([entity.get_id(),entity.get_x(),entity.get_y()]).withCallback(callback).immediate()"
+    ],
+    "lines": 10
+   },
+   {
+    "mname": "cancelUpgrade",
+    "args": "entity,callback",
+    "reqs": [
+     "cancelUpgrade.withData([entity.get_id(),entity.get_x(),entity.get_y()]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "unlockArea",
+    "args": "tileX,tileY,expansionConfig,callback",
+    "reqs": [
+     "unlockArea.withData([tileX,tileY,expansionConfig.get_unlockedThrough(),expansionConfig.get_buyForPremium()]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "reduceConstructionTime",
+    "args": "mapEntityId,price,callback",
+    "reqs": [
+     "reduceConstructionTime.withData([mapEntityId,price]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "update",
+    "args": "",
+    "reqs": [
+     "update"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onReplaceEntity",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateEntity",
+    "args": "entities",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onResetEntities",
+    "args": "entities",
+    "reqs": [],
+    "lines": 9
+   },
+   {
+    "mname": "_onUpdateExpansions",
+    "args": "expansions",
+    "reqs": [],
+    "lines": 13
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.trade.services.MerchantService",
+  "jsName": "de_innogames_onyx_city_trade_services_MerchantService",
+  "line": 462251,
+  "startLine": 462247,
+  "endLine": 462275,
+  "serviceName": "MerchantService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateMerchants -> _onUpdateMerchants"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getMerchants",
+    "args": "",
+    "reqs": [
+     "getMerchants.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "hireMerchant",
+    "args": "merchantId",
+    "reqs": [
+     "hireMerchant.withData([merchantId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "finishCooldown",
+    "args": "merchantId",
+    "reqs": [
+     "finishCooldown.withData([merchantId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trade",
+    "args": "merchantId,offer,demand,callback",
+    "reqs": [
+     "trade.withData([merchantId,de_innogames_onyx_resources_util_ResourceConverter.toCityGoodVO(offer),de_innogames_onyx_resources_util_ResourceConverter.toCityGoodVO(demand)]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateMerchants",
+    "args": "merchants",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.trade.services.TradeService",
+  "jsName": "de_innogames_onyx_city_trade_services_TradeService",
+  "line": 462279,
+  "startLine": 462276,
+  "endLine": 462309,
+  "serviceName": "TradeService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "acceptWholesalerTrade",
+    "args": "tradeId,callback",
+    "reqs": [
+     "acceptNpcOffer.withData([tradeId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "acceptPlayerTrade",
+    "args": "tradeId,callback",
+    "reqs": [
+     "acceptPlayerTrade.withData([tradeId]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "cancelTrade",
+    "args": "tradeId,callback",
+    "reqs": [
+     "cancelTrade.withData([tradeId]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "createTrade",
+    "args": "offer,need,callback",
+    "reqs": [
+     "createTrade.withData([de_innogames_onyx_resources_util_ResourceConverter.toCityGoodVO(offer),de_innogames_onyx_resources_util_ResourceConverter.toCityGoodVO(need)]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getNPCTrades",
+    "args": "callback",
+    "reqs": [
+     "getNPCOffers.withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getOtherPlayersTrades",
+    "args": "callback",
+    "reqs": [
+     "getOtherPlayersTrades.withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getOwnPlayerTrades",
+    "args": "callback",
+    "reqs": [
+     "getOwnPlayerTrades.withCallback(callback)"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.city.ui.windows.academy.cauldron.services.CauldronService",
+  "jsName": "de_innogames_onyx_city_ui_windows_academy_cauldron_services_CauldronService",
+  "line": 481459,
+  "startLine": 481454,
+  "endLine": 481497,
+  "serviceName": "CauldronService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getData -> _onUpdateData",
+   "getLastUsedGobletResult -> _onGetLastUsedGobletResult"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getIngredientList",
+    "args": "",
+    "reqs": [
+     "getIngredients (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "brew",
+    "args": "ingredientList,spellFragmentUsed,premiumBoost",
+    "reqs": [
+     "brew.withData([ingredientList,spellFragmentUsed,premiumBoost]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "confirmGobletEffect",
+    "args": "id",
+    "reqs": [
+     "confirmGobletEffect.withData([id]).immediate()"
+    ],
+    "lines": 6
+   },
+   {
+    "mname": "getPotionEffectsList",
+    "args": "",
+    "reqs": [
+     "getPotionEffects (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getConvertableResourceList",
+    "args": "",
+    "reqs": [
+     "getResources (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "investWitchPoints",
+    "args": "potionEffectId,witchPointsCost",
+    "reqs": [
+     "investWitchPoints (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "convertToWitchPoints",
+    "args": "resourceId,convertNum",
+    "reqs": [
+     "trade.withData([resourceId,convertNum]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateData",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetLastUsedGobletResult",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.cmp.services.CmpService",
+  "jsName": "de_innogames_onyx_cmp_services_CmpService",
+  "line": 512190,
+  "startLine": 512187,
+  "endLine": 512204,
+  "serviceName": "CmpService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "storeConsentToken",
+    "args": "consentToken,controllerId",
+    "reqs": [
+     "storeConsentToken.withData([consentToken,controllerId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackOpenConsentPopup",
+    "args": "",
+    "reqs": [
+     "trackOpenConsentPopup.immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.miners.service.GoldMineService",
+  "jsName": "de_innogames_onyx_miners_service_GoldMineService",
+  "line": 519453,
+  "startLine": 519450,
+  "endLine": 519465,
+  "serviceName": "GoldMineService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "mine",
+    "args": "province,callback",
+    "reqs": [
+     "mine.withData([province.get_columnIndex(),province.get_rowIndex()]).withCallback(callback)"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.multiplayer.services.MultiplayerService",
+  "jsName": "de_innogames_onyx_multiplayer_services_MultiplayerService",
+  "line": 520809,
+  "startLine": 520801,
+  "endLine": 520854,
+  "serviceName": "MultiplayerEventService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateOverview -> onUpdateOverview",
+   "updateWaypoints -> onUpdateWaypoints",
+   "unlockStageReward -> onUnlockStageRewards",
+   "getMultiplayerEventReward -> onGetMultiplayerEventReward",
+   "updateContributors -> onUpdateContributors"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getOverview",
+    "args": "",
+    "reqs": [
+     "getOverview.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openWaypoint",
+    "args": "waypointId",
+    "reqs": [
+     "openWaypoint.withData([waypointId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "collectStageReward",
+    "args": "",
+    "reqs": [
+     "collectStageReward.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "selectPath",
+    "args": "path",
+    "reqs": [
+     "selectPath.withData([path]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "createWaypoints",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "onUpdateOverview",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onUpdateWaypoints",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "onUnlockStageRewards",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onGetMultiplayerEventReward",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onUpdateContributors",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.CraftService",
+  "jsName": "de_innogames_onyx_networking_services_CraftService",
+  "line": 523799,
+  "startLine": 523796,
+  "endLine": 523842,
+  "serviceName": "CraftService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "cancelCrafting",
+    "args": "",
+    "reqs": [
+     "cancelCrafting.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "collectChestRewards",
+    "args": "",
+    "reqs": [
+     "collectChestRewards (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "collectCraftedItem",
+    "args": "",
+    "reqs": [
+     "collectCraftedItem (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "collectCraftedItems",
+    "args": "",
+    "reqs": [
+     "collectCraftedItems (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getCraftingData",
+    "args": "",
+    "reqs": [
+     "getCraftingData (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantFinish",
+    "args": "",
+    "reqs": [
+     "instantFinish.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantRefreshSlots",
+    "args": "",
+    "reqs": [
+     "instantRefreshSlots (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "startCrafting",
+    "args": "recipeId",
+    "reqs": [
+     "startCrafting.withData([recipeId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "startPremiumCrafting",
+    "args": "recipeId",
+    "reqs": [
+     "startPremiumCrafting.withData([recipeId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "trackHighlightsOpened",
+    "args": "",
+    "reqs": [
+     "trackHighlightsOpened.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.FeaturesService",
+  "jsName": "de_innogames_onyx_networking_services_FeaturesService",
+  "line": 523855,
+  "startLine": 523852,
+  "endLine": 523871,
+  "serviceName": "FeaturesService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getFeatureFlags",
+    "args": "",
+    "reqs": [
+     "getFeatureFlags.withData([])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.GuardianService",
+  "jsName": "de_innogames_onyx_networking_services_GuardianService",
+  "line": 523887,
+  "startLine": 523884,
+  "endLine": 523912,
+  "serviceName": "GuardianService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getCollection",
+    "args": "",
+    "reqs": [
+     "getCollection (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantFinish",
+    "args": "guardianId",
+    "reqs": [
+     "instantFinish (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "summon",
+    "args": "guardianId",
+    "reqs": [
+     "summon (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "unsummon",
+    "args": "guardianId",
+    "reqs": [
+     "unsummon (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.SpireEffectService",
+  "jsName": "de_innogames_onyx_networking_services_SpireEffectService",
+  "line": 523964,
+  "startLine": 523961,
+  "endLine": 523986,
+  "serviceName": "SpireEffectService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getSelectionOptions",
+    "args": "pointId",
+    "reqs": [
+     "getSelectionOptions (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "reroll",
+    "args": "pointId",
+    "reqs": [
+     "reroll (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "select",
+    "args": "pointId,effectConfigId",
+    "reqs": [
+     "select (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.SpireService",
+  "jsName": "de_innogames_onyx_networking_services_SpireService",
+  "line": 523990,
+  "startLine": 523987,
+  "endLine": 524030,
+  "serviceName": "SpireService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "buyUnits",
+    "args": "pointId,unitId",
+    "reqs": [
+     "buyUnits (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getData",
+    "args": "",
+    "reqs": [
+     "getData (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getEncounter",
+    "args": "pointId",
+    "reqs": [
+     "getEncounter (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getPointsArchive",
+    "args": "",
+    "reqs": [
+     "getPointsArchive (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantOpenGate",
+    "args": "pointId",
+    "reqs": [
+     "instantOpenGate (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openChest",
+    "args": "pointId",
+    "reqs": [
+     "openChest (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openGate",
+    "args": "pointId",
+    "reqs": [
+     "openGate (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "openMysteryChest",
+    "args": "chestLocationId",
+    "reqs": [
+     "openMysteryChest (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "unlockCrystalByArchive",
+    "args": "orbsNeededForCrystal",
+    "reqs": [
+     "unlockCrystalByArchive (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.SpireShopService",
+  "jsName": "de_innogames_onyx_networking_services_SpireShopService",
+  "line": 524034,
+  "startLine": 524031,
+  "endLine": 524053,
+  "serviceName": "SpireShopService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "buy",
+    "args": "itemId",
+    "reqs": [
+     "buy (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getShop",
+    "args": "",
+    "reqs": [
+     "getShop (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.networking.services.TranscendenceService",
+  "jsName": "de_innogames_onyx_networking_services_TranscendenceService",
+  "line": 524057,
+  "startLine": 524054,
+  "endLine": 524076,
+  "serviceName": "TranscendenceService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "extendTime",
+    "args": "buildingId",
+    "reqs": [
+     "extendTime (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "refresh",
+    "args": "buildingId",
+    "reqs": [
+     "refresh (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.seasonalevents.services.SeasonalEventsService",
+  "jsName": "de_innogames_onyx_seasonalevents_services_SeasonalEventsService",
+  "line": 545997,
+  "startLine": 545993,
+  "endLine": 546021,
+  "serviceName": "SeasonalEventsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getEvents -> onGetEvents"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "confirmEventStarted",
+    "args": "seasonalEventId",
+    "reqs": [
+     "confirmEventStarted.withData([seasonalEventId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "confirmEventEnded",
+    "args": "seasonalEventId",
+    "reqs": [
+     "confirmEventEnded.withData([seasonalEventId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "requestEventsUpdate",
+    "args": "",
+    "reqs": [
+     "requestEventsUpdate.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "onGetEvents",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.exceptions.ExceptionService",
+  "jsName": "de_innogames_onyx_shared_exceptions_ExceptionService",
+  "line": 550678,
+  "startLine": 550673,
+  "endLine": 550692,
+  "serviceName": "ExceptionService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "exception -> _onExceptionReceived",
+   "redirect -> _onRedirectReceived"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onExceptionReceived",
+    "args": "exception",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onRedirectReceived",
+    "args": "redirect",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.guilds.services.GuildProgressionService",
+  "jsName": "de_innogames_onyx_shared_guilds_services_GuildProgressionService",
+  "line": 554498,
+  "startLine": 554494,
+  "endLine": 554519,
+  "serviceName": "GuildProgressionService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getOverview -> _onUpdatePerks"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getPerks",
+    "args": "",
+    "reqs": [
+     "getOverview.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "upgradePerk",
+    "args": "perkType,xpLevel",
+    "reqs": [
+     "upgradePerk.withData([perkType,xpLevel]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "resetAllPerks",
+    "args": "",
+    "reqs": [
+     "resetPerks.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdatePerks",
+    "args": "guildProgressionVO",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.guilds.services.GuildService",
+  "jsName": "de_innogames_onyx_shared_guilds_services_GuildService",
+  "line": 554528,
+  "startLine": 554520,
+  "endLine": 554633,
+  "serviceName": "GuildService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "guild_application_accepted -> _onGuildApplicationAccepted",
+   "guild_role_changed -> _onGuildRoleChanged",
+   "guild_expelled -> _onGuildMemberExpelled",
+   "guild_changed -> _onGuildMemberUpdated",
+   "refreshGuild -> onRefreshGuild"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "refreshGuild",
+    "args": "",
+    "reqs": [
+     "refreshGuild.withCallback($bind(this,this.onRefreshGuild)).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getGuild",
+    "args": "guildId,callback",
+    "reqs": [
+     "getGuild.withData([guildId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getMembershipRequests",
+    "args": "callback",
+    "reqs": [
+     "getMembershipRequests.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "createGuild",
+    "args": "guildName,guildDescription,allowInvitations,applicationData,guildBanner,callback",
+    "reqs": [
+     "createGuild.withData([guildName,guildDescription,guildBanner.get_shapeId(),guildBanner.get_shapeColor(),guildBanner.get_symbolId(),guildBanner.get_symbolColor(),allowInvitations,false,applicationData.get_id()]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "editGuild",
+    "args": "guildName,guildDescription,allowInvitations,applicationData,guildBanner,callback",
+    "reqs": [
+     "editGuild.withData([guildName,guildDescription,guildBanner.get_shapeId(),guildBanner.get_shapeColor(),guildBanner.get_symbolId(),guildBanner.get_symbolColor(),allowInvitations,false,applicationData.get_id()]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "disbandGuild",
+    "args": "callback",
+    "reqs": [
+     "disbandGuild.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "leaveGuild",
+    "args": "callback",
+    "reqs": [
+     "leaveGuild.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "kickMember",
+    "args": "playerId,callback",
+    "reqs": [
+     "kickMember.withData([playerId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "changeMemberRole",
+    "args": "playerId,role,callback",
+    "reqs": [
+     "changeMemberRole.withData([playerId,role]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "sendApplication",
+    "args": "guildId,callback",
+    "reqs": [
+     "sendApplication.withData([guildId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "withdrawApplication",
+    "args": "applicationId,callback",
+    "reqs": [
+     "withdrawApplication.withData([applicationId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "acceptApplication",
+    "args": "applicationId,callback",
+    "reqs": [
+     "acceptApplication.withData([applicationId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "rejectApplication",
+    "args": "applicationId,callback",
+    "reqs": [
+     "rejectApplication.withData([applicationId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "invitePlayer",
+    "args": "playerId,callback",
+    "reqs": [
+     "invitePlayer.withData([playerId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "disinvitePlayer",
+    "args": "invitationId,callback",
+    "reqs": [
+     "disinvitePlayer.withData([invitationId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "acceptInvitation",
+    "args": "invitationId,callback",
+    "reqs": [
+     "acceptInvitation.withData([invitationId]).withCallback(callback).parseLastResponse().immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "declineInvitation",
+    "args": "invitationId,callback",
+    "reqs": [
+     "declineInvitation.withData([invitationId]).withCallback(callback).parseLastResponse().immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getGuildSuggestions",
+    "args": "callback",
+    "reqs": [
+     "getGuildSuggestions.withData([40]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onGuildMemberUpdated",
+    "args": "guild",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGuildRoleChanged",
+    "args": "guild",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGuildApplicationAccepted",
+    "args": "guild",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGuildMemberExpelled",
+    "args": "data",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "onRefreshGuild",
+    "args": "guild",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.indicators.services.IndicatorsService",
+  "jsName": "de_innogames_onyx_shared_indicators_services_IndicatorsService",
+  "line": 563052,
+  "startLine": 563048,
+  "endLine": 563076,
+  "serviceName": "IndicatorsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getIndicators -> _onIndicatorsUpdated"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getIndicators",
+    "args": "",
+    "reqs": [
+     "getIndicators.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "clearIndicator",
+    "args": "indicatorId,categoryId",
+    "reqs": [
+     "clearIndicator.withData([categoryId,indicatorId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "clearIndicators",
+    "args": "indicatorIds",
+    "reqs": [
+     "clearIndicators.withData([indicatorIds]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onIndicatorsUpdated",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.messaging.service.MessageService",
+  "jsName": "de_innogames_onyx_shared_messaging_service_MessageService",
+  "line": 564842,
+  "startLine": 564839,
+  "endLine": 564875,
+  "serviceName": "MessageService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getMessages",
+    "args": "mailboxType,offset,count,callback",
+    "reqs": [
+     "fetchMessages.withData([mailboxType.toString(),offset,count]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getMetadata",
+    "args": "mailboxType,callback",
+    "reqs": [
+     "getMessageOverview.withData([mailboxType.toString()]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "replyMessage",
+    "args": "messageId,message,callback",
+    "reqs": [
+     "replyMessage.withData([messageId,message]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "deleteMessage",
+    "args": "messageId,callback",
+    "reqs": [
+     "deleteMessage.withData([messageId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "markMessageAsRead",
+    "args": "messageId,callback",
+    "reqs": [
+     "markMessageAsRead.withData([messageId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "sendMessage",
+    "args": "recipientName,subject,message,callback",
+    "reqs": [
+     "sendMessage.withData([recipientName,message,subject]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "sendGuildMessage",
+    "args": "subject,message,callback",
+    "reqs": [
+     "sendGuildMessage.withData([message,subject]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "reportPlayer",
+    "args": "reportMessage,reportedMessageId,messagePostId",
+    "reqs": [
+     "reportPlayer.withData([reportedMessageId,messagePostId,reportMessage]).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.quests.services.QuestDataService",
+  "jsName": "de_innogames_onyx_shared_quests_services_QuestDataService",
+  "line": 570869,
+  "startLine": 570864,
+  "endLine": 570893,
+  "serviceName": "QuestService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getUpdates -> _onQuestUpdate",
+   "abortQuest -> _onQuestUpdate"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getUpdates",
+    "args": "",
+    "reqs": [
+     "getUpdates"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "advanceQuest",
+    "args": "questId,callback",
+    "reqs": [
+     "advanceQuest.withData([questId]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "abortQuest",
+    "args": "questId",
+    "reqs": [
+     "abortQuest.withData([questId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "markSeen",
+    "args": "questId",
+    "reqs": [
+     "markSeen.withData([questId])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onQuestUpdate",
+    "args": "quests",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.ranking.service.RankingService",
+  "jsName": "de_innogames_onyx_shared_ranking_service_RankingService",
+  "line": 574174,
+  "startLine": 574168,
+  "endLine": 574207,
+  "serviceName": "RankingService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "accessRanking -> _onAccessRanking",
+   "getRankingList -> _onGetRankingList",
+   "newRank -> _onNewRank"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "accessRanking",
+    "args": "category,id",
+    "reqs": [
+     "accessRanking.withData([category.get_name(),8,id])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getRankingList",
+    "args": "category,pageIndex,filterString,filterType",
+    "reqs": [
+     "getRankingList.withData([category.get_name(),pageIndex,8,filterString,filterType])"
+    ],
+    "lines": 9
+   },
+   {
+    "mname": "getRankingOverview",
+    "args": "playerId,callback",
+    "reqs": [
+     "getRankingOverview.withData([playerId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onAccessRanking",
+    "args": "rankings",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetRankingList",
+    "args": "rankings",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onNewRank",
+    "args": "ranking",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.rewards.services.EpisodicRewardsService",
+  "jsName": "de_innogames_onyx_shared_rewards_services_EpisodicRewardsService",
+  "line": 576958,
+  "startLine": 576954,
+  "endLine": 576973,
+  "serviceName": "EpisodicRewardsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getRewards -> _onGetRewards"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetRewards",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.service.CallbackService",
+  "jsName": "de_innogames_onyx_shared_service_CallbackService",
+  "line": 579410,
+  "startLine": 579406,
+  "endLine": 579421,
+  "serviceName": "CallbackService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "call -> _onCallback"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onCallback",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.shared.spells.services.SpellService",
+  "jsName": "de_innogames_onyx_shared_spells_services_SpellService",
+  "line": 580454,
+  "startLine": 580451,
+  "endLine": 580469,
+  "serviceName": "SpellService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "castSpellOnBuilding",
+    "args": "spellId,cityMapEntityId,callback",
+    "reqs": [
+     "castSpellOnBuilding.withCallback(callback).withData([spellId,cityMapEntityId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "castGlobalSpell",
+    "args": "spellId",
+    "reqs": [
+     "castSpell.withData([spellId]).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.spire.service.SpireRankingService",
+  "jsName": "de_innogames_onyx_spire_service_SpireRankingService",
+  "line": 619801,
+  "startLine": 619797,
+  "endLine": 619815,
+  "serviceName": "SpireRankingService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateRanking -> _onUpdateRanking"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getRanking",
+    "args": "callback",
+    "reqs": [
+     "updateRanking.immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateRanking",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.spire.service.SpireRoundsService",
+  "jsName": "de_innogames_onyx_spire_service_SpireRoundsService",
+  "line": 619819,
+  "startLine": 619816,
+  "endLine": 619830,
+  "serviceName": "SpireRoundsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getOverview",
+    "args": "",
+    "reqs": [
+     "getOverview (complex)"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.spire.services.SpireService",
+  "jsName": "de_innogames_onyx_spire_services_SpireService",
+  "line": 619835,
+  "startLine": 619831,
+  "endLine": 619846,
+  "serviceName": "SpireService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "showRewards -> _onShowRewards"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onShowRewards",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.techtree.service.CityResearchService",
+  "jsName": "de_innogames_onyx_techtree_service_CityResearchService",
+  "line": 632683,
+  "startLine": 632679,
+  "endLine": 632694,
+  "serviceName": "CityResearchService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateTechnologySection -> _onTechnologySectionUpdated"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onTechnologySectionUpdated",
+    "args": "technologySection",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.techtree.service.TechnologyService",
+  "jsName": "de_innogames_onyx_techtree_service_TechnologyService",
+  "line": 632698,
+  "startLine": 632695,
+  "endLine": 632725,
+  "serviceName": "ResearchService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getTechnologyData",
+    "args": "callback",
+    "reqs": [
+     "startup.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "useKnowledgePoints",
+    "args": "technologyId,amount",
+    "reqs": [
+     "invest.withData([technologyId,amount]).parseLastResponse()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "payTechnology",
+    "args": "technologyId",
+    "reqs": [
+     "payTechnology.withData([technologyId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "buyInstantResearch",
+    "args": "technologyId",
+    "reqs": [
+     "buyInstantResearch.withData([technologyId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "buyInstantResearchAndUnlock",
+    "args": "technologyId,callback",
+    "reqs": [
+     "buyInstantResearchAndUnlock.withData([technologyId]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "unlockGate",
+    "args": "technologyId",
+    "reqs": [
+     "unlockGate.withData([technologyId]).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.tournaments.services.TournamentService",
+  "jsName": "de_innogames_onyx_tournaments_services_TournamentService",
+  "line": 638947,
+  "startLine": 638942,
+  "endLine": 638968,
+  "serviceName": "TournamentService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateTournamentPoints -> _onUpdateTournamentPoints",
+   "getTournamentReward -> _onGetTournamentReward"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getTournamentProgress",
+    "args": "",
+    "reqs": [
+     "getTournamentOverview.withCallback($bind(this,this._onGetTournamentOverview))"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetTournamentOverview",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateTournamentPoints",
+    "args": "points",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetTournamentReward",
+    "args": "rewards",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.valuemanipulation.services.ValueManipulationService",
+  "jsName": "de_innogames_onyx_valuemanipulation_services_ValueManipulationService",
+  "line": 642605,
+  "startLine": 642601,
+  "endLine": 642626,
+  "serviceName": "ValueManipulationService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getValueManipulations -> _onGetValueManipulations"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onGetValueManipulations",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   },
+   {
+    "mname": "_createManipulations",
+    "args": "vos",
+    "reqs": [],
+    "lines": 6
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.videoads.services.VideoAdService",
+  "jsName": "de_innogames_onyx_videoads_services_VideoAdService",
+  "line": 643684,
+  "startLine": 643681,
+  "endLine": 643714,
+  "serviceName": "VideoAdService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "getFeatures",
+    "args": "",
+    "reqs": [
+     "getFeatures (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getBuildersBonusConfig",
+    "args": "",
+    "reqs": [
+     "getBuildersBonusConfig (complex)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "start",
+    "args": "featureId,context",
+    "reqs": [
+     "start.withData([featureId,context]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "finish",
+    "args": "featureId,context",
+    "reqs": [
+     "finish.withData([featureId,context]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "track",
+    "args": "featureId,context",
+    "reqs": [
+     "track.withData([featureId,context]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "bypass",
+    "args": "featureId,context",
+    "reqs": [
+     "bypass.withData([featureId,context]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addSafePushResponse",
+    "args": "response,callback",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.worldmap.service.ScoutingService",
+  "jsName": "de_innogames_onyx_worldmap_service_ScoutingService",
+  "line": 647565,
+  "startLine": 647559,
+  "endLine": 647596,
+  "serviceName": "WorldMapScoutService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "findProvincesToScout -> _onFindProvincesToScout",
+   "removeScout -> _onRemoveScout",
+   "updateScout -> _onUpdateScout"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "startScouting",
+    "args": "rowIndex,columnIndex,callback",
+    "reqs": [
+     "startScouting.withData([columnIndex,rowIndex]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "finishScouting",
+    "args": "rowIndex,columnIndex,callback",
+    "reqs": [
+     "finishScouting.withData([columnIndex,rowIndex]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "instantFinish",
+    "args": "rowIndex,columnIndex,cost,callback",
+    "reqs": [
+     "instantFinish.withData([columnIndex,rowIndex,cost]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onFindProvincesToScout",
+    "args": "provinces",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "_onRemoveScout",
+    "args": "vos",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "_onUpdateScout",
+    "args": "vo",
+    "reqs": [],
+    "lines": 4
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.worldmap.service.UnlockEncounterService",
+  "jsName": "de_innogames_onyx_worldmap_service_UnlockEncounterService",
+  "line": 647600,
+  "startLine": 647597,
+  "endLine": 647615,
+  "serviceName": "UnlockEncounterService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "unlockEncounter",
+    "args": "rowIndex,columnIndex,encounterIndex,callback",
+    "reqs": [
+     "unlockEncounterByTrading.withData([columnIndex,rowIndex,encounterIndex]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "premiumUnlockEncounter",
+    "args": "rowIndex,columnIndex,encounterIndex,callback",
+    "reqs": [
+     "unlockEncounterByTradingUsingPremium.withData([columnIndex,rowIndex,encounterIndex]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.worldmap.service.WorldMapBattleService",
+  "jsName": "de_innogames_onyx_worldmap_service_WorldMapBattleService",
+  "line": 647619,
+  "startLine": 647616,
+  "endLine": 647643,
+  "serviceName": "BattlefieldService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "instantBattle",
+    "args": "rowIndex,columnIndex,encounterIndex,playerUnits,callback",
+    "reqs": [
+     "instantBattle.withData([columnIndex,rowIndex,encounterIndex,de_innogames_onyx_worldmap_service_WorldMapBattleService._getUnitsVO(playerUnits)]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "startBattle",
+    "args": "rowIndex,columnIndex,encounterIndex,playerUnits,callback",
+    "reqs": [
+     "start.withData([columnIndex,rowIndex,encounterIndex,de_innogames_onyx_worldmap_service_WorldMapBattleService._getUnitsVO(playerUnits)]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.onyx.worldmap.service.WorldMapService",
+  "jsName": "de_innogames_onyx_worldmap_service_WorldMapService",
+  "line": 647651,
+  "startLine": 647644,
+  "endLine": 647731,
+  "serviceName": "WorldMapService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "updateProvince -> _onUpdateProvince",
+   "updateMapArea -> _onUpdateMapArea",
+   "updateTournamentTime -> _onUpdateTournamentTime"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "dispose",
+    "args": "",
+    "reqs": [],
+    "lines": 4
+   },
+   {
+    "mname": "startup",
+    "args": "callback",
+    "reqs": [
+     "fetchInitialWorldMapData.immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getWorldMapAreas",
+    "args": "areas,immediately,callback",
+    "reqs": [],
+    "lines": 22
+   },
+   {
+    "mname": "getProvinceInformation",
+    "args": "province,callback",
+    "reqs": [
+     "getProvinceInformation.withData([province.get_columnIndex(),province.get_rowIndex()]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getIncompleteProvinces",
+    "args": "callback",
+    "reqs": [
+     "getIncompleteProvinces.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "getDiscoveredPlayerProvinces",
+    "args": "callback",
+    "reqs": [
+     "getDiscoveredPlayerProvinces.withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_getWorldMapAreas",
+    "args": "",
+    "reqs": [
+     "fetchAreas.withCallback(this._getAreasCallback).withData([areaIds])"
+    ],
+    "lines": 11
+   },
+   {
+    "mname": "_onUpdateProvince",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onUpdateTournamentTime",
+    "args": "vo",
+    "reqs": [],
+    "lines": 7
+   },
+   {
+    "mname": "_onUpdateMapArea",
+    "args": "areas",
+    "reqs": [],
+    "lines": 8
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.strategycity.main.service.RelicService",
+  "jsName": "de_innogames_strategycity_main_service_RelicService",
+  "line": 665410,
+  "startLine": 665405,
+  "endLine": 665425,
+  "serviceName": "RelicService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "getRelicBoostGoodInformation -> _onRelicBoostGoodInfo",
+   "getRelicsInformation -> _onRelicsInfo"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onRelicsInfo",
+    "args": "relics",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onRelicBoostGoodInfo",
+    "args": "boosts",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.strategycity.main.service.SettingsService",
+  "jsName": "de_innogames_strategycity_main_service_SettingsService",
+  "line": 665431,
+  "startLine": 665426,
+  "endLine": 665485,
+  "serviceName": "SettingsService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "requestActivationCode -> _onActivationCode",
+   "updateActivationEmail -> _onActivationCode"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "updateSettings",
+    "args": "settings,immediately,callback",
+    "reqs": [
+     "updateSettings.withData([settings]).immediate(immediately).parseLastResponse().withCallback(callback)"
+    ],
+    "lines": 6
+   },
+   {
+    "mname": "fetchEmail",
+    "args": "",
+    "reqs": [
+     "fetchEmail.immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "updateEmail",
+    "args": "newEmail,password,callback",
+    "reqs": [
+     "updateEmail.withData([newEmail,password]).withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "updatePassword",
+    "args": "password,newPassword,callback",
+    "reqs": [
+     "updatePassword.withData([newPassword,password]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "validateEmail",
+    "args": "email,callback",
+    "reqs": [
+     "validateEmail.withData([email]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "addEmail",
+    "args": "email,hasAcceptedEmails,callback",
+    "reqs": [
+     "addEmail.withData([email,hasAcceptedEmails]).immediate().withCallback(callback)"
+    ],
+    "lines": 6
+   },
+   {
+    "mname": "validatePassword",
+    "args": "password,playerName,callback",
+    "reqs": [
+     "validatePassword.withData([password,password,playerName]).immediate().withCallback(callback)"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "activateEmail",
+    "args": "activationCode",
+    "reqs": [
+     "activateEmail.withData([activationCode]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "requestActivationCode",
+    "args": "",
+    "reqs": [
+     "requestActivationCode"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "requestActivationCodeWithNewEmail",
+    "args": "email",
+    "reqs": [
+     "updateActivationEmail.withData([email])"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "ignorePlayer",
+    "args": "playerName",
+    "reqs": [
+     "ignorePlayer.withData([playerName]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "unignorePlayer",
+    "args": "playerName",
+    "reqs": [
+     "unignorePlayer.withData([playerName]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onActivationCode",
+    "args": "data",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ },
+ {
+  "name": "de.innogames.strategycity.shared.service.ArmyService",
+  "jsName": "de_innogames_strategycity_shared_service_ArmyService",
+  "line": 666491,
+  "startLine": 666485,
+  "endLine": 666515,
+  "serviceName": "ArmyService",
+  "super": "de_innogames_shared_networking_AbstractConnectionService",
+  "push": [
+   "addUnit -> _onAddUnit",
+   "healUnits -> _onHealUnit",
+   "revivedUnit -> _onRevivedUnit"
+  ],
+  "methods": [
+   {
+    "mname": "get_serviceName",
+    "args": "",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "reviveUnits",
+    "args": "battleId,wave,unitId",
+    "reqs": [
+     "reviveUnits.withData([battleId,wave,unitId]).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "buyUnits",
+    "args": "unitType,provinceColumnIndex,provinceRowIndex,callback",
+    "reqs": [
+     "buyMissingUnitsForPremium.withData([unitType,provinceColumnIndex,provinceRowIndex]).withCallback(callback).immediate()"
+    ],
+    "lines": 3
+   },
+   {
+    "mname": "_onAddUnit",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onHealUnit",
+    "args": "unitId",
+    "reqs": [],
+    "lines": 3
+   },
+   {
+    "mname": "_onRevivedUnit",
+    "args": "vo",
+    "reqs": [],
+    "lines": 3
+   }
+  ]
+ }
+]
