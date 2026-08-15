@@ -1,11 +1,14 @@
 import { EncounterData } from '../model/spire';
 import { backTranslations } from './backTranslations';
+import { sendPicksBackToElvenar } from './sendPicksBackToElvenar';
 import { SpireWizard } from './SpireWizard';
+import { waitForChoiceToBe } from './waitForChoiceToBe';
 
-export const startNewEncounter = (encounterData: EncounterData) => {
+export const startNewEncounter = async (encounterData: EncounterData) => {
   apiStartNewEncounter();
   apiSelectResources(encounterData);
   apiClickConfirmResourceSelection();
+  sendPicksBackToElvenar(await waitForChoiceToBe(1));
 };
 
 const apiStartNewEncounter = () => {
