@@ -17,21 +17,6 @@
 		B2F8CDA42F14013D00B73EC0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8CD632F14013B00B73EC0 /* ViewController.swift */; };
 		B2F8CDA62F14013D00B73EC0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CD642F14013D00B73EC0 /* Assets.xcassets */; };
 		B2F8CDA82F14013D00B73EC0 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8CD662F14013D00B73EC0 /* SafariWebExtensionHandler.swift */; };
-		B2F8CDC92F14013D00B73EC0 /* elvenassist-vendors.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBA2F14013D00B73EC0 /* elvenassist-vendors.bundle.js */; };
-		B2F8CDCA2F14013D00B73EC0 /* elvenassist-inject.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBB2F14013D00B73EC0 /* elvenassist-inject.bundle.js */; };
-		B2F8CDCB2F14013D00B73EC0 /* tab.css in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBC2F14013D00B73EC0 /* tab.css */; };
-		B2F8CDCC2F14013D00B73EC0 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBD2F14013D00B73EC0 /* popup.html */; };
-		B2F8CDCD2F14013D00B73EC0 /* elvenarchitect_data.json in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBE2F14013D00B73EC0 /* elvenarchitect_data.json */; };
-		B2F8CDCE2F14013D00B73EC0 /* elvenassist-tab.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDBF2F14013D00B73EC0 /* elvenassist-tab.bundle.js */; };
-		B2F8CDCF2F14013D00B73EC0 /* elvenassist-overlay.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC02F14013D00B73EC0 /* elvenassist-overlay.bundle.js */; };
-		B2F8CDD02F14013D00B73EC0 /* sprite.png in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC12F14013D00B73EC0 /* sprite.png */; };
-		B2F8CDD12F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC22F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt */; };
-		B2F8CDD22F14013D00B73EC0 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC32F14013D00B73EC0 /* manifest.json */; };
-		B2F8CDD32F14013D00B73EC0 /* elvenassist-service-worker.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC42F14013D00B73EC0 /* elvenassist-service-worker.bundle.js */; };
-		B2F8CDD42F14013D00B73EC0 /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC52F14013D00B73EC0 /* popup.css */; };
-		B2F8CDD52F14013D00B73EC0 /* tab.html in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC62F14013D00B73EC0 /* tab.html */; };
-		B2F8CDD62F14013D00B73EC0 /* popup.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC72F14013D00B73EC0 /* popup.bundle.js */; };
-		B2F8CDD72F14013D00B73EC0 /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = B2F8CDC82F14013D00B73EC0 /* icon32.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,21 +65,6 @@
 		B2F8CD942F14013D00B73EC0 /* ElvenAssist Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ElvenAssist Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8CD992F14013D00B73EC0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B2F8CD9A2F14013D00B73EC0 /* ElvenAssist.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ElvenAssist.entitlements; sourceTree = "<group>"; };
-		B2F8CDBA2F14013D00B73EC0 /* elvenassist-vendors.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-vendors.bundle.js"; path = "../../dist/elvenassist-vendors.bundle.js"; sourceTree = "<group>"; };
-		B2F8CDBB2F14013D00B73EC0 /* elvenassist-inject.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-inject.bundle.js"; path = "../../dist/elvenassist-inject.bundle.js"; sourceTree = "<group>"; };
-		B2F8CDBC2F14013D00B73EC0 /* tab.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = tab.css; path = ../../dist/tab.css; sourceTree = "<group>"; };
-		B2F8CDBD2F14013D00B73EC0 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = ../../dist/popup.html; sourceTree = "<group>"; };
-		B2F8CDBE2F14013D00B73EC0 /* elvenarchitect_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = elvenarchitect_data.json; path = ../../dist/elvenarchitect_data.json; sourceTree = "<group>"; };
-		B2F8CDBF2F14013D00B73EC0 /* elvenassist-tab.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-tab.bundle.js"; path = "../../dist/elvenassist-tab.bundle.js"; sourceTree = "<group>"; };
-		B2F8CDC02F14013D00B73EC0 /* elvenassist-overlay.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-overlay.bundle.js"; path = "../../dist/elvenassist-overlay.bundle.js"; sourceTree = "<group>"; };
-		B2F8CDC12F14013D00B73EC0 /* sprite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = sprite.png; path = ../../dist/sprite.png; sourceTree = "<group>"; };
-		B2F8CDC22F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = "elvenassist-vendors.bundle.js.LICENSE.txt"; path = "../../dist/elvenassist-vendors.bundle.js.LICENSE.txt"; sourceTree = "<group>"; };
-		B2F8CDC32F14013D00B73EC0 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../dist/manifest.json; sourceTree = "<group>"; };
-		B2F8CDC42F14013D00B73EC0 /* elvenassist-service-worker.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "elvenassist-service-worker.bundle.js"; path = "../../dist/elvenassist-service-worker.bundle.js"; sourceTree = "<group>"; };
-		B2F8CDC52F14013D00B73EC0 /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = popup.css; path = ../../dist/popup.css; sourceTree = "<group>"; };
-		B2F8CDC62F14013D00B73EC0 /* tab.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = tab.html; path = ../../dist/tab.html; sourceTree = "<group>"; };
-		B2F8CDC72F14013D00B73EC0 /* popup.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.bundle.js; path = ../../dist/popup.bundle.js; sourceTree = "<group>"; };
-		B2F8CDC82F14013D00B73EC0 /* icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon32.png; path = ../../dist/icon32.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -210,21 +180,6 @@
 		B2F8CDB92F14013D00B73EC0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				B2F8CDBA2F14013D00B73EC0 /* elvenassist-vendors.bundle.js */,
-				B2F8CDBB2F14013D00B73EC0 /* elvenassist-inject.bundle.js */,
-				B2F8CDBC2F14013D00B73EC0 /* tab.css */,
-				B2F8CDBD2F14013D00B73EC0 /* popup.html */,
-				B2F8CDBE2F14013D00B73EC0 /* elvenarchitect_data.json */,
-				B2F8CDBF2F14013D00B73EC0 /* elvenassist-tab.bundle.js */,
-				B2F8CDC02F14013D00B73EC0 /* elvenassist-overlay.bundle.js */,
-				B2F8CDC12F14013D00B73EC0 /* sprite.png */,
-				B2F8CDC22F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt */,
-				B2F8CDC32F14013D00B73EC0 /* manifest.json */,
-				B2F8CDC42F14013D00B73EC0 /* elvenassist-service-worker.bundle.js */,
-				B2F8CDC52F14013D00B73EC0 /* popup.css */,
-				B2F8CDC62F14013D00B73EC0 /* tab.html */,
-				B2F8CDC72F14013D00B73EC0 /* popup.bundle.js */,
-				B2F8CDC82F14013D00B73EC0 /* icon32.png */,
 			);
 			name = Resources;
 			path = "Shared (Extension)";
@@ -331,21 +286,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2F8CDCD2F14013D00B73EC0 /* elvenarchitect_data.json in Resources */,
-				B2F8CDCB2F14013D00B73EC0 /* tab.css in Resources */,
-				B2F8CDD62F14013D00B73EC0 /* popup.bundle.js in Resources */,
-				B2F8CDD22F14013D00B73EC0 /* manifest.json in Resources */,
-				B2F8CDD72F14013D00B73EC0 /* icon32.png in Resources */,
-				B2F8CDD32F14013D00B73EC0 /* elvenassist-service-worker.bundle.js in Resources */,
-				B2F8CDCF2F14013D00B73EC0 /* elvenassist-overlay.bundle.js in Resources */,
-				B2F8CDCC2F14013D00B73EC0 /* popup.html in Resources */,
-				B2F8CDD52F14013D00B73EC0 /* tab.html in Resources */,
-				B2F8CDD02F14013D00B73EC0 /* sprite.png in Resources */,
-				B2F8CDCA2F14013D00B73EC0 /* elvenassist-inject.bundle.js in Resources */,
-				B2F8CDD42F14013D00B73EC0 /* popup.css in Resources */,
-				B2F8CDC92F14013D00B73EC0 /* elvenassist-vendors.bundle.js in Resources */,
-				B2F8CDCE2F14013D00B73EC0 /* elvenassist-tab.bundle.js in Resources */,
-				B2F8CDD12F14013D00B73EC0 /* elvenassist-vendors.bundle.js.LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -367,7 +307,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\n# 1. Define Path\n# Go up one level from the project folder to find 'dist'\nMANIFEST_PATH=\"${PROJECT_DIR}/../dist/manifest.json\"\n\n# Debugging\necho \"Reading version from: $MANIFEST_PATH\"\n\n# Safety Check\nif [ ! -f \"$MANIFEST_PATH\" ]; then\n    echo \"error: manifest.json not found at $MANIFEST_PATH\"\n    echo \"Ensure you have run 'npm run pack:safari' (or 'npm run pack') before building.\"\n    exit 1\nfi\n\n# 2. Extract Version\nAPP_VERSION=$(python3 -c \"import json, sys; print(json.load(sys.stdin)['version'])\" < \"$MANIFEST_PATH\")\n\necho \"Syncing version to: $APP_VERSION\"\n\n# 3. Apply to Info.plist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n";
+			shellScript = "#!/bin/bash\n\n# 1. Define Path\n# Go up one level from the project folder to find 'dist'\nMANIFEST_PATH=\"${PROJECT_DIR}/../dist/manifest.json\"\n\n# Debugging\necho \"Reading version from: $MANIFEST_PATH\"\n\n# Safety Check\nif [ ! -f \"$MANIFEST_PATH\" ]; then\n    echo \"error: manifest.json not found at $MANIFEST_PATH\"\n    echo \"Ensure you have run 'npm run pack:safari' (or 'npm run pack') before building.\"\n    exit 1\nfi\n\n# 2. Extract Version\nAPP_VERSION=$(python3 -c \"import json, sys; print(json.load(sys.stdin)['version'])\" < \"$MANIFEST_PATH\")\n\necho \"Syncing version to: $APP_VERSION\"\n\n# 3. Apply to Info.plist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"";
 		};
 		B23ED43D2F190BE600980AAA /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -384,7 +324,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\n# 1. Define Path\n# Go up one level from the project folder to find 'dist'\nMANIFEST_PATH=\"${PROJECT_DIR}/../dist/manifest.json\"\n\n# Debugging\necho \"Reading version from: $MANIFEST_PATH\"\n\n# Safety Check\nif [ ! -f \"$MANIFEST_PATH\" ]; then\n    echo \"error: manifest.json not found at $MANIFEST_PATH\"\n    echo \"Ensure you have run 'npm run pack:safari' (or 'npm run pack') before building.\"\n    exit 1\nfi\n\n# 2. Extract Version\nAPP_VERSION=$(python3 -c \"import json, sys; print(json.load(sys.stdin)['version'])\" < \"$MANIFEST_PATH\")\n\necho \"Syncing version to: $APP_VERSION\"\n\n# 3. Apply to Info.plist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n";
+			shellScript = "#!/bin/bash\n\n# 1. Define Path\n# Go up one level from the project folder to find 'dist'\nMANIFEST_PATH=\"${PROJECT_DIR}/../dist/manifest.json\"\n\n# Debugging\necho \"Reading version from: $MANIFEST_PATH\"\n\n# Safety Check\nif [ ! -f \"$MANIFEST_PATH\" ]; then\n    echo \"error: manifest.json not found at $MANIFEST_PATH\"\n    echo \"Ensure you have run 'npm run pack:safari' (or 'npm run pack') before building.\"\n    exit 1\nfi\n\n# 2. Extract Version\nAPP_VERSION=$(python3 -c \"import json, sys; print(json.load(sys.stdin)['version'])\" < \"$MANIFEST_PATH\")\n\necho \"Syncing version to: $APP_VERSION\"\n\n# 3. Apply to Info.plist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $APP_VERSION\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n\n\n# 4. Copy the extension files into the appex\n# Synced wholesale rather than listed in the project: a hand-kept list goes stale, and\n# a file it names but the build no longer produces fails the archive outright.\nDIST_DIR=\"${PROJECT_DIR}/../dist\"\nRESOURCES_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\n\nif [ ! -d \"$DIST_DIR\" ]; then\n    echo \"error: dist not found at $DIST_DIR\"\n    exit 1\nfi\n\necho \"Syncing extension files from $DIST_DIR\"\nmkdir -p \"$RESOURCES_DIR\"\nrsync -a --delete --exclude 'prod.manifest.json' --exclude 'prod.manifest.service-worker.json' --exclude 'chunk-modules.json' --exclude '*.map' \"$DIST_DIR/\" \"$RESOURCES_DIR/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

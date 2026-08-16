@@ -8,6 +8,9 @@ APP_NAME="ElvenAssist"
 # 1. Extract the App from the Archive
 # We copy it from the internal 'Products/Applications' folder
 echo "📦 Extracting App..."
+# Emptied first: cp -R merges into an existing .app, so files from previous builds
+# would otherwise linger in the bundle and ship inside the pkg.
+rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 cp -R "$ARCHIVE_PATH/Products/Applications/$APP_NAME.app" "$OUTPUT_DIR/"
 

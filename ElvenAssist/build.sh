@@ -22,6 +22,9 @@ echo "✅ Archive created."
 
 # 2. Extract the App (Direct Copy)
 # We bypass 'exportArchive' to avoid triggering a re-sign attempt.
+# Emptied first: cp -R merges into an existing .app, so files from previous builds
+# would otherwise linger in the bundle and ship inside the pkg.
+rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 cp -R "$ARCHIVE_PATH/Products/Applications/ElvenAssist.app" "$OUTPUT_DIR/"
 
