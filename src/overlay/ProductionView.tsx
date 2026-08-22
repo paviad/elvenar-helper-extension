@@ -1,14 +1,18 @@
 import React from 'react';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import StopIcon from '@mui/icons-material/Stop';
 import {
   Box,
   Button,
   Chip,
   Divider,
+  IconButton,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
+  ListSubheader,
   Paper,
   Stack,
   TextField,
@@ -17,6 +21,8 @@ import {
 import {
   getProductionWatchStatus,
   PRODUCTION_POLL_MS,
+  ProductionGroup,
+  refreshProductions,
   startProductionWatch,
   stopProductionWatch,
   subscribeToProductionWatch,
@@ -34,9 +40,32 @@ const formatSeconds = (seconds: number) => {
 
 const formatClock = (at: number) => new Date(at).toLocaleTimeString();
 
+/**
+ * Ids are typed as a list, so anything that is not a digit separates one from the next. Repeats
+ * are dropped: the same building twice would be collected twice and paid for twice.
+ */
+const parseBuildingIds = (input: string) => [
+  ...new Set(
+    input
+      .split(/[^\d]+/)
+      .filter(Boolean)
+      .map((part) => parseInt(part, 10)),
+  ),
+];
+
+/** What a production line says about itself under its name. */
+const describeGroup = (group: ProductionGroup, now: number) => {
+  const ready = group.finished > 0 ? `${group.finished} ready` : '';
+  const running = group.producing > 0 ? `${group.producing} producing` : '';
+  const due =
+    group.nextEndsAt !== undefined ? `next in ${formatSeconds(Math.round((group.nextEndsAt - now) / 1000))}` : '';
+  const option = group.optionId !== undefined ? `option ${group.optionId}` : 'option unknown';
+  return [ready, running, due, option, group.buildingKinds.join(', ')].filter(Boolean).join(' · ');
+};
+
 export const ProductionView = () => {
   const [status, setStatus] = React.useState(getProductionWatchStatus);
-  const [buildingIdInput, setBuildingIdInput] = React.useState(() => status.buildingId?.toString() ?? '');
+  const [buildingIdsInput, setBuildingIdsInput] = React.useState(() => status.buildingIds.join(', '));
   const [optionIdInput, setOptionIdInput] = React.useState(() => status.optionId?.toString() ?? '');
   const [now, setNow] = React.useState(() => Date.now());
 
@@ -49,9 +78,22 @@ export const ProductionView = () => {
     return () => clearInterval(ticker);
   }, []);
 
-  const buildingId = parseInt(buildingIdInput, 10);
+  // While monitoring, the watcher's own poll keeps the list current; this only covers the rest of
+  // the time, so the city is read once per interval either way.
+  React.useEffect(() => {
+    const refresh = () => {
+      if (!getProductionWatchStatus().running) {
+        refreshProductions();
+      }
+    };
+    refresh();
+    const poller = setInterval(refresh, PRODUCTION_POLL_MS);
+    return () => clearInterval(poller);
+  }, []);
+
+  const buildingIds = parseBuildingIds(buildingIdsInput);
   const optionId = parseInt(optionIdInput, 10);
-  const canStart = !isNaN(buildingId) && buildingId > 0 && !isNaN(optionId) && optionId > 0;
+  const canStart = buildingIds.length > 0 && !isNaN(optionId) && optionId > 0;
 
   const toggle = () => {
     if (status.running) {
@@ -59,8 +101,15 @@ export const ProductionView = () => {
       return;
     }
     if (canStart) {
-      startProductionWatch(buildingId, optionId);
+      startProductionWatch(buildingIds, optionId);
     }
+  };
+
+  // Clicking a line hands its buildings to the fields, so the usual job - keep all of these going -
+  // is one click and Start. The option is only filled in when the reported state carried one.
+  const takeGroup = (group: ProductionGroup) => {
+    setBuildingIdsInput(group.buildingIds.join(', '));
+    setOptionIdInput(group.optionId !== undefined ? group.optionId.toString() : '');
   };
 
   return (
@@ -69,24 +118,34 @@ export const ProductionView = () => {
         elevation={0}
         sx={{ p: 2, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', position: 'sticky', top: 0 }}
       >
-        <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-          Production
-        </Typography>
+        <Stack direction='row' sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
+            Production
+          </Typography>
+          <IconButton
+            aria-label='Re-read the city'
+            title='Re-read the city'
+            size='small'
+            onClick={() => refreshProductions()}
+          >
+            <RefreshIcon fontSize='small' />
+          </IconButton>
+        </Stack>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-          Checks the stored city data every {PRODUCTION_POLL_MS / 1000}s. When the building&apos;s production is over it
-          is collected, and the option below is started on the check after that.
+          Checks the stored city every {PRODUCTION_POLL_MS / 1000}s. Each building whose production is over is
+          collected, and the option below started on it the check after that.
         </Typography>
 
         <Stack direction='row' spacing={2} useFlexGap sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
           <TextField
-            label='Building id'
-            type='number'
+            label='Building ids'
             size='small'
-            value={buildingIdInput}
-            onChange={(e) => setBuildingIdInput(e.target.value)}
+            value={buildingIdsInput}
+            onChange={(e) => setBuildingIdsInput(e.target.value)}
             disabled={status.running}
-            slotProps={{ htmlInput: { min: 1 } }}
-            sx={{ width: 130 }}
+            placeholder='17020, 17021'
+            helperText={buildingIds.length > 0 ? `${buildingIds.length} building(s)` : 'One or more, comma separated'}
+            sx={{ flex: 1, minWidth: 200 }}
           />
           <TextField
             label='Option id'
@@ -96,7 +155,7 @@ export const ProductionView = () => {
             onChange={(e) => setOptionIdInput(e.target.value)}
             disabled={status.running}
             slotProps={{ htmlInput: { min: 1 } }}
-            sx={{ width: 130 }}
+            sx={{ width: 110 }}
           />
           <Button
             variant='contained'
@@ -116,21 +175,16 @@ export const ProductionView = () => {
             color={status.running ? 'primary' : 'default'}
             variant={status.running ? 'filled' : 'outlined'}
           />
-          {status.endsAt !== undefined && (
+          {status.nextEndsAt !== undefined && (
             <Chip
-              label={`Ends in ${formatSeconds(Math.round((status.endsAt - now) / 1000))}`}
+              label={`Next in ${formatSeconds(Math.round((status.nextEndsAt - now) / 1000))}`}
               size='small'
               color='info'
             />
           )}
-          {status.cityEntityId && <Chip label={status.cityEntityId} size='small' variant='outlined' />}
-          {status.currentOptionId !== undefined && (
-            <Chip label={`Running option ${status.currentOptionId}`} size='small' variant='outlined' />
-          )}
-          {status.dataAt !== undefined && (
-            // The countdown is only as good as the report it came from, so say how old that is.
+          {status.groupsAt !== undefined && (
             <Chip
-              label={`Reported ${formatSeconds(Math.round((now - status.dataAt) / 1000))} ago`}
+              label={`City read ${formatSeconds(Math.round((now - status.groupsAt) / 1000))} ago`}
               size='small'
               variant='outlined'
             />
@@ -138,22 +192,44 @@ export const ProductionView = () => {
         </Stack>
       </Paper>
 
-      <List sx={{ flexGrow: 1, overflowY: 'auto', p: 0 }}>
-        {status.log.length === 0 ? (
-          <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography color='text.secondary'>Nothing sent to the game yet.</Typography>
-          </Box>
-        ) : (
-          status.log.map((entry, index) => (
-            <React.Fragment key={`${entry.at}-${index}`}>
-              <ListItem>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+        <List dense subheader={<ListSubheader>In production</ListSubheader>} sx={{ p: 0 }}>
+          {status.groups.length === 0 ? (
+            <ListItem>
+              <ListItemText
+                secondary='Nothing is in production, or the city has not been read yet.'
+                slotProps={{ secondary: { align: 'center' } }}
+              />
+            </ListItem>
+          ) : (
+            status.groups.map((group, index) => (
+              <React.Fragment key={group.key}>
+                <ListItemButton onClick={() => takeGroup(group)} disabled={status.running}>
+                  <ListItemText
+                    primary={`${group.name} — ${group.buildingIds.length}`}
+                    secondary={describeGroup(group, now)}
+                  />
+                </ListItemButton>
+                {index < status.groups.length - 1 && <Divider component='li' />}
+              </React.Fragment>
+            ))
+          )}
+        </List>
+
+        <List dense subheader={<ListSubheader>Activity</ListSubheader>} sx={{ p: 0 }}>
+          {status.log.length === 0 ? (
+            <ListItem>
+              <ListItemText secondary='Nothing sent to the game yet.' slotProps={{ secondary: { align: 'center' } }} />
+            </ListItem>
+          ) : (
+            status.log.map((entry, index) => (
+              <ListItem key={`${entry.at}-${index}`}>
                 <ListItemText primary={entry.text} secondary={formatClock(entry.at)} />
               </ListItem>
-              {index < status.log.length - 1 && <Divider component='li' />}
-            </React.Fragment>
-          ))
-        )}
-      </List>
+            ))
+          )}
+        </List>
+      </Box>
     </Box>
   );
 };
