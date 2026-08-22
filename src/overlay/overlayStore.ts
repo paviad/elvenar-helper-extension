@@ -8,6 +8,7 @@ import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { AutomationEntry } from './automationEntry';
 import { StrengthModifier } from './counterCalculation';
 import { TournamentGood } from './tournamentGuide';
 import { TournyData } from './tournyData';
@@ -88,6 +89,11 @@ interface OverlayState {
 
   gameVars?: GameVars;
   setGameVars: (gameVars: GameVars) => void;
+
+  // The Production tab's jobs. Persisted, so they are still there after a refresh; whether the
+  // tab is monitoring them is deliberately not, and a refresh always comes back stopped.
+  productionAutomations: AutomationEntry[];
+  setProductionAutomations: (entries: AutomationEntry[]) => void;
 }
 
 let overlayStore: ReturnType<typeof createOverlayStore>;
@@ -190,6 +196,9 @@ const createOverlayStore = (accountId: string) => {
 
         gameVars: undefined,
         setGameVars: (gameVars) => set({ gameVars }),
+
+        productionAutomations: [],
+        setProductionAutomations: (entries) => set({ productionAutomations: entries }),
       }),
       {
         name: `overlay-store-${accountId}`,

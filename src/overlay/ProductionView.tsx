@@ -1,4 +1,7 @@
 import React from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import CheckIcon from '@mui/icons-material/Check';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import StopIcon from '@mui/icons-material/Stop';
@@ -18,6 +21,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { AutomationEntry, newAutomationEntryId } from './automationEntry';
+import { getOverlayStore } from './overlayStore';
 import {
   getProductionWatchStatus,
   PRODUCTION_POLL_MS,
@@ -64,13 +69,19 @@ const describeGroup = (group: ProductionGroup, now: number) => {
 };
 
 export const ProductionView = () => {
+  const store = getOverlayStore();
+  const entries = store((state) => state.productionAutomations);
+  const setEntries = store((state) => state.setProductionAutomations);
+
   const [status, setStatus] = React.useState(getProductionWatchStatus);
-  const [buildingIdsInput, setBuildingIdsInput] = React.useState(() => status.buildingIds.join(', '));
-  const [optionIdInput, setOptionIdInput] = React.useState(() => status.optionId?.toString() ?? '');
+  const [buildingIdsInput, setBuildingIdsInput] = React.useState('');
+  const [optionIdInput, setOptionIdInput] = React.useState('');
+  const [draftName, setDraftName] = React.useState('');
+  const [editingId, setEditingId] = React.useState<string | null>(null);
   const [now, setNow] = React.useState(() => Date.now());
 
-  // The watcher outlives this component, so the fields refill and the log is still there after a
-  // trip to another tab - and monitoring started here keeps running while you are away.
+  // The watcher outlives this component, so the log is still there after a trip to another tab -
+  // and monitoring started here keeps running while you are away.
   React.useEffect(() => subscribeToProductionWatch(setStatus), []);
 
   React.useEffect(() => {
@@ -78,8 +89,9 @@ export const ProductionView = () => {
     return () => clearInterval(ticker);
   }, []);
 
-  // While monitoring, the watcher's own poll keeps the list current; this only covers the rest of
-  // the time, so the city is read once per interval either way.
+  // Opening the tab reads the city, which is also what checks the stored entries against it and
+  // drops any building it no longer has. While monitoring, the watcher's own poll does the same
+  // read, so the city is read once per interval either way.
   React.useEffect(() => {
     const refresh = () => {
       if (!getProductionWatchStatus().running) {
@@ -93,23 +105,58 @@ export const ProductionView = () => {
 
   const buildingIds = parseBuildingIds(buildingIdsInput);
   const optionId = parseInt(optionIdInput, 10);
-  const canStart = buildingIds.length > 0 && !isNaN(optionId) && optionId > 0;
+  const canSave = buildingIds.length > 0 && !isNaN(optionId) && optionId > 0;
+  const watchedBuildings = new Set(entries.flatMap((entry) => entry.buildingIds)).size;
+
+  const clearDraft = () => {
+    setBuildingIdsInput('');
+    setOptionIdInput('');
+    setDraftName('');
+    setEditingId(null);
+  };
+
+  const saveDraft = () => {
+    if (!canSave) {
+      return;
+    }
+    const name = draftName || `Option ${optionId}`;
+    if (editingId) {
+      setEntries(entries.map((entry) => (entry.id === editingId ? { ...entry, name, buildingIds, optionId } : entry)));
+    } else {
+      setEntries([...entries, { id: newAutomationEntryId(), name, buildingIds, optionId }]);
+    }
+    clearDraft();
+  };
+
+  const editEntry = (entry: AutomationEntry) => {
+    setBuildingIdsInput(entry.buildingIds.join(', '));
+    setOptionIdInput(entry.optionId.toString());
+    setDraftName(entry.name);
+    setEditingId(entry.id);
+  };
+
+  const deleteEntry = (id: string) => {
+    setEntries(entries.filter((entry) => entry.id !== id));
+    if (editingId === id) {
+      clearDraft();
+    }
+  };
+
+  // Clicking a production line hands its buildings to the draft, so the usual job - keep all of
+  // these going - is a click and Add. The option comes from the state the game reported; a line
+  // whose state carried no product leaves it empty rather than guessing at one.
+  const takeGroup = (group: ProductionGroup) => {
+    setBuildingIdsInput(group.buildingIds.join(', '));
+    setOptionIdInput(group.optionId !== undefined ? group.optionId.toString() : '');
+    setDraftName(group.name);
+  };
 
   const toggle = () => {
     if (status.running) {
       stopProductionWatch();
-      return;
+    } else {
+      startProductionWatch(entries.length, watchedBuildings);
     }
-    if (canStart) {
-      startProductionWatch(buildingIds, optionId);
-    }
-  };
-
-  // Clicking a line hands its buildings to the fields, so the usual job - keep all of these going -
-  // is one click and Start. The option is only filled in when the reported state carried one.
-  const takeGroup = (group: ProductionGroup) => {
-    setBuildingIdsInput(group.buildingIds.join(', '));
-    setOptionIdInput(group.optionId !== undefined ? group.optionId.toString() : '');
   };
 
   return (
@@ -122,18 +169,29 @@ export const ProductionView = () => {
           <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
             Production
           </Typography>
-          <IconButton
-            aria-label='Re-read the city'
-            title='Re-read the city'
-            size='small'
-            onClick={() => refreshProductions()}
-          >
-            <RefreshIcon fontSize='small' />
-          </IconButton>
+          <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+            <IconButton
+              aria-label='Re-read the city'
+              title='Re-read the city'
+              size='small'
+              onClick={() => refreshProductions()}
+            >
+              <RefreshIcon fontSize='small' />
+            </IconButton>
+            <Button
+              variant='contained'
+              color={status.running ? 'error' : 'primary'}
+              startIcon={status.running ? <StopIcon /> : <PlayArrowIcon />}
+              onClick={toggle}
+              disabled={!status.running && watchedBuildings === 0}
+            >
+              {status.running ? 'Stop' : 'Start'}
+            </Button>
+          </Stack>
         </Stack>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-          Checks the stored city every {PRODUCTION_POLL_MS / 1000}s. Each building whose production is over is
-          collected, and the option below started on it the check after that.
+          Every {PRODUCTION_POLL_MS / 1000}s, each building in the automations below whose production is over is
+          collected, and its automation&apos;s option started on it the check after that.
         </Typography>
 
         <Stack direction='row' spacing={2} useFlexGap sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -158,14 +216,18 @@ export const ProductionView = () => {
             sx={{ width: 110 }}
           />
           <Button
-            variant='contained'
-            color={status.running ? 'error' : 'primary'}
-            startIcon={status.running ? <StopIcon /> : <PlayArrowIcon />}
-            onClick={toggle}
-            disabled={!status.running && !canStart}
+            variant='outlined'
+            startIcon={editingId ? <CheckIcon /> : <AddIcon />}
+            onClick={saveDraft}
+            disabled={status.running || !canSave}
           >
-            {status.running ? 'Stop' : 'Start'}
+            {editingId ? 'Save' : 'Add'}
           </Button>
+          {editingId && (
+            <Button variant='text' onClick={clearDraft} disabled={status.running}>
+              Cancel
+            </Button>
+          )}
         </Stack>
 
         <Stack direction='row' spacing={1} sx={{ mt: 2, gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -193,6 +255,46 @@ export const ProductionView = () => {
       </Paper>
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+        <List dense subheader={<ListSubheader>Automations ({watchedBuildings} buildings)</ListSubheader>} sx={{ p: 0 }}>
+          {entries.length === 0 ? (
+            <ListItem>
+              <ListItemText
+                secondary='None yet. Pick a line below, or type ids in, then Add.'
+                slotProps={{ secondary: { align: 'center' } }}
+              />
+            </ListItem>
+          ) : (
+            entries.map((entry) => (
+              <ListItem
+                key={entry.id}
+                disablePadding
+                secondaryAction={
+                  <IconButton
+                    edge='end'
+                    aria-label={`Delete ${entry.name}`}
+                    onClick={() => deleteEntry(entry.id)}
+                    disabled={status.running}
+                  >
+                    <DeleteOutlinedIcon fontSize='small' />
+                  </IconButton>
+                }
+              >
+                <ListItemButton
+                  onClick={() => editEntry(entry)}
+                  disabled={status.running}
+                  selected={editingId === entry.id}
+                >
+                  <ListItemText
+                    primary={entry.name}
+                    secondary={`${entry.buildingIds.length} building(s) · option ${entry.optionId}`}
+                    slotProps={{ secondary: { color: entry.buildingIds.length === 0 ? 'error' : undefined } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))
+          )}
+        </List>
+
         <List dense subheader={<ListSubheader>In production</ListSubheader>} sx={{ p: 0 }}>
           {status.groups.length === 0 ? (
             <ListItem>

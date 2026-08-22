@@ -1,7 +1,8 @@
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { relayToGame } from '../inject/relayToGame';
 import { CityEntity } from '../model/cityEntity';
-import { getAccountId } from './overlayStore';
+import { pruneAutomations } from './automationEntry';
+import { getAccountId, getOverlayStore } from './overlayStore';
 
 /** How often the stored city data is re-read and the production timers checked. */
 export const PRODUCTION_POLL_MS = 5000;
@@ -54,9 +55,11 @@ export interface ProductionGroup {
 }
 
 export interface ProductionWatchStatus {
+  /**
+   * Whether the entries are being acted on. Held here and nowhere else, so it is gone on a
+   * refresh: coming back to a page that is quietly driving the city is not something to inherit.
+   */
   running: boolean;
-  buildingIds: number[];
-  optionId?: number;
   /** What the last poll made of the watched buildings. Replaced every poll. */
   summary: string;
   /** What the city has in production, by product. Refreshed with every read. */
@@ -135,7 +138,6 @@ export const groupProductions = (entities: CityEntity[], cityLoadedAt: number, n
 
 const idleStatus = (): ProductionWatchStatus => ({
   running: false,
-  buildingIds: [],
   summary: 'Not monitoring.',
   groups: [],
   log: [],
@@ -233,6 +235,24 @@ export const decide = (
     : { action: 'pickup', note: 'retrying the collect' };
 };
 
+/**
+ * Drops from the stored entries any building the city does not have, so a sold building - or an
+ * entry written against another city - does not sit there being reported missing every poll.
+ */
+const pruneStoredAutomations = (cityEntities: CityEntity[]) => {
+  const store = getOverlayStore();
+  if (!store) {
+    return [];
+  }
+  const { productionAutomations, setProductionAutomations } = store.getState();
+  const { entries, dropped } = pruneAutomations(productionAutomations, new Set(cityEntities.map((e) => e.id)));
+  if (dropped.length > 0) {
+    setProductionAutomations(entries);
+    addLog(`Dropped ${dropped.length} building(s) the city no longer has: ${dropped.join(', ')}.`);
+  }
+  return entries;
+};
+
 const poll = async () => {
   const cityQuery = await readCity();
   if (!cityQuery) {
@@ -242,23 +262,33 @@ const poll = async () => {
 
   const now = Date.now();
   const groups = groupProductions(cityQuery.cityEntities, cityQuery.timestamp, now);
+  const entries = pruneStoredAutomations(cityQuery.cityEntities);
 
-  const { buildingIds, optionId, running } = status;
-  if (!running || optionId === undefined || buildingIds.length === 0) {
+  if (!status.running) {
     setStatus({ groups, groupsAt: now });
     return;
   }
 
+  // One building belongs to one entry: the first that claims it wins, since it can only be
+  // started on one option at a time.
+  const jobs = new Map<number, number>();
+  for (const entry of entries) {
+    for (const id of entry.buildingIds) {
+      if (!jobs.has(id)) {
+        jobs.set(id, entry.optionId);
+      }
+    }
+  }
+
   const toPickup: number[] = [];
-  const toStart: number[] = [];
+  const toStart = new Map<number, number[]>();
   const notes = new Map<string, number>();
-  let missing = 0;
   let nextEndsAt: number | undefined;
 
-  for (const id of buildingIds) {
+  for (const [id, optionId] of jobs) {
     const entity = cityQuery.cityEntities.find((candidate) => candidate.id === id);
     if (!entity) {
-      missing += 1;
+      // Pruning has just run against this very city, so this cannot be a stale id.
       continue;
     }
 
@@ -272,40 +302,38 @@ const poll = async () => {
     if (watched.get(id)?.key !== key) {
       watched.set(id, { key });
     }
-    const entry = watched.get(id)!;
+    const building = watched.get(id)!;
 
-    const { action, note } = decide(entity, entry, cityQuery.timestamp, now);
+    const { action, note } = decide(entity, building, cityQuery.timestamp, now);
     notes.set(note, (notes.get(note) ?? 0) + 1);
 
     if (action === 'pickup') {
       toPickup.push(id);
-      entry.last = { action, at: now };
+      building.last = { action, at: now };
     } else if (action === 'start') {
-      toStart.push(id);
-      entry.last = { action, at: now };
+      toStart.set(optionId, [...(toStart.get(optionId) ?? []), id]);
+      building.last = { action, at: now };
     } else if (note === 'producing') {
       const endsAt = endsAtOf(entity, cityQuery.timestamp);
       nextEndsAt = Math.min(nextEndsAt ?? endsAt, endsAt);
     }
   }
 
-  // The game batches pickups for a second into a single request, and `startProductions` takes the
-  // whole list of buildings at once - so a round of either is one request however many there are.
+  // The game batches pickups for a second into a single request, and `startProductions` takes a
+  // whole list of buildings at once - so a round of either is one request per option, however
+  // many buildings are behind it.
   for (const id of toPickup) {
     relayToGame('pickupProduction', id);
   }
   if (toPickup.length > 0) {
     addLog(`Collecting ${toPickup.length}: ${toPickup.join(', ')}.`);
   }
-  if (toStart.length > 0) {
-    relayToGame('startProduction', { ids: toStart, optionId });
-    addLog(`Starting option ${optionId} on ${toStart.length}: ${toStart.join(', ')}.`);
+  for (const [optionId, ids] of toStart) {
+    relayToGame('startProduction', { ids, optionId });
+    addLog(`Starting option ${optionId} on ${ids.length}: ${ids.join(', ')}.`);
   }
 
-  const summary = [...notes.entries()]
-    .map(([note, count]) => `${count} ${note}`)
-    .concat(missing > 0 ? [`${missing} not in the stored city`] : [])
-    .join(', ');
+  const summary = [...notes.entries()].map(([note, count]) => `${count} ${note}`).join(', ');
 
   setStatus({ groups, groupsAt: now, nextEndsAt, summary: summary || 'Nothing to watch.' });
 };
@@ -326,14 +354,12 @@ export const refreshProductions = () => {
   runPoll();
 };
 
-export const startProductionWatch = (buildingIds: number[], optionId: number) => {
+/** Start acting on every stored entry. Nothing about this survives a refresh, deliberately. */
+export const startProductionWatch = (entryCount: number, buildingCount: number) => {
   stopProductionWatch();
   watched.clear();
-  status = { ...status, running: true, buildingIds, optionId, summary: 'Checking...', nextEndsAt: undefined };
-  const plural = buildingIds.length === 1 ? '' : 's';
-  addLog(
-    `Monitoring ${buildingIds.length} building${plural} for option ${optionId}, every ${PRODUCTION_POLL_MS / 1000}s.`,
-  );
+  status = { ...status, running: true, summary: 'Checking...', nextEndsAt: undefined };
+  addLog(`Monitoring ${entryCount} automation(s), ${buildingCount} building(s), every ${PRODUCTION_POLL_MS / 1000}s.`);
   publish();
   runPoll();
   timer = setInterval(runPoll, PRODUCTION_POLL_MS);
