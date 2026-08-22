@@ -1,3 +1,5 @@
+import { ProductionClass } from './BuildingRaw';
+
 export interface Building {
   id: string;
   name: string;
@@ -29,6 +31,14 @@ export interface Building {
 
 export interface Production {
   isSwitchable: boolean;
+  /**
+   * Which kind of production this is. `ManualProductionVO` is the one you start by hand and
+   * collect when it is done; the others run themselves, are queued, or are switched between.
+   *
+   * Absent on buildings stored before this was captured, until the balancing data is fetched
+   * again - which the game does on its next load.
+   */
+  productionClass?: ProductionClass;
   products: Product[];
 }
 

@@ -1,6 +1,9 @@
+import { getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { relayToGame } from '../inject/relayToGame';
-import { CityEntity } from '../model/cityEntity';
+import { CityEntity, CurrentProduct } from '../model/cityEntity';
+import { formatResourceName } from '../util/formatResourceName';
 import { pruneAutomations } from './automationEntry';
 import { getAccountId, getOverlayStore } from './overlayStore';
 
@@ -35,7 +38,7 @@ export interface ProductionLogEntry {
 export interface ProductionGroup {
   /** `<asset name>:<option id>` - what makes two lines different things. */
   key: string;
-  /** The product's own name, as the game reports it: `Beverages`, `Marble`, ... */
+  /** What the production yields, then the option's own name: `Marble (Marble)`, `supplies (Ropes)`. */
   name: string;
   /**
    * What to start it again with. Absent when the reported state carries no product to read it
@@ -71,6 +74,34 @@ export interface ProductionWatchStatus {
   log: ProductionLogEntry[];
 }
 
+/**
+ * How the game's own ids read to a person - `marble` as `Marble`, `A_Evt_Bakery_3` as `Enchanted
+ * Bakery`. Both come from balancing data the extension already keeps, and both fall back to the
+ * id when it has no name for it, which is legible enough for the likes of `supplies`.
+ *
+ * Passed in rather than looked up here, so the grouping can be exercised without any storage.
+ */
+export interface ProductionNames {
+  resource: (resourceId: string) => string;
+  building: (cityEntityId: string, level: number) => string;
+}
+
+/**
+ * What a production is called: what it yields - `Marble`, `Supplies` - and then the option's own
+ * name, which is worth having too.
+ *
+ * The yields lead because they say the same thing for every building that makes the stuff, where
+ * the option name is per building and per duration: a workshop's three options read `Beverages`,
+ * `Toolbox`, `Ropes` for what is all the same supplies. `__class__` rides along in the revenue
+ * dictionary and is not one of the resources.
+ */
+const productionName = (product: CurrentProduct | undefined, resourceName: (resourceId: string) => string) => {
+  const yields = Object.keys(product?.revenue.resources ?? {}).filter((key) => key !== '__class__');
+  const paysOut = yields.map(resourceName).join(' + ');
+  const option = product?.name;
+  return paysOut && option ? `${paysOut} (${option})` : paysOut || option;
+};
+
 /** When the game last reported this building - what its countdown counts from. */
 const reportedAt = (entity: CityEntity, cityLoadedAt: number) => entity.stateAt ?? cityLoadedAt;
 
@@ -83,7 +114,12 @@ const endsAtOf = (entity: CityEntity, cityLoadedAt: number) =>
  * Buildings of different kinds and levels making the same thing the same way belong on one line:
  * that is exactly the set `startProductions` takes in a single call.
  */
-export const groupProductions = (entities: CityEntity[], cityLoadedAt: number, now: number): ProductionGroup[] => {
+export const groupProductions = (
+  entities: CityEntity[],
+  cityLoadedAt: number,
+  now: number,
+  names: ProductionNames,
+): ProductionGroup[] => {
   const groups = new Map<string, ProductionGroup>();
 
   for (const entity of entities) {
@@ -95,12 +131,13 @@ export const groupProductions = (entities: CityEntity[], cityLoadedAt: number, n
     const product = entity.state?.current_product;
     const optionId = product?.production_option;
     const key = `${product?.asset_name ?? entity.cityentity_id}:${optionId ?? 'unknown'}`;
+    const buildingKind = names.building(entity.cityentity_id, entity.level);
 
     let group = groups.get(key);
     if (!group) {
       group = {
         key,
-        name: product?.name ?? entity.cityentity_id,
+        name: productionName(product, names.resource) ?? buildingKind,
         optionId,
         productionTime: product?.production_time,
         buildingKinds: [],
@@ -112,8 +149,9 @@ export const groupProductions = (entities: CityEntity[], cityLoadedAt: number, n
     }
 
     group.buildingIds.push(entity.id);
-    if (!group.buildingKinds.includes(entity.cityentity_id)) {
-      group.buildingKinds.push(entity.cityentity_id);
+    // By name, so a building's levels - which are separate ids - read as the one kind they are.
+    if (!group.buildingKinds.includes(buildingKind)) {
+      group.buildingKinds.push(buildingKind);
     }
 
     // A production whose countdown has run out is finished whatever the last report called it:
@@ -174,6 +212,33 @@ const addLog = (text: string) => {
   status = { ...status, log: [{ at: Date.now(), text }, ...status.log].slice(0, 50) };
 };
 
+/**
+ * The game's display names for its resources, from the balancing data the extension keeps.
+ *
+ * Held on to once they are there - they do not change while the game is open - but re-read until
+ * then: the file they come from is fetched on the game's own schedule, so the first few polls of a
+ * fresh profile can land before it has arrived.
+ */
+let goodsNames: Record<string, string> = {};
+
+/**
+ * The namers for one poll, from the balancing data behind both: goods for the resources, the
+ * building catalog for the kinds. `getBuilding` rather than `getCityEntityExtraData`, which warns
+ * about a building it cannot find - once would be fair, once every five seconds is not.
+ */
+const readNames = async (boostedGoods: string[]): Promise<ProductionNames> => {
+  if (Object.keys(goodsNames).length === 0) {
+    goodsNames = await getGoodsNames();
+  }
+  const finder = getBuildingFinder();
+  await finder.ensureInitialized();
+
+  return {
+    resource: (resourceId) => formatResourceName(goodsNames, boostedGoods, resourceId),
+    building: (cityEntityId, level) => finder.getBuilding(cityEntityId, level)?.name || cityEntityId,
+  };
+};
+
 /** The stored city, re-read: the service worker writes it away as the game reports it. */
 const readCity = async () => {
   const accountId = getAccountId();
@@ -197,11 +262,22 @@ type Action = 'pickup' | 'start' | 'none';
  */
 const RETRY_AFTER_MS = 3 * PRODUCTION_POLL_MS;
 
+export interface ProductionContext {
+  /**
+   * Whether the building's catalog entry calls its production `ManualProductionVO` - the kind you
+   * start by hand and collect when it is done, and the only kind there is anything to start.
+   * Automatic ones run themselves, and queued and switchable ones are started another way
+   * entirely. Collecting is not gated on this: whatever a building holds is worth taking.
+   */
+  manual: boolean;
+  cityLoadedAt: number;
+  now: number;
+}
+
 export const decide = (
   entity: CityEntity,
   entry: WatchedBuilding,
-  cityLoadedAt: number,
-  now: number,
+  { manual, cityLoadedAt, now }: ProductionContext,
 ): { action: Action; note: string } => {
   const kind = entity.state?.__class__;
   if (kind !== PRODUCING && kind !== FINISHED && kind !== IDLE) {
@@ -212,16 +288,20 @@ export const decide = (
     return { action: 'none', note: 'producing' };
   }
 
+  const toStart: { action: Action; note: string } = manual
+    ? { action: 'start', note: 'ready to start' }
+    : { action: 'none', note: 'not a manual production to start' };
+
   // The production is over, or the building was idle to begin with.
   if (!entry.last) {
-    return kind === IDLE ? { action: 'start', note: 'ready to start' } : { action: 'pickup', note: 'ready to collect' };
+    return kind === IDLE ? toStart : { action: 'pickup', note: 'ready to collect' };
   }
 
   // The collect has gone out, so try the start whatever the stored state still says: the game's
   // own model goes idle the moment the collect lands, well before it reports that back to us,
   // and `localStartProduction` passes over a building the game does not call idle anyway.
   if (entry.last.action === 'pickup') {
-    return { action: 'start', note: 'ready to start' };
+    return toStart;
   }
 
   if (now - entry.last.at < RETRY_AFTER_MS) {
@@ -231,9 +311,26 @@ export const decide = (
   // Nothing came of it. Pick up again if the building is still holding a finished production,
   // otherwise start again - which costs nothing when the stock still cannot pay for it.
   return kind === IDLE
-    ? { action: 'start', note: 'retrying the start' }
+    ? manual
+      ? { action: 'start', note: 'retrying the start' }
+      : toStart
     : { action: 'pickup', note: 'retrying the collect' };
 };
+
+/**
+ * Whether this building's production is one to start by hand, from the building catalog.
+ *
+ * A building the catalog does not cover, or one stored before the production class was captured,
+ * reads as not manual and so is collected but never started. That is the safe way round: starting
+ * something that runs itself is a request the game has no business receiving, where a start that
+ * does not happen shows up in the tab as a building sitting there. The catalog fills in again on
+ * the game's next load.
+ */
+const isManualProduction = (entity: CityEntity) =>
+  // `sourceBuilding`, because `BuildingEx.production` is the summed-up revenue rather than the
+  // catalog's own production block.
+  getBuildingFinder().getBuilding(entity.cityentity_id, entity.level)?.sourceBuilding.production?.productionClass ===
+  'ManualProductionVO';
 
 /**
  * Drops from the stored entries any building the city does not have, so a sold building - or an
@@ -260,8 +357,9 @@ const poll = async () => {
     return;
   }
 
+  const names = await readNames(cityQuery.boostedGoods);
   const now = Date.now();
-  const groups = groupProductions(cityQuery.cityEntities, cityQuery.timestamp, now);
+  const groups = groupProductions(cityQuery.cityEntities, cityQuery.timestamp, now, names);
   const entries = pruneStoredAutomations(cityQuery.cityEntities);
 
   if (!status.running) {
@@ -304,7 +402,11 @@ const poll = async () => {
     }
     const building = watched.get(id)!;
 
-    const { action, note } = decide(entity, building, cityQuery.timestamp, now);
+    const { action, note } = decide(entity, building, {
+      manual: isManualProduction(entity),
+      cityLoadedAt: cityQuery.timestamp,
+      now,
+    });
     notes.set(note, (notes.get(note) ?? 0) + 1);
 
     if (action === 'pickup') {
