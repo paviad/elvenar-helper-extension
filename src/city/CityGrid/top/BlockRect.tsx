@@ -95,6 +95,7 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
           title={
             <BuildingTooltip
               building={building}
+              entityId={block.entity.id}
               stage={block.stage}
               expirationEnd={block.expirationEnd}
               isMaxLevel={isMaxLevelForChapter}

@@ -12,9 +12,17 @@ interface BuildingTooltipProps {
   isMaxLevel?: boolean;
   stage?: number;
   expirationEnd?: number;
+  /** The city block's own numeric id in the game (kphunt only). */
+  entityId?: number;
 }
 
-export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMaxLevel, stage, expirationEnd }) => {
+export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({
+  building,
+  isMaxLevel,
+  stage,
+  expirationEnd,
+  entityId,
+}) => {
   const city = useCity();
   // The tooltip is mounted on hover and lives for a few seconds, so "days left" is fixed
   // at the moment it opened. Reading the clock during render instead made the figure
@@ -123,6 +131,21 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
         {building.expiration
           ? ` (${building.expiration / 86400} days, ${formatExpirationleft(expirationEnd)} left)`
           : ''}
+      </Typography>
+      {/* Game ids — kphunt only: the building definition's id and the block's own id in the
+          city, for cross-referencing game data */}
+      <Typography
+        variant='caption'
+        sx={{
+          display: 'block',
+          mb: 0.5,
+          fontFamily: 'monospace',
+          fontSize: '0.7rem',
+          color: 'rgba(255, 255, 255, 0.5)',
+        }}
+      >
+        {building.id}
+        {entityId !== undefined ? ` • #${entityId}` : ''}
       </Typography>
       {/* Description */}
       {building.description && (
