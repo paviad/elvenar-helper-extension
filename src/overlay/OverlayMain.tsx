@@ -57,6 +57,7 @@ import { getAccountId, getOverlayStore } from './overlayStore';
 import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
 import { parseSocketMessage } from './parseSocketMessage';
 import { playPrimaryOpportunityAlert } from './primaryOpportunityAlertService';
+import { ProductionView } from './ProductionView';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { emptyTournyData } from './tournyData';
@@ -756,6 +757,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
           />
         )}
         {tabKey === 'nhelp' && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
+        {tabKey === 'production' && <ProductionView />}
       </div>
       {retrievingCounter > 0 && (
         <Box

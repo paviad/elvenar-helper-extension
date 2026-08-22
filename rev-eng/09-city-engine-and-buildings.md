@@ -327,6 +327,8 @@ without the feature flag; the underlying calls are what §7 uses directly.
 `entities: CityMapEntityVO[]` — this is `startup.city_map` (parsed by `CityEntitiesParser.parse` L392479 →
 `CityEntitiesModel.initializePlayerMapConfiguration`, L451774) and the payload of the
 `CityMapService.reset` push (**[ext]** `src/elvenar/processCityMapServiceUpdate.ts` consumes `R:CityMapService/reset`).
+`reset` is not only the whole-city payload: the answer to a start / collect / cancel carries just the entities that
+changed, which is how the extension learns a production's new state without a reload (13 §2).
 
 `CityMapEntityVO` (L527828):
 

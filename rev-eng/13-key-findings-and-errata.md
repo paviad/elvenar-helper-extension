@@ -46,6 +46,7 @@ Each item points at the doc with the evidence. Snapshot: `tmp/elvenar-release-fu
 | `TOURNY.md` / `counterComposition.ts` / `TournyPlanner.tsx` | squad size `floor` | `ceil` (finding 12) — fixed 2026-08-15 | 07 |
 | `src/inject/playerSpecificMatchers.ts` `R:GuildService/getGuild` | matched | no game caller found — dead key; cauldron processors disabled | 05 §2 |
 | `injectMutate.ts` `setTimeout(onGameCodeLoaded, 500)` | looks like a race guard | it is the actual game starter — inline `<script>` never fires `load` | 06 §2 |
+| 05 §3.2, 09 §3.1 | `CityMapService/reset` is the **full city entity list** | also the **delta** the game sends when a building changes: starting, collecting and cancelling a production each answer with a `reset` carrying that one `CityMapEntityVO`. Observed 2026-08-22 on `P_Humans_Workshop_1` — cancel → `state: {__class__: "IdleVO"}` and nothing else (**an `IdleVO` carries no `next_state_transition_in`**), start → `ProducingVO` with the countdown reset. **[ext]** `processCityMapServiceUpdate.ts` folds these in and stamps each entity with `stateAt` (arrival time), because `next_state_transition_in` counts from the report, not from `cityQuery.timestamp` | 05 §3.2, 09 §3.1 |
 
 ## 3. Cross-snapshot notes
 

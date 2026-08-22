@@ -367,8 +367,8 @@ Content script → MAIN world (`relayToGame` unless noted; handled by the `switc
 | `spirePicks` | `string[]` resource ids | `overlay.ts` (raw `postMessage`, from the Spire Wizard tab via SW) | `storePicksForLaterUse` |
 | `visitPlayer` | `{playerId, buildingId, baseName}` | `KpHuntOpportunityItem.tsx` | `localVisitPlayer` |
 | `nextPage` | — | `OverlayMain.tsx` | `localNextPage` |
-| `pickupProduction` | `number` city entity id | (no overlay sender yet) | `localPickupProduction` |
-| `startProduction` | `{ids: number[], optionId}` entity ids + `EntityProduct.get_optionId()` | (no overlay sender yet) | `localStartProduction` |
+| `pickupProduction` | `number` city entity id | `productionWatcher.ts` (the Production tab) | `localPickupProduction` |
+| `startProduction` | `{ids: number[], optionId}` entity ids + `EntityProduct.get_optionId()` | `productionWatcher.ts` (the Production tab) | `localStartProduction` |
 
 ---
 
