@@ -7,7 +7,7 @@ const entity = (cityentityId: string, type: string, stateClass?: string): CityEn
     cityentity_id: cityentityId,
     type,
     // The rest of a state is whatever that state carries; only its name is read here.
-    state: stateClass ? ({ __class__: stateClass } as CityEntity['state']) : undefined,
+    state: stateClass ? { __class__: stateClass } : undefined,
   });
 
 describe('getUpgradingWonders', () => {

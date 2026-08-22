@@ -13,26 +13,31 @@ export function extractBadgesInProduction(
     s instanceof RegExp
       ? s.test(r.state?.current_product?.asset_name || '')
       : r.state?.current_product?.asset_name === s;
-  const mapr = (r: CityEntity) =>
-    ({
-      id: r.id,
-      name: r.state!.current_product.name!,
-      asset_name: r.state!.current_product.asset_name!,
-      next_state_transition_in: r.state!.next_state_transition_in,
-      productionAmount: r.state!.current_product?.productionAmount,
-    }) satisfies ProductionBadgeInfo;
-
-  const mapr2 = (r: CityEntity) => {
-    const boostFactor = boostedGoods[r.state?.current_product?.asset_name?.replace(/_\d+$/, '') || ''] || 1;
+  // Only entities whose current product the filters above matched reach either mapper, so the
+  // state and its product are both there. A state that carries a product always carries a
+  // countdown too; the fallback is for the type, which has to allow for the states that do not.
+  const mapr = (r: CityEntity) => {
+    const product = r.state!.current_product!;
     return {
       id: r.id,
-      name: r.state!.current_product.name!,
-      asset_name: r.state!.current_product.asset_name!,
-      next_state_transition_in: r.state!.next_state_transition_in,
+      name: product.name!,
+      asset_name: product.asset_name!,
+      next_state_transition_in: r.state!.next_state_transition_in ?? 0,
+      productionAmount: product.productionAmount,
+    } satisfies ProductionBadgeInfo;
+  };
+
+  const mapr2 = (r: CityEntity) => {
+    const product = r.state!.current_product!;
+    const boostFactor = boostedGoods[product.asset_name?.replace(/_\d+$/, '') || ''] || 1;
+    return {
+      id: r.id,
+      name: product.name!,
+      asset_name: product.asset_name!,
+      next_state_transition_in: r.state!.next_state_transition_in ?? 0,
       productionAmount:
-        ((Object.entries(r.state!.current_product?.revenue.resources).find(([k, v]) =>
-          /marble|steel|planks/.test(k),
-        )?.[1] as number) || 0) * boostFactor,
+        ((Object.entries(product.revenue.resources).find(([k, v]) => /marble|steel|planks/.test(k))?.[1] as number) ||
+          0) * boostFactor,
     } satisfies ProductionBadgeInfo;
   };
 
