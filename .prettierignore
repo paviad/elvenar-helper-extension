@@ -1,0 +1,3 @@
+# Markdown is hand laid out - prettier reflows tables and rewraps paragraphs, which turns a
+# one-line edit into a whole-file diff. Formatting docs is not what the prettify script is for.
+*.md
