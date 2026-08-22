@@ -19,13 +19,15 @@ const IDLE = 'IdleVO';
  * Where the watcher has got to with one building.
  *
  * `key` is the state the game last reported it in; a new report is a new production to work
- * through and clears everything below it. `last` is the action already sent for this report, so
- * one is not sent twice over - the collect and the start go out a poll apart, which is what gives
- * the collect time to settle before the start (`localStartProduction` only starts an idle
- * building).
+ * through and clears everything below it. `optionId` is the option its entry asked for when this
+ * began - changing it while monitoring runs starts the building over on the new one rather than
+ * leaving it to finish out the old. `last` is the action already sent for this report, so one is
+ * not sent twice over: the collect and the start go out a poll apart, which is what gives the
+ * collect time to settle before the start (`localStartProduction` only starts an idle building).
  */
 export interface WatchedBuilding {
   key: string;
+  optionId: number;
   last?: { action: 'pickup' | 'start'; at: number };
 }
 
@@ -397,8 +399,13 @@ const poll = async () => {
       entity.state?.__class__ ?? 'none',
       entity.state?.next_state_transition_in ?? 0,
     ].join(':');
-    if (watched.get(id)?.key !== key) {
-      watched.set(id, { key });
+    // The entries are read afresh every poll, so they can be edited while this runs. A building
+    // whose entry now asks for a different option starts over on it rather than finishing out the
+    // old one; an option sent a moment ago and not yet reported back is no reason to hold off,
+    // since `localStartProduction` passes over a building the game does not call idle.
+    const previous = watched.get(id);
+    if (previous?.key !== key || previous.optionId !== optionId) {
+      watched.set(id, { key, optionId });
     }
     const building = watched.get(id)!;
 
@@ -418,6 +425,14 @@ const poll = async () => {
     } else if (note === 'producing') {
       const endsAt = endsAtOf(entity, cityQuery.timestamp);
       nextEndsAt = Math.min(nextEndsAt ?? endsAt, endsAt);
+    }
+  }
+
+  // Forget a building no entry claims any more, so deleting one while this runs does not leave
+  // its buildings behind to be remembered for the life of the page.
+  for (const id of watched.keys()) {
+    if (!jobs.has(id)) {
+      watched.delete(id);
     }
   }
 

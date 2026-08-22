@@ -191,7 +191,8 @@ export const ProductionView = () => {
         </Stack>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
           Every {PRODUCTION_POLL_MS / 1000}s, each building in the automations below whose production is over is
-          collected, and its automation&apos;s option started on it the check after that.
+          collected, and its automation&apos;s option started on it the check after that. The list can be edited while
+          it runs; changes are picked up on the next check.
         </Typography>
 
         <Stack direction='row' spacing={2} useFlexGap sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -200,7 +201,6 @@ export const ProductionView = () => {
             size='small'
             value={buildingIdsInput}
             onChange={(e) => setBuildingIdsInput(e.target.value)}
-            disabled={status.running}
             placeholder='17020, 17021'
             helperText={buildingIds.length > 0 ? `${buildingIds.length} building(s)` : 'One or more, comma separated'}
             sx={{ flex: 1, minWidth: 200 }}
@@ -211,7 +211,6 @@ export const ProductionView = () => {
             size='small'
             value={optionIdInput}
             onChange={(e) => setOptionIdInput(e.target.value)}
-            disabled={status.running}
             slotProps={{ htmlInput: { min: 1 } }}
             sx={{ width: 110 }}
           />
@@ -219,12 +218,12 @@ export const ProductionView = () => {
             variant='outlined'
             startIcon={editingId ? <CheckIcon /> : <AddIcon />}
             onClick={saveDraft}
-            disabled={status.running || !canSave}
+            disabled={!canSave}
           >
             {editingId ? 'Save' : 'Add'}
           </Button>
           {editingId && (
-            <Button variant='text' onClick={clearDraft} disabled={status.running}>
+            <Button variant='text' onClick={clearDraft}>
               Cancel
             </Button>
           )}
@@ -269,21 +268,12 @@ export const ProductionView = () => {
                 key={entry.id}
                 disablePadding
                 secondaryAction={
-                  <IconButton
-                    edge='end'
-                    aria-label={`Delete ${entry.name}`}
-                    onClick={() => deleteEntry(entry.id)}
-                    disabled={status.running}
-                  >
+                  <IconButton edge='end' aria-label={`Delete ${entry.name}`} onClick={() => deleteEntry(entry.id)}>
                     <DeleteOutlinedIcon fontSize='small' />
                   </IconButton>
                 }
               >
-                <ListItemButton
-                  onClick={() => editEntry(entry)}
-                  disabled={status.running}
-                  selected={editingId === entry.id}
-                >
+                <ListItemButton onClick={() => editEntry(entry)} selected={editingId === entry.id}>
                   <ListItemText
                     primary={entry.name}
                     secondary={`${entry.buildingIds.length} building(s) · option ${entry.optionId}`}
@@ -306,7 +296,7 @@ export const ProductionView = () => {
           ) : (
             status.groups.map((group, index) => (
               <React.Fragment key={group.key}>
-                <ListItemButton onClick={() => takeGroup(group)} disabled={status.running}>
+                <ListItemButton onClick={() => takeGroup(group)}>
                   <ListItemText
                     primary={`${group.name} — ${group.buildingIds.length}`}
                     secondary={describeGroup(group, now)}

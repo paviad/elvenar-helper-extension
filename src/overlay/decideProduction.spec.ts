@@ -18,13 +18,14 @@ const entity = (stateClass: string, next_state_transition_in?: number, stateAt?:
     state: { __class__: stateClass, next_state_transition_in },
   }) as unknown as CityEntity;
 
-const fresh = (): WatchedBuilding => ({ key: 'whatever' });
+const fresh = (): WatchedBuilding => ({ key: 'whatever', optionId: 1 });
 
 /** The default is a manual production - the only kind there is anything to start. */
 const ctx = (manual = true) => ({ manual, cityLoadedAt: CITY_LOADED_AT, now: NOW });
 
 const after = (action: 'pickup' | 'start', agoMs: number): WatchedBuilding => ({
   key: 'whatever',
+  optionId: 1,
   last: { action, at: NOW - agoMs },
 });
 
