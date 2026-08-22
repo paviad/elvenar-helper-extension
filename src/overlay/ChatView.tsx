@@ -237,7 +237,9 @@ export function ChatView({ searchActive = false, searchTerm = '', setSearchActiv
             mt: 1,
             position: 'sticky',
             top: 0,
-            zIndex: 2,
+            // Above the scrolling messages, but under the panel header at z-index 2: the header
+            // traps its own menus in its stacking context, so a higher value here occludes them.
+            zIndex: 1,
             background: `linear-gradient(180deg, ${gild.cardTop}, ${gild.cardBottom})`,
             pr: 2,
             pl: 2,
