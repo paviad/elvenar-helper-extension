@@ -614,7 +614,8 @@ const TE = A['de.innogames.onyx.city.engine.events.IsoTileEvent'];
 eng.dispatchEvent(TE.getEvent('IsoTileEvent::tileClicked', e.get_x(), e.get_y(), true));
 //     preconditions: own city shown, aviad_am.get_interactionMode()==='ModeTypes/defaultMode',
 //     state 'finished' (or auto-production with canCollect()), the mode's _interactionEnabled true.
-// (b) skip the engine, keep the game logic (PickupProductionCommand + picker.canPickup):
+// (b) skip the engine, keep the game logic (PickupProductionCommand + picker.canPickup)
+//     — [ext] this is what `src/inject/local/localPickupProduction.ts` does (06 §4.14):
 const PE = A['de.innogames.strategycity.main.controller.event.ProductionEvent'];
 bus.dispatchEvent(new PE('ProductionEvent::pickupProduction', e));
 // (c) raw service call (server validates; client model catches up from push responses):
@@ -622,15 +623,29 @@ inj.getInstance(A['de.innogames.strategycity.main.service.CityProductionService'
    .pickupProduction(e.get_id(), resp => console.log(resp));   // batched 1 s, one request for many ids
 ```
 
-**R3 — start a (manual) production**:
+**R3 — start a (manual) production, choosing among several options**:
 
 ```js
 const e = entitiesModel.getEntityById(id);
-const products = e.get_entityConfig().get_production().get_products();   // Array<EntityProduct>
-const optionId = products[0].get_optionId();                              // e.g. 3-hour supplies
-const SPE = A['de.innogames.strategycity.main.controller.event.StartProductionEvent'];
-bus.dispatchEvent(new SPE('StartProductionEvent::startProduction', [e], optionId, 1));  // → startProductions [[id], optionId, 1]
-// or many idle buildings of a kind: new MultipleProductionEvent('MultipleProductionEvent::startAllProductions', entities, optionId, product)
+const owner = e.get_entityConfig().get_production();                        // EntityProductsOwner (§4.4)
+const products = owner.get_products();                                     // Array<EntityProduct>, ALL options incl. locked
+const choice = products.filter(p => !p.get_isLocked())                     // e.g. pick by p.get_productionTime() / get_name()
+                       .find(p => p.get_productionTime() === 3 * 3600);
+const optionId = choice.get_optionId();                                    // = VO production_option, 1-based; the wire id
+//   what the UI checks before dispatching (the command itself checks nothing):
+//   e.get_state().get_stateId() === 'idle'   (else the producing window asks "replace current production?")
+//   resourcesModel.hasEnoughResourcesFor(choice.get_requiredInput())   (else premium dialog)
+const SPE = A['de.innogames.strategycity.main.controller.event.StartProductionEvent'];   // (type, buildings[], productId, amount=1) L13205
+bus.dispatchEvent(new SPE('StartProductionEvent::startProduction', [e], optionId, 1));  // StartProductionsCommand L387614:
+//   — [ext] `src/inject/local/localStartProduction.ts` does exactly this for a list of ids (one event,
+//     one request), with the idle / unlocked-option / affordability guards per building (06 §4.15)
+//   pauses idle state, shows cost blimps, subtracts inputs locally, service.startProductions([id], optionId, 1)
+//   → wire startProductions [[id], optionId, amount] (not immediate: goes with the next batch)
+// UI dispatch sites: SelectProductionOptionsBodyMediator.startProduction (L500318, workshop/manufactory window),
+//   ProducingWindowBodyMediator._onStartProductionConfirmed (L503018, change while producing), queued/portal
+//   SlotActivationBehavior (L501827, amount from the view). owner.getProductById(optionId) is the reverse lookup.
+// many idle buildings of a kind: new MultipleProductionEvent('MultipleProductionEvent::startAllProductions', entities, optionId, null)
+//   → StartAllProductionsCommand keeps only state 'idle' (L387511), then the same StartProductionEvent.
 ```
 
 **R4 — place a building**:

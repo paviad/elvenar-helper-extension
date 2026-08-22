@@ -7,6 +7,8 @@ import { castEeOncePerSecond } from './local/castEeOncePerSecond';
 import { fetchWorldNeighbors } from './local/fetchWorldNeighbors';
 import { localHelpPlayer } from './local/localHelpPlayer';
 import { localNextPage } from './local/localNextPage';
+import { localPickupProduction } from './local/localPickupProduction';
+import { localStartProduction } from './local/localStartProduction';
 import { localVisitPlayer } from './local/localVisitPlayer';
 import { createOtherPlayerService, getNeighborlyHelpBuildings } from './local/neighbourlyHelp';
 import { receivedNeighbourHelpBuildings } from './local/receivedNeighbourHelpBuildings';
@@ -97,6 +99,12 @@ window.addEventListener('message', (event) => {
       break;
     case 'nextPage':
       localNextPage();
+      break;
+    case 'pickupProduction':
+      localPickupProduction(event.data.payload as number);
+      break;
+    case 'startProduction':
+      localStartProduction(event.data.payload as { ids: number[]; optionId: number });
       break;
   }
 });

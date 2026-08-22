@@ -367,6 +367,8 @@ Content script → MAIN world (`relayToGame` unless noted; handled by the `switc
 | `spirePicks` | `string[]` resource ids | `overlay.ts` (raw `postMessage`, from the Spire Wizard tab via SW) | `storePicksForLaterUse` |
 | `visitPlayer` | `{playerId, buildingId, baseName}` | `KpHuntOpportunityItem.tsx` | `localVisitPlayer` |
 | `nextPage` | — | `OverlayMain.tsx` | `localNextPage` |
+| `pickupProduction` | `number` city entity id | (no overlay sender yet) | `localPickupProduction` |
+| `startProduction` | `{ids: number[], optionId}` entity ids + `EntityProduct.get_optionId()` | (no overlay sender yet) | `localStartProduction` |
 
 ---
 
@@ -516,6 +518,36 @@ instead. Details and the `ServiceRegistry.register(svc)` workaround: `04-network
   **replaces** `window.aviad_pagination_a` with that filtered array (pruning), takes the last one and
   calls `_onSelectNextPage()` (L76197; the `event` param is unused). Combined with 4.12 this walks the
   player ranking page by page and harvests every player's wonders.
+
+### 4.14 `pickupProduction` → `localPickupProduction(id)` (`localPickupProduction.ts`)
+- Collects one building's finished production without the mouse (09 §4.3 entry point (b)):
+  `inj.getInstance(aviad['…ICityEntitiesModel']).getEntityById(id)`, bail with `console.trace` if
+  unknown and silently if `!entity.canCollect()` (the command would otherwise open the building
+  window), then `inj.getInstance(aviad['openfl.events.IEventDispatcher']).dispatchEvent(new
+  ProductionEvent('ProductionEvent::pickupProduction', entity))` → `PickupProductionCommand` (L387168)
+  → picker → `CityProductionService.pickupProduction(id)`, batched 1 s into one
+  `pickupProduction [[ids]]` request. Calling it for many ids in a loop therefore yields one request.
+- First use of the injector's `getInstance` with interface keys from `src/inject`; the typings in
+  `aviad.ts` model those keys as `AviadInjectorKey<T>` (the interface entries of `window.aviad` are
+  not constructors).
+
+### 4.15 `startProduction` → `localStartProduction({ids, optionId})` (`localStartProduction.ts`)
+- Starts one production option on one or many buildings with a single
+  `StartProductionEvent('StartProductionEvent::startProduction', buildings[], optionId, 1)` →
+  `StartProductionsCommand` (L387614) → wire `startProductions [[ids], optionId, 1]` (not immediate;
+  one request for all). The command checks nothing, so the guards the production windows apply are
+  replicated **per building**: entity exists (else `console.trace`), `get_state().get_stateId() ===
+  'idle'` (skipped otherwise - the producing window would ask "replace?"; this is also what
+  `StartAllProductionsCommand` L387511 filters on), `get_production().getProductById(optionId)` exists
+  and `!get_isLocked()` (skipped otherwise). Affordability mirrors the window's "start all"
+  (`SelectProductionOptionsBodyMediator.startProduction` L500303, which truncates the entity list to
+  the affordable multiplier): a running `ResourceCollection` (`new aviad['de.innogames.collections.resources.ResourceCollection']()`,
+  `clone()`, `add(product.get_requiredInput())` - each building's own cost, levels may differ) is checked
+  with `ResourcesModel.hasEnoughResourcesFor` (key `aviad['de.innogames.onyx.resources.models.ResourcesModel']`,
+  mapped to `CachedResourcesModel` in `ResourceModelConfig` L543222) and the list is cut at the first
+  building that is not affordable, in the order given. `optionId` is `EntityProduct.get_optionId()` =
+  VO `production_option`, 1-based, from `entity.get_entityConfig().get_production().get_products()` (R3);
+  every building in `ids` must offer that option (the command would throw on a missing product).
 
 ---
 
