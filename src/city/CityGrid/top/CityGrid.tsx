@@ -4,6 +4,7 @@ import { useCity } from '../../CityContext';
 import { ExpansionSize, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { setHoveredBlockId } from '../../hoveredBlockStore';
 import { commitDrop } from '../commitDrop';
+import { CrosshatchPattern, TOP_CROSSHATCH_ID } from '../CrosshatchPattern';
 import { findCityOrigin, InitialFramingTiles } from '../findCityOrigin';
 import { unlockExpansion } from '../unlockExpansion';
 import { usePanZoom } from '../usePanZoom';
@@ -271,6 +272,7 @@ export function CityGrid() {
         onClick={() => commitDrop(city)}
         onContextMenu={onSvgContextMenu}
       >
+        <CrosshatchPattern id={TOP_CROSSHATCH_ID} />
         {/* Shift visual grid by Padding */}
         <g transform={`translate(${paddingPx}, ${paddingPx})`}>
           {/* Main Playable Background (Optional visual aid) */}

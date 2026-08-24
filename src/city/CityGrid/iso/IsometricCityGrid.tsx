@@ -1,8 +1,10 @@
 import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
+import { GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { setHoveredBlockId } from '../../hoveredBlockStore';
 import { commitDrop } from '../commitDrop';
+import { CrosshatchPattern, ISO_CROSSHATCH_ID } from '../CrosshatchPattern';
 import { usePanZoom } from '../usePanZoom';
 import { handleIsoMouseDownWithZoom } from './handleIsoMouseDown';
 import { handleIsoMouseMove } from './handleIsoMouseMove';
@@ -26,30 +28,18 @@ const ZOOM_LEVELS = [0.5, 0.75, 1, 1.5, 2, 2.5, 3];
 export function IsometricCityGrid() {
   const city = useCity();
   const helper = useHelper();
-  const {
-    GridSize,
-    GridMax,
-    blocks,
-    unlockedAreas,
-    PaddingTiles,
-    dragIndex,
-    highlightedIds,
-    chapter,
-    allTypes,
-    techSprite,
-    replacedArea,
-    svgRef,
-  } = city;
+  const { blocks, unlockedAreas, dragIndex, highlightedIds, chapter, allTypes, techSprite, replacedArea, svgRef } =
+    city;
 
   // See the note in CityGrid: a hover cannot outlive the blocks that report it.
   React.useEffect(() => () => setHoveredBlockId(null), []);
 
   // --- Isometric Configuration ---
-  // The grid constants are stable, so a projection is only a function of zoom. Memoised on
-  // them so the callbacks below can depend on it without changing identity every render.
+  // The grid constants are module-level, so a projection is only a function of zoom.
+  // Stable, so the callbacks below can depend on it without changing identity every render.
   const projectionAt = React.useCallback(
     (z: number) => createIsoProjection({ GridSize, GridMax, PaddingTiles, zoom: z }),
-    [GridSize, GridMax, PaddingTiles],
+    [],
   );
 
   const { containerRef, zoom, panHandlers } = usePanZoom({
@@ -63,7 +53,9 @@ export function IsometricCityGrid() {
     },
     idleCursor: () => (city.dragIndex !== null ? 'grabbing' : 'default'),
   });
-  const { tileWidth, tileHeight, toIso } = projectionAt(zoom);
+  // The one projection this render draws with; the blocks share it through a prop.
+  const projection = React.useMemo(() => projectionAt(zoom), [projectionAt, zoom]);
+  const { tileWidth, tileHeight, toIso } = projection;
 
   const paddedGridMax = GridMax + PaddingTiles * 2;
 
@@ -149,6 +141,7 @@ export function IsometricCityGrid() {
         blockKey={blockKey}
         block={block}
         zoom={zoom}
+        projection={projection}
         chapter={chapter}
         allTypes={allTypes}
         isHighlighted={highlightedIds.has(block.id)}
@@ -166,7 +159,19 @@ export function IsometricCityGrid() {
     const dragged = dragIndex !== null && blocks[dragIndex] ? [shapeFor('dragged', blocks[dragIndex])] : [];
 
     return [...resting, ...dragged];
-  }, [sortedEntries, blocks, dragIndex, zoom, chapter, allTypes, highlightedIds, techSprite, onPickUp, onOpenMenu]);
+  }, [
+    sortedEntries,
+    blocks,
+    dragIndex,
+    zoom,
+    projection,
+    chapter,
+    allTypes,
+    highlightedIds,
+    techSprite,
+    onPickUp,
+    onOpenMenu,
+  ]);
 
   const hasCentered = React.useRef(false);
   React.useEffect(() => {
@@ -175,7 +180,7 @@ export function IsometricCityGrid() {
       containerRef.current.scrollTop = PaddingTiles * 10;
       hasCentered.current = true;
     }
-  }, [totalWidth, PaddingTiles, containerRef]);
+  }, [totalWidth, containerRef]);
 
   return (
     <div
@@ -202,6 +207,7 @@ export function IsometricCityGrid() {
         onMouseMove={(e) => handleIsoMouseMove(city, e, zoom)}
         onClick={() => commitDrop(city)}
       >
+        <CrosshatchPattern id={ISO_CROSSHATCH_ID} />
         {/* Including padding */}
         {renderPolygon(
           -PaddingTiles,

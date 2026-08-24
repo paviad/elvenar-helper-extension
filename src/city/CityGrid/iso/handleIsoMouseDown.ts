@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
+import { GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { getEntityMaxLevel } from '../getEntityMaxLevel';
 import { createIsoProjection } from './isoProjection';
 
@@ -15,7 +16,7 @@ export const handleIsoMouseDownWithZoom = (
   const setDragOffset = city.setDragOffset;
   const blocks = city.blocks;
   const setOriginalPos = city.setOriginalPos;
-  const { GridSize, svgRef, GridMax, maxLevels, PaddingTiles } = city;
+  const { svgRef, maxLevels } = city;
 
   e.stopPropagation();
   const svg = svgRef.current;

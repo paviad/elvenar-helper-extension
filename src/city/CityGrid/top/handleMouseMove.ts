@@ -1,6 +1,7 @@
 import React from 'react';
 import { sampleTime, Subject } from 'rxjs';
 import { useCity } from '../../CityContext';
+import { GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { setMouseGridPosition } from '../../mouseGridStore';
 
 const subject = new Subject<{ city: ReturnType<typeof useCity>; e: React.MouseEvent; zoom: number }>();
@@ -25,11 +26,11 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
   const dragIndex = city.dragIndex;
   const dragOffset = city.dragOffset;
 
-  const { GridSize, svgRef, GridMax, mousePositionRef } = city;
+  const { svgRef, mousePositionRef } = city;
 
   // Calculate scaled grid size
   const sGridSize = GridSize * zoom;
-  const paddingPx = city.PaddingTiles * sGridSize;
+  const paddingPx = PaddingTiles * sGridSize;
 
   const svg = svgRef.current;
   if (!svg) return;
@@ -42,12 +43,12 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
 
   if (dragIndex !== null) {
     const newX = Math.max(
-      -city.PaddingTiles,
-      Math.min(GridMax - blocks[dragIndex].width + city.PaddingTiles, Math.round((mouseX - dragOffset.x) / sGridSize)),
+      -PaddingTiles,
+      Math.min(GridMax - blocks[dragIndex].width + PaddingTiles, Math.round((mouseX - dragOffset.x) / sGridSize)),
     );
     const newY = Math.max(
-      -city.PaddingTiles,
-      Math.min(GridMax - blocks[dragIndex].length + city.PaddingTiles, Math.round((mouseY - dragOffset.y) / sGridSize)),
+      -PaddingTiles,
+      Math.min(GridMax - blocks[dragIndex].length + PaddingTiles, Math.round((mouseY - dragOffset.y) / sGridSize)),
     );
 
     if (!blocks[dragIndex]) {

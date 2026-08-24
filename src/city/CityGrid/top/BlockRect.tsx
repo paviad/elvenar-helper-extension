@@ -5,8 +5,13 @@ import { CityBlock } from '../../CityBlock';
 import { BlockOpacity, GridSize } from '../../gridConstants';
 import { clearHoveredBlockId, setHoveredBlockId, useHoveredBlockStore } from '../../hoveredBlockStore';
 import { getBlockDecoration } from '../blockDecoration';
+import { BlockLabelContent } from '../BlockLabelContent';
 import { BuildingTooltip } from '../BuildingTooltip';
-import { BlockLabel } from './BlockLabel';
+import { TechSprite } from '../ChapterIcon';
+import { TOP_CROSSHATCH_ID } from '../CrosshatchPattern';
+import { LABEL_UNITS_PER_TILE } from '../labelLayout';
+import { MAX_LEVEL_BADGE_PX, MaxLevelBadge, MIN_BADGE_SIDE_PX } from '../MaxLevelBadge';
+import { WarningBadge } from '../WarningBadge';
 
 export interface BlockRectProps {
   /** The record key, or 'dragged' for the copy drawn on top while dragging. */
@@ -16,7 +21,7 @@ export interface BlockRectProps {
   chapter: number;
   allTypes: string[];
   isHighlighted: boolean;
-  sprite?: { url: string; width: number; height: number };
+  sprite?: TechSprite;
   onPickUp: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
   onOpenMenu: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
 }
@@ -51,7 +56,7 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
   });
 
   const dragging = blockKey === 'dragged';
-  const cursor = dragging ? 'grab' : 'grabbing';
+  const cursor = dragging ? 'grabbing' : 'grab';
 
   // Read through a selector rather than a prop, so a hover only re-renders the two
   // blocks whose own state flips instead of the whole grid.
@@ -77,20 +82,33 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
     onOpenMenu(e, Number(blockKey));
   };
 
-  // SVG pattern for crosshatch
-  const patternId = `block-crosshatch-${blockKey}`;
+  // Screen-pixel footprint of the block; every layer below shares it.
+  const px = {
+    x: block.x * sGridSize,
+    y: block.y * sGridSize,
+    width: block.width * sGridSize,
+    height: block.length * sGridSize,
+  };
+
+  const shape = (
+    <rect
+      opacity={BlockOpacity}
+      {...px}
+      fill={fillColor}
+      stroke='#000'
+      strokeWidth={block.moved ? 2 : 1}
+      style={{ cursor }}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    />
+  );
 
   return (
     <g>
-      {isHighlighted && (
-        <defs>
-          <pattern id={patternId} patternUnits='userSpaceOnUse' width='8' height='8' patternTransform='rotate(45)'>
-            <line x1='0' y1='0' x2='0' y2='8' stroke='#000' strokeWidth='1' strokeOpacity='1' />
-            <line x1='4' y1='0' x2='4' y2='8' stroke='#000' strokeWidth='1' strokeOpacity='1' />
-          </pattern>
-        </defs>
-      )}
-      {building && (
+      {/* The rect is always drawn and interactive; the tooltip needs a catalog entry to describe. */}
+      {building ? (
         <Tooltip
           title={
             <BuildingTooltip
@@ -106,78 +124,49 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
           enterDelay={700}
           enterNextDelay={700}
         >
-          <rect
-            opacity={BlockOpacity}
-            x={block.x * sGridSize}
-            y={block.y * sGridSize}
-            width={block.width * sGridSize}
-            height={block.length * sGridSize}
-            fill={fillColor}
-            stroke={block.moved ? 'black' : '#000'}
-            strokeWidth={block.moved ? 2 : 1}
-            style={{ cursor }}
-            onClick={handleClick}
-            onContextMenu={handleContextMenu}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          />
+          {shape}
         </Tooltip>
+      ) : (
+        shape
       )}
       {isHighlighted && (
         <>
-          <rect
-            x={block.x * sGridSize}
-            y={block.y * sGridSize}
-            width={block.width * sGridSize}
-            height={block.length * sGridSize}
-            fill={`url(#${patternId})`}
-            pointerEvents='none'
-          />
-          <rect
-            x={block.x * sGridSize}
-            y={block.y * sGridSize}
-            width={block.width * sGridSize}
-            height={block.length * sGridSize}
-            fill='none'
-            stroke='#ff0000'
-            strokeWidth={3}
-            pointerEvents='none'
-          />
+          <rect {...px} fill={`url(#${TOP_CROSSHATCH_ID})`} pointerEvents='none' />
+          <rect {...px} fill='none' stroke='#ff0000' strokeWidth={3} pointerEvents='none' />
         </>
       )}
       {/* The wash sits here, under this block's own label; the outline is drawn once the
           whole grid is down, by HoverOutline. */}
-      {isHovered && (
-        <rect
-          x={block.x * sGridSize}
-          y={block.y * sGridSize}
-          width={block.width * sGridSize}
-          height={block.length * sGridSize}
-          fill='#fff'
-          fillOpacity={0.2}
-          pointerEvents='none'
-        />
-      )}
+      {isHovered && <rect {...px} fill='#fff' fillOpacity={0.2} pointerEvents='none' />}
       {dragging && (
         <rect
-          x={block.x * sGridSize - 2}
-          y={block.y * sGridSize - 2}
-          width={block.width * sGridSize + 4}
-          height={block.length * sGridSize + 4}
+          x={px.x - 2}
+          y={px.y - 2}
+          width={px.width + 4}
+          height={px.height + 4}
           fill='none'
           stroke='orange'
           strokeWidth={2}
           pointerEvents='none'
         />
       )}
-      <BlockLabel
-        block={block}
-        GridSize={sGridSize}
-        textColor={textColor}
-        sprite={sprite}
-        showWarning={isChapterExcessive}
-        showMaxLevel={isMaxLevelForChapter}
-      />
+      {/* The warning and label are laid out in tiles, centred on the block; this
+          transform is the only place zoom touches them. */}
+      <g
+        transform={`translate(${px.x + px.width / 2}, ${px.y + px.height / 2}) scale(${
+          sGridSize / LABEL_UNITS_PER_TILE
+        })`}
+        pointerEvents='none'
+      >
+        {isChapterExcessive && <WarningBadge widthTiles={block.width} lengthTiles={block.length} />}
+        <BlockLabelContent block={block} textColor={textColor} sprite={sprite} />
+      </g>
+      {/* Screen-fixed chrome, tucked into the block's top-right corner. */}
+      {isMaxLevelForChapter && Math.min(px.width, px.height) > MIN_BADGE_SIDE_PX && (
+        <g transform={`translate(${px.x + px.width - MAX_LEVEL_BADGE_PX - 2}, ${px.y + 2})`}>
+          <MaxLevelBadge />
+        </g>
+      )}
     </g>
   );
 });

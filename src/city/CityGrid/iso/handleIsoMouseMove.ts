@@ -1,6 +1,7 @@
 import React from 'react';
 import { sampleTime, Subject } from 'rxjs';
 import { useCity } from '../../CityContext';
+import { GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { setMouseGridPosition } from '../../mouseGridStore';
 import { createIsoProjection } from './isoProjection';
 
@@ -27,7 +28,7 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
   const dragIndex = city.dragIndex;
   const dragOffset = city.dragOffset;
 
-  const { GridSize, svgRef, GridMax, mousePositionRef, PaddingTiles } = city;
+  const { svgRef, mousePositionRef } = city;
 
   const svg = svgRef.current;
   if (!svg) return;

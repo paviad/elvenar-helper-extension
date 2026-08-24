@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
+import { GridSize, PaddingTiles } from '../../gridConstants';
 import { getEntityMaxLevel } from '../getEntityMaxLevel';
 
 export const handleMouseDown = (
@@ -14,11 +15,11 @@ export const handleMouseDown = (
   const setDragOffset = city.setDragOffset;
   const blocks = city.blocks;
   const setOriginalPos = city.setOriginalPos;
-  const { GridSize, svgRef, maxLevels } = city;
+  const { svgRef, maxLevels } = city;
 
   // Calculate scaled grid size and padding
   const sGridSize = GridSize * zoom;
-  const paddingPx = city.PaddingTiles * sGridSize;
+  const paddingPx = PaddingTiles * sGridSize;
 
   e.stopPropagation();
   const svg = svgRef.current;

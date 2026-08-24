@@ -16,7 +16,7 @@ import { CityBlock } from './CityBlock';
 import { generateCity, saveBack } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
-import { BlockOpacity, GridMax, GridSize, PaddingTiles } from './gridConstants';
+import { BlockOpacity } from './gridConstants';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
 import { findMatchingBlockIds } from './searchMatcher';
 import { useSettledValue } from './useSettledValue';
@@ -61,9 +61,6 @@ export interface CityContextType {
   techSprite: { url: string; width: number; height: number } | undefined;
   handleUndo: () => void;
   handleRedo: () => void;
-  GridSize: number;
-  GridMax: number;
-  PaddingTiles: number;
   opacity: number;
   allTypes: string[];
   unlockedAreas: UnlockedArea[];
@@ -523,9 +520,6 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       techSprite,
       handleUndo: handleUndo,
       handleRedo: handleRedo,
-      GridSize,
-      GridMax,
-      PaddingTiles,
       opacity: BlockOpacity,
       allTypes,
       unlockedAreas,
