@@ -120,6 +120,7 @@ export const BuildingTooltip: React.FC<BuildingTooltipProps> = ({ building, isMa
         {building.width}x{building.length}
         {building.chapter ? ` • Chapter ${building.chapter}` : ''}
         {source?.type ? ` • ${formatBuildingType(source.type)}` : ''}
+        {stage ? ` • Stage ${stage}` : ''}
         {building.expiration
           ? ` (${building.expiration / 86400} days, ${formatExpirationleft(expirationEnd)} left)`
           : ''}
