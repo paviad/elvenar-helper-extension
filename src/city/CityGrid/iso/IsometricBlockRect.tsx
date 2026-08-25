@@ -9,6 +9,8 @@ import { BlockLabelContent } from '../BlockLabelContent';
 import { BuildingTooltip } from '../BuildingTooltip';
 import { TechSprite } from '../ChapterIcon';
 import { ISO_CROSSHATCH_ID } from '../CrosshatchPattern';
+import { expiryProgress } from '../expiry';
+import { ExpiryBar } from '../ExpiryBar';
 import { LABEL_UNITS_PER_TILE } from '../labelLayout';
 import { MaxLevelBadge, MIN_BADGE_SIDE_PX } from '../MaxLevelBadge';
 import { WarningBadge } from '../WarningBadge';
@@ -24,6 +26,8 @@ export interface IsometricBlockRectProps {
   chapter: number;
   allTypes: string[];
   isHighlighted: boolean;
+  /** Clock reading the grid mounted with; expiry bars are measured against it. */
+  now: number;
   sprite?: TechSprite;
   onPickUp: (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => void;
   onOpenMenu: (e: React.MouseEvent<SVGElement, MouseEvent>, blockKey: number) => void;
@@ -41,6 +45,7 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
   chapter,
   allTypes,
   isHighlighted,
+  now,
   sprite,
   onPickUp,
   onOpenMenu,
@@ -79,6 +84,8 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
     if (dragging) return;
     onOpenMenu(e, Number(blockKey));
   };
+
+  const expiry = expiryProgress(block.expiration ?? building?.expiration, block.expirationEnd, now);
 
   // --- Render Calculation ---
   const p1 = toIso(block.x, block.y);
@@ -135,6 +142,8 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
           <path d={pathData} fill='none' stroke='#ff0000' strokeWidth={3} pointerEvents='none' />
         </>
       )}
+
+      {expiry && <ExpiryBar block={block} progress={expiry} project={toIso} />}
 
       {/* The wash sits here, under this block's own label; the outline is drawn once the
           whole grid is down, by IsoHoverOutline. */}

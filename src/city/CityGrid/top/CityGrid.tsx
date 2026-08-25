@@ -50,6 +50,10 @@ export function CityGrid() {
   // nothing is drawing.
   React.useEffect(() => () => setHoveredBlockId(null), []);
 
+  // Read once, when the grid mounts: the expiry bars need a clock, and a fresh Date.now()
+  // in every render would make the render impure for a bar that moves by pixels a day.
+  const [now] = React.useState(() => Date.now());
+
   // --- Unlock Area mode ---
   const [hoveredLockedCell, setHoveredLockedCell] = React.useState<{ cx: number; cy: number } | null>(null);
 
@@ -238,12 +242,13 @@ export function CityGrid() {
         chapter={chapter}
         allTypes={allTypes}
         isHighlighted={highlightedIds.has(block.id)}
+        now={now}
         sprite={techSprite}
         onPickUp={onPickUp}
         onOpenMenu={onOpenMenu}
       />
     ));
-  }, [blocks, dragIndex, zoom, highlightedIds, chapter, allTypes, techSprite, onPickUp, onOpenMenu]);
+  }, [blocks, dragIndex, zoom, highlightedIds, chapter, allTypes, techSprite, now, onPickUp, onOpenMenu]);
 
   return (
     <div

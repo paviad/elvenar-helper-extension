@@ -9,6 +9,8 @@ import { BlockLabelContent } from '../BlockLabelContent';
 import { BuildingTooltip } from '../BuildingTooltip';
 import { TechSprite } from '../ChapterIcon';
 import { TOP_CROSSHATCH_ID } from '../CrosshatchPattern';
+import { expiryProgress } from '../expiry';
+import { ExpiryBar } from '../ExpiryBar';
 import { LABEL_UNITS_PER_TILE } from '../labelLayout';
 import { MAX_LEVEL_BADGE_PX, MaxLevelBadge, MIN_BADGE_SIDE_PX } from '../MaxLevelBadge';
 import { WarningBadge } from '../WarningBadge';
@@ -21,6 +23,8 @@ export interface BlockRectProps {
   chapter: number;
   allTypes: string[];
   isHighlighted: boolean;
+  /** Clock reading the grid mounted with; expiry bars are measured against it. */
+  now: number;
   sprite?: TechSprite;
   onPickUp: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
   onOpenMenu: (e: React.MouseEvent<SVGRectElement, MouseEvent>, blockKey: number) => void;
@@ -41,6 +45,7 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
   chapter,
   allTypes,
   isHighlighted,
+  now,
   sprite,
   onPickUp,
   onOpenMenu,
@@ -81,6 +86,8 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
     if (dragging) return;
     onOpenMenu(e, Number(blockKey));
   };
+
+  const expiry = expiryProgress(block.expiration ?? building?.expiration, block.expirationEnd, now);
 
   // Screen-pixel footprint of the block; every layer below shares it.
   const px = {
@@ -134,6 +141,9 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
           <rect {...px} fill={`url(#${TOP_CROSSHATCH_ID})`} pointerEvents='none' />
           <rect {...px} fill='none' stroke='#ff0000' strokeWidth={3} pointerEvents='none' />
         </>
+      )}
+      {expiry && (
+        <ExpiryBar block={block} progress={expiry} project={(x, y) => ({ x: x * sGridSize, y: y * sGridSize })} />
       )}
       {/* The wash sits here, under this block's own label; the outline is drawn once the
           whole grid is down, by HoverOutline. */}

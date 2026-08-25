@@ -34,6 +34,10 @@ export function IsometricCityGrid() {
   // See the note in CityGrid: a hover cannot outlive the blocks that report it.
   React.useEffect(() => () => setHoveredBlockId(null), []);
 
+  // Read once, when the grid mounts: the expiry bars need a clock, and a fresh Date.now()
+  // in every render would make the render impure for a bar that moves by pixels a day.
+  const [now] = React.useState(() => Date.now());
+
   // --- Isometric Configuration ---
   // The grid constants are module-level, so a projection is only a function of zoom.
   // Stable, so the callbacks below can depend on it without changing identity every render.
@@ -145,6 +149,7 @@ export function IsometricCityGrid() {
         chapter={chapter}
         allTypes={allTypes}
         isHighlighted={highlightedIds.has(block.id)}
+        now={now}
         sprite={techSprite}
         onPickUp={onPickUp}
         onOpenMenu={onOpenMenu}
@@ -169,6 +174,7 @@ export function IsometricCityGrid() {
     allTypes,
     highlightedIds,
     techSprite,
+    now,
     onPickUp,
     onOpenMenu,
   ]);
