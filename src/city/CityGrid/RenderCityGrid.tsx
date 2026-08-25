@@ -15,6 +15,7 @@ import { subscribeToIsoMouseMove } from './iso/handleIsoMouseMove';
 import { IsometricCityGrid } from './iso/IsometricCityGrid';
 import { refreshCity } from './refreshCity';
 import SaveCityDialog from './SaveCityDialog';
+import { ScreenshotDialog } from './ScreenshotDialog';
 import { TableCityView } from './table/TableCityView';
 import { CityGrid } from './top/CityGrid';
 import { subscribeToMouseMove as subscribeToTopMouseMove } from './top/handleMouseMove';
@@ -107,6 +108,7 @@ export const RenderCityGrid = () => {
         onBuild={() => state.setShowBuildDialog(true)}
         onImport={state.importCity}
         onExport={() => void state.exportCityAsJson()}
+        onScreenshot={state.captureScreenshot}
         onSaveAs={state.saveCityAs}
         onDelete={state.deleteCity}
         onSave={state.saveCity}
@@ -183,6 +185,15 @@ export const RenderCityGrid = () => {
           isOpen={state.exportDialog.open}
           onClose={() => state.setExportDialog({ open: false, exportStr: '' })}
           exportString={state.exportDialog.exportStr}
+        />
+
+        {/* ScreenshotDialog Modal. The picture is kept on close so the dialog fades out on it. */}
+        <ScreenshotDialog
+          open={state.screenshotDialog.open}
+          onClose={() => state.setScreenshotDialog((prev) => ({ ...prev, open: false }))}
+          image={state.screenshotDialog.image}
+          error={state.screenshotDialog.error}
+          fileName={state.screenshotDialog.fileName}
         />
 
         {/* SaveCityDialog Modal */}

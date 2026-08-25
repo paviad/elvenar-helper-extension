@@ -7,6 +7,7 @@ import { clearHoveredBlockId, setHoveredBlockId, useHoveredBlockStore } from '..
 import { getBlockDecoration } from '../blockDecoration';
 import { BlockLabelContent } from '../BlockLabelContent';
 import { BuildingTooltip } from '../BuildingTooltip';
+import { SCREENSHOT_OMIT } from '../captureCityScreenshot';
 import { TechSprite } from '../ChapterIcon';
 import { TOP_CROSSHATCH_ID } from '../CrosshatchPattern';
 import { expiryProgress } from '../expiry';
@@ -147,9 +148,10 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
       )}
       {/* The wash sits here, under this block's own label; the outline is drawn once the
           whole grid is down, by HoverOutline. */}
-      {isHovered && <rect {...px} fill='#fff' fillOpacity={0.2} pointerEvents='none' />}
+      {isHovered && <rect {...px} fill='#fff' fillOpacity={0.2} pointerEvents='none' {...SCREENSHOT_OMIT} />}
       {dragging && (
         <rect
+          {...SCREENSHOT_OMIT}
           x={px.x - 2}
           y={px.y - 2}
           width={px.width + 4}

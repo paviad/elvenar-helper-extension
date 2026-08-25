@@ -2,6 +2,7 @@ import React from 'react';
 import { useCity } from '../../CityContext';
 import { GridSize } from '../../gridConstants';
 import { useHoveredBlockStore } from '../../hoveredBlockStore';
+import { SCREENSHOT_OMIT } from '../captureCityScreenshot';
 
 /**
  * The outline around the building under the cursor, drawn after every block rather
@@ -31,6 +32,7 @@ export const HoverOutline: React.FC<{ zoom: number }> = ({ zoom }) => {
       stroke='#fff'
       strokeWidth={2.5}
       pointerEvents='none'
+      {...SCREENSHOT_OMIT}
     />
   );
 };

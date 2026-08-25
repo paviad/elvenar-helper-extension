@@ -197,6 +197,12 @@ export const CityPlanner = () => (
           secondary='Export your layout to a JSON string compatible with ElvenArchitect.com, or import layouts shared by others.'
         />
       </ListItem>
+      <ListItem>
+        <ListItemText
+          primary='Screenshot'
+          secondary='Save a picture of the top-down view: the unlocked area with one band of expansions around it, at the same scale whatever the zoom. Download it or copy it to the clipboard.'
+        />
+      </ListItem>
     </List>
   </Box>
 );

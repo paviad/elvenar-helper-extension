@@ -23,8 +23,10 @@ import { getBuildingFinder } from './buildingFinder';
 import { BuildingConfig, BuildingDefinition } from './CATEGORIES';
 import { CityBlock } from './CityBlock';
 import { useCity } from './CityContext';
+import { captureCityScreenshot } from './CityGrid/captureCityScreenshot';
 import { isOverlapping } from './CityGrid/isOverlapping';
 import { blockAtLevel, isLevelKey, stepLevelAndStage } from './CityGrid/levelChange';
+import { screenshotFrame } from './CityGrid/screenshotFrame';
 import { resetMovedInPlace, saveBack } from './generateCity';
 import { getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { getHoveredBlockId, setHoveredBlockId } from './hoveredBlockStore';
@@ -33,6 +35,16 @@ import { MoveLogInterface } from './MoveLog/moveLogInterface';
 interface ShowLevelDialogData {
   open: boolean;
   index: number;
+}
+
+interface ScreenshotDialogState {
+  open: boolean;
+  /** The picture, once taken. */
+  image: Blob | null;
+  /** Why there is no picture, when taking it failed. */
+  error: string | null;
+  /** The name the picture is saved under. */
+  fileName: string;
 }
 
 /** Whether the keyboard is feeding a text field, where '+' and '-' are just characters. */
@@ -78,6 +90,12 @@ export const useCityGridState = () => {
   });
   const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] = React.useState({ open: false });
   const [importDialog, setImportDialog] = React.useState({ open: false, existingCities: [] as string[] });
+  const [screenshotDialog, setScreenshotDialog] = React.useState<ScreenshotDialogState>({
+    open: false,
+    image: null,
+    error: null,
+    fileName: '',
+  });
 
   // Derived State
   const isDetached = !!getAccountById(city.accountId!)?.isDetached;
@@ -519,6 +537,24 @@ export const useCityGridState = () => {
     setExportDialog({ open: true, exportStr: base64Str });
   }
 
+  // The grid is copied the moment the item is clicked and rasterised while the dialog
+  // says so. A dialog closed before that finishes stays closed: the picture is dropped
+  // rather than reopening it.
+  function captureScreenshot() {
+    const svg = city.svgRef.current;
+    if (viewMode !== 'top' || !svg) return;
+    const accountName = getAccountById(city.accountId ?? '')?.cityQuery?.accountName || city.accountId || 'city';
+    // Without the characters no file system takes in a name.
+    const fileName = `${accountName.replace(/[\\/:*?"<>|]/g, '_')} - city.png`;
+    setScreenshotDialog({ open: true, image: null, error: null, fileName });
+    captureCityScreenshot(svg, screenshotFrame(city.unlockedAreas, Object.values(blocks)))
+      .then((image) => setScreenshotDialog((prev) => (prev.open ? { ...prev, image } : prev)))
+      .catch((err: unknown) => {
+        console.error('ElvenAssist: Failed to take the city screenshot: ', err);
+        setScreenshotDialog((prev) => (prev.open ? { ...prev, error: 'The screenshot could not be taken.' } : prev));
+      });
+  }
+
   function importCity() {
     const storedAccounts = getAllStoredAccounts();
     const existingCities = storedAccounts
@@ -702,6 +738,8 @@ export const useCityGridState = () => {
     setShowDeleteConfirmationDialog,
     importDialog,
     setImportDialog,
+    screenshotDialog,
+    setScreenshotDialog,
     isDetached,
 
     // Actions
@@ -712,6 +750,7 @@ export const useCityGridState = () => {
     onBuildFromInventory,
     onSelectBuilding,
     exportCityAsJson,
+    captureScreenshot,
     importCity,
     handleImport,
     saveCityAs,

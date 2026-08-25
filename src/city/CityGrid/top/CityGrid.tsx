@@ -3,6 +3,7 @@ import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
 import { ExpansionSize, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { setHoveredBlockId } from '../../hoveredBlockStore';
+import { SCREENSHOT_OMIT } from '../captureCityScreenshot';
 import { commitDrop } from '../commitDrop';
 import { CrosshatchPattern, TOP_CROSSHATCH_ID } from '../CrosshatchPattern';
 import { findCityOrigin, InitialFramingTiles } from '../findCityOrigin';
@@ -324,7 +325,7 @@ export function CityGrid() {
 
           {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
           {replacedArea && (
-            <g pointerEvents='none'>
+            <g pointerEvents='none' {...SCREENSHOT_OMIT}>
               <animate attributeName='opacity' values='1;0.4;1' dur='1.4s' repeatCount='indefinite' />
               <rect
                 x={replacedArea.x * gridSizePx}
@@ -355,6 +356,7 @@ export function CityGrid() {
                   stroke={isHovered ? 'gold' : 'none'}
                   strokeWidth={2}
                   style={{ cursor: 'pointer' }}
+                  {...SCREENSHOT_OMIT}
                   onMouseEnter={() => setHoveredLockedCell({ cx, cy })}
                   onMouseLeave={() => setHoveredLockedCell(null)}
                   onClick={() => unlockExpansion(city, cx, cy)}
