@@ -169,7 +169,7 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
         pointerEvents='none'
       >
         {isChapterExcessive && <WarningBadge widthTiles={block.width} lengthTiles={block.length} />}
-        <BlockLabelContent block={block} textColor={textColor} sprite={sprite} />
+        <BlockLabelContent block={block} now={now} textColor={textColor} sprite={sprite} />
       </g>
       {/* Screen-fixed chrome, tucked into the block's top-right corner. */}
       {isMaxLevelForChapter && Math.min(px.width, px.height) > MIN_BADGE_SIDE_PX && (

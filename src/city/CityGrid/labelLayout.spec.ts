@@ -5,10 +5,10 @@ import {
   LABEL_FILL_FRACTION,
   layoutBlockLabel,
   MAX_FONT_TILES,
-  STAGE_FONT_RATIO,
+  SUB_LINE_FONT_RATIO,
 } from './labelLayout';
 
-const base = { wantIcon: false, widthTiles: 4, lengthTiles: 4 };
+const base = { subLines: [] as string[], wantIcon: false, widthTiles: 4, lengthTiles: 4 };
 
 describe('layoutBlockLabel', () => {
   it('caps a short label on a large block at the maximum font size, centred', () => {
@@ -17,7 +17,7 @@ describe('layoutBlockLabel', () => {
     expect(l.fontTiles).toBe(MAX_FONT_TILES);
     expect(l.mainX).toBe(0);
     expect(l.mainY).toBe(0);
-    expect(l.stage).toBeNull();
+    expect(l.subLines).toEqual([]);
     expect(l.icon).toBeNull();
   });
 
@@ -61,29 +61,41 @@ describe('layoutBlockLabel', () => {
     });
   });
 
-  describe('stage line', () => {
-    it('stacks the stage line under the main line, centred as a group', () => {
-      const l = layoutBlockLabel({ ...base, label: '7', stage: 3 });
+  describe('sub-lines', () => {
+    it('stacks a sub-line under the main line, centred as a group', () => {
+      const l = layoutBlockLabel({ ...base, label: '7', subLines: ['Stage 3'] });
 
-      expect(l.stage).not.toBeNull();
-      expect(l.stage!.fontTiles).toBeCloseTo(l.fontTiles * STAGE_FONT_RATIO);
-      expect(l.mainY).toBeLessThan(l.stage!.y);
-      // Centred: the top of the main line mirrors the bottom of the stage line.
-      expect(-(l.mainY - l.fontTiles / 2)).toBeCloseTo(l.stage!.y + l.stage!.fontTiles / 2);
+      expect(l.subLines).toHaveLength(1);
+      expect(l.subLines[0].text).toBe('Stage 3');
+      expect(l.subLines[0].fontTiles).toBeCloseTo(l.fontTiles * SUB_LINE_FONT_RATIO);
+      expect(l.mainY).toBeLessThan(l.subLines[0].y);
+      // Centred: the top of the main line mirrors the bottom of the sub-line.
+      expect(-(l.mainY - l.fontTiles / 2)).toBeCloseTo(l.subLines[0].y + l.subLines[0].fontTiles / 2);
     });
 
-    it('keeps both lines inside the block height', () => {
-      const l = layoutBlockLabel({ ...base, lengthTiles: 1, label: '7', stage: 3 });
+    it('stacks several sub-lines in order, still centred as a group', () => {
+      const l = layoutBlockLabel({ ...base, label: '7', subLines: ['Stage 3', '12d'] });
+
+      expect(l.subLines.map((s) => s.text)).toEqual(['Stage 3', '12d']);
+      expect(l.subLines[0].y).toBeLessThan(l.subLines[1].y);
       const top = l.mainY - l.fontTiles / 2;
-      const bottom = l.stage!.y + l.stage!.fontTiles / 2;
+      const bottom = l.subLines[1].y + l.subLines[1].fontTiles / 2;
+      expect(-top).toBeCloseTo(bottom);
+    });
+
+    it('keeps the whole stack inside the block height', () => {
+      const l = layoutBlockLabel({ ...base, lengthTiles: 1, label: '7', subLines: ['Stage 3', '12d'] });
+      const top = l.mainY - l.fontTiles / 2;
+      const last = l.subLines[l.subLines.length - 1];
+      const bottom = last.y + last.fontTiles / 2;
 
       expect(bottom - top).toBeLessThanOrEqual(1 * LABEL_FILL_FRACTION + 1e-9);
     });
 
-    it('lets a wide stage line drive the font size down', () => {
-      const l = layoutBlockLabel({ ...base, widthTiles: 2, lengthTiles: 10, label: '7', stage: 12 });
+    it('lets a wide sub-line drive the font size down', () => {
+      const l = layoutBlockLabel({ ...base, widthTiles: 2, lengthTiles: 10, label: '7', subLines: ['Stage 12'] });
 
-      expect(l.stage!.fontTiles * 'Stage 12'.length * AVG_GLYPH_ADVANCE_EM).toBeLessThanOrEqual(
+      expect(l.subLines[0].fontTiles * 'Stage 12'.length * AVG_GLYPH_ADVANCE_EM).toBeLessThanOrEqual(
         2 * LABEL_FILL_FRACTION + 1e-9,
       );
     });

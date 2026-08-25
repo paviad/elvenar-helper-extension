@@ -1,4 +1,4 @@
-import { EXPIRY_COLORS, expiryProgress } from './expiry';
+import { daysLeftLabel, EXPIRY_COLORS, expiryProgress } from './expiry';
 
 const DAY = 86400;
 const NOW = 1_700_000_000_000;
@@ -30,5 +30,21 @@ describe('expiryProgress', () => {
     expect(withDaysLeft(2.5)!.color).toBe(EXPIRY_COLORS.warn);
     expect(withDaysLeft(2.49)!.color).toBe(EXPIRY_COLORS.critical);
     expect(withDaysLeft(0)!.color).toBe(EXPIRY_COLORS.critical);
+  });
+});
+
+describe('daysLeftLabel', () => {
+  it('is undefined when the block has no expiry', () => {
+    expect(daysLeftLabel(undefined, NOW)).toBeUndefined();
+    expect(daysLeftLabel(0, NOW)).toBeUndefined();
+  });
+
+  it('rounds to whole days', () => {
+    expect(daysLeftLabel(NOW + 3 * DAY * 1000, NOW)).toBe('3d');
+    expect(daysLeftLabel(NOW + 2.6 * DAY * 1000, NOW)).toBe('3d');
+  });
+
+  it('never goes below zero once expired', () => {
+    expect(daysLeftLabel(NOW - DAY * 1000, NOW)).toBe('0d');
   });
 });

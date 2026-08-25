@@ -65,11 +65,8 @@ function getLabel(entity: CityEntityEx): string | undefined {
     return `${entity.level}`;
   }
 
-  if (entity.type === 'expiring' && entity.expirationEnd) {
-    const expirationLeft = Math.round((entity.expirationEnd - Date.now()) / 86400000); // Convert milliseconds to days
-    return `${expirationLeft}d`;
-  }
-
+  // An expiring building's days left are not a label rule: the grid derives them from
+  // expirationEnd at render, so they show whether or not another rule labelled the block.
   return undefined;
 }
 

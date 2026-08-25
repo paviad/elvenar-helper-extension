@@ -14,10 +14,10 @@ export const AVG_GLYPH_ADVANCE_EM = 0.6;
 /** The portion of the block's footprint a label may span. */
 export const LABEL_FILL_FRACTION = 0.9;
 
-/** The stage line's font size relative to the main line. */
-export const STAGE_FONT_RATIO = 0.6;
+/** A sub-line's font size relative to the main line. */
+export const SUB_LINE_FONT_RATIO = 0.6;
 
-/** Gap between the main and stage lines, relative to the main font size. */
+/** Gap between consecutive lines, relative to the main font size. */
 export const LINE_GAP_RATIO = 0.15;
 
 /** Edge of the chapter icon. */
@@ -37,11 +37,19 @@ export const LABEL_UNITS_PER_TILE = 16;
 
 export interface BlockLabelLayoutInput {
   label: string;
-  stage?: number;
+  /** Smaller lines stacked under the label, top to bottom. */
+  subLines: string[];
   /** Whether the caller could draw a chapter icon at all (sprite loaded, chapter known). */
   wantIcon: boolean;
   widthTiles: number;
   lengthTiles: number;
+}
+
+export interface SubLineLayout {
+  text: string;
+  fontTiles: number;
+  /** Centre of the line; every sub-line is centred on x = 0. */
+  y: number;
 }
 
 export interface BlockLabelLayout {
@@ -50,42 +58,44 @@ export interface BlockLabelLayout {
   /** Centre of the main line. */
   mainX: number;
   mainY: number;
-  /** The stage line, when there is one; centred on x = 0. */
-  stage: { fontTiles: number; y: number } | null;
+  /** The sub-lines, top to bottom. */
+  subLines: SubLineLayout[];
   /** The chapter icon, when there is room for one; x/y are its top-left corner. */
   icon: { x: number; y: number; size: number } | null;
 }
 
 /** Estimated width of a line of text, in tiles. */
-const textWidth = (chars: number, fontTiles: number) => chars * AVG_GLYPH_ADVANCE_EM * fontTiles;
+const textWidth = (chars: number, fontTiles: number) => Math.max(chars, 1) * AVG_GLYPH_ADVANCE_EM * fontTiles;
 
 export function layoutBlockLabel({
   label,
-  stage,
+  subLines,
   wantIcon,
   widthTiles,
   lengthTiles,
 }: BlockLabelLayoutInput): BlockLabelLayout {
   const showIcon = wantIcon && widthTiles >= 3 && lengthTiles >= 2;
-  const stageText = stage ? `Stage ${stage}` : undefined;
 
-  // The font size is whatever lets everything fit: the main line beside its icon, the
-  // stage line below it, and both lines within the block's height. There is no lower
-  // clamp - a label keeps shrinking with its block rather than overflowing it.
+  // Height of the whole stack relative to the main font: the main line, then a gap and
+  // a smaller line for each sub-line.
+  const stackRatio = 1 + subLines.length * (LINE_GAP_RATIO + SUB_LINE_FONT_RATIO);
+
+  // The font size is whatever lets everything fit: the main line beside its icon, each
+  // sub-line across the block, and the whole stack within the block's height. There is
+  // no lower clamp - a label keeps shrinking with its block rather than overflowing it.
   const fillWidth = widthTiles * LABEL_FILL_FRACTION;
   const fillLength = lengthTiles * LABEL_FILL_FRACTION;
-  const mainWidthCap =
-    (fillWidth - (showIcon ? ICON_TILES + ICON_TEXT_GAP_TILES : 0)) / textWidth(Math.max(label.length, 1), 1);
-  const stageWidthCap = stageText ? fillWidth / textWidth(stageText.length, STAGE_FONT_RATIO) : Infinity;
-  const heightCap = stageText ? fillLength / (1 + LINE_GAP_RATIO + STAGE_FONT_RATIO) : fillLength;
-  const fontTiles = Math.min(MAX_FONT_TILES, mainWidthCap, stageWidthCap, heightCap);
+  const mainWidthCap = (fillWidth - (showIcon ? ICON_TILES + ICON_TEXT_GAP_TILES : 0)) / textWidth(label.length, 1);
+  const subWidthCaps = subLines.map((text) => fillWidth / textWidth(text.length, SUB_LINE_FONT_RATIO));
+  const heightCap = fillLength / stackRatio;
+  const fontTiles = Math.min(MAX_FONT_TILES, mainWidthCap, heightCap, ...subWidthCaps);
 
-  // Two lines are centred as a group; a single line sits on the centre itself.
-  const groupHeight = stageText ? fontTiles * (1 + LINE_GAP_RATIO + STAGE_FONT_RATIO) : fontTiles;
+  // The stack is centred as a group; a lone main line sits on the centre itself.
+  const groupHeight = fontTiles * stackRatio;
   const mainY = -groupHeight / 2 + fontTiles / 2;
-  const stageLine = stageText
-    ? { fontTiles: fontTiles * STAGE_FONT_RATIO, y: groupHeight / 2 - (fontTiles * STAGE_FONT_RATIO) / 2 }
-    : null;
+  const subFontTiles = fontTiles * SUB_LINE_FONT_RATIO;
+  const subPitch = fontTiles * (LINE_GAP_RATIO + SUB_LINE_FONT_RATIO);
+  const firstSubY = mainY + fontTiles / 2 + fontTiles * LINE_GAP_RATIO + subFontTiles / 2;
 
   // The icon and the text form one centred row; the icon is centred on the main line.
   const mainTextWidth = textWidth(label.length, fontTiles);
@@ -96,7 +106,7 @@ export function layoutBlockLabel({
     fontTiles,
     mainX: showIcon ? rowStart + ICON_TILES + ICON_TEXT_GAP_TILES + mainTextWidth / 2 : 0,
     mainY,
-    stage: stageLine,
+    subLines: subLines.map((text, i) => ({ text, fontTiles: subFontTiles, y: firstSubY + i * subPitch })),
     icon: showIcon ? { x: rowStart, y: mainY - ICON_TILES / 2, size: ICON_TILES } : null,
   };
 }

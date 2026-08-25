@@ -158,7 +158,7 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
         pointerEvents='none'
       >
         {isChapterExcessive && <WarningBadge widthTiles={block.width} lengthTiles={block.length} />}
-        <BlockLabelContent block={block} textColor={textColor} sprite={sprite} shadow />
+        <BlockLabelContent block={block} now={now} textColor={textColor} sprite={sprite} shadow />
       </g>
       {/* Screen-fixed chrome, just above and right of the block's centre. */}
       {isMaxLevelForChapter && Math.min(block.width, block.length) * GridSize * zoom > MIN_BADGE_SIDE_PX && (

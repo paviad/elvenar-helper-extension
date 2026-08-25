@@ -99,19 +99,16 @@ describe('getCityBlockFromCityEntity', () => {
       expect(block.label).toBe('4');
     });
 
-    it('is the remaining days for expiring buildings', () => {
-      const now = 1_700_000_000_000;
-      jest.spyOn(Date, 'now').mockReturnValue(now);
-
+    it('is not the remaining days: the grid derives those from expirationEnd at render', () => {
       const block = getCityBlockFromCityEntity(
         makeCityEntityEx({
           cityentity_id: 'A_Evt_Tent',
           type: 'expiring',
-          expirationEnd: now + 3 * 86_400_000,
+          expirationEnd: 1_700_000_000_000 + 3 * 86_400_000,
         }),
       );
 
-      expect(block.label).toBe('3d');
+      expect(block.label).toBeUndefined();
     });
 
     it('is undefined when no rule applies', () => {

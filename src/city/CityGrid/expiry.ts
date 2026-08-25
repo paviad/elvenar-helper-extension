@@ -16,6 +16,15 @@ export const EXPIRY_BAR_TILES = 0.25;
 /** The unfilled remainder of the bar, so the consumed share reads as consumed. */
 export const EXPIRY_TRACK_COLOR = 'rgba(0, 0, 0, 0.35)';
 
+/** Milliseconds in a day. */
+const DAY_MS = 86_400_000;
+
+/** The "Nd" days-left text for a block, or undefined when it has no expiry end. */
+export function daysLeftLabel(endMs: number | undefined, nowMs: number): string | undefined {
+  if (!endMs) return undefined;
+  return `${Math.max(0, Math.round((endMs - nowMs) / DAY_MS))}d`;
+}
+
 export interface ExpiryProgress {
   /** Share of the lifetime still to run, 0..1. */
   remaining: number;
