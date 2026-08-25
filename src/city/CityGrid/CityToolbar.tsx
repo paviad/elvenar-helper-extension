@@ -6,6 +6,7 @@ import UpgradeIcon from '@mui/icons-material/Upgrade';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import {
   Badge,
+  BadgeProps,
   Button,
   Divider,
   Menu,
@@ -16,6 +17,34 @@ import {
   ToggleButtonGroup,
   Tooltip,
 } from '@mui/material';
+
+/**
+ * The "NEW" tag worn by a freshly added control. Overlaid on the top-right corner, the
+ * way a badge is, unless `inline` sets it after the content instead - the fit for a
+ * menu item's text. Everything else is passed through, so a Tooltip can wrap it.
+ */
+const NewBadge: React.FC<Omit<BadgeProps, 'badgeContent' | 'color'> & { inline?: boolean }> = ({
+  inline,
+  children,
+  ...rest
+}) => (
+  <Badge
+    {...rest}
+    badgeContent='NEW'
+    color='secondary'
+    sx={{
+      '& .MuiBadge-badge': {
+        fontSize: '0.6rem',
+        height: 16,
+        minWidth: 16,
+        px: 0.5,
+        ...(inline ? { position: 'static', transform: 'none', ml: 1 } : { mr: 1, mt: -0.7 }),
+      },
+    }}
+  >
+    {children}
+  </Badge>
+);
 
 interface CityToolbarProps {
   isDetached: boolean;
@@ -120,7 +149,9 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
         <Menu anchorEl={cityMenuAnchor} open={cityMenuAnchor !== null} onClose={closeMenus()}>
           <MenuItem onClick={closeMenus(onImport)}>Import</MenuItem>
           <MenuItem onClick={closeMenus(onExport)}>Export</MenuItem>
-          <MenuItem onClick={closeMenus(onScreenshot)}>Screenshot</MenuItem>
+          <MenuItem onClick={closeMenus(onScreenshot)}>
+            <NewBadge inline>Screenshot</NewBadge>
+          </MenuItem>
           <MenuItem onClick={closeMenus(onSaveAs)}>Save As...</MenuItem>
           <Divider />
           <MenuItem onClick={closeMenus(onDelete)} sx={{ color: 'red' }}>
@@ -202,23 +233,9 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
               </ToggleButton>
               <ToggleButton value='upgrades' aria-label='upgrade suggestions view'>
                 <Tooltip title='Upgrade suggestions from your inventory'>
-                  <Badge
-                    badgeContent='NEW'
-                    color='secondary'
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        fontSize: '0.6rem',
-                        height: 16,
-                        minWidth: 16,
-                        px: 0.5,
-                        mr: 1,
-                        mt: -0.7,
-                      },
-                    }}
-                  >
+                  <NewBadge>
                     <UpgradeIcon fontSize='small' />
-                  </Badge>
+                  </NewBadge>
                 </Tooltip>
               </ToggleButton>
             </ToggleButtonGroup>
