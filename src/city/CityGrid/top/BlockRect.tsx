@@ -147,11 +147,11 @@ export const BlockRect: React.FC<BlockRectProps> = React.memo(function BlockRect
         <ExpiryBar block={block} progress={expiry} project={(x, y) => ({ x: x * sGridSize, y: y * sGridSize })} />
       )}
       {/* The wash sits here, under this block's own label; the outline is drawn once the
-          whole grid is down, by HoverOutline. */}
+          whole grid is down, by HoverOutline. The screenshot leaves the wash out: its
+          drawing reads the same hover store as the live grid. */}
       {isHovered && <rect {...px} fill='#fff' fillOpacity={0.2} pointerEvents='none' {...SCREENSHOT_OMIT} />}
       {dragging && (
         <rect
-          {...SCREENSHOT_OMIT}
           x={px.x - 2}
           y={px.y - 2}
           width={px.width + 4}

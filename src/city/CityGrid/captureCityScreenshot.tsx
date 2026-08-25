@@ -1,13 +1,14 @@
-import { GridMax, PaddingTiles } from '../gridConstants';
+import React from 'react';
+import { flushSync } from 'react-dom';
+import { createRoot } from 'react-dom/client';
+import { GridSize } from '../gridConstants';
 import { TileRect } from './screenshotFrame';
-
-/** Pixels per tile in the saved picture, whatever the zoom on screen. */
-export const SCREENSHOT_PX_PER_TILE = 30;
+import { CityScene, CityScreenshotSvg } from './top/CityScreenshotSvg';
 
 /**
- * Marks an element the screenshot leaves out: chrome that only means something while
- * the mouse is on the grid - hover washes and outlines, the ring around the block
- * being carried, the expansions on offer in unlock-area mode. Spread onto the element.
+ * Marks an element the screenshot leaves out. The picture is drawn afresh with none of
+ * the live grid's chrome, but the hover wash comes through: a block reads the hover
+ * from a store the two drawings share. Spread onto the element.
  */
 export const SCREENSHOT_OMIT = { 'data-screenshot': 'omit' } as const;
 const OMIT_SELECTOR = '[data-screenshot="omit"]';
@@ -15,43 +16,25 @@ const OMIT_SELECTOR = '[data-screenshot="omit"]';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
- * Takes a picture of the top-down grid as it is drawn, framed on the given tiles.
+ * Takes a picture of the city as the top-down view draws it at zoom 1, framed on the
+ * given tiles: GridSize pixels to a tile, so the picture is exactly the frame's size.
  *
- * The grid is an SVG, so a copy of it is cut down to the frame and rasterised at a
- * fixed scale rather than read back from the screen: the picture comes out the same
- * at every zoom and is not clipped to the viewport. Two things about the live drawing
- * do not survive being loaded as an image on their own and are put right on the copy:
- * the chapter icons name the sprite sheet by URL, and an image loads no external
- * resources, so the sheet goes in as a data URL; and the text takes its font from the
- * page, which the copy has no access to, so the computed font is written onto it.
- *
- * The copy is taken before anything is awaited, so the picture is of the grid at the
- * moment of the call.
+ * The view is drawn afresh, into an element that is never attached, rather than copied
+ * off the screen: the picture is then at 1:1 whatever zoom the screen is at, and can be
+ * taken from any view. Two things about the drawing do not survive being loaded as an
+ * image on its own and are put right first: the chapter icons name the sprite sheet by
+ * URL, and an image loads no external resources, so the sheet goes in as a data URL;
+ * and the text takes its font from the page, which a standalone image has no access
+ * to, so the page's font is written onto it.
  */
-export async function captureCityScreenshot(svg: SVGSVGElement, frame: TileRect): Promise<Blob> {
-  const copy = svg.cloneNode(true) as SVGSVGElement;
-  copy.querySelectorAll(OMIT_SELECTOR).forEach((el) => el.remove());
+export async function captureCityScreenshot(scene: CityScene, frame: TileRect): Promise<Blob> {
+  const width = frame.width * GridSize;
+  const height = frame.length * GridSize;
+  const svg = drawScene(scene, frame);
+  svg.querySelectorAll(OMIT_SELECTOR).forEach((el) => el.remove());
+  await inlineImages(svg);
 
-  // The live SVG is the padded grid at the on-screen zoom; its width gives the tile size.
-  const tilePx = svg.width.baseVal.value / (GridMax + 2 * PaddingTiles);
-  const paddingPx = PaddingTiles * tilePx;
-  const viewBox = [
-    paddingPx + frame.x * tilePx,
-    paddingPx + frame.y * tilePx,
-    frame.width * tilePx,
-    frame.length * tilePx,
-  ];
-  copy.setAttribute('viewBox', viewBox.join(' '));
-  const width = frame.width * SCREENSHOT_PX_PER_TILE;
-  const height = frame.length * SCREENSHOT_PX_PER_TILE;
-  copy.setAttribute('width', String(width));
-  copy.setAttribute('height', String(height));
-  copy.removeAttribute('style');
-  copy.style.fontFamily = getComputedStyle(svg).fontFamily;
-
-  await inlineImages(copy);
-
-  const xml = new XMLSerializer().serializeToString(copy);
+  const xml = new XMLSerializer().serializeToString(svg);
   const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml;charset=utf-8' }));
   try {
     const image = await loadImage(url);
@@ -70,14 +53,36 @@ export async function captureCityScreenshot(svg: SVGSVGElement, frame: TileRect)
 }
 
 /**
- * Puts every picture the copy references inline. Each distinct URL is fetched once
+ * Renders the scene into a detached root, synchronously, and hands back a copy of the
+ * SVG that outlives the root. The copy is what gets edited afterwards: React is not
+ * told about changes made to elements it manages.
+ */
+function drawScene(scene: CityScene, frame: TileRect): SVGSVGElement {
+  const host = document.createElement('div');
+  const root = createRoot(host);
+  try {
+    flushSync(() =>
+      root.render(
+        <CityScreenshotSvg scene={scene} frame={frame} fontFamily={getComputedStyle(document.body).fontFamily} />,
+      ),
+    );
+    const svg = host.querySelector('svg');
+    if (!svg) throw new Error('The screenshot drew nothing');
+    return svg.cloneNode(true) as SVGSVGElement;
+  } finally {
+    root.unmount();
+  }
+}
+
+/**
+ * Puts every picture the SVG references inline. Each distinct URL is fetched once
  * and defined once, and the elements that referenced it become uses of that
  * definition: the sprite sheet is referenced by every block with a chapter icon, and
  * a data URL in each of them would put the whole sheet in the file that many times
  * over. A picture that cannot be fetched is left out rather than failing the shot.
  */
-async function inlineImages(copy: SVGSVGElement): Promise<void> {
-  const images = Array.from(copy.querySelectorAll('image'));
+async function inlineImages(svg: SVGSVGElement): Promise<void> {
+  const images = Array.from(svg.querySelectorAll('image'));
   const hrefs = new Set(
     images
       .map((image) => image.getAttribute('href'))
@@ -85,8 +90,8 @@ async function inlineImages(copy: SVGSVGElement): Promise<void> {
   );
   if (hrefs.size === 0) return;
 
-  const defs = copy.ownerDocument.createElementNS(SVG_NS, 'defs');
-  copy.prepend(defs);
+  const defs = svg.ownerDocument.createElementNS(SVG_NS, 'defs');
+  svg.prepend(defs);
   await Promise.all(
     Array.from(hrefs).map(async (href, i) => {
       const users = images.filter((image) => image.getAttribute('href') === href);
@@ -103,7 +108,7 @@ async function inlineImages(copy: SVGSVGElement): Promise<void> {
       shared.removeAttribute('y');
       defs.append(shared);
       users.forEach((image) => {
-        const use = copy.ownerDocument.createElementNS(SVG_NS, 'use');
+        const use = svg.ownerDocument.createElementNS(SVG_NS, 'use');
         use.setAttribute('href', `#${id}`);
         for (const name of ['x', 'y']) {
           const value = image.getAttribute(name);

@@ -120,19 +120,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
         <Menu anchorEl={cityMenuAnchor} open={cityMenuAnchor !== null} onClose={closeMenus()}>
           <MenuItem onClick={closeMenus(onImport)}>Import</MenuItem>
           <MenuItem onClick={closeMenus(onExport)}>Export</MenuItem>
-          <Tooltip
-            title={
-              viewMode !== 'top'
-                ? 'Available in the top-down view'
-                : 'Save a picture of the city: the unlocked area with one band of expansions around it'
-            }
-          >
-            <span>
-              <MenuItem onClick={closeMenus(onScreenshot)} disabled={viewMode !== 'top'}>
-                Screenshot
-              </MenuItem>
-            </span>
-          </Tooltip>
+          <MenuItem onClick={closeMenus(onScreenshot)}>Screenshot</MenuItem>
           <MenuItem onClick={closeMenus(onSaveAs)}>Save As...</MenuItem>
           <Divider />
           <MenuItem onClick={closeMenus(onDelete)} sx={{ color: 'red' }}>

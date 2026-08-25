@@ -200,7 +200,7 @@ export const CityPlanner = () => (
       <ListItem>
         <ListItemText
           primary='Screenshot'
-          secondary='Save a picture of the top-down view: the unlocked area with one band of expansions around it, at the same scale whatever the zoom. Download it or copy it to the clipboard.'
+          secondary='Save a picture of the city as the top-down view draws it at 1:1 zoom, whichever view you are in: the unlocked area with one band of expansions around it. Download it or copy it to the clipboard.'
         />
       </ListItem>
     </List>

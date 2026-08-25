@@ -3,16 +3,17 @@ import { useHelper } from '../../../helper/HelperContext';
 import { useCity } from '../../CityContext';
 import { ExpansionSize, GridMax, GridSize, PaddingTiles } from '../../gridConstants';
 import { setHoveredBlockId } from '../../hoveredBlockStore';
-import { SCREENSHOT_OMIT } from '../captureCityScreenshot';
 import { commitDrop } from '../commitDrop';
 import { CrosshatchPattern, TOP_CROSSHATCH_ID } from '../CrosshatchPattern';
 import { findCityOrigin, InitialFramingTiles } from '../findCityOrigin';
 import { unlockExpansion } from '../unlockExpansion';
 import { usePanZoom } from '../usePanZoom';
 import { BlockRect } from './BlockRect';
+import { GridBackdrop } from './GridBackdrop';
 import { handleMouseDown } from './handleMouseDown';
 import { handleMouseMove } from './handleMouseMove';
 import { HoverOutline } from './HoverOutline';
+import { paintOrder } from './paintOrder';
 
 const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -222,17 +223,10 @@ export function CityGrid() {
   );
 
   const blockRects = React.useMemo(() => {
-    // If dragging, render dragged block last (on top)
-    const withIndex = Object.entries(blocks);
-    const blocksBelowUnmoved = withIndex.filter(
-      ([i, b]) => Number(i) !== dragIndex && !b.moved && !highlightedIds.has(b.id),
-    );
-    const blocksBelow = withIndex.filter(([i, b]) => Number(i) !== dragIndex && b.moved && !highlightedIds.has(b.id));
-    const blocksHighlighted = withIndex.filter(([i, b]) => Number(i) !== dragIndex && highlightedIds.has(b.id));
-    const sortedBlocks = [...blocksBelowUnmoved, ...blocksBelow, ...blocksHighlighted];
+    // The block being carried is painted last, on top of everything, from a copy.
+    const sortedBlocks = paintOrder(blocks, highlightedIds, dragIndex);
     if (dragIndex !== null) {
-      const draggedBlock = blocks[dragIndex];
-      sortedBlocks.push(['dragged', draggedBlock]);
+      sortedBlocks.push(['dragged', blocks[dragIndex]]);
     }
     return sortedBlocks.map(([index, block]) => (
       <BlockRect
@@ -281,43 +275,7 @@ export function CityGrid() {
         <CrosshatchPattern id={TOP_CROSSHATCH_ID} />
         {/* Shift visual grid by Padding */}
         <g transform={`translate(${paddingPx}, ${paddingPx})`}>
-          {/* Main Playable Background (Optional visual aid) */}
-          <rect x={0} y={0} width={gridDimension} height={gridDimension} fill='#145214' />
-
-          {unlockedAreas.map((area, idx) => (
-            <rect
-              key={`unlocked-${idx}`}
-              x={area.x * gridSizePx}
-              y={area.y * gridSizePx}
-              width={area.width * gridSizePx}
-              height={area.length * gridSizePx}
-              fill='rgba(255, 255, 255, 0.3)'
-              stroke='green'
-              strokeWidth={1}
-              pointerEvents='none'
-            />
-          ))}
-
-          {Array.from({ length: GridMax + 1 }).map((_, i) => (
-            <g key={'grid-' + i} style={{ pointerEvents: 'none', opacity: 0.2 }}>
-              <line
-                x1='0'
-                y1={i * gridSizePx}
-                x2={gridDimension}
-                y2={i * gridSizePx}
-                stroke='white'
-                strokeWidth={i % 5 === 0 ? 2 : 1}
-              />
-              <line
-                x1={i * gridSizePx}
-                y1='0'
-                x2={i * gridSizePx}
-                y2={gridDimension}
-                stroke='white'
-                strokeWidth={i % 5 === 0 ? 2 : 1}
-              />
-            </g>
-          ))}
+          <GridBackdrop gridSizePx={gridSizePx} unlockedAreas={unlockedAreas} />
 
           {blockRects}
 
@@ -325,7 +283,7 @@ export function CityGrid() {
 
           {/* Where a replaced building stood. Click-through, so the replacement can be dropped on it. */}
           {replacedArea && (
-            <g pointerEvents='none' {...SCREENSHOT_OMIT}>
+            <g pointerEvents='none'>
               <animate attributeName='opacity' values='1;0.4;1' dur='1.4s' repeatCount='indefinite' />
               <rect
                 x={replacedArea.x * gridSizePx}
@@ -356,7 +314,6 @@ export function CityGrid() {
                   stroke={isHovered ? 'gold' : 'none'}
                   strokeWidth={2}
                   style={{ cursor: 'pointer' }}
-                  {...SCREENSHOT_OMIT}
                   onMouseEnter={() => setHoveredLockedCell({ cx, cy })}
                   onMouseLeave={() => setHoveredLockedCell(null)}
                   onClick={() => unlockExpansion(city, cx, cy)}

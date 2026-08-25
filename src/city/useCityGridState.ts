@@ -27,6 +27,7 @@ import { captureCityScreenshot } from './CityGrid/captureCityScreenshot';
 import { isOverlapping } from './CityGrid/isOverlapping';
 import { blockAtLevel, isLevelKey, stepLevelAndStage } from './CityGrid/levelChange';
 import { screenshotFrame } from './CityGrid/screenshotFrame';
+import { CityScene } from './CityGrid/top/CityScreenshotSvg';
 import { resetMovedInPlace, saveBack } from './generateCity';
 import { getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { getHoveredBlockId, setHoveredBlockId } from './hoveredBlockStore';
@@ -537,17 +538,24 @@ export const useCityGridState = () => {
     setExportDialog({ open: true, exportStr: base64Str });
   }
 
-  // The grid is copied the moment the item is clicked and rasterised while the dialog
-  // says so. A dialog closed before that finishes stays closed: the picture is dropped
-  // rather than reopening it.
+  // The city is drawn for the picture the moment the item is clicked, and rasterised
+  // while the dialog says so. A dialog closed before that finishes stays closed: the
+  // picture is dropped rather than reopening it.
   function captureScreenshot() {
-    const svg = city.svgRef.current;
-    if (viewMode !== 'top' || !svg) return;
     const accountName = getAccountById(city.accountId ?? '')?.cityQuery?.accountName || city.accountId || 'city';
     // Without the characters no file system takes in a name.
     const fileName = `${accountName.replace(/[\\/:*?"<>|]/g, '_')} - city.png`;
     setScreenshotDialog({ open: true, image: null, error: null, fileName });
-    captureCityScreenshot(svg, screenshotFrame(city.unlockedAreas, Object.values(blocks)))
+    const scene: CityScene = {
+      blocks,
+      unlockedAreas: city.unlockedAreas,
+      highlightedIds: city.highlightedIds,
+      chapter: city.chapter,
+      allTypes: city.allTypes,
+      techSprite: city.techSprite,
+      now: Date.now(),
+    };
+    captureCityScreenshot(scene, screenshotFrame(city.unlockedAreas, Object.values(blocks)))
       .then((image) => setScreenshotDialog((prev) => (prev.open ? { ...prev, image } : prev)))
       .catch((err: unknown) => {
         console.error('ElvenAssist: Failed to take the city screenshot: ', err);

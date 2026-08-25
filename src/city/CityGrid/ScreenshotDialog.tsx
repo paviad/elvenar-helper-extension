@@ -22,7 +22,12 @@ interface ScreenshotDialogProps {
   fileName: string;
 }
 
-/** Shows the screenshot as soon as it is taken and offers it as a download or on the clipboard. */
+/**
+ * Shows the screenshot as soon as it is taken and offers it as a download or on the
+ * clipboard. The preview is at 1:1 - the picture is the city at zoom 1, and fitting it
+ * to the window would shrink a big city and blur a small one - so it scrolls instead
+ * when it is bigger than the window.
+ */
 export const ScreenshotDialog: React.FC<ScreenshotDialogProps> = ({ open, onClose, image, error, fileName }) => {
   // The preview and the download link both need an object URL for the picture; it is
   // released as soon as the picture it names is replaced or gone.
@@ -47,13 +52,13 @@ export const ScreenshotDialog: React.FC<ScreenshotDialogProps> = ({ open, onClos
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='lg'>
+    <Dialog open={open} onClose={onClose} maxWidth={false}>
       <DialogTitle>City Screenshot</DialogTitle>
       <DialogContent>
         {error ? (
           <Alert severity='error'>{error}</Alert>
         ) : url ? (
-          <img src={url} alt='The city' style={{ display: 'block', maxWidth: '100%', maxHeight: '65vh' }} />
+          <img src={url} alt='The city' style={{ display: 'block' }} />
         ) : (
           <Stack direction='row' spacing={1.5} sx={{ py: 2, alignItems: 'center' }}>
             <CircularProgress size={20} />
