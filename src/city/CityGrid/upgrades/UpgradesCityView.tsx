@@ -35,6 +35,17 @@ const formatAbs = (n: number) => n.toLocaleString(undefined, { maximumFractionDi
 const formatPerSq = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
 /**
+ * A figure's own direction, not the row's. A smaller replacement can gain per square while
+ * losing in total, and the reverse, so the two lines of a cell are coloured apart - one
+ * colour for both reports a loss in the same green as the gain beside it.
+ */
+const deltaColor = (n: number) => {
+  if (n > 0.001) return 'success.main';
+  if (n < -0.001) return 'error.main';
+  return 'text.secondary';
+};
+
+/**
  * Where an evolving item starts, where it is compared, and whether that is as far as it
  * goes - "Stage 1 ➔ 5 (max)" reads very differently from "Stage 1 ➔ 5 of 10", and without
  * the ceiling a low number looks like a shortfall even when the building has no more stages.
@@ -274,8 +285,6 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
 
           const delta = newVal - oldVal;
           const perSq = newVal / newArea - oldVal / oldArea;
-          const improved = delta > 0.001 || perSq > 0.001;
-          const color = improved ? 'success.main' : 'text.secondary';
           const sign = delta > 0 ? '+' : '';
           const perSqSign = perSq > 0 ? '+' : '';
 
@@ -283,11 +292,11 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
             <TableCell key={key} align='right'>
               <Tooltip title={`${formatAbs(oldVal)} ➔ ${formatAbs(newVal)}`}>
                 <Stack sx={{ alignItems: 'flex-end' }}>
-                  <Box component='span' sx={{ color, fontWeight: 'bold' }}>
+                  <Box component='span' sx={{ color: deltaColor(delta), fontWeight: 'bold' }}>
                     {sign}
                     {formatAbs(delta)}
                   </Box>
-                  <Typography variant='caption' sx={{ color }}>
+                  <Typography variant='caption' sx={{ color: deltaColor(perSq) }}>
                     {perSqSign}
                     {formatPerSq(perSq)}/sq
                   </Typography>
