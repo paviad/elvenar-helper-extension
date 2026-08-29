@@ -70,6 +70,12 @@ export const CityPlanner = () => (
       </ListItem>
       <ListItem>
         <ListItemText
+          primary='Impossible Drops'
+          secondary='Putting a building down where it does not fit does nothing at all. It stays on the cursor and you can carry on looking for a spot: nothing is deleted, and nothing is sent back to where it started. Press Delete to be rid of one you have decided against.'
+        />
+      </ListItem>
+      <ListItem>
+        <ListItemText
           primary='Smart Indicators'
           secondary={
             <React.Fragment>
