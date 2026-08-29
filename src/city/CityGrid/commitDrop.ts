@@ -40,9 +40,11 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
 
   const overlaps = isOverlapping(block, dragIndex, newX, newY, blocks);
 
-  // A drop onto a single building is still a drop the city can take: that building goes
-  // to the spot the dragged one is leaving, which is a swap of the two. Only when it fits
-  // there, so the layout this ends in has nothing overlapping in it.
+  // A drop onto a single building is still a drop the city can take: the dragged one stays
+  // where it was put and the building it landed on is handed to the cursor in its stead.
+  // Only when that building could sit in the spot being vacated, which is where it starts
+  // from and where it goes back to if the drop that follows fails - so however the pair
+  // ends up, nothing is left overlapping.
   const swap = overlaps && originalPos ? findSwapTarget(block, dragIndex, blocks, originalPos) : null;
 
   if ((!overlaps || swap) && coversReplacedArea) {
@@ -53,12 +55,16 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
     const other = swap.block;
     const isOriginal = block.x === block.originalX && block.y === block.originalY;
     const otherIsOriginal = originalPos.x === other.originalX && originalPos.y === other.originalY;
+    // Where the displaced building settles if it is simply put down: the spot the dragged
+    // one is leaving. That is what the log records and what a failed drop falls back to.
     const swapped = { ...other, x: originalPos.x, y: originalPos.y, moved: !otherIsOriginal };
 
     setBlocks((prev) => ({
       ...prev,
       [dragIndex]: { ...prev[dragIndex], moved: !isOriginal },
-      [swap.key]: swapped,
+      // Taken up in the same grip the dropped building was carried by - same drag offset,
+      // same tile - so it comes up under the cursor exactly where that one went down.
+      [swap.key]: { ...swapped, x: finalX, y: finalY },
     }));
     // One entry for the pair: undoing half a swap would leave the two of them on the
     // same tiles, so both sides of it are stored and put back together.
@@ -76,7 +82,16 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
       },
     ]);
     clearRedoStack();
-  } else if (overlaps) {
+
+    // The drag carries straight on with the displaced building, from the spot the dragged
+    // one vacated: dropping it there needs no move of its own, and an impossible drop
+    // settles it there rather than losing it.
+    setDragIndex(swap.key);
+    setOriginalPos({ x: originalPos.x, y: originalPos.y });
+    return;
+  }
+
+  if (overlaps) {
     if (originalPos) {
       // Normal case: snap back
       finalX = originalPos.x;

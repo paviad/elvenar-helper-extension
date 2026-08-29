@@ -1,7 +1,7 @@
 # Changelog
 
 ## Unreleased
-- **City Planner: dropping a building on another one swaps the two.** A drop that landed on an occupied spot used to bounce straight back, so trading two buildings' places meant dragging one out to a clear patch, moving the second, then fetching the first. Now the building you drop on takes the spot you came from - provided it fits there, and provided the drop only covers that one building. Anything that would leave two buildings on the same tiles still snaps back, so a swap can never quietly break the layout. The Move Log records the pair as one entry, so Ctrl+Z puts both back.
+- **City Planner: dropping a building on another one takes that one up in its stead.** A drop that landed on an occupied spot used to bounce straight back, so making room meant dragging one building out to a clear patch, moving the second, then fetching the first. Now the building you dropped stays exactly where you put it and the one that was underneath comes up on the cursor, ready to be carried on somewhere else - the drag continues rather than ending. Put it down without moving and it settles into the spot you came from, which is also where an impossible drop returns it, so it can never be lost or left overlapping. Offered when the drop covers one building and that building could sit in the space being vacated; anything else snaps back as before. The Move Log records the pair as one entry, so Ctrl+Z puts both back.
 - **City Planner: Delete pulls down the building under the mouse.** It reached only the building you were carrying, which meant picking one up to be rid of it. Hovering is enough now, alongside the +/- keys already there, and the Move Log takes it, so Ctrl+Z brings it back.
 
 ## v10.3.0
