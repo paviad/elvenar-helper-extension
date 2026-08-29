@@ -21,6 +21,7 @@ import { useTabStore } from '../../../util/tabStore';
 import { getBuildingFinder } from '../../buildingFinder';
 import { getChapterProgress } from '../../chapterProgress';
 import { useCity } from '../../CityContext';
+import { createSearchMatcher } from '../../searchMatcher';
 
 interface TableRowData {
   id: number | string;
@@ -156,24 +157,9 @@ export const TableCityView = () => {
   const filteredRows = React.useMemo(() => {
     if (!searchTerm) return tableData;
 
-    let matcher: (row: TableRowData) => boolean;
-    if (searchTerm.length > 2 && searchTerm.startsWith('/') && searchTerm.endsWith('/')) {
-      // Regex mode
-      try {
-        const regex = new RegExp(searchTerm.slice(1, -1), 'i');
-        matcher = (row: TableRowData) => regex.test(row.name) || regex.test(row.type);
-      } catch {
-        return []; // Invalid regex returns no results
-      }
-    } else if (/^\d+x\d*|\d*x\d+$/.test(searchTerm)) {
-      matcher = (row: TableRowData) => `${row.width}x${row.length}`.includes(searchTerm);
-    } else {
-      matcher = (row: TableRowData) =>
-        row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.type.toLowerCase().includes(searchTerm.toLowerCase());
-    }
-
-    return tableData.filter(matcher);
+    // A regex that does not compile yet matches nothing, so the table empties while one is typed.
+    const matcher = createSearchMatcher(searchTerm);
+    return matcher ? tableData.filter(matcher) : [];
   }, [tableData, searchTerm]);
 
   const sortedRows = React.useMemo(() => {

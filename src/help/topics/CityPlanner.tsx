@@ -123,7 +123,7 @@ export const CityPlanner = () => (
       <ListItem>
         <ListItemText
           primary='Search & Bulk Actions'
-          secondary="Enter text to find buildings. Supports Regular Expressions (e.g. /mana|seeds/). Matching buildings are highlighted in red. You can then 'Delete Highlighted' or 'Delete Non-Highlighted' to clear space quickly."
+          secondary="Enter text to find buildings. Supports Regular Expressions (e.g. /mana|seeds/) and sizes, whole or in part (7x3, 7x, x3). Matching buildings are highlighted in red. You can then 'Delete Highlighted' or 'Delete Non-Highlighted' to clear space quickly."
         />
       </ListItem>
       <ListItem>

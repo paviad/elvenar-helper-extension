@@ -196,7 +196,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
           }}
         >
           <TextField
-            label='Search buildings (string or /regexp/)'
+            label='Search buildings (string, /regexp/ or size 7x3)'
             variant='outlined'
             size='small'
             value={searchTerm}
