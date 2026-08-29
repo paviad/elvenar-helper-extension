@@ -426,18 +426,26 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       setBlocks((prev) => ({ ...prev, [g.id]: g }));
     } else if (last.type === 'swap' && last.previousBlock) {
       // Both sides go back together: putting only one of them back would leave the pair
-      // sitting on the same tiles.
+      // sitting on the same tiles. A dropped building that had no spot of its own comes
+      // off the grid instead of going back to one it never had.
       const g = last.previousBlock;
-      setBlocks((prev) => ({
-        ...prev,
-        [last.id]: {
-          ...prev[last.id],
-          x: last.from.x,
-          y: last.from.y,
-          moved: last.movedChanged !== prev[last.id].moved,
-        },
-        [g.id]: g,
-      }));
+      const dropped = last.duplicatedBlock;
+      setBlocks((prev) => {
+        if (dropped) {
+          const { [dropped.id]: _, ...rest } = prev;
+          return { ...rest, [g.id]: g };
+        }
+        return {
+          ...prev,
+          [last.id]: {
+            ...prev[last.id],
+            x: last.from.x,
+            y: last.from.y,
+            moved: last.movedChanged !== prev[last.id].moved,
+          },
+          [g.id]: g,
+        };
+      });
     } else {
       setBlocks((prev) => ({
         ...prev,
@@ -470,18 +478,25 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     } else if (last.type === 'level' && last.nextBlock) {
       const g = last.nextBlock;
       setBlocks((prev) => ({ ...prev, [g.id]: g }));
-    } else if (last.type === 'swap' && last.nextBlock) {
+    } else if (last.type === 'swap') {
+      // The displaced building only has a place here if the swap left it one; otherwise it
+      // is put back by the entry that follows, which is where it actually landed.
       const g = last.nextBlock;
-      setBlocks((prev) => ({
-        ...prev,
-        [last.id]: {
-          ...prev[last.id],
-          x: last.to.x,
-          y: last.to.y,
-          moved: last.movedChanged !== prev[last.id].moved,
-        },
-        [g.id]: g,
-      }));
+      const dropped = last.duplicatedBlock;
+      setBlocks((prev) => {
+        const withDropped = dropped
+          ? { ...prev, [dropped.id]: dropped }
+          : {
+              ...prev,
+              [last.id]: {
+                ...prev[last.id],
+                x: last.to.x,
+                y: last.to.y,
+                moved: last.movedChanged !== prev[last.id].moved,
+              },
+            };
+        return g ? { ...withDropped, [g.id]: g } : withDropped;
+      });
     } else {
       setBlocks((prev) => ({
         ...prev,

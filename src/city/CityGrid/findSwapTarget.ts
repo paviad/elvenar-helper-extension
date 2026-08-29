@@ -9,7 +9,9 @@ export interface SwapTarget {
   /**
    * Whether it would sit in the spot the dragged building is leaving. It is not sent
    * there - it is handed to the cursor - so this decides nothing about the swap itself,
-   * only whether that spot can serve as the place it falls back to.
+   * only whether that spot can serve as the place it falls back to. False when the
+   * dragged building has no spot of its own, which is the case for one that has itself
+   * just been taken up by a swap.
    */
   fitsVacated: boolean;
 }
@@ -23,7 +25,7 @@ export function findSwapTarget(
   dragged: CityBlock,
   dragIndex: number,
   blocks: Record<number, CityBlock>,
-  originalPos: { x: number; y: number },
+  originalPos: { x: number; y: number } | null,
 ): SwapTarget | null {
   const blockers = findOverlapping(dragged, dragIndex, dragged.x, dragged.y, blocks);
   if (blockers.length !== 1) return null;
@@ -35,7 +37,7 @@ export function findSwapTarget(
   // Judged against the layout as it will stand: the dragged building has left its old
   // spot and taken this one, so it is only the rest of the city that has to make room.
   const after = { ...blocks, [dragIndex]: dragged };
-  const fitsVacated = !isOverlapping(block, key, originalPos.x, originalPos.y, after);
+  const fitsVacated = !!originalPos && !isOverlapping(block, key, originalPos.x, originalPos.y, after);
 
   return { key, block, fitsVacated };
 }

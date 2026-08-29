@@ -53,6 +53,16 @@ describe('findSwapTarget', () => {
     expect(findSwapTarget(dragged, 1, blocks, { x: 0, y: 0 })).toMatchObject({ key: 2, fitsVacated: true });
   });
 
+  it('still swaps for a building with no spot of its own, which is how a swap chain carries on', () => {
+    // What the second drop of a chain looks like: the building being carried was itself
+    // taken up by a swap and has nowhere to fall back to.
+    const [, dragged] = at(1, 10, 10);
+    const other = at(2, 10, 10);
+    const blocks = record([1, dragged], other);
+
+    expect(findSwapTarget(dragged, 1, blocks, null)).toEqual({ key: 2, block: other[1], fitsVacated: false });
+  });
+
   it('measures the vacated spot against the place the dragged building has taken', () => {
     // The building in the way is long enough to reach back over the drop site from (0,0),
     // so the spot it leaves behind cannot serve as its fallback.

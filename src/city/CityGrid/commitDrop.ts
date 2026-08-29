@@ -44,26 +44,37 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
   // where it was put and the building it landed on is handed to the cursor in its stead.
   // Where that one ends up is for the drag that carries on to decide, so the spot being
   // vacated is nothing more than a fallback, and only when it happens to be free.
-  const swap = overlaps && originalPos ? findSwapTarget(block, dragIndex, blocks, originalPos) : null;
+  const swap = overlaps ? findSwapTarget(block, dragIndex, blocks, originalPos) : null;
 
   if ((!overlaps || swap) && coversReplacedArea) {
     city.setReplacedArea(null);
   }
 
-  if (swap && originalPos) {
+  if (swap) {
     const other = swap.block;
     const isOriginal = block.x === block.originalX && block.y === block.originalY;
-    const otherIsOriginal = originalPos.x === other.originalX && originalPos.y === other.originalY;
-    // Where the displaced building settles if that spot is free and it is simply put down
-    // again. That is what the log records, and what a failed drop falls back to.
-    const swapped = { ...other, x: originalPos.x, y: originalPos.y, moved: !otherIsOriginal };
+    // Where the displaced building settles if the spot being vacated is free and it is
+    // simply put down again. That is what the log records as its destination, and what a
+    // failed drop falls back to. Absent when the dragged building has no spot of its own
+    // to hand over - one taken up by a swap of its own is between homes until it lands.
+    const settled =
+      originalPos && swap.fitsVacated
+        ? {
+            ...other,
+            x: originalPos.x,
+            y: originalPos.y,
+            moved: !(originalPos.x === other.originalX && originalPos.y === other.originalY),
+          }
+        : undefined;
 
     setBlocks((prev) => ({
       ...prev,
-      [dragIndex]: { ...prev[dragIndex], moved: !isOriginal },
+      // The drop stands as it was made; only the moved mark is settled, and only for a
+      // building that had a place to be moved from.
+      [dragIndex]: originalPos ? { ...prev[dragIndex], moved: !isOriginal } : prev[dragIndex],
       // Taken up in the same grip the dropped building was carried by - same drag offset,
       // same tile - so it comes up under the cursor exactly where that one went down.
-      [swap.key]: { ...swapped, x: finalX, y: finalY },
+      [swap.key]: { ...(settled ?? other), x: finalX, y: finalY },
     }));
     // One entry for the pair: undoing half a swap would leave the two of them on the
     // same tiles, so both sides of it are stored and put back together.
@@ -72,26 +83,26 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
       {
         id: block.id,
         name: block.name,
-        from: { x: originalPos.x, y: originalPos.y },
+        from: originalPos ?? { x: finalX, y: finalY },
         to: { x: finalX, y: finalY },
-        movedChanged: block.moved === isOriginal,
+        movedChanged: originalPos ? block.moved === isOriginal : false,
         type: 'swap',
         previousBlock: other,
-        // Only when it has a place to settle in without being carried anywhere. With
-        // nowhere to fall back to it has no position yet, and the drop that finds it one
-        // logs that itself.
-        nextBlock: swap.fitsVacated ? swapped : undefined,
+        nextBlock: settled,
+        // The dragged building came from nowhere, so undoing this takes it off the grid
+        // rather than sending it back.
+        duplicatedBlock: originalPos ? undefined : block,
       },
     ]);
     clearRedoStack();
 
-    // The drag carries straight on with the displaced building. If the spot the dragged
+    // The drag carries straight on with the displaced building. Where the spot the dragged
     // one vacated is free it holds it: dropping it there needs no move of its own, and an
-    // impossible drop settles it there rather than losing it. If it is not free the
-    // building is between homes, like a duplicate that has not been put down yet - and
-    // this entry is what undo reads to put it back where it stood.
+    // impossible drop settles it there rather than losing it. Where it is not, the
+    // building is between homes like a duplicate that has not been put down yet, and this
+    // entry is what undo reads to put it back where it stood.
     setDragIndex(swap.key);
-    setOriginalPos(swap.fitsVacated ? { x: originalPos.x, y: originalPos.y } : null);
+    setOriginalPos(settled ? { x: settled.x, y: settled.y } : null);
     return;
   }
 
