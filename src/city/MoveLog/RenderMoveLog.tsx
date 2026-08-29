@@ -74,6 +74,11 @@ export const RenderMoveLog = () => {
                   ? `stage ${log.previousBlock.stage} → ${log.nextBlock.stage}`
                   : `level ${log.previousBlock.level} → ${log.nextBlock.level}`}
               </span>
+            ) : log.type === 'swap' && log.previousBlock ? (
+              <span style={{ color: '#836', fontWeight: 500 }}>
+                Swapped <span style={{ fontWeight: 400 }}>{log.name}</span> with{' '}
+                <span style={{ fontWeight: 400 }}>{log.previousBlock.name}</span>
+              </span>
             ) : log.type === 'unlock' ? (
               <span style={{ color: '#06b', fontWeight: 500 }}>
                 Unlocked area at ({log.from.x}, {log.from.y})

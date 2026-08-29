@@ -13,12 +13,13 @@ export interface MoveLogInterface {
     y: number;
   };
   movedChanged: boolean;
-  type?: 'move' | 'delete' | 'duplicate' | 'unlock' | 'level';
+  type?: 'move' | 'delete' | 'duplicate' | 'unlock' | 'level' | 'swap';
   deletedBlock?: CityBlock;
   duplicatedBlock?: CityBlock;
   unlockedArea?: UnlockedArea;
   /** For a 'level' entry: the block on either side of the change. It keeps its id and its
-   * place, so undo and redo are a straight swap of the two. */
+   * place, so undo and redo are a straight swap of the two. For a 'swap' entry: the same,
+   * for the building that was displaced - the dragged one is covered by from/to. */
   previousBlock?: CityBlock;
   nextBlock?: CityBlock;
 }

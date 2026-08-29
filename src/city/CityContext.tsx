@@ -424,6 +424,20 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     } else if (last.type === 'level' && last.previousBlock) {
       const g = last.previousBlock;
       setBlocks((prev) => ({ ...prev, [g.id]: g }));
+    } else if (last.type === 'swap' && last.previousBlock) {
+      // Both sides go back together: putting only one of them back would leave the pair
+      // sitting on the same tiles.
+      const g = last.previousBlock;
+      setBlocks((prev) => ({
+        ...prev,
+        [last.id]: {
+          ...prev[last.id],
+          x: last.from.x,
+          y: last.from.y,
+          moved: last.movedChanged !== prev[last.id].moved,
+        },
+        [g.id]: g,
+      }));
     } else {
       setBlocks((prev) => ({
         ...prev,
@@ -456,6 +470,18 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     } else if (last.type === 'level' && last.nextBlock) {
       const g = last.nextBlock;
       setBlocks((prev) => ({ ...prev, [g.id]: g }));
+    } else if (last.type === 'swap' && last.nextBlock) {
+      const g = last.nextBlock;
+      setBlocks((prev) => ({
+        ...prev,
+        [last.id]: {
+          ...prev[last.id],
+          x: last.to.x,
+          y: last.to.y,
+          moved: last.movedChanged !== prev[last.id].moved,
+        },
+        [g.id]: g,
+      }));
     } else {
       setBlocks((prev) => ({
         ...prev,

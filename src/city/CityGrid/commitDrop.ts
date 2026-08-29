@@ -1,4 +1,5 @@
 import { useCity } from '../CityContext';
+import { findSwapTarget } from './findSwapTarget';
 import { isOverlapping } from './isOverlapping';
 
 /**
@@ -38,11 +39,44 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
   let finalY = newY;
 
   const overlaps = isOverlapping(block, dragIndex, newX, newY, blocks);
-  if (!overlaps && coversReplacedArea) {
+
+  // A drop onto a single building is still a drop the city can take: that building goes
+  // to the spot the dragged one is leaving, which is a swap of the two. Only when it fits
+  // there, so the layout this ends in has nothing overlapping in it.
+  const swap = overlaps && originalPos ? findSwapTarget(block, dragIndex, blocks, originalPos) : null;
+
+  if ((!overlaps || swap) && coversReplacedArea) {
     city.setReplacedArea(null);
   }
 
-  if (overlaps) {
+  if (swap && originalPos) {
+    const other = swap.block;
+    const isOriginal = block.x === block.originalX && block.y === block.originalY;
+    const otherIsOriginal = originalPos.x === other.originalX && originalPos.y === other.originalY;
+    const swapped = { ...other, x: originalPos.x, y: originalPos.y, moved: !otherIsOriginal };
+
+    setBlocks((prev) => ({
+      ...prev,
+      [dragIndex]: { ...prev[dragIndex], moved: !isOriginal },
+      [swap.key]: swapped,
+    }));
+    // One entry for the pair: undoing half a swap would leave the two of them on the
+    // same tiles, so both sides of it are stored and put back together.
+    setMoveLog((prev) => [
+      ...prev,
+      {
+        id: block.id,
+        name: block.name,
+        from: { x: originalPos.x, y: originalPos.y },
+        to: { x: finalX, y: finalY },
+        movedChanged: block.moved === isOriginal,
+        type: 'swap',
+        previousBlock: other,
+        nextBlock: swapped,
+      },
+    ]);
+    clearRedoStack();
+  } else if (overlaps) {
     if (originalPos) {
       // Normal case: snap back
       finalX = originalPos.x;

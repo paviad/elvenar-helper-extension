@@ -64,6 +64,12 @@ export const CityPlanner = () => (
       </ListItem>
       <ListItem>
         <ListItemText
+          primary='Swapping'
+          secondary='Drop a building on top of another and the two trade places, as long as the one you dropped on fits in the space you came from and nothing else is in the way. A drop covering two or more buildings still snaps back.'
+        />
+      </ListItem>
+      <ListItem>
+        <ListItemText
           primary='Smart Indicators'
           secondary={
             <React.Fragment>
