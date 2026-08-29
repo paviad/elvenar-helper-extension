@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **City Planner: Delete pulls down the building under the mouse.** It reached only the building you were carrying, which meant picking one up to be rid of it. Hovering is enough now, alongside the +/- keys already there, and the Move Log takes it, so Ctrl+Z brings it back.
+
 ## v10.3.0
 - **City ▸ Screenshot.** Saves the city as a PNG: what is unlocked plus one band of expansions around it, squared out to whole expansions — a city that has grown to the edges of the grid comes out grid and all. It is drawn afresh at 1:1 rather than copied off the screen, so it is the same picture whatever zoom you are at and whichever view you are in, with the labels and chapter icons in place. Download it, or copy it straight to the clipboard, ready to paste into Discord.
 - **City Planner: an expiring building always says how long it has left.** The days-left text was a label that lost out to the level on chapter-specific buildings, so some expiring buildings showed it and some did not. It is now worked out as the grid is drawn: the label itself when nothing else names the block, otherwise a small line under it, next to the stage. Alongside it a bar along the bottom edge shows the life remaining — green past the halfway mark, orange down to a quarter, red below — on every expiring building, in both views.

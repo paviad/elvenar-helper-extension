@@ -210,15 +210,15 @@ export const useCityGridState = () => {
     return () => window.removeEventListener('keydown', listener);
   }, [dragIndex, blocks, setBlocks, setDragIndex, setDragOffset, setMoveLog, city.originalPos, setOriginalPos]);
 
-  // Keyboard Handler for the building under the cursor (Level Up/Down). The same keys
-  // as above, aimed at whatever the mouse is over, so a level can be changed without
-  // picking the building up first. While one is being carried the handler above owns
-  // them, which is why this one stands down for the length of a drag.
+  // Keyboard Handler for the building under the cursor (Level Up/Down, Delete). The same
+  // keys as above, aimed at whatever the mouse is over, so a building can be levelled or
+  // pulled down without picking it up first. While one is being carried the handler above
+  // owns them, which is why this one stands down for the length of a drag.
   React.useEffect(() => {
     if (dragIndex !== null) return;
 
     const handleKeyDown = async (event: KeyboardEvent) => {
-      if (!isLevelKey(event.code) || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       // A '-' typed into the search box is part of a search term, not a level change.
       if (isTypingTarget(document.activeElement)) return;
 
@@ -226,6 +226,32 @@ export const useCityGridState = () => {
       if (hoveredId === null) return;
       const block = blocks[hoveredId];
       if (!block) return;
+
+      // Delete the building under the cursor
+      if (event.key === 'Delete') {
+        event.preventDefault();
+        setBlocks((prev) => {
+          const { [hoveredId]: _, ...updated } = prev;
+          return updated;
+        });
+        setMoveLog((prev) => [
+          ...prev,
+          {
+            id: block.id,
+            name: block.name,
+            from: { x: block.x, y: block.y },
+            to: { x: block.x, y: block.y },
+            movedChanged: false,
+            type: 'delete',
+            deletedBlock: block,
+          } satisfies MoveLogInterface,
+        ]);
+        clearRedoStack();
+        setHoveredBlockId(null);
+        return;
+      }
+
+      if (!isLevelKey(event.code)) return;
 
       event.preventDefault();
 

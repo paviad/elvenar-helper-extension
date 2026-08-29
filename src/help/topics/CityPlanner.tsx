@@ -40,7 +40,7 @@ export const CityPlanner = () => (
       <ListItem>
         <ListItemText
           primary='Hover'
-          secondary='The building under the mouse is outlined in white. That is the one the +/- keys act on when you are not holding anything.'
+          secondary='The building under the mouse is outlined in white. That is the one the +/- and Delete keys act on when you are not holding anything.'
         />
       </ListItem>
     </List>
@@ -158,7 +158,10 @@ export const CityPlanner = () => (
         <ListItemText primary='Shift + Minus (-)' secondary='Decrease the stage of an evolving building.' />
       </ListItem>
       <ListItem>
-        <ListItemText primary='Delete (DEL)' secondary='Delete the building you are currently holding.' />
+        <ListItemText
+          primary='Delete (DEL)'
+          secondary='Delete the building you are currently holding, or the one the mouse is over.'
+        />
       </ListItem>
     </List>
 
