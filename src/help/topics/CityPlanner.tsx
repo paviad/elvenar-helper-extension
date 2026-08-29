@@ -65,7 +65,7 @@ export const CityPlanner = () => (
       <ListItem>
         <ListItemText
           primary='Swapping'
-          secondary='Drop a building on top of another and it stays exactly where you put it, while the one that was there comes up on the cursor for you to place. That building falls back to the space you came from, so it has to fit there, and a drop covering two or more buildings still snaps back.'
+          secondary='Drop a building on top of another and it stays exactly where you put it, while the one that was there comes up on the cursor for you to carry off and place. A drop covering two or more buildings still snaps back, since there is no single building to take up.'
         />
       </ListItem>
       <ListItem>

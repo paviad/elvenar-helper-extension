@@ -6,15 +6,18 @@ export interface SwapTarget {
   key: number;
   /** The building in the way, as it stands before the swap. */
   block: CityBlock;
+  /**
+   * Whether it would sit in the spot the dragged building is leaving. It is not sent
+   * there - it is handed to the cursor - so this decides nothing about the swap itself,
+   * only whether that spot can serve as the place it falls back to.
+   */
+  fitsVacated: boolean;
 }
 
 /**
- * The building a drop lands on, when the drop can be settled by sending that one back to
- * the spot the dragged building is leaving.
- *
- * Null when the drop covers more than one building, or when the one it covers would not
- * fit in the space being vacated - a swap is only worth offering if the layout it leaves
- * has nothing overlapping in it, and two buildings rarely have the same footprint.
+ * The building a drop lands on, when the drop can be settled by taking that one up in the
+ * dragged building's stead. Null when the drop covers more than one building: the one that
+ * makes way has to be a single building for there to be anything to take up.
  */
 export function findSwapTarget(
   dragged: CityBlock,
@@ -32,7 +35,7 @@ export function findSwapTarget(
   // Judged against the layout as it will stand: the dragged building has left its old
   // spot and taken this one, so it is only the rest of the city that has to make room.
   const after = { ...blocks, [dragIndex]: dragged };
-  if (isOverlapping(block, key, originalPos.x, originalPos.y, after)) return null;
+  const fitsVacated = !isOverlapping(block, key, originalPos.x, originalPos.y, after);
 
-  return { key, block };
+  return { key, block, fitsVacated };
 }

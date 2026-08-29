@@ -42,9 +42,8 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
 
   // A drop onto a single building is still a drop the city can take: the dragged one stays
   // where it was put and the building it landed on is handed to the cursor in its stead.
-  // Only when that building could sit in the spot being vacated, which is where it starts
-  // from and where it goes back to if the drop that follows fails - so however the pair
-  // ends up, nothing is left overlapping.
+  // Where that one ends up is for the drag that carries on to decide, so the spot being
+  // vacated is nothing more than a fallback, and only when it happens to be free.
   const swap = overlaps && originalPos ? findSwapTarget(block, dragIndex, blocks, originalPos) : null;
 
   if ((!overlaps || swap) && coversReplacedArea) {
@@ -55,8 +54,8 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
     const other = swap.block;
     const isOriginal = block.x === block.originalX && block.y === block.originalY;
     const otherIsOriginal = originalPos.x === other.originalX && originalPos.y === other.originalY;
-    // Where the displaced building settles if it is simply put down: the spot the dragged
-    // one is leaving. That is what the log records and what a failed drop falls back to.
+    // Where the displaced building settles if that spot is free and it is simply put down
+    // again. That is what the log records, and what a failed drop falls back to.
     const swapped = { ...other, x: originalPos.x, y: originalPos.y, moved: !otherIsOriginal };
 
     setBlocks((prev) => ({
@@ -78,16 +77,21 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
         movedChanged: block.moved === isOriginal,
         type: 'swap',
         previousBlock: other,
-        nextBlock: swapped,
+        // Only when it has a place to settle in without being carried anywhere. With
+        // nowhere to fall back to it has no position yet, and the drop that finds it one
+        // logs that itself.
+        nextBlock: swap.fitsVacated ? swapped : undefined,
       },
     ]);
     clearRedoStack();
 
-    // The drag carries straight on with the displaced building, from the spot the dragged
-    // one vacated: dropping it there needs no move of its own, and an impossible drop
-    // settles it there rather than losing it.
+    // The drag carries straight on with the displaced building. If the spot the dragged
+    // one vacated is free it holds it: dropping it there needs no move of its own, and an
+    // impossible drop settles it there rather than losing it. If it is not free the
+    // building is between homes, like a duplicate that has not been put down yet - and
+    // this entry is what undo reads to put it back where it stood.
     setDragIndex(swap.key);
-    setOriginalPos({ x: originalPos.x, y: originalPos.y });
+    setOriginalPos(swap.fitsVacated ? { x: originalPos.x, y: originalPos.y } : null);
     return;
   }
 
