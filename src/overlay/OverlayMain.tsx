@@ -42,7 +42,7 @@ import { sameOfferedGoods } from './offeredGoods';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
 import { getOverlayStore } from './overlayStore';
-import { OverlayTab, OverlayTabKey, visibleOverlayTabs } from './overlayTabs';
+import { OverlayTab, OverlayTabKey, shortcutLetter, visibleOverlayTabs } from './overlayTabs';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
@@ -406,17 +406,32 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     processFile(file);
   };
 
-  // The chord's second key is always the label's initial, so the underline doubles as the hint.
+  // The chord's second key, underlined in the label where the label has it and shown after it
+  // where it does not. Read off the tab's shortcut rather than the label, so the two cannot drift
+  // apart: a tab whose label does not start with its key used to be hinted with the wrong letter.
+  const renderChordLabel = (label: string, letter: string) => {
+    const hint = { fontSize: '1.2em', fontWeight: 700, textDecoration: 'underline' };
+    const at = label.toUpperCase().indexOf(letter.toUpperCase());
+    return (
+      <span title={`Alt+C, ${letter}`}>
+        {at >= 0 ? (
+          <>
+            {label.slice(0, at)}
+            <span style={hint}>{label[at]}</span>
+            {label.slice(at + 1)}
+          </>
+        ) : (
+          <>
+            {label}&thinsp;<span style={hint}>{letter}</span>
+          </>
+        )}
+      </span>
+    );
+  };
+
   const renderLabel = ({ label, shortcut, isNew }: OverlayTab) => (
     <span style={{ display: 'inline-flex', alignItems: 'flex-start' }}>
-      {shortcut ? (
-        <span title={`Alt+C, ${label[0]}`}>
-          <span style={{ fontSize: '1.2em', fontWeight: 700, textDecoration: 'underline' }}>{label[0]}</span>
-          {label.slice(1)}
-        </span>
-      ) : (
-        label
-      )}
+      {shortcut ? renderChordLabel(label, shortcutLetter(shortcut)) : label}
       {isNew && (
         <span
           style={{
