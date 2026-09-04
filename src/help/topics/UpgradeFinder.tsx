@@ -74,6 +74,12 @@ export const UpgradeFinder = () => (
           secondary='A 1xN building is never offered in place of one that is at least two tiles on both sides, since it collects less neighbourly help.'
         />
       </ListItem>
+      <ListItem>
+        <ListItemText
+          primary='Buildings inside Tomes'
+          secondary='A building a Tome can be opened for is weighed like one in the inventory, at the chapter the Tome was won in, and its row names the Tome under the replacement. Replace hands it to you to place just the same; opening the Tome for it is yours to do.'
+        />
+      </ListItem>
     </List>
 
     <Box sx={{ mt: 2 }} />

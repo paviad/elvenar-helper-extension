@@ -36,6 +36,12 @@ export const InventoryManager = () => (
           secondary="Use the dropdown menu to see only specific categories of items, such as 'Items' or 'Buildings'."
         />
       </ListItem>
+      <ListItem>
+        <ListItemText
+          primary='Buildings inside Tomes'
+          secondary="A Tome is opened for one of a fixed set of rewards. Each building a Tome can be opened for is listed as a row of its own, typed 'Building (Tome)' and naming the Tome under the building's name, with the size, output and resale value it would have at the chapter the Tome was won in. Searching for the Tome's name finds them too. Pick 'Building' in the Type dropdown to see only what is already in the inventory. These rows have no Place button: there is nothing to place until the Tome is opened."
+        />
+      </ListItem>
     </List>
 
     <Box

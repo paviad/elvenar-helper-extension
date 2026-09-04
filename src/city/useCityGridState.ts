@@ -13,6 +13,7 @@ import { getChapterResearch } from '../elvenar/getChapterResearch';
 import { getExpirations } from '../elvenar/getExpirations';
 import { useHelper } from '../helper/HelperContext';
 import { generateInventory } from '../inventory/generateInventory';
+import { InventoryRowRef, isInventoryRow } from '../inventory/inventoryRowRef';
 import { CityEntity, CityEntityEx } from '../model/cityEntity';
 import { UnlockedArea } from '../model/unlockedArea';
 import { generateUniqueId } from '../util/generateUniqueId';
@@ -439,15 +440,17 @@ export const useCityGridState = () => {
 
   /**
    * Places an inventory building in drag mode. `stage` overrides the stage the item sits
-   * at, for callers that worked out how far it could be evolved before placing it.
+   * at, for callers that worked out how far it could be evolved before placing it. A ref
+   * naming a building a tome can be opened for places that building as it would come out
+   * of the tome.
    */
-  async function onBuildFromInventory(id: number, stage?: number) {
+  async function onBuildFromInventory(ref: InventoryRowRef, stage?: number) {
     if (!city.accountId) {
       return;
     }
 
-    const inventory = await generateInventory(city.accountId);
-    const item = inventory?.inventory.find((i) => i.id === id);
+    const inventory = await generateInventory(city.accountId, { includeTomeBuildings: true });
+    const item = inventory?.inventory.find((i) => isInventoryRow(i, ref));
 
     if (!item?.building) {
       return;

@@ -16,6 +16,11 @@ export interface InventoryItem {
   stage?: number;
   building?: BuildingEx;
   transcendence?: TranscendenceProperty;
+  /**
+   * Set on a building a tome can be opened for, rather than one in the inventory itself: the
+   * tome's name. Such a row keeps the tome's id, the tome being what would have to be opened.
+   */
+  fromTome?: string;
 }
 
 export type Property = Chapter | Stage | TranscendenceProperty;

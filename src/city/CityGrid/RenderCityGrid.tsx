@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Box, Dialog, Stack } from '@mui/material';
 import { useSearchParams } from 'react-router';
+import { InventoryRowRef } from '../../inventory/inventoryRowRef';
 import MyConfirmDialog from '../../widgets/MyConfirmDialog';
 import { useCity } from '../CityContext';
 import { CityContextMenu } from '../dialogs/CityContextMenu';
@@ -46,7 +47,7 @@ export const RenderCityGrid = () => {
       if (!rc) {
         return;
       }
-      await onBuildFromInventoryRef.current(Number(rc));
+      await onBuildFromInventoryRef.current({ id: Number(rc) });
 
       const nextParams = new URLSearchParams(searchParams);
       nextParams.delete('buildId');
@@ -77,7 +78,7 @@ export const RenderCityGrid = () => {
   // Replace = delete the old building, then spawn the inventory item in drag mode
   // on the top-down grid. The user positions it and makes room if needed, guided by
   // the marker left on the vacated footprint.
-  const handleReplace = (blockId: number, itemId: number, stage?: number) => {
+  const handleReplace = (blockId: number, item: InventoryRowRef, stage?: number) => {
     const block = city.blocks[blockId];
     if (block) {
       city.setReplacedArea({ x: block.x, y: block.y, width: block.width, length: block.length, name: block.name });
@@ -85,7 +86,7 @@ export const RenderCityGrid = () => {
     state.setViewMode('top');
     state.handleDeleteBlock(blockId);
     // The suggestion was made for an evolved stage, so the building is placed at that stage.
-    void state.onBuildFromInventory(itemId, stage);
+    void state.onBuildFromInventory(item, stage);
   };
 
   // The marker clears itself once something is dropped on it; Escape dismisses it early.

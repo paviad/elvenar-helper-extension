@@ -1,3 +1,4 @@
+import { getInventoryRowKey } from '../../../inventory/inventoryRowRef';
 import { BuildingEx } from '../../../model/buildingEx';
 import { InventoryItem } from '../../../model/inventoryItem';
 import { Stage, StageProvision } from '../../../model/stageProvision';
@@ -27,6 +28,12 @@ export interface UpgradeSuggestion {
   /** Resources the old building produces that the finder does not consider (lost on replacement). */
   oldOther: string[];
   itemId: number;
+  /** The row's subtype, which with the id names it to the city; see InventoryRowRef. */
+  itemSubtype: string;
+  /** What tells this inventory row from the others, for keys and grouping. */
+  itemKey: string;
+  /** Set on a building a tome can be opened for: the tome's name. */
+  fromTome?: string;
   itemAmount: number;
   newName: string;
   newLevel: number;
@@ -337,8 +344,9 @@ export function findClearUpgrades(
 
       if (!dominates(candidate.profile, profile)) continue;
 
+      const itemKey = getInventoryRowKey(candidate.item);
       suggestions.push({
-        key: `${block.id}->${candidate.item.id}`,
+        key: `${block.id}->${itemKey}`,
         blockId: block.id,
         oldName: building.name || block.name,
         oldLevel: block.level,
@@ -348,6 +356,9 @@ export function findClearUpgrades(
         oldValues: profile.values,
         oldOther: profile.otherProduction,
         itemId: candidate.item.id,
+        itemSubtype: candidate.item.subtype,
+        itemKey,
+        fromTome: candidate.item.fromTome,
         itemAmount: candidate.item.amount,
         newName: candidate.building.name,
         newLevel: candidate.building.sourceBuilding.level || 1,

@@ -19,6 +19,7 @@ import {
   TableRow,
   TableSortLabel,
   TextField,
+  Typography,
 } from '@mui/material';
 import { useNavigate } from 'react-router';
 import { getBuildingFinder } from '../city/buildingFinder';
@@ -27,6 +28,7 @@ import { InventoryItem } from '../model/inventoryItem';
 import { formatResourceName } from '../util/formatResourceName';
 import { useTabStore } from '../util/tabStore';
 import { generateInventory } from './generateInventory';
+import { getInventoryRowKey } from './inventoryRowRef';
 
 interface InventoryItemWithStats extends InventoryItem {
   provisions: Record<string, number>;
@@ -36,6 +38,8 @@ interface InventoryItemWithStats extends InventoryItem {
 interface AggregatedRow {
   name: string;
   chapters: Set<number>;
+  /** The tomes the rows came out of, where they are buildings a tome can be opened for. */
+  fromTomes: Set<string>;
   type: string;
   amount: number;
   cc: number;
@@ -47,12 +51,23 @@ interface AggregatedRow {
   totalArea: number;
 }
 
-type AggregatedRowDisplay = Omit<AggregatedRow, 'chapters'> & { chapters: string };
+type AggregatedRowDisplay = Omit<AggregatedRow, 'chapters' | 'fromTomes'> & { chapters: string; fromTome?: string };
 
 function isAggregatedRowDisplay(row: InventoryItemWithStats | AggregatedRowDisplay): row is AggregatedRowDisplay {
   return (
     typeof (row as AggregatedRowDisplay).cc === 'number' && typeof (row as AggregatedRowDisplay).chapters === 'string'
   );
+}
+
+/**
+ * What tells one row from another: an aggregate its type and name, since a building in the
+ * inventory and one inside a tome can share a name; anything else what names it to the city.
+ */
+function getRowKey(row: InventoryItemWithStats | AggregatedRowDisplay, index: number): string | number {
+  if (isAggregatedRowDisplay(row)) {
+    return `${row.type}|${row.name}`;
+  }
+  return row.id === undefined ? index : getInventoryRowKey(row);
 }
 
 export const InventoryMain = () => {
@@ -89,7 +104,7 @@ export const InventoryMain = () => {
         return;
       }
 
-      const inventoryData = await generateInventory(accountId);
+      const inventoryData = await generateInventory(accountId, { includeTomeBuildings: true });
       if (!inventoryData) {
         return;
       }
@@ -158,6 +173,7 @@ export const InventoryMain = () => {
       if (item.name && item.name.toLowerCase().includes(lower)) return true;
       if (item.type.toLowerCase().includes(lower)) return true;
       if (item.size && item.size.toLowerCase().includes(lower)) return true;
+      if (item.fromTome && item.fromTome.toLowerCase().includes(lower)) return true;
       if (item.resaleResources) {
         for (const key of Object.keys(item.resaleResources)) {
           if (key.toLowerCase().includes(lower)) return true;
@@ -173,11 +189,15 @@ export const InventoryMain = () => {
   if (aggregate) {
     const map = new Map<string, AggregatedRow>();
     for (const item of filtered) {
-      const key = item.name || '';
+      // Typed as well as named, so a building a tome can be opened for is kept apart from
+      // one of the same name already in the inventory: a total made up of buildings not yet
+      // chosen would overstate what is in hand.
+      const key = `${item.type}|${item.name || ''}`;
       if (!map.has(key)) {
         map.set(key, {
-          name: key,
+          name: item.name || '',
           chapters: new Set<number>(),
+          fromTomes: new Set<string>(),
           type: item.type,
           amount: 0,
           cc: 0,
@@ -193,6 +213,7 @@ export const InventoryMain = () => {
       if (agg) {
         const qty = item.amount || 0;
         if (item.chapter !== undefined && item.chapter !== null) agg.chapters.add(item.chapter);
+        if (item.fromTome) agg.fromTomes.add(item.fromTome);
         agg.amount += qty;
         agg.cc += (item.resaleResources?.combiningcatalyst || 0) * qty;
         agg.rr += (item.resaleResources?.royalrestoration || 0) * qty;
@@ -213,11 +234,12 @@ export const InventoryMain = () => {
         });
       }
     }
-    displayRows = Array.from(map.values()).map((row) => ({
+    displayRows = Array.from(map.values()).map(({ fromTomes, ...row }) => ({
       ...row,
       chapters: Array.from(row.chapters)
         .sort((a, b) => a - b)
         .join(', '),
+      fromTome: fromTomes.size > 0 ? Array.from(fromTomes).sort().join(', ') : undefined,
     }));
   }
 
@@ -304,6 +326,7 @@ export const InventoryMain = () => {
       'Name',
       aggregate ? 'Chapters/Levels' : 'Chapter/Level',
       'Type',
+      'Tome',
       'Amount',
       'Size',
       'CC',
@@ -317,6 +340,7 @@ export const InventoryMain = () => {
       const name = row.name || '';
       const chapter = isAggregatedRowDisplay(row) ? row.chapters : (row.chapter ?? '');
       const type = row.type || '';
+      const tome = row.fromTome || '';
       const amount = row.amount || 0;
       const size = row.size || '';
       const cc = isAggregatedRowDisplay(row) ? row.cc : (row.resaleResources?.combiningcatalyst ?? '');
@@ -343,7 +367,7 @@ export const InventoryMain = () => {
         return val;
       });
 
-      return [name, chapter, type, amount, size, cc, rr, sf, date, ...resCols].join('\t');
+      return [name, chapter, type, tome, amount, size, cc, rr, sf, date, ...resCols].join('\t');
     });
 
     const textData = [headers.join('\t'), ...rows].join('\n');
@@ -513,8 +537,15 @@ export const InventoryMain = () => {
             </TableHead>
             <TableBody>
               {displayRows.map((item, idx) => (
-                <TableRow key={('id' in item ? item.id : item.name) ?? idx}>
-                  <TableCell>{item.name || ''}</TableCell>
+                <TableRow key={getRowKey(item, idx)}>
+                  <TableCell>
+                    {item.name || ''}
+                    {item.fromTome && (
+                      <Typography variant='caption' component='div' color='text.secondary'>
+                        via {item.fromTome}
+                      </Typography>
+                    )}
+                  </TableCell>
                   <TableCell>{isAggregatedRowDisplay(item) ? item.chapters : (item.chapter ?? '')}</TableCell>
                   <TableCell>{item.type}</TableCell>
                   <TableCell>{item.amount}</TableCell>

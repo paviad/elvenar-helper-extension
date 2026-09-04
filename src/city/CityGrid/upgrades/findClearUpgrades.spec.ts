@@ -583,4 +583,36 @@ describe('findClearUpgrades', () => {
     expect(result.suggestions[0].oldOther).toEqual(['money']);
     expect(result.suggestions[0].newOther).toEqual(['supplies']);
   });
+
+  it('weighs a building a tome can be opened for like one in hand, and says which tome', () => {
+    const old = cityBuilding('A_Old_1', 10);
+    const candidate = cityBuilding('A_New_1', 20);
+    const inHand = invItem(candidate, { id: 100 });
+    const inTome = invItem(candidate, { id: 7, type: 'Building (Tome)', fromTome: "Redbeard's Tome" });
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), [], [inHand, inTome]);
+
+    expect(result.suggestions).toHaveLength(2);
+    expect(result.suggestions[0]).toMatchObject({ itemId: 100, itemSubtype: 'A_New_1', itemKey: '100' });
+    expect(result.suggestions[0].fromTome).toBeUndefined();
+    expect(result.suggestions[1]).toMatchObject({
+      itemId: 7,
+      itemSubtype: 'A_New_1',
+      itemKey: '7:A_New_1',
+      fromTome: "Redbeard's Tome",
+    });
+    expect(result.suggestions[1].newValues).toEqual(result.suggestions[0].newValues);
+  });
+
+  it('keeps the buildings of one tome apart, though they share its id', () => {
+    const old = cityBuilding('A_Old_1', 10);
+    const first = cityBuilding('A_New_1', 20);
+    const second = cityBuilding('A_New_2', 30);
+    const inventory = [invItem(first, { id: 7, fromTome: 'Tome' }), invItem(second, { id: 7, fromTome: 'Tome' })];
+
+    const result = findClearUpgrades([blockFor(old)], finderFor(old), [], inventory);
+
+    expect(result.suggestions.map((s) => s.itemKey)).toEqual(['7:A_New_1', '7:A_New_2']);
+    expect(new Set(result.suggestions.map((s) => s.key)).size).toBe(2);
+  });
 });

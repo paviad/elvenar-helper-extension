@@ -18,6 +18,7 @@ import {
   Typography,
 } from '@mui/material';
 import { generateInventory } from '../../../inventory/generateInventory';
+import { InventoryRowRef } from '../../../inventory/inventoryRowRef';
 import { formatResourceName } from '../../../util/formatResourceName';
 import { getBuildingFinder } from '../../buildingFinder';
 import { useCity } from '../../CityContext';
@@ -25,7 +26,7 @@ import { ClearUpgradesResult, findClearUpgrades, UpgradeSuggestion } from './fin
 import { compareSize, fitsInPlace, isSameSize } from './sizeOrder';
 
 interface UpgradesCityViewProps {
-  onReplace: (blockId: number, itemId: number, stage?: number) => void;
+  onReplace: (blockId: number, item: InventoryRowRef, stage?: number) => void;
 }
 
 type Order = 'asc' | 'desc';
@@ -123,7 +124,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
       const finder = getBuildingFinder();
       await finder.ensureInitialized();
 
-      const inventory = await generateInventory(city.accountId);
+      const inventory = await generateInventory(city.accountId, { includeTomeBuildings: true });
       if (!inventory) {
         setNoInventory(true);
         setResult(null);
@@ -154,7 +155,10 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        (s) => s.oldName.toLowerCase().includes(term) || s.newName.toLowerCase().includes(term),
+        (s) =>
+          s.oldName.toLowerCase().includes(term) ||
+          s.newName.toLowerCase().includes(term) ||
+          (s.fromTome?.toLowerCase().includes(term) ?? false),
       );
     }
 
@@ -178,7 +182,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
     // building are their own groups rather than being lumped together by name.
     const byKey = new Map<string, UpgradeSuggestion[]>();
     for (const row of rows) {
-      const key = groupBy === 'city' ? String(row.blockId) : String(row.itemId);
+      const key = groupBy === 'city' ? String(row.blockId) : row.itemKey;
       const group = byKey.get(key);
       if (group) group.push(row);
       else byKey.set(key, [row]);
@@ -189,7 +193,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
     const labelFor = (row: UpgradeSuggestion) =>
       groupBy === 'city'
         ? `${row.oldName}${row.oldLevel > 1 ? ` (Level ${row.oldLevel})` : ''}${row.oldStage ? ` (Stage ${row.oldStage})` : ''}`
-        : `${row.newName}${row.targetStage ? ` (Stage ${row.targetStage}${row.maxStage ? ` of ${row.maxStage}` : ''})` : ''}${row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}`;
+        : `${row.newName}${row.targetStage ? ` (Stage ${row.targetStage}${row.maxStage ? ` of ${row.maxStage}` : ''})` : ''}${row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}${row.fromTome ? ` (via ${row.fromTome})` : ''}`;
 
     return [...byKey.entries()].map(([key, groupRows]) => ({ key, label: labelFor(groupRows[0]), rows: groupRows }));
   }, [rows, groupBy]);
@@ -225,7 +229,11 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
       <TableRow key={row.key} hover>
         <TableCell>
           <Tooltip title='Deletes the building and starts placing the replacement — you position it and make room if needed'>
-            <Button size='small' variant='outlined' onClick={() => onReplace(row.blockId, row.itemId, row.targetStage)}>
+            <Button
+              size='small'
+              variant='outlined'
+              onClick={() => onReplace(row.blockId, { id: row.itemId, subtype: row.itemSubtype }, row.targetStage)}
+            >
               Replace
             </Button>
           </Tooltip>
@@ -251,6 +259,11 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
               {showLevels ? ` (Level ${row.newLevel})` : ''}
               {row.itemAmount > 1 ? ` ×${row.itemAmount}` : ''}
             </span>
+            {row.fromTome && (
+              <Typography variant='caption' color='text.secondary'>
+                via {row.fromTome}
+              </Typography>
+            )}
             {row.targetStage !== undefined && (
               <Typography variant='caption' color='text.secondary'>
                 {stageSummary(row)}
@@ -348,6 +361,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
           Inventory buildings that beat a placed building on everything it provides (mana, seeds, orcs, unurium, nox and
           culture), per square and in total. Production is per 24h. Evolving buildings from the inventory are compared
           at the highest stage your artifacts can reach; placed evolving buildings are never suggested for replacement.
+          Buildings a Tome can be opened for are weighed too, and say which Tome under their name.
         </Typography>
         {noInventory && (
           <Alert severity='info' sx={{ mt: 1 }}>

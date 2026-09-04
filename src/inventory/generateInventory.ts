@@ -8,8 +8,21 @@ import { InventoryItem } from '../model/inventoryItem';
 import { ItemDefinition } from '../model/itemDefinition';
 import { Tome } from '../model/tome';
 import { getBuildingProvisionsAndProduction } from '../util/getBuildingProvisionsAndProduction';
+import { getTomeBuildings } from './tomeBuildings';
 
-export async function generateInventory(accountId: string) {
+export interface GenerateInventoryOptions {
+  /**
+   * Also list, after each tome, the buildings it can be opened for. Off by default: the city
+   * planner and the Upgrade Finder read the inventory too, and a building not yet chosen is
+   * neither placeable nor a swap in hand.
+   */
+  includeTomeBuildings?: boolean;
+}
+
+export async function generateInventory(
+  accountId: string,
+  { includeTomeBuildings = false }: GenerateInventoryOptions = {},
+) {
   const accountData = getAccountById(accountId);
   if (!accountData || !accountData.inventoryItems) {
     return;
@@ -31,6 +44,9 @@ export async function generateInventory(accountId: string) {
   }
 
   const spellFragmentsFactor = (academyLevel - 1) * 0.25 + 1;
+
+  // A tome's premium residence or workshop is named for the player's race.
+  const race = accountData.cityQuery?.userData.race;
 
   const items = await getItemDefinitions();
   const tomes = await getTomes();
@@ -99,11 +115,56 @@ export async function generateInventory(accountId: string) {
     return prettyTypes[type] || type;
   }
 
+  /** A building a tome can be opened for. Not a type the game has, so it maps from nothing. */
+  const tomeBuildingType = 'Building (Tome)';
+
   const keysSet = new Set<string>();
 
   const evolvingBuildings = await getEvolvingBuildings();
 
-  const inventory = inventoryItems.map((r) => {
+  /**
+   * A row for each building a tome can be opened for, at the chapter the tome was won in. A
+   * building fresh out of a tome is at its first stage, as one built from the catalog would be.
+   * The row keeps the tome's id: the tome is what would have to be opened to get the building.
+   */
+  function getTomeBuildingRows(tomeItem: InventoryItem, tome: Tome, chapter: number | undefined): InventoryItem[] {
+    return getTomeBuildings(tome, chapter, race).map(({ buildingId, subType, amount }) => {
+      const building = buildingId ? finder.getBuildingExact(buildingId) : undefined;
+      const stage = building?.maxStage ? 1 : undefined;
+      if (building) {
+        const { provisions, production } = getBuildingProvisionsAndProduction(
+          building,
+          keysSet,
+          evolvingBuildings,
+          stage,
+        );
+        building.provisions = provisions;
+        building.production = production;
+      }
+      let name = building?.name || buildingId || subType;
+
+      if (stage) {
+        name += ` (Stage ${stage})`;
+      }
+
+      return {
+        ...tomeItem,
+        type: tomeBuildingType,
+        subtype: buildingId ?? subType,
+        amount: tomeItem.amount * amount,
+        name,
+        resaleResources: (building && getResaleResources(building)) || {},
+        chapter,
+        spellFragments: Math.round((building?.spellFragments || 0) * spellFragmentsFactor) || undefined,
+        size: (building && `${building.width}x${building.length}`) || undefined,
+        stage,
+        building,
+        fromTome: tome.name,
+      } satisfies InventoryItem;
+    });
+  }
+
+  const inventory = inventoryItems.flatMap((r) => {
     const building = getBuilding(r);
     const item = getItem(r);
     const tome = getTome(r);
@@ -125,7 +186,7 @@ export async function generateInventory(accountId: string) {
       name += ` (Stage ${stage})`;
     }
 
-    return {
+    const row = {
       ...r,
       type: getPrettyType(r.type),
       name,
@@ -137,6 +198,11 @@ export async function generateInventory(accountId: string) {
       building,
       transcendence: r.properties?.find((p) => p.__class__ === 'InventoryItemTranscendedBuildingPropertyVO'),
     } satisfies InventoryItem;
+
+    if (!includeTomeBuildings || !tome) {
+      return [row];
+    }
+    return [row, ...getTomeBuildingRows(r, tome, row.chapter)];
   });
 
   const sortedKeys = Array.from(keysSet).sort((a, b) => {
