@@ -1,11 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Checklist } from '../city/movePlan/checklist';
+import { GameVars } from '../inject/gameVars';
+import { EventChestArchiveEntry, EventChestInterval } from '../inject/local/eventChestTiming';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
 import { DEFAULT_FULL_THREAD_POSTS, WatchedWonder } from '../model/kpSwap';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { WorldNeighbor } from '../model/worldNeighbors';
+import { DEFAULT_ACTIVITY_SETTINGS } from '../recruits/recruitBook';
 import { chromeStorage } from '../util/chromeStorage';
 import { createDebouncedJsonStorage } from '../util/debouncedJsonStorage';
+import { applyProvinceUpdate, markHelpSent } from '../util/neighborHelpRecord';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { AutomationEntry } from './automationEntry';
+import { StrengthModifier } from './counterCalculation';
 import { TournamentGood } from './tournamentGuide';
 import { TournyData } from './tournyData';
 
@@ -67,6 +76,62 @@ interface OverlayState {
   // lines the city has shown done.
   movePlan?: Checklist;
   setMovePlan: (checklist: Checklist | undefined) => void;
+
+  retrievingCounter: number;
+  // Whether the last count came from the hunt being called off rather than from the outstanding
+  // pages being worked off. A zero that arrives that way is not a finished scan, so it raises no
+  // alert. Every later count overwrites this, so it cannot be left standing.
+  retrievingCounterAbandoned: boolean;
+  setRetrievingCounter: (counter: number, abandoned?: boolean) => void;
+  initialWorldMapData: InitialWorldMapData | null;
+  setInitialWorldMapData: (data: InitialWorldMapData) => void;
+  worldNeighbors: WorldNeighbor[];
+  setWorldNeighbors: (neighbors: WorldNeighbor[]) => void;
+  // Who has been helped is kept in the list itself, so it outlasts the help run that sent it.
+  markNeighborHelped: (playerId: number) => void;
+  applyNeighborProvinceUpdate: (province: WorldNeighbor) => void;
+  neighbourHelpData?: NeighbourHelpData;
+  setNeighbourHelpData: (data: NeighbourHelpData) => void;
+  modifiers?: StrengthModifier[];
+  setModifiers: (modifiers: StrengthModifier[]) => void;
+
+  autoKpHunt?: boolean;
+  setAutoKpHunt: (autoKpHunt: boolean) => void;
+  kpHuntImportantThreshold: number;
+  setKpHuntImportantThreshold: (threshold: number) => void;
+  // Off hides what only two hunters together can take. Persisted, like the threshold.
+  kpHuntIncludePairs?: boolean;
+  setKpHuntIncludePairs: (include: boolean) => void;
+
+  gameVars?: GameVars;
+  setGameVars: (gameVars: GameVars) => void;
+
+  // The Production tab's jobs. Persisted, so they are still there after a refresh; whether the
+  // tab is monitoring them is deliberately not, and a refresh always comes back stopped.
+  productionAutomations: AutomationEntry[];
+  setProductionAutomations: (entries: AutomationEntry[]) => void;
+
+  // What it takes for a candidate recruit to count as active: this many signs (score rises, posts)
+  // within this many days. Persisted.
+  recruitWindowDays: number;
+  setRecruitWindowDays: (days: number) => void;
+  recruitMinSigns: number;
+  setRecruitMinSigns: (signs: number) => void;
+  // Whether the Recruits tab reads candidates' scores by itself. Not persisted, like Auto on the
+  // KP hunt: it sends requests to the game, and a refresh always comes back stopped.
+  autoRefreshRecruits?: boolean;
+  setAutoRefreshRecruits: (on: boolean) => void;
+  // The same for asking ElvenStats about candidates. Not persisted either.
+  autoElvenStats?: boolean;
+  setAutoElvenStats: (on: boolean) => void;
+
+  // Gaps between event currency chests in the running event, oldest first, and earlier events'
+  // figures put aside with Archive. Both persisted.
+  eventChestIntervals: EventChestInterval[];
+  addEventChestInterval: (interval: EventChestInterval) => void;
+  setEventChestIntervals: (intervals: EventChestInterval[]) => void;
+  eventChestArchive: EventChestArchiveEntry[];
+  setEventChestArchive: (archive: EventChestArchiveEntry[]) => void;
 }
 
 let overlayStore: ReturnType<typeof createOverlayStore>;
@@ -148,13 +213,76 @@ const createOverlayStore = (accountId: string) => {
         setLastTournament: (good) => set({ lastTournament: good }),
         movePlan: undefined,
         setMovePlan: (checklist) => set({ movePlan: checklist }),
+
+        retrievingCounter: 0,
+        retrievingCounterAbandoned: false,
+        setRetrievingCounter: (counter, abandoned = false) =>
+          set({ retrievingCounter: counter, retrievingCounterAbandoned: abandoned }),
+        initialWorldMapData: null,
+        setInitialWorldMapData: (data) => set({ initialWorldMapData: data }),
+        worldNeighbors: [],
+        setWorldNeighbors: (neighbors) => set({ worldNeighbors: neighbors }),
+        markNeighborHelped: (playerId) =>
+          set((state) => ({ worldNeighbors: markHelpSent(state.worldNeighbors, playerId, Date.now()) })),
+        applyNeighborProvinceUpdate: (province) =>
+          set((state) => ({ worldNeighbors: applyProvinceUpdate(state.worldNeighbors, province, Date.now()) })),
+        neighbourHelpData: undefined,
+        setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
+        modifiers: [],
+        setModifiers: (modifiers) => set({ modifiers }),
+
+        autoKpHunt: false,
+        setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
+        kpHuntImportantThreshold: 10,
+        setKpHuntImportantThreshold: (threshold) => set({ kpHuntImportantThreshold: threshold }),
+        kpHuntIncludePairs: true,
+        setKpHuntIncludePairs: (include) => set({ kpHuntIncludePairs: include }),
+
+        gameVars: undefined,
+        setGameVars: (gameVars) => set({ gameVars }),
+
+        productionAutomations: [],
+        setProductionAutomations: (entries) => set({ productionAutomations: entries }),
+
+        recruitWindowDays: DEFAULT_ACTIVITY_SETTINGS.windowDays,
+        setRecruitWindowDays: (days) => set({ recruitWindowDays: days }),
+        recruitMinSigns: DEFAULT_ACTIVITY_SETTINGS.minSigns,
+        setRecruitMinSigns: (signs) => set({ recruitMinSigns: signs }),
+        autoRefreshRecruits: false,
+        setAutoRefreshRecruits: (on) => set({ autoRefreshRecruits: on }),
+        autoElvenStats: false,
+        setAutoElvenStats: (on) => set({ autoElvenStats: on }),
+
+        eventChestIntervals: [],
+        addEventChestInterval: (interval) =>
+          set((state) => ({ eventChestIntervals: [...state.eventChestIntervals, interval] })),
+        setEventChestIntervals: (intervals) => set({ eventChestIntervals: intervals }),
+        eventChestArchive: [],
+        setEventChestArchive: (archive) => set({ eventChestArchive: archive }),
       }),
       {
         name: `overlay-store-${accountId}`,
         // Written a second after changes pause: the whole store, chat included, goes out each time.
         storage: createDebouncedJsonStorage(chromeStorage, 1000),
         partialize: (state) => {
-          const { offeredGoods, forceUpdate, overlayExpanded, messagesDetailsReceived, ...toPersist } = state;
+          // Exclude certain states from being persisted
+          const {
+            offeredGoods,
+            forceUpdate,
+            overlayExpanded,
+            messagesDetailsReceived,
+            retrievingCounter,
+            retrievingCounterAbandoned,
+            initialWorldMapData,
+            worldNeighbors,
+            neighbourHelpData,
+            autoKpHunt,
+            autoRefreshRecruits,
+            autoElvenStats,
+            // gameVars,
+            ...toPersist
+          } = state;
+          // avatarPosition remains in `toPersist` automatically
           return toPersist;
         },
         // zustand catches whatever goes wrong while the saved state is read back - including a

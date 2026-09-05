@@ -18,10 +18,13 @@ import {
   Typography,
 } from '@mui/material';
 import { createPortal } from 'react-dom';
-import { clearListener, listen, listenForGenericResponse, setListener } from '../chrome/messages';
-import { loadAccount } from '../elvenar/accountStore';
+import { clearListener, listen, listenForGenericResponse, sendRuntime, setListener } from '../chrome/messages';
+import { accountVersion, getAccountById, loadAccount, subscribeToAccounts } from '../elvenar/accountStore';
 import { isAccountOnScreen } from '../elvenar/useAccount';
+import { relayToGame } from '../inject/relayToGame';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
+import { countKpInstants } from '../inventory/kpInstants';
+import { KpHuntData, withPairsOrNot } from '../model/kpHuntData';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { TournyProvinceInformation } from '../model/tourny/provinceInformation';
 import { TournyProvince } from '../model/tourny/provincesOverview';
@@ -30,20 +33,29 @@ import { expandPanel, getOverlaySize, setOverlaySizePreset } from '../overlay';
 import { parseQuestExport } from '../util/parseQuestExport';
 import { DiscordButton } from '../widgets/DiscordButton';
 import { ChatView } from './ChatView';
+import { ColumnView } from './ColumnView';
 import { EeView } from './EeView';
+import { EventChestsView } from './EventChestsView';
 import { HelpDialog } from './HelpDialog';
+import { KpHuntOpportunities } from './KpHuntOpportunities';
 import { MessagesView } from './MessagesView';
 import { MovePlanView } from './movePlan/MovePlanView';
+import { NeighbourlyHelp } from './NeighbourlyHelp';
 import { sameOfferedGoods } from './offeredGoods';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
 import { getAccountId, getOverlayStore } from './overlayStore';
 import { OverlayTab, OverlayTabKey, shortcutLetter, visibleOverlayTabs } from './overlayTabs';
 import { parseSocketMessage } from './parseSocketMessage';
+import { playPrimaryOpportunityAlert } from './primaryOpportunityAlertService';
+import { ProductionView } from './ProductionView';
 import { QuestJournal } from './QuestJournal';
+import { RecruitsView } from './RecruitsView';
 import { Tourny } from './Tourny';
 import { emptyTournyData } from './tournyData';
 import { TradeView } from './TradeView';
+import { useRecruitBook } from './useRecruitBook';
+import { useElvenStatsRefresher, useRecruitRefresher } from './useRecruitRefresher';
 
 const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
   small: 'Small',
@@ -80,6 +92,10 @@ const TAB_BAR_SX = {
   [`& .${tabClasses.root}.${tabClasses.selected}`]: { borderColor: 'primary.main' },
 };
 
+/** Stand-ins while the account has none, the same object each render so effects do not rerun. */
+const NO_OPPORTUNITIES: Record<string, KpHuntData> = {};
+const NO_RESOURCES: Record<string, number> = {};
+
 interface OverlayMainProps {
   /**
    * The header's slot for the React-owned buttons. The header is built as plain DOM before React
@@ -101,13 +117,103 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const tabRef = React.useRef<OverlayTabKey>(tabKey);
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
 
+  // The account as held here, redrawn whenever the store reads or saves it. Not useAccount: that
+  // marks the account on screen, and the overlay then reads it after every burst of game responses
+  // for as long as a view shows it - for this panel, always. The account is read below at the
+  // moments the hunt needs it instead.
+  const accountId = getAccountId();
+  React.useSyncExternalStore(subscribeToAccounts, () => (accountId ? accountVersion(accountId) : 0));
+  const account = accountId ? getAccountById(accountId) : undefined;
+  const kpHuntOpportunities = account?.kpHuntOpportunities ?? NO_OPPORTUNITIES;
+  const kpHuntLastPage = account?.kpHuntLastPage;
+  const cityResources = account?.cityQuery?.cityResources ?? NO_RESOURCES;
+  const inventoryItems = account?.inventoryItems;
+  const kpInstantsInventory = React.useMemo(() => countKpInstants(inventoryItems), [inventoryItems]);
+
   const useOverlayStore = getOverlayStore();
   const chapter = useOverlayStore((state) => state.chapter);
+
+  // Here rather than in the tab, so the refresher keeps going while another tab is showing.
+  const recruitBook = useRecruitBook(accountId);
+  useRecruitRefresher(
+    recruitBook,
+    useOverlayStore((state) => state.autoRefreshRecruits ?? false),
+  );
+  useElvenStatsRefresher(
+    recruitBook,
+    useOverlayStore((state) => state.autoElvenStats ?? false),
+  );
+
+  const [refreshNeighborlyHelp, triggerRefreshNeighborlyHelp] = React.useReducer((x) => x + 1, 0);
 
   // Connect Quests from Zustand Store
   const quests = useOverlayStore((state) => state.quests);
   const setQuests = useOverlayStore((state) => state.setQuests);
   const [dropError, setDropError] = React.useState<string | undefined>(undefined);
+
+  const retrievingCounterRaw = useOverlayStore((state) => state.retrievingCounter);
+  const retrievingCounterAbandoned = useOverlayStore((state) => state.retrievingCounterAbandoned);
+  const [retrievingCounter, setRetrievingCounter] = React.useState(retrievingCounterRaw);
+  const autoKpHunt = useOverlayStore((state) => state.autoKpHunt);
+  const kpHuntImportantThreshold = useOverlayStore((state) => state.kpHuntImportantThreshold);
+  const kpHuntIncludePairs = useOverlayStore((state) => state.kpHuntIncludePairs ?? true);
+
+  // Off means paging through the ranking does nothing at all, so both ends are told: the page,
+  // which would otherwise look up every player's wonders, and the worker, which would count them
+  // and move the last page scanned. Sent on load too, so neither is left with a stale setting.
+  React.useEffect(() => {
+    relayToGame('kpHuntAuto', !!autoKpHunt);
+    void sendRuntime('setKpHuntAuto', { on: !!autoKpHunt });
+  }, [autoKpHunt]);
+
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Every ranking page the hunt loads moves the counter, so a change in it is when the saved page
+  // may have moved on. The last change (back to 0) comes after the page was saved.
+  React.useEffect(() => {
+    const accountId = getAccountId();
+    if (!accountId) return;
+    void loadAccount(accountId);
+  }, [retrievingCounterRaw]);
+
+  React.useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (retrievingCounterRaw === 0 && retrievingCounterAbandoned) {
+      // The hunt was called off, so the count was dropped rather than worked off. Nothing was
+      // scanned to the end here - there is no next page to ask for and nothing to announce.
+      setRetrievingCounter(0);
+    } else if (retrievingCounterRaw === 0 && retrievingCounter !== 0) {
+      timeoutRef.current = setTimeout(() => {
+        setRetrievingCounter(0);
+        console.log('Retrieving counter reached 0, checking for next page...', kpHuntOpportunities);
+        // Pair-only targets that are switched off must not stop the hunt or sound the alert.
+        const primaryOpportunities = withPairsOrNot(
+          Object.values(kpHuntOpportunities || {}),
+          kpHuntIncludePairs,
+        ).filter((opportunity) => opportunity.standToGain >= kpHuntImportantThreshold);
+        if (primaryOpportunities.length === 0) {
+          if (autoKpHunt) {
+            console.log('Auto KP Hunt is enabled, relaying to game to go to next page...');
+            relayToGame('nextPage');
+          }
+        } else {
+          playPrimaryOpportunityAlert();
+        }
+      }, 500);
+    } else {
+      setRetrievingCounter(retrievingCounterRaw);
+    }
+  }, [
+    retrievingCounterRaw,
+    retrievingCounterAbandoned,
+    retrievingCounter,
+    kpHuntOpportunities,
+    autoKpHunt,
+    kpHuntImportantThreshold,
+    kpHuntIncludePairs,
+  ]);
 
   // Declarative, so the tab set, the Alt+C chord map, the rendered content and the help dialog
   // all read from one place. Hand-computed indices used to have to be adjusted in two places
@@ -215,7 +321,6 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
         ]);
       }
     };
-
     window.addEventListener('message', messageHandler);
 
     setListener('tradeParsed', (tradesMsg) => {
@@ -260,10 +365,26 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }
     });
 
+    setListener('kpHuntOpportunity', (msg) => {
+      void (async () => {
+        expandPanel(true);
+        const accountId = getAccountId();
+        if (!accountId) return;
+        await loadAccount(accountId);
+        setTabKey('kphunt');
+      })();
+    });
+
+    const accountId = getAccountId();
+    if (accountId) {
+      void loadAccount(accountId);
+    }
+
     return () => {
       window.removeEventListener('message', messageHandler);
       clearListener('tradeParsed');
       clearListener('messagesUpdated');
+      clearListener('kpHuntOpportunity');
     };
   }, [useOverlayStore]);
 
@@ -282,6 +403,29 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   };
 
   const activeSizePreset = matchOverlaySizePreset(sizeAtMenuOpen);
+
+  // The overlay only reads the live account; the service worker, which saves it, does the clearing.
+  // Reading the account afterwards redraws the hunt with what the worker saved.
+  const clearOpportunities = async (accountId: string, opportunityId?: string) => {
+    await sendRuntime('clearKpHuntOpportunities', { accountId, opportunityId });
+    await loadAccount(accountId);
+  };
+
+  const onClearAllOpportunities = async () => {
+    const accountId = getAccountId();
+    if (!accountId) return;
+    await clearOpportunities(accountId);
+    // expandPanel(false);
+  };
+
+  const onClearOpportunity = async (id: string) => {
+    const accountId = getAccountId();
+    if (!accountId) return;
+    await clearOpportunities(accountId, id);
+    // if (Object.keys(rest).length === 0) {
+    //   expandPanel(false);
+    // }
+  };
 
   useEffect(() => {
     const removals: (() => void)[] = [];
@@ -312,6 +456,16 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       useOverlayStore.subscribe((state, previous) => {
         if (state.overlayExpanded && !previous.overlayExpanded) {
           readIfShown();
+        }
+      }),
+    );
+
+    // Spending or receiving KP instants pushes the inventory, which the hunt's "Have" line shows.
+    removals.push(
+      listenForGenericResponse<void>('R:InventoryService/updateItems', () => {
+        const accountId = getAccountId();
+        if (accountId) {
+          void loadAccount(accountId);
         }
       }),
     );
@@ -394,6 +548,16 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
           ...tournyData,
           provincesOverview: [...tournyData.provincesOverview],
         });
+      }),
+    );
+
+    removals.push(
+      listenForGenericResponse<Record<string, number>>('R:CityResourcesService/getResources', (msg) => {
+        async function Do() {
+          await loadAccount(getAccountId()!);
+          triggerRefreshNeighborlyHelp();
+        }
+        void Do();
       }),
     );
 
@@ -507,160 +671,197 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   );
 
   return (
-    <div style={{ height: '100%' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          position: 'sticky',
-          top: 0,
-          zIndex: 2,
-          background: '#f9f9fb',
-          pr: 2,
-        }}
-      >
-        <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={TAB_BAR_SX}>
-          {tabs.map((t) => (
-            <Tab key={t.key} label={renderLabel(t)} />
-          ))}
-        </Tabs>
-        {tabKey === 'chat' && (
-          <>
-            <IconButton aria-label='Search chat' size='small' sx={{ ml: 1 }} onClick={() => setSearchActive((v) => !v)}>
-              <SearchIcon fontSize='small' />
-            </IconButton>
-            {searchActive && (
-              <TextField
-                autoFocus
-                size='small'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder='Search chat...'
-                sx={{ ml: 1, minWidth: 180 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onKeyUp={(e) => e.stopPropagation()}
-              />
-            )}
-          </>
-        )}
-
-        {headerActionsSlot ? createPortal(headerActions, headerActionsSlot) : headerActions}
-        <Menu
-          anchorEl={sizeAnchor}
-          open={!!sizeAnchor}
-          onClose={() => setSizeAnchor(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          // Menu is a Modal, and Modal portals to document.body by default, where it would land
-          // at MUI's modal layer (1300) behind this z-index 9999 panel - open, anchored and
-          // invisible. Rendering in place keeps it in the panel's own stacking context.
-          disablePortal
-          sx={{ zIndex: OVERLAY_MENU_Z_INDEX }}
+    <>
+      <div style={{ height: '100%' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            background: '#f9f9fb',
+            pr: 2,
+          }}
         >
-          {SIZE_PRESET_ORDER.map((preset) => {
-            const { width, height } = OVERLAY_SIZE_PRESETS[preset];
-            return (
-              <MenuItem key={preset} onClick={() => chooseSizePreset(preset)} selected={activeSizePreset === preset}>
-                <ListItemIcon sx={{ minWidth: 32 }}>
-                  {activeSizePreset === preset && <CheckIcon fontSize='small' />}
-                </ListItemIcon>
-                <ListItemText primary={SIZE_PRESET_LABELS[preset]} secondary={`${width} × ${height}`} />
-              </MenuItem>
-            );
-          })}
-        </Menu>
+          <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={TAB_BAR_SX}>
+            {tabs.map((t) => (
+              <Tab key={t.key} label={renderLabel(t)} />
+            ))}
+          </Tabs>
+          {tabKey === 'chat' && (
+            <>
+              <IconButton
+                aria-label='Search chat'
+                size='small'
+                sx={{ ml: 1 }}
+                onClick={() => setSearchActive((v) => !v)}
+              >
+                <SearchIcon fontSize='small' />
+              </IconButton>
+              {searchActive && (
+                <TextField
+                  autoFocus
+                  size='small'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder='Search chat...'
+                  sx={{ ml: 1, minWidth: 180 }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onKeyUp={(e) => e.stopPropagation()}
+                />
+              )}
+            </>
+          )}
 
-        <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
-      </Box>
-      {tabKey === 'chat' && (
-        <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
-      )}
-      {chapter >= 18 && tabKey === 'trade' && <TradeView />}
-      {tabKey === 'ee' && <EeView />}
-      {tabKey === 'quests' &&
-        (quests === undefined ? (
-          <Box
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onClick={() => document.getElementById('quest-file-upload')?.click()}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              boxSizing: 'border-box',
-              minHeight: 300,
-              p: 4,
-              m: 2,
-              textAlign: 'center',
-              border: '2px dashed',
-              borderColor: dropError ? 'error.main' : 'divider',
-              borderRadius: 2,
-              bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
-              cursor: 'pointer',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
-              },
-            }}
+          {headerActionsSlot ? createPortal(headerActions, headerActionsSlot) : headerActions}
+          <Menu
+            anchorEl={sizeAnchor}
+            open={!!sizeAnchor}
+            onClose={() => setSizeAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            // Menu is a Modal, and Modal portals to document.body by default, where it would land
+            // at MUI's modal layer (1300) behind this z-index 9999 panel - open, anchored and
+            // invisible. Rendering in place keeps it in the panel's own stacking context.
+            disablePortal
+            sx={{ zIndex: OVERLAY_MENU_Z_INDEX }}
           >
-            <input
-              type='file'
-              id='quest-file-upload'
-              accept='.txt'
-              style={{ display: 'none' }}
-              onChange={handleFileInput}
+            {SIZE_PRESET_ORDER.map((preset) => {
+              const { width, height } = OVERLAY_SIZE_PRESETS[preset];
+              return (
+                <MenuItem key={preset} onClick={() => chooseSizePreset(preset)} selected={activeSizePreset === preset}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    {activeSizePreset === preset && <CheckIcon fontSize='small' />}
+                  </ListItemIcon>
+                  <ListItemText primary={SIZE_PRESET_LABELS[preset]} secondary={`${width} × ${height}`} />
+                </MenuItem>
+              );
+            })}
+          </Menu>
+
+          <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+        </Box>
+        {tabKey === 'chat' && (
+          <ChatView searchActive={searchActive} searchTerm={searchTerm} setSearchActive={setSearchActive} />
+        )}
+        {chapter >= 18 && tabKey === 'trade' && <TradeView />}
+        {tabKey === 'ee' && <EeView />}
+        {tabKey === 'quests' &&
+          (quests === undefined ? (
+            <Box
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onClick={() => document.getElementById('quest-file-upload')?.click()}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                boxSizing: 'border-box',
+                minHeight: 300,
+                p: 4,
+                m: 2,
+                textAlign: 'center',
+                border: '2px dashed',
+                borderColor: dropError ? 'error.main' : 'divider',
+                borderRadius: 2,
+                bgcolor: dropError ? 'rgba(211, 47, 47, 0.04)' : 'background.default', // Subtle red tint on error
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  bgcolor: dropError ? 'rgba(211, 47, 47, 0.08)' : 'action.hover',
+                },
+              }}
+            >
+              <input
+                type='file'
+                id='quest-file-upload'
+                accept='.txt'
+                style={{ display: 'none' }}
+                onChange={handleFileInput}
+              />
+
+              {dropError ? (
+                <>
+                  <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
+                    Upload Failed
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
+                    {dropError}
+                  </Typography>
+                  <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+                    Click or drag a new file to try again.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
+                    No quests loaded
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: 'text.disabled' }}>
+                    Drag and drop a .txt quest export file here, or click to browse.
+                  </Typography>
+                </>
+              )}
+            </Box>
+          ) : initialQuestIndex === undefined ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                p: 4,
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant='h6' sx={{ color: 'text.secondary' }}>
+                There is no event currently in progress.
+              </Typography>
+            </Box>
+          ) : (
+            <QuestJournal
+              quests={quests}
+              initialQuestIndex={initialQuestIndex}
+              onClearQuests={() => setQuests(undefined)}
             />
-
-            {dropError ? (
-              <>
-                <Typography variant='h6' sx={{ color: 'error.main', mb: 1, fontWeight: 'bold' }}>
-                  Upload Failed
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'error.main', mb: 2, maxWidth: 400 }}>
-                  {dropError}
-                </Typography>
-                <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-                  Click or drag a new file to try again.
-                </Typography>
-              </>
-            ) : (
-              <>
-                <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
-                  No quests loaded
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'text.disabled' }}>
-                  Drag and drop a .txt quest export file here, or click to browse.
-                </Typography>
-              </>
-            )}
-          </Box>
-        ) : initialQuestIndex === undefined ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexGrow: 1,
-              p: 4,
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant='h6' sx={{ color: 'text.secondary' }}>
-              There is no event currently in progress.
-            </Typography>
-          </Box>
-        ) : (
-          <QuestJournal
-            quests={quests}
-            initialQuestIndex={initialQuestIndex}
-            onClearQuests={() => setQuests(undefined)}
+          ))}{' '}
+        {tabKey === 'messages' && <MessagesView />}
+        {tabKey === 'tourny' && <Tourny />}
+        {tabKey === 'kphunt' && (
+          <KpHuntOpportunities
+            kpHuntOpportunities={kpHuntOpportunities}
+            lastPage={kpHuntLastPage}
+            onClearAllOpportunities={() => void onClearAllOpportunities()}
+            onClearOpportunity={(id) => void onClearOpportunity(id)}
+            cityResources={cityResources}
+            kpInstantsInventory={kpInstantsInventory}
           />
-        ))}{' '}
-      {tabKey === 'messages' && <MessagesView />}
-      {tabKey === 'tourny' && <Tourny />}
-      {tabKey === 'plan' && <MovePlanView />}
-    </div>
+        )}
+        {tabKey === 'nhelp' && <NeighbourlyHelp refresh={refreshNeighborlyHelp} />}
+        {tabKey === 'production' && <ProductionView />}
+        {tabKey === 'column' && <ColumnView />}
+        {tabKey === 'recruits' && <RecruitsView book={recruitBook} />}
+        {tabKey === 'chests' && <EventChestsView />}
+        {tabKey === 'plan' && <MovePlanView />}
+      </div>
+      {retrievingCounter > 0 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 40,
+            right: 16,
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            backgroundColor: '#1976d2',
+            border: '2px solid white',
+            zIndex: 100,
+          }}
+        />
+      )}
+    </>
   );
 }

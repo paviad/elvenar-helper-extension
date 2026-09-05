@@ -1,4 +1,9 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
+import { localCollectEventTreasure } from './local/localCollectEventTreasure';
+import { localProcessRankingsData } from './local/localProcessRankingsData';
+import { localProcessSpireDiplomacyGetData } from './local/localProcessSpireDiplomacyGetData';
+import { localTimeEventChests } from './local/localTimeEventChests';
+import { localTrapVisitPlayer } from './local/localTrapVisitPlayer';
 
 export interface PlayerSpecificMatcherSpecification {
   requestSelector?: {
@@ -75,6 +80,13 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   },
   {
     responseSelector: {
+      requestClass: 'OtherPlayerService',
+      requestMethod: 'visitPlayer',
+    },
+    local: localTrapVisitPlayer,
+  },
+  {
+    responseSelector: {
       requestClass: 'CityResourcesService',
       requestMethod: 'getResources',
     },
@@ -90,6 +102,20 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestClass: 'SpireService',
       requestMethod: 'getEncounter',
     },
+  },
+  {
+    responseSelector: {
+      requestClass: 'SpireDiplomacyService',
+      requestMethod: 'getData',
+    },
+    local: localProcessSpireDiplomacyGetData,
+  },
+  {
+    responseSelector: {
+      requestClass: 'SpireDiplomacyService',
+      requestMethod: 'submit',
+    },
+    local: localProcessSpireDiplomacyGetData,
   },
   {
     requestSelector: {
@@ -208,6 +234,59 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   },
   {
     responseSelector: {
+      requestClass: 'AncientWonderService',
+      requestMethod: 'getOtherPlayerAncientWonders',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'RankingService',
+      requestMethod: 'getRankingList',
+    },
+    local: localProcessRankingsData,
+  },
+  // A request selector rather than a response one: the answer does not say whose score it is.
+  {
+    requestSelector: {
+      requestClass: 'RankingService',
+      requestMethod: 'getRankingOverview',
+    },
+  },
+  // {
+  //   id: 'getGuild',
+  //   responseSelector: {
+  //     requestClass: 'GuildService',
+  //     requestMethod: 'getGuild',
+  //   },
+  //   messageType: 'GUILD_DATA_PROCESSED',
+  //   local: localProcessGuildData,
+  // },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'fetchInitialWorldMapData',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'getDiscoveredPlayerProvinces',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'OtherPlayerService',
+      requestMethod: 'getNeighbourlyHelpBuildings',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'WorldMapService',
+      requestMethod: 'updateProvince',
+    },
+  },
+  {
+    responseSelector: {
       requestClass: 'TournamentService',
       requestMethod: 'getProvincesOverview',
     },
@@ -238,14 +317,22 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   },
   {
     responseSelector: {
-      requestClass: 'AncientWonderService',
-      requestMethod: 'getOtherPlayerAncientWonders',
+      requestClass: 'ResearchService',
+      requestMethod: 'startup',
     },
   },
   {
     responseSelector: {
-      requestClass: 'ResearchService',
-      requestMethod: 'startup',
+      requestClass: 'TreasureService',
+      requestMethod: 'spawnTreasure',
     },
+    local: localCollectEventTreasure,
+  },
+  {
+    responseSelector: {
+      requestClass: 'TreasureService',
+      requestMethod: 'spawnTreasure',
+    },
+    local: localTimeEventChests,
   },
 ];

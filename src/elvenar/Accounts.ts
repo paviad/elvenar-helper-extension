@@ -8,6 +8,7 @@ import { FAStoreData } from '../model/faStageProgress';
 import { MessagesData } from '../model/gameMessage';
 import { InventoryItem } from '../model/inventoryItem';
 import { KpGiven } from '../model/kpGiven';
+import { KpHuntData } from '../model/kpHuntData';
 import { SeasonalEvent } from '../model/seasonalEvent';
 import { Trade } from '../model/trade';
 import { Transcendence } from '../model/transcendence';
@@ -50,6 +51,8 @@ export interface CityQuery {
   faRequirements: Record<string, FaQuest>;
   relicBoosts: Record<keyof Relics, number>;
   squadSize: number;
+  coinsCap: number;
+  suppliesCap: number;
   rankingPoints: number;
   cityResources?: Record<string, number>;
   armyDetails?: ArmyDetails;
@@ -120,6 +123,11 @@ export interface AccountData {
    * Gifts are stamped with it so they can be set against post times to the second.
    */
   serverClockOffset?: number;
+
+  kpHuntOpportunities?: Record<string, KpHuntData>;
+
+  /** The player ranking page the hunt last loaded (0-based), so a long pause can pick up from there. */
+  kpHuntLastPage?: { pageIndex: number; timestamp: number };
 }
 
 /** Where an account is stored, and the stamp each save writes beside it. */

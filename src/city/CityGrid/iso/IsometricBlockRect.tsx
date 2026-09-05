@@ -119,6 +119,7 @@ export const IsometricBlockRect: React.FC<IsometricBlockRectProps> = React.memo(
           title={
             <BuildingTooltip
               building={building}
+              entityId={block.entity.id}
               stage={block.stage}
               expirationEnd={block.expirationEnd}
               isMaxLevel={isMaxLevelForChapter}

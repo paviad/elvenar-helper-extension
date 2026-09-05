@@ -14,16 +14,22 @@ import {
   processReplaceBuildings,
 } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
+import { processGuildData } from '../elvenar/processGuildData';
+import { processHelpPerformedUpdateProvince } from '../elvenar/processHelpPerformedUpdateProvince';
+import { processInitialWorldMapData } from '../elvenar/processInitialWorldMapData';
 import { processInventory } from '../elvenar/processInventory';
 import { processMessageMarkedAsRead } from '../elvenar/processMessageMarkedAsRead';
 import { processMessageOverview } from '../elvenar/processMessageOverview';
 import { processMessages } from '../elvenar/processMessages';
+import { processNeighborAncientWondersData } from '../elvenar/processNeighborAncientWondersData';
+import { processNeighbourHelpBuildings } from '../elvenar/processNeighbourHelpBuildings';
 import { processNewMessage } from '../elvenar/processNewMessage';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processPotionEffects, processPotionEffectToggled } from '../elvenar/processPotionEffects';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
 import { processQuestUpdates } from '../elvenar/processQuestUpdates';
+import { processRankingData } from '../elvenar/processRankingData';
 import { processReplyMessage } from '../elvenar/processReplyMessage';
 import { processResearchStatus } from '../elvenar/processResearchStatus';
 import { processSeasonalEvents } from '../elvenar/processSeasonalEvents';
@@ -38,8 +44,26 @@ import { processTranscendenceService } from '../elvenar/processTranscendenceServ
 import { processUpdateChestPayInProgress } from '../elvenar/processUpdateChestPayInProgress';
 import { processUpdateWaypoints } from '../elvenar/processUpdateWaypoints';
 import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
+import { processWorldNeighbors } from '../elvenar/processWorldNeighbors';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
+import { WorldNeighbor } from '../model/worldNeighbors';
+import {
+  guardRecruits,
+  recruitsFromInitialWorldMap,
+  recruitsFromMessages,
+  recruitsFromNeighbourHelp,
+  recruitsFromNotifications,
+  recruitsFromRanking,
+  recruitsFromRankingOverview,
+  recruitsFromStartup,
+  recruitsFromTrades,
+  recruitsFromVisit,
+  recruitsFromWonders,
+  recruitsFromWorldNeighbors,
+} from '../recruits/processRecruitSightings';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
 import { accountManagerReady } from './accountManagerReady';
 
@@ -123,16 +147,23 @@ export const playerSpecificRequestHandlerInternal = async (
   }
 
   const processors: Processors = {
-    'Q:NotificationService/getAllNotifications': processNotifications,
-    'Q:NotificationService/getPreviewNotifications': processNotifications,
-    'Q:StartupService/getData': processCityData,
+    'Q:NotificationService/getAllNotifications': [
+      processNotifications,
+      guardRecruits('notifications', recruitsFromNotifications),
+    ],
+    'Q:NotificationService/getPreviewNotifications': [
+      processNotifications,
+      guardRecruits('notifications', recruitsFromNotifications),
+    ],
+    'Q:StartupService/getData': [processCityData, guardRecruits('startup', recruitsFromStartup)],
     'Q:InventoryService/getItems': processInventory,
-    'Q:TradeService/getOtherPlayersTrades': processTradeData,
+    'Q:TradeService/getOtherPlayersTrades': [processTradeData, guardRecruits('trades', recruitsFromTrades)],
     'Q:CauldronService/getIngredients': processCauldron,
     'Q:CauldronService/getPotionEffects': processPotionEffects,
     'Q:CauldronService/setPotionEffectEnabled': processPotionEffectToggled,
     'Q:IndicatorsService/clearIndicator': processCauldronOpened,
-    'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
+    'Q:OtherPlayerService/visitPlayer': [processOtherPlayerData, guardRecruits('visit', recruitsFromVisit)],
+    'Q:RankingService/getRankingOverview': guardRecruits('score lookup (answer)', recruitsFromRankingOverview, true),
     'Q:SpireService/getEncounter': processSpireEncounterStart,
     'Q:SpireDiplomacyService/submit': processSpireDiplomacySubmit,
     'Q:CityMapService/removeBuilding': processRemoveBuilding,
@@ -146,7 +177,6 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
     'R:EffectsService/update': [processActiveEffectsUpdate, processCauldronWonder],
     'R:AncientWonderService/phaseUpdated': processAncientWonderPhaseUpdate,
-    'R:AncientWonderService/getOtherPlayerAncientWonders': processAncientWonderPhaseUpdate,
     'R:ResearchService/startup': processResearchStatus,
 
     'R:QuestMilestoneService/updateQuestMilestone': processQuestMilestoneUpdate,
@@ -157,12 +187,36 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:ChestsService/updateChestPayInProgress': processUpdateChestPayInProgress,
     'R:MultiplayerEventService/updateOverview': processUpdateWaypointsOverview,
 
-    'R:MessageService/getMessageOverview': processMessageOverview,
-    'R:MessageService/fetchMessages': processMessages,
-    'R:MessageService/markMessageAsRead': processMessageMarkedAsRead,
-    'R:MessageService/replyMessage': processReplyMessage,
-    'R:MessageService/sendGuildMessage': processNewMessage,
-    'R:MessageService/sendMessage': processNewMessage,
+    'R:MessageService/getMessageOverview': [processMessageOverview, guardRecruits('messages', recruitsFromMessages)],
+    'R:MessageService/fetchMessages': [processMessages, guardRecruits('messages', recruitsFromMessages)],
+    'R:MessageService/markMessageAsRead': [processMessageMarkedAsRead, guardRecruits('messages', recruitsFromMessages)],
+    'R:MessageService/replyMessage': [processReplyMessage, guardRecruits('messages', recruitsFromMessages)],
+    'R:MessageService/sendGuildMessage': [processNewMessage, guardRecruits('messages', recruitsFromMessages)],
+    'R:MessageService/sendMessage': [processNewMessage, guardRecruits('messages', recruitsFromMessages)],
+
+    // The wonder window's answer says both what the wonder is owed, which settles a figure that
+    // has gone stale, and who has put what into it, which is what the hunt reads.
+    'R:AncientWonderService/getOtherPlayerAncientWonders': [
+      processAncientWonderPhaseUpdate,
+      processNeighborAncientWondersData,
+      guardRecruits('wonders', recruitsFromWonders),
+    ],
+    'R:RankingService/getRankingList': [processRankingData, guardRecruits('ranking page', recruitsFromRanking)],
+    'R:GuildService/getGuild': processGuildData,
+
+    'R:WorldMapService/fetchInitialWorldMapData': [
+      processInitialWorldMapData,
+      guardRecruits('world map', recruitsFromInitialWorldMap),
+    ],
+    'R:WorldMapService/getDiscoveredPlayerProvinces': [
+      processWorldNeighbors,
+      guardRecruits('neighbours', recruitsFromWorldNeighbors),
+    ],
+    'R:OtherPlayerService/getNeighbourlyHelpBuildings': [
+      processNeighbourHelpBuildings,
+      guardRecruits('neighbourly help', recruitsFromNeighbourHelp),
+    ],
+    'R:WorldMapService/updateProvince': processHelpPerformedUpdateProvince,
 
     'R:TournamentService/getProvincesOverview': processTournyProvincesOverview,
     'R:WorldMapService/getProvinceInformation': processTournyProvinceInformation,
@@ -226,6 +280,11 @@ export const playerSpecificRequestHandlerInternal = async (
     case 'Q:SpireService/getEncounter':
       // await sendSpireEncounterStartedMessage();
       break;
+    case 'R:AncientWonderService/getOtherPlayerAncientWonders':
+      if (result as boolean) {
+        await sendToTab(sharedInfo.tabId, 'kpHuntOpportunity');
+      }
+      break;
     case 'R:TranscendenceService/allBuildingsStates':
     case 'R:CityMapService/reset':
     case 'Q:CityMapService/removeBuilding':
@@ -243,6 +302,18 @@ export const playerSpecificRequestHandlerInternal = async (
     case 'R:MessageService/sendGuildMessage':
     case 'R:MessageService/sendMessage':
       await sendToTab(sharedInfo.tabId, 'messagesUpdated', { tabId: sharedInfo.tabId, reqRespType: msg.payload.type });
+      break;
+    case 'R:WorldMapService/fetchInitialWorldMapData':
+      await sendToTab(sharedInfo.tabId, 'initialWorldMapData', { initialWorldMapData: result as InitialWorldMapData });
+      break;
+    case 'R:WorldMapService/getDiscoveredPlayerProvinces':
+      await sendToTab(sharedInfo.tabId, 'worldNeighborsUpdated', { worldNeighbors: result as WorldNeighbor[] });
+      break;
+    case 'R:OtherPlayerService/getNeighbourlyHelpBuildings':
+      await sendToTab(sharedInfo.tabId, 'neighbourHelpData', { neighbourHelpData: result as NeighbourHelpData });
+      break;
+    case 'R:WorldMapService/updateProvince':
+      await sendToTab(sharedInfo.tabId, 'helpPerformedUpdateProvince', { updatedProvince: result as WorldNeighbor });
       break;
   }
 };

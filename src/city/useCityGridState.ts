@@ -9,6 +9,7 @@ import { generateInventory } from '../inventory/generateInventory';
 import { InventoryRowRef, isInventoryRow } from '../inventory/inventoryRowRef';
 import { CityEntity, CityEntityEx } from '../model/cityEntity';
 import { generateUniqueId } from '../util/generateUniqueId';
+import { guessCoinsCapFromChapter } from '../util/guessCoinsCapFromChapter';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { guessSquadSizeFromChapter } from '../util/guessSquadSizeFromChapter';
 import { useTabStore } from '../util/tabStore';
@@ -652,6 +653,8 @@ export const useCityGridState = () => {
       const chapter = importData.chapter ?? Math.max(minChapter, 1);
       const rankingPoints = guessRankingPointsFromChapter(chapter);
       const squadSize = guessSquadSizeFromChapter(chapter);
+      const coinsCap = guessCoinsCapFromChapter(chapter);
+      const suppliesCap = coinsCap / 10;
       await saveNewCityAs(
         name,
         cityEntities,
@@ -659,6 +662,8 @@ export const useCityGridState = () => {
         chapter,
         importData.unlockedAreas,
         squadSize,
+        coinsCap,
+        suppliesCap,
         rankingPoints,
       );
       await sendRuntime('citySaved', { accountId: 'imported_' + name });

@@ -1,8 +1,36 @@
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
+import { TournyFight } from '../model/tourny/tournyFight';
+import { compareVersion } from './compareVersion';
 import { CustomWebSocket } from './customWebSocket';
+import { keepFramesAliveWhileHidden } from './frameKeepAlive';
+import { readGameState, relayRefusal, startPublishingGameState } from './gameState';
+import { injectMutate, postGameVars } from './injectMutate';
+import { castEeOncePerSecond } from './local/castEeOncePerSecond';
+import { handleColumnMessage } from './local/column';
+import { ColumnAction } from './local/columnPlan';
+import { fetchWorldNeighbors } from './local/fetchWorldNeighbors';
+import { localHelpPlayer } from './local/localHelpPlayer';
+import { localNextPage } from './local/localNextPage';
+import { localPickupProduction } from './local/localPickupProduction';
+import { setKpHuntAuto } from './local/localProcessRankingsData';
+import { localRecruitScore } from './local/localRecruitScore';
+import { localStartProduction } from './local/localStartProduction';
+import { startWatchingEventChests } from './local/localTimeEventChests';
+import { localVisitCity } from './local/localVisitCity';
+import { localVisitPlayer } from './local/localVisitPlayer';
+import { createOtherPlayerService, getNeighborlyHelpBuildings } from './local/neighbourlyHelp';
+import { receivedNeighbourHelpBuildings } from './local/receivedNeighbourHelpBuildings';
+import { tournyCater } from './local/tournyCater';
+import { tournyFight } from './local/tournyFight';
+import { tournyOpen } from './local/tournyOpen';
 import { setupKeyHandlers } from './setupKeyHandlers';
+import { storePicksForLaterUse } from './spirePicksStore';
 import { GlobalHttpInterceptorService } from './xhrInterceptor';
 
 console.log('ElvenAssist: injected script loaded');
+
+keepFramesAliveWhileHidden();
+console.log('hidden-tab frame keep-alive installed');
 
 declare global {
   interface Window {
@@ -21,5 +49,104 @@ console.log('ElvenAssist: Finished adding interceptor to WebSocket');
 
 new GlobalHttpInterceptorService();
 console.log('ElvenAssist: Finished adding interceptor to XMLHttpRequest');
+
+startPublishingGameState();
+console.log('game-state reporting started');
+
+startWatchingEventChests();
+
+function onDOMContentLoaded() {
+  injectMutate();
+}
+
+if (document.readyState !== 'loading') {
+  onDOMContentLoaded();
+} else {
+  document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+}
+
+window.addEventListener('message', (event) => {
+  if (event.source !== window) {
+    return;
+  }
+
+  // Nothing goes out into a game that is not where the action assumes it is. This is the
+  // load-bearing half: the overlay holds off too, but only so it does not keep asking - it
+  // cannot see the game, and the request would otherwise be built and dispatched from here.
+  const refusal = relayRefusal(event.data.type as string, readGameState);
+  if (refusal) {
+    console.log(`relay: ${event.data.type} not sent -`, refusal);
+    return;
+  }
+
+  switch (event.data.type) {
+    case 'CAST_EE':
+      {
+        const payload = event.data.payload as number[];
+        void castEeOncePerSecond(payload);
+      }
+      break;
+    case 'helpPlayer':
+      if (compareVersion('1.239') >= 0) {
+        localHelpPlayer(event.data.payload as number);
+      }
+      break;
+    case 'neighbourHelpBuildings':
+      if (compareVersion('1.239') < 0) {
+        const neighbourHelpData = event.data.payload as NeighbourHelpData;
+        void receivedNeighbourHelpBuildings(neighbourHelpData);
+      }
+      break;
+    case 'getNeighborlyHelpBuildings':
+      if (compareVersion('1.239') < 0) {
+        const playerId = event.data.payload as number;
+        const service = createOtherPlayerService();
+        getNeighborlyHelpBuildings(service, playerId);
+      }
+      break;
+    case 'fetchWorldNeighbors':
+      void fetchWorldNeighbors();
+      break;
+    case 'tournyFight':
+      void tournyFight(event.data.payload as TournyFight);
+      break;
+    case 'tournyOpen':
+      void tournyOpen(event.data.payload as { q: number; r: number });
+      break;
+    case 'tournyCater':
+      void tournyCater(event.data.payload as { q: number; r: number });
+      break;
+    case 'spirePicks':
+      storePicksForLaterUse(event.data.payload as string[]);
+      break;
+    case 'visitPlayer':
+      localVisitPlayer(event.data.payload as { playerId: number; buildingId: string; baseName: string });
+      break;
+    case 'visitCity':
+      localVisitCity(event.data.payload as number);
+      break;
+    case 'recruitScore':
+      localRecruitScore(event.data.payload as number);
+      break;
+    case 'nextPage':
+      localNextPage();
+      break;
+    case 'kpHuntAuto':
+      setKpHuntAuto(event.data.payload as boolean);
+      break;
+    case 'pickupProduction':
+      localPickupProduction(event.data.payload as number);
+      break;
+    case 'startProduction':
+      localStartProduction(event.data.payload as { ids: number[]; optionId: number });
+      break;
+    case 'column':
+      handleColumnMessage(event.data.payload as ColumnAction);
+      break;
+    case 'requestGameVars':
+      postGameVars();
+      break;
+  }
+});
 
 setupKeyHandlers();

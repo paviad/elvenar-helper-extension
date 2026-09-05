@@ -131,6 +131,8 @@ export async function processOtherPlayerData(
         relic_steel: 0,
       },
       squadSize,
+      coinsCap: 0,
+      suppliesCap: 0,
       rankingPoints,
       expirationsEnd: {},
     },

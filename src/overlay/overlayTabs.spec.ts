@@ -38,6 +38,18 @@ describe('documentedOverlayTabs', () => {
   });
 });
 
+describe('shortcuts', () => {
+  it('keeps C for the chat', () => {
+    expect(OVERLAY_TABS.filter((tab) => tab.shortcut === 'KeyC').map((tab) => tab.key)).toEqual(['chat']);
+  });
+
+  it('gives no two tabs the same key', () => {
+    const shortcuts = OVERLAY_TABS.flatMap((tab) => (tab.shortcut ? [tab.shortcut] : []));
+
+    expect(new Set(shortcuts).size).toBe(shortcuts.length);
+  });
+});
+
 describe('shortcutLetter', () => {
   it('reads the letter off the key code', () => {
     expect(shortcutLetter('KeyT')).toBe('T');

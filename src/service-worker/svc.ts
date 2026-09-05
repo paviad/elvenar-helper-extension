@@ -1,9 +1,17 @@
+import { SpirePicksMessage } from '../chrome/kphuntMessages';
+import '../chrome/recruitMessages';
 import { setListener, setupMessageListener } from '../chrome/messages';
 import { getAccountById, getAccountByTabId, loadAllAccounts, saveAccount } from '../elvenar/accountStore';
+import { clearKpHuntOpportunities } from '../elvenar/clearKpHuntOpportunities';
 import { processGameClientScript } from '../elvenar/processGameClientScript';
 import { processGameRenderConfig } from '../elvenar/processGameRenderConfig';
+import { setKpHuntAuto } from '../elvenar/processRankingData';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { applyRecruitEdit } from '../recruits/editRecruit';
+import { lookUpElvenStats, refreshAndRecheckElvenStats } from '../recruits/lookUpElvenStats';
+import { clearDiagnostics, recordDiagnostic } from '../recruits/recruitBook';
+import { withRecruitBook } from '../recruits/recruitStore';
 import { accountManagerReady } from './accountManagerReady';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
 import { nonSpecificRequestHandler } from './nonSpecificRequestHandler';
@@ -72,13 +80,88 @@ async function initialize() {
       };
     }
   });
+  setListener('setKpHuntAuto', async (msg, sender) => {
+    const tabId = sender.tab?.id;
+    if (tabId === undefined) {
+      return;
+    }
+    await setKpHuntAuto(tabId, msg.on);
+  });
+  setListener('clearKpHuntOpportunities', async (msg) => {
+    try {
+      await accountManagerReady;
+      const left = await clearKpHuntOpportunities(msg.accountId, msg.opportunityId);
+      return { success: left !== undefined };
+    } catch (error) {
+      console.error('ElvenAssist: Error clearing KP Hunt opportunities:', error);
+      return { success: false };
+    }
+  });
+  setListener('editRecruit', async ({ accountId, ...edit }) => {
+    try {
+      const done = await withRecruitBook(accountId, (book) => applyRecruitEdit(book, edit, Date.now()));
+      return { success: done };
+    } catch (error) {
+      console.error('Error editing a recruit:', error);
+      return { success: false };
+    }
+  });
+  setListener('recordRecruitDiagnostic', async ({ accountId, diagnostic, stopRefresh }) => {
+    try {
+      await withRecruitBook(accountId, (book) => recordDiagnostic(book, diagnostic, stopRefresh));
+      return { success: true };
+    } catch (error) {
+      console.error('Error keeping a recruit diagnostic:', error);
+      return { success: false };
+    }
+  });
+  setListener('lookUpElvenStats', async ({ accountId, playerId }) => {
+    try {
+      return await lookUpElvenStats(accountId, playerId);
+    } catch (error) {
+      console.error('Error looking a recruit up on ElvenStats:', error);
+      return { success: false };
+    }
+  });
+  setListener('refreshElvenStats', async ({ accountId, playerId }) => {
+    try {
+      return await refreshAndRecheckElvenStats(accountId, playerId);
+    } catch (error) {
+      console.error('Error refreshing a recruit on ElvenStats:', error);
+      return { success: false };
+    }
+  });
+  setListener('clearRecruitDiagnostics', async ({ accountId }) => {
+    try {
+      await withRecruitBook(accountId, clearDiagnostics);
+      return { success: true };
+    } catch (error) {
+      console.error('Error clearing the recruit diagnostics:', error);
+      return { success: false };
+    }
+  });
   setListener('interceptedNonSpecificRequest', (msg) => void nonSpecificRequestHandler(msg));
   setListener('interceptedPlayerSpecificRequest', (msg, sender) => void playerSpecificRequestHandler(msg, sender));
   setListener('gameClientScript', (msg) => void processGameClientScript(msg.url));
   setListener('gameRenderConfig', (msg) => void processGameRenderConfig(msg.url));
+  setListener('spirePicks', (msg) => void forwardToOverlay(msg));
   await accountManagerReady;
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }
+
+const forwardToOverlay = async (msg: SpirePicksMessage) => {
+  console.log('Forwarding spirePicks message from Service Worker to overlay', msg);
+  const tabs = await chrome.tabs.query({});
+  for (const tab of tabs) {
+    if (tab.id) {
+      try {
+        await chrome.tabs.sendMessage(tab.id, { ...msg, type: 'spirePicks' });
+      } catch (error) {
+        // Ignore errors, likely due to tabs that don't have the content script injected
+      }
+    }
+  }
+};
 
 void initialize();
 

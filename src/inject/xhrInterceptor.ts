@@ -4,10 +4,12 @@ import { AggregateRequestResponse } from '../chrome/aggregateRequestResponse';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { decodeRequestBody } from './decodeRequestBody';
+import { noteSessionEndingResponses } from './gameState';
 import { getDecodedText } from './getDecodedText';
 import { nonSpecificMatchers, NonSpecificMatcherSpecification } from './nonSpecificMatchers';
 import { NonSpecificMessage } from './nonSpecificMessages';
 import { playerSpecificMatchers } from './playerSpecificMatchers';
+import { noteBatchAnswered, noteBatchSent, SentBatch } from './recentGameRequests';
 
 declare global {
   interface XMLHttpRequest {
@@ -146,6 +148,7 @@ export class GlobalHttpInterceptorService {
       // This runs inside the game's own call to send(), so nothing in it may throw: an exception
       // here would stop the game's request from ever going out. Not being able to read a request
       // costs us that request, never the game.
+      let sentBatch: SentBatch | undefined;
       try {
         if (this.urlMatch) {
           const decodedString = decodeRequestBody(body);
@@ -163,6 +166,8 @@ export class GlobalHttpInterceptorService {
 
           const requestGeneric = JSON.parse(decodedString.substring(10)) as ElvenarRequestResponseEntry[];
 
+          sentBatch = noteBatchSent(requestGeneric);
+
           const requestNonce = decodedString.substring(0, 10);
           for (const request of requestGeneric) {
             addRequest(request, requestNonce, this.sharedInfo);
@@ -174,6 +179,7 @@ export class GlobalHttpInterceptorService {
 
       this.onreadystatechange = (...cbArgs) => {
         if (this.readyState === 4) {
+          noteBatchAnswered(sentBatch, this.status);
           const decodedResponse = getDecodedText(this);
 
           try {
@@ -181,6 +187,7 @@ export class GlobalHttpInterceptorService {
               if (this.urlMatch) {
                 const responseGeneric = JSON.parse(decodedResponse) as ElvenarRequestResponseEntry[];
 
+                noteSessionEndingResponses(responseGeneric);
                 for (const response of responseGeneric) {
                   addResponse(response);
                 }

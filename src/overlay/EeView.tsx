@@ -2,8 +2,20 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'; // Represents enchantment
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import { Box, Chip, CircularProgress, Divider, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useAccount } from '../elvenar/useAccount';
+import { relayToGame } from '../inject/relayToGame';
 import { formatTimeLeft } from '../util/formatTimeLeft';
 import { EeMissingBuilding, getEeMissingBuildings } from '../util/getEeMissingBuildings';
 import { getAccountId } from './overlayStore';
@@ -60,6 +72,10 @@ export const EeView = () => {
     });
   }, [buildings, now]);
 
+  const handleCastClick = (building: EeMissingBuilding) => {
+    relayToGame('CAST_EE', [building.id]);
+  };
+
   if (buildings === null) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', p: 4 }}>
@@ -101,15 +117,26 @@ export const EeView = () => {
             <ListItem
               alignItems='center'
               secondaryAction={
-                <Tooltip title='Grid Coordinates'>
-                  <Chip
-                    label={`X: ${b.x}, Y: ${b.y}`}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Tooltip title='Grid Coordinates'>
+                    <Chip
+                      label={`X: ${b.x}, Y: ${b.y}`}
+                      size='small'
+                      variant='outlined'
+                      color='primary'
+                      sx={{ fontWeight: 'bold' }}
+                    />
+                  </Tooltip>
+                  <Button
+                    variant='contained'
                     size='small'
-                    variant='outlined'
-                    color='primary'
-                    sx={{ fontWeight: 'bold' }}
-                  />
-                </Tooltip>
+                    color='secondary'
+                    onClick={() => handleCastClick(b)}
+                    sx={{ textTransform: 'none', px: 1.5, minWidth: 'auto' }}
+                  >
+                    Cast
+                  </Button>
+                </Box>
               }
             >
               <ListItemText
@@ -150,7 +177,7 @@ export const EeView = () => {
                     )}
                   </Box>
                 }
-                sx={{ pr: 10 }} // Ensure text doesn't overlap the coordinate chip
+                sx={{ pr: 14 }} // Ensure text doesn't overlap the new secondaryAction width
               />
             </ListItem>
             {index < sortedBuildings.length - 1 && <Divider component='li' />}

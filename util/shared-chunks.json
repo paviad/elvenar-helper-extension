@@ -17,6 +17,7 @@
     "./src/elvenar/migrations.ts",
     "./src/elvenar/useAccount.ts",
     "./src/util/compression.ts",
+    "./src/util/formatResourceName.tsx",
     "./src/util/formatTimeLeft.tsx",
     "./src/widgets/DiscordButton.tsx",
     "./src/widgets/appTheme.ts"

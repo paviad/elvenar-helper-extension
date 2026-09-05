@@ -23,7 +23,8 @@
   "host_permissions": [
     "https://*.elvenar.com/*",
     "https://*.innogamescdn.com/*",
-    "https://javascriptorian.com/*"
+    "https://javascriptorian.com/*",
+    "https://www.elvenstats.com/*"
   ],
   "background": {
     "scripts": [

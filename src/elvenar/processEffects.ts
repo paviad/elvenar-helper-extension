@@ -24,6 +24,7 @@ export const processEffects = async (responseText: string) => {
     'spell_pet_food_1',
     'higher_culture_boost',
     'increase_spell_power_boost',
+    'unlimited_help',
   ];
 
   const effects = effectsRaw.filter((r) => captureEffects.includes(r.action));

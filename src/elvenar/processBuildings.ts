@@ -45,6 +45,8 @@ const processInterceptedBuildings = (uncompressed: BuildingRaw[]): Building[] =>
         upgradeRequirements: r.upgradeRequirements && { chapter: r.upgradeRequirements.chapter },
         production: r.production && {
           isSwitchable: r.production.__class__ === 'SwitchableProductionVO',
+          productionClass: r.production.__class__,
+          earlyPickupTime: r.production.earlyPickupTime,
           products: r.production.products && [
             ...r.production.products.map((p) => ({
               production_time: p.production_time,
