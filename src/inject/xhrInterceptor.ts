@@ -4,6 +4,7 @@ import { AggregateRequestResponse } from '../chrome/aggregateRequestResponse';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { decodeRequestBody } from './decodeRequestBody';
+import { noteSessionEndingResponses } from './gameState';
 import { getDecodedText } from './getDecodedText';
 import { nonSpecificMatchers, NonSpecificMatcherSpecification } from './nonSpecificMatchers';
 import { NonSpecificMessage } from './nonSpecificMessages';
@@ -85,7 +86,7 @@ export class GlobalHttpInterceptorService {
               // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
 
               matcher.local!([response]).catch((error) => {
-                console.error('Error in local handler for messageType', matcher, error);
+                console.warn('Error in local handler for messageType', matcher, error);
               });
             }
           }
@@ -174,6 +175,7 @@ export class GlobalHttpInterceptorService {
               if (this.urlMatch) {
                 const responseGeneric = JSON.parse(decodedResponse) as ElvenarRequestResponseEntry[];
 
+                noteSessionEndingResponses(responseGeneric);
                 for (const response of responseGeneric) {
                   addResponse(response);
                 }
@@ -192,7 +194,7 @@ export class GlobalHttpInterceptorService {
               }
             }
           } catch (error) {
-            console.error('Error parsing response JSON:', error);
+            console.warn('Error parsing response JSON:', error);
           }
         }
 

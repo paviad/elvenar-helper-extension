@@ -1,11 +1,22 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
-import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import {
+  setupCityDataUpdatedListener,
+  setupHelpPerformedUpdateProvinceListener,
+  setupInitialWorldMapDataListener,
+  setupMessageListener,
+  setupNeighbourHelpDataListener,
+  setupRetrievingCounterUpdateListener,
+  setupSpirePicksListener,
+  setupWorldNeighborsUpdatedListener,
+} from './chrome/messages';
 import { setupSocketResponseListener } from './chrome/socketResponse';
 import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
+import { GameVars } from './inject/gameVars';
+import { setupColumnListener } from './overlay/columnWatch';
 import { createOverlayUi } from './overlay/createOverlayUi';
+import { setupGameStateListener } from './overlay/gameStateWatch';
 import {
-  DEFAULT_OVERLAY_SIZE,
   loadOverlaySize,
   OVERLAY_SIZE_PRESETS,
   OverlaySize,
@@ -13,7 +24,9 @@ import {
   saveOverlaySize,
 } from './overlay/overlaySize';
 import { generateOverlayStore, getAccountId, getOverlayStore } from './overlay/overlayStore';
+import { getProductionWatchStatus, subscribeToProductionWatch } from './overlay/productionWatcher';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
+import { updateSpireBadge } from './overlay/spireBadge';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
 if (typeof chrome.action === 'undefined') {
@@ -64,6 +77,24 @@ function styleAsHeaderButton(el: HTMLElement) {
   });
 }
 
+// This branch opens at the large preset rather than master's small default, which is too tight
+// for the extra views. Taken from the preset so the two cannot drift into a third size.
+const { width: defaultStartingWidth, height: defaultStartingHeight } = OVERLAY_SIZE_PRESETS.large;
+
+let gameVars: GameVars | undefined;
+
+const setupGameVarsListener = () => {
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || event.data?.type !== 'gameVars') {
+      return;
+    }
+
+    gameVars = event.data.payload as GameVars;
+
+    console.log('gameVars', gameVars);
+  });
+};
+
 const initFunc = () => {
   // Remove existing panel if present
   const existingPanel = document.getElementById('elven-assist-draggable-panel');
@@ -73,6 +104,9 @@ const initFunc = () => {
     setupNonSpecificRequestInterceptedListener();
     setupAggregateRequestResponseListener();
     setupSocketResponseListener();
+    setupGameVarsListener();
+    setupGameStateListener();
+    setupColumnListener();
   }
 
   // Create the div
@@ -81,8 +115,8 @@ const initFunc = () => {
   draggableDiv.style.position = 'fixed';
   draggableDiv.style.top = '2px';
   draggableDiv.style.left = '2px';
-  draggableDiv.style.width = `${DEFAULT_OVERLAY_SIZE.width}px`;
-  draggableDiv.style.height = `${DEFAULT_OVERLAY_SIZE.height}px`;
+  draggableDiv.style.width = `${defaultStartingWidth}px`;
+  draggableDiv.style.height = `${defaultStartingHeight}px`;
   draggableDiv.style.background = '#fff';
   draggableDiv.style.border = '1px solid #ccc';
   draggableDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
@@ -239,6 +273,29 @@ const initFunc = () => {
 
   draggableDiv.appendChild(header);
 
+  // Whether the Production tab is currently driving the city, for when the panel is collapsed and
+  // its own status chip is out of sight. Collapsed, this is the only thing on screen that says
+  // the extension is acting on its own - so it sits outside the fade the collapsed panel gets
+  // (see `updateStateByCollapsed`) rather than being washed out along with everything else.
+  const automationDot = document.createElement('div');
+  automationDot.style.position = 'absolute';
+  automationDot.style.top = '5px';
+  automationDot.style.left = '5px';
+  automationDot.style.width = '8px';
+  automationDot.style.height = '8px';
+  automationDot.style.borderRadius = '50%';
+  automationDot.style.pointerEvents = 'none';
+  draggableDiv.appendChild(automationDot);
+
+  const showAutomationDot = (running: boolean) => {
+    automationDot.style.background = running ? '#e53935' : '#bdbdbd';
+    automationDot.style.boxShadow = running ? '0 0 3px rgba(229,57,53,0.9)' : 'none';
+    automationDot.title = running ? 'Production monitoring is running' : 'Production monitoring is stopped';
+  };
+
+  showAutomationDot(getProductionWatchStatus().running);
+  subscribeToProductionWatch((status) => showAutomationDot(status.running));
+
   // Content
   const content = document.createElement('div');
   content.style.padding = '12px';
@@ -358,8 +415,8 @@ const initFunc = () => {
 
   // Collapse logic
   let collapsed = true;
-  let lastExpandedWidth = `${DEFAULT_OVERLAY_SIZE.width}px`;
-  let lastExpandedHeight = `${DEFAULT_OVERLAY_SIZE.height}px`;
+  let lastExpandedWidth = `${defaultStartingWidth}px`;
+  let lastExpandedHeight = `${defaultStartingHeight}px`;
   collapseBtn.addEventListener('click', () => {
     if (isDragging) return;
     if (!collapsed) {
@@ -385,13 +442,24 @@ const initFunc = () => {
     // the header they have to be hidden explicitly.
     reactHeaderActions.style.display = collapsed ? 'none' : 'flex';
 
+    // The collapsed panel's half-fade used to be one `opacity` on the whole panel, which would
+    // have taken the automation dot down with it - and a washed-out pink dot is no use as the one
+    // thing saying the extension is driving the city. Faded piece by piece instead, to the same
+    // effect: the header's contents, and the panel's own background, border and shadow.
+    // The border is left alone on purpose: a `full` game bundle marks itself with a 13px red one
+    // (see `setupOverlayStore`), and fading it here would take the colour off that on the first
+    // collapse and leave a 13px band of nothing.
+    automationDot.style.display = collapsed ? '' : 'none';
+    header.style.opacity = collapsed ? '0.5' : '1';
+    draggableDiv.style.background = collapsed ? 'rgba(255,255,255,0.5)' : '#fff';
+    draggableDiv.style.boxShadow = collapsed ? '0 2px 8px rgba(0,0,0,0.075)' : '0 2px 8px rgba(0,0,0,0.15)';
+
     if (collapsed) {
-      // Minimize the draggableDiv width and set opacity for the collapse button
+      // Minimize the draggableDiv width
       draggableDiv.style.width = '';
       draggableDiv.style.height = '';
       header.style.justifyContent = 'flex-end';
       title.style.display = 'none';
-      draggableDiv.style.opacity = '0.5';
       draggableDiv.title = 'ElvenAssist Helper Window';
       collapseBtn.title = 'Expand This Panel';
       resizeHandle.style.display = 'none';
@@ -400,7 +468,6 @@ const initFunc = () => {
       draggableDiv.style.height = lastExpandedHeight;
       header.style.justifyContent = 'space-between';
       title.style.display = '';
-      draggableDiv.style.opacity = '1';
       draggableDiv.title = '';
       collapseBtn.title = 'Collapse Panel';
       resizeHandle.style.display = '';
@@ -507,6 +574,41 @@ const initFunc = () => {
       console.error('Error setting up overlay:', err);
     });
   });
+  setupRetrievingCounterUpdateListener(({ tabId, retrievingCounter, abandoned }) => {
+    const store = getOverlayStore();
+    store.getState().setRetrievingCounter(retrievingCounter, abandoned);
+  });
+  setupWorldNeighborsUpdatedListener(({ worldNeighbors }) => {
+    const store = getOverlayStore();
+    console.log('received world neighbors', worldNeighbors.filter((r) => r.cool_down).length);
+    store.getState().setWorldNeighbors(worldNeighbors);
+  });
+  setupInitialWorldMapDataListener(({ initialWorldMapData }) => {
+    const store = getOverlayStore();
+    store.getState().setInitialWorldMapData(initialWorldMapData);
+  });
+  setupNeighbourHelpDataListener(({ neighbourHelpData }) => {
+    const store = getOverlayStore();
+    store.getState().setNeighbourHelpData(neighbourHelpData);
+  });
+  setupHelpPerformedUpdateProvinceListener(({ updatedProvince }) => {
+    console.log('E Received helpPerformedUpdateProvince message:', updatedProvince);
+  });
+  setupSpirePicksListener(({ picks, prob, jokerGhost, turn, status }) => {
+    // On a fresh encounter there is no prob yet (the wizard only computes it from turn 2)
+    // and no joker, so the badge clears itself.
+    updateSpireBadge({ prob, jokerGhost, turn, status });
+    if (status) {
+      // Progress signal only — relaying it would hand the page an empty pick list and
+      // release whatever is waiting on the real one.
+      return;
+    }
+    const message = {
+      type: 'spirePicks',
+      payload: picks,
+    };
+    window.postMessage(message, '*');
+  });
 };
 
 async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlot: HTMLDivElement) {
@@ -534,6 +636,20 @@ async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlo
     if (!state.lastSeenChat) {
       // First time setup, set last seen chat to now
       state.setLastSeenChat(Date.now());
+    }
+
+    if (gameVars) {
+      state.setGameVars(gameVars);
+      const existingPanel = document.getElementById('elven-assist-draggable-panel');
+      if (existingPanel) {
+        if (gameVars.gameScriptUrl.includes('full')) {
+          existingPanel.style.border = '13px solid red';
+        } else {
+          // existingPanel.style.border = '13px solid green';
+        }
+      }
+    } else {
+      throw new Error('gameVars not set yet, cannot setup overlay store');
     }
 
     createOverlayUi(contentDiv, headerActionsSlot);

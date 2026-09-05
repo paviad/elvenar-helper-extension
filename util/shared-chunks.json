@@ -7,9 +7,11 @@
     "./src/elvenar/getEffects.ts",
     "./src/elvenar/getEvolvingBuildings.ts",
     "./src/elvenar/getExpirations.ts",
+    "./src/elvenar/getGoodsNames.ts",
     "./src/elvenar/getPremiumBuildingHints.ts",
     "./src/elvenar/migrations.ts",
     "./src/util/compression.ts",
+    "./src/util/formatResourceName.tsx",
     "./src/util/formatTimeLeft.tsx",
     "./src/widgets/DiscordButton.tsx"
   ]

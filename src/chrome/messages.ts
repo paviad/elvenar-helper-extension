@@ -1,6 +1,9 @@
 import { NonSpecificMessage } from '../inject/nonSpecificMessages';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { TradeSummary } from '../model/tradeSummary';
+import { WorldNeighbor } from '../model/worldNeighbors';
 import { reportPossibleContextLoss } from './extensionContext';
 
 // ============================================================================
@@ -56,6 +59,24 @@ export interface OpenExtensionTabMessage {
   type: 'openExtensionTab';
 }
 
+/** Sent by the overlay when KP Hunt stops, so the worker drops the tab's outstanding count. */
+export interface ResetRetrievingCounterMessage {
+  type: 'resetRetrievingCounter';
+}
+
+export interface SpirePicksMessage {
+  type: 'spirePicks';
+  picks: string[];
+  /** Latest win probability from the Spire Wizard; absent on a fresh encounter. */
+  prob?: string;
+  /** 1-based ghost to spend a joker on; absent when a joker is not an option. */
+  jokerGhost?: number;
+  /** Round these values apply to. Optional: a wizard tab running a pre-update inject omits it. */
+  turn?: number;
+  /** Badge-only progress signal. When set there are no picks and nothing is relayed to the page. */
+  status?: 'waiting' | 'timeout';
+}
+
 // ============================================================================
 // 2. TAB MESSAGES (Content Script / UI Bound) - TYPES
 // ============================================================================
@@ -93,6 +114,38 @@ export interface MessagesUpdatedMessage {
   reqRespType: string;
 }
 
+export interface RetrievingCounterUpdateMessage {
+  type: 'retrievingCounterUpdate';
+  retrievingCounter: number;
+  /** Set when the count was dropped because the hunt stopped, rather than counted down. */
+  abandoned?: boolean;
+}
+
+export interface KpHuntOpportunityMessage {
+  type: 'kpHuntOpportunity';
+  tabId: number;
+}
+
+export interface InitialWorldMapDataMessage {
+  type: 'initialWorldMapData';
+  initialWorldMapData: InitialWorldMapData;
+}
+
+export interface WorldNeighborsUpdatedMessage {
+  type: 'worldNeighborsUpdated';
+  worldNeighbors: WorldNeighbor[];
+}
+
+export interface NeighbourHelpDataMessage {
+  type: 'neighbourHelpData';
+  neighbourHelpData: NeighbourHelpData;
+}
+
+export interface HelpPerformedUpdateProvinceMessage {
+  type: 'helpPerformedUpdateProvince';
+  updatedProvince: WorldNeighbor;
+}
+
 // ============================================================================
 // UNION TYPES & UTILITIES
 // ============================================================================
@@ -106,11 +159,19 @@ export type AllMessages =
   | CitySavedMessage
   | TradeOpenedMessage
   | OpenExtensionTabMessage
+  | ResetRetrievingCounterMessage
   | CityDataUpdatedMessage
   | TradeParsedMessage
   | ActiveEffectsUpdatedMessage
   | MissingEeMessage
-  | MessagesUpdatedMessage;
+  | MessagesUpdatedMessage
+  | RetrievingCounterUpdateMessage
+  | KpHuntOpportunityMessage
+  | InitialWorldMapDataMessage
+  | WorldNeighborsUpdatedMessage
+  | NeighbourHelpDataMessage
+  | HelpPerformedUpdateProvinceMessage
+  | SpirePicksMessage;
 
 export interface MessageResponse {
   success: boolean;
@@ -195,6 +256,15 @@ export const sendCitySavedMessage = async (accountId: string) => {
   }
 };
 
+export const sendResetRetrievingCounterMessage = async () => {
+  try {
+    await chrome.runtime.sendMessage({ type: 'resetRetrievingCounter' } satisfies ResetRetrievingCounterMessage);
+  } catch (e) {
+    reportPossibleContextLoss(e);
+    console.log('ElvenAssist: Error sending resetRetrievingCounter message:', e);
+  }
+};
+
 export const sendTradeOpenedMessage = async () => {
   try {
     await chrome.runtime.sendMessage({
@@ -264,6 +334,76 @@ export const sendMessagesUpdatedMessage = async (tabId: number, reqRespType: str
     } satisfies MessagesUpdatedMessage);
   } catch (e) {
     console.log('ElvenAssist: Error sending messagesUpdated message:', e);
+  }
+};
+
+export const sendRetrievingCounterUpdateMessage = async (
+  tabId: number,
+  retrievingCounter: number,
+  abandoned = false,
+) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'retrievingCounterUpdate',
+      retrievingCounter,
+      abandoned,
+    } satisfies RetrievingCounterUpdateMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending retrievingCounterUpdate message:', e);
+  }
+};
+
+export const sendKpHuntOpportunity = async (tabId: number) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'kpHuntOpportunity' } satisfies {
+      type: 'kpHuntOpportunity';
+    });
+  } catch (e) {
+    console.log('ElvenAssist: Error sending kpHuntOpportunity message:', e);
+  }
+};
+
+export const sendInitialWorldMapDataMessage = async (tabId: number, initialWorldMapData: InitialWorldMapData) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'initialWorldMapData',
+      initialWorldMapData,
+    } satisfies InitialWorldMapDataMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending initialWorldMapData message:', e);
+  }
+};
+
+export const sendWorldNeighborsUpdatedMessage = async (tabId: number, worldNeighbors: WorldNeighbor[]) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'worldNeighborsUpdated',
+      worldNeighbors,
+    } satisfies WorldNeighborsUpdatedMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending worldNeighborsUpdated message:', e);
+  }
+};
+
+export const sendNeighbourHelpDataMessage = async (tabId: number, neighbourHelpData: NeighbourHelpData) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'neighbourHelpData',
+      neighbourHelpData,
+    } satisfies NeighbourHelpDataMessage);
+  } catch (e) {
+    console.log('ElvenAssist: Error sending neighbourHelpData message:', e);
+  }
+};
+
+export const sendHelpPerformedUpdateProvinceMessage = async (tabId: number, updatedProvince: WorldNeighbor) => {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'helpPerformedUpdateProvince', updatedProvince } satisfies {
+      type: 'helpPerformedUpdateProvince';
+      updatedProvince: WorldNeighbor;
+    });
+  } catch (e) {
+    console.log('ElvenAssist: Error sending helpPerformedUpdateProvince message:', e);
   }
 };
 
@@ -374,6 +514,10 @@ export const setupOpenExtensionTabListener = (
   callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void | Promise<void>,
 ) => (callbackMap['openExtensionTab'] = callback);
 
+export const setupResetRetrievingCounterListener = (
+  callback: (message: ResetRetrievingCounterMessage, sender: chrome.runtime.MessageSender) => void,
+) => (callbackMap['resetRetrievingCounter'] = callback);
+
 /** --- 2. Tab Listeners --- **/
 
 export const setupCityDataUpdatedListener = (callback: (tabId: CityDataUpdatedMessage) => void) =>
@@ -402,4 +546,51 @@ export const setupMessagesUpdatedListener = (callback: (message: MessagesUpdated
 
 export const clearMessagesUpdatedListener = () => {
   delete callbackMap['messagesUpdated'];
+};
+
+export const setupRetrievingCounterUpdateListener = (
+  callback: (message: { tabId: number; retrievingCounter: number; abandoned?: boolean }) => void,
+) => (callbackMap['retrievingCounterUpdate'] = callback);
+
+export const setupKpHuntOpportunityListener = (callback: (message: KpHuntOpportunityMessage) => void) =>
+  (callbackMap['kpHuntOpportunity'] = callback);
+
+export const clearKpHuntOpportunityListener = () => {
+  delete callbackMap['kpHuntOpportunity'];
+};
+
+export const setupInitialWorldMapDataListener = (callback: (message: InitialWorldMapDataMessage) => void) =>
+  (callbackMap['initialWorldMapData'] = callback);
+
+export const clearInitialWorldMapDataListener = () => {
+  delete callbackMap['initialWorldMapData'];
+};
+
+export const setupWorldNeighborsUpdatedListener = (callback: (message: WorldNeighborsUpdatedMessage) => void) =>
+  (callbackMap['worldNeighborsUpdated'] = callback);
+
+export const clearWorldNeighborsUpdatedListener = () => {
+  delete callbackMap['worldNeighborsUpdated'];
+};
+
+export const setupNeighbourHelpDataListener = (callback: (message: NeighbourHelpDataMessage) => void) =>
+  (callbackMap['neighbourHelpData'] = callback);
+
+export const clearNeighbourHelpDataListener = () => {
+  delete callbackMap['neighbourHelpData'];
+};
+
+export const setupHelpPerformedUpdateProvinceListener = (
+  callback: (message: HelpPerformedUpdateProvinceMessage) => void,
+) => (callbackMap['helpPerformedUpdateProvince'] = callback);
+
+export const clearHelpPerformedUpdateProvinceListener = () => {
+  delete callbackMap['helpPerformedUpdateProvince'];
+};
+
+export const setupSpirePicksListener = (callback: (message: SpirePicksMessage) => void) =>
+  (callbackMap['spirePicks'] = callback);
+
+export const clearSpirePicksListener = () => {
+  delete callbackMap['spirePicks'];
 };

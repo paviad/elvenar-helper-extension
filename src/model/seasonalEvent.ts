@@ -4,7 +4,7 @@ export interface SeasonalEvent {
   type: string;
   subType: string;
   name: string;
-  state: string;
+  state: 'last' | 'coming' | 'new' | 'running';
   properties?: Property[];
   remainingTime?: number;
 }

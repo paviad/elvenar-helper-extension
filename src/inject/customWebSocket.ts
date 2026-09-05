@@ -1,5 +1,6 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { parseSocketMessageRaw } from '../overlay/parseSocketMessage';
+import { noteSessionEndingResponses } from './gameState';
 import { playerSpecificMatchers } from './playerSpecificMatchers';
 import { createRepeatFilter, matchedSocketResponses, SocketResponseMessage } from './socketResponses';
 import { ReceivedWebsocketMessage } from './websocketMessages';
@@ -61,6 +62,9 @@ export class CustomWebSocket extends WebSocket {
     if (typeof data.payload.value === 'string') {
       const { body, headers } = parseSocketMessageRaw(data.payload.value) || {};
       logFrame(body, headers);
+      // Above the repeat filter as well as above the matchers: a redirect is neither something
+      // the matchers ask for nor something worth letting a repeat of go unnoticed.
+      noteSessionEndingResponses(body);
 
       // Filtered once, above both consumers, so the local handlers are spared the server's
       // repeats too - they act on the game rather than reading it, and doing that five times
@@ -183,7 +187,7 @@ const matchAgainstLocalHandlers = (body: unknown) => {
           matcher.responseSelector!.requestMethod === requestMethod
         ) {
           matcher.local!([resp]).catch((error) => {
-            console.error('Error in local handler for messageType', matcher, error);
+            console.warn('Error in local handler for messageType', matcher, error);
           });
         }
       }

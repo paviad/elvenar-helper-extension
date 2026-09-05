@@ -137,6 +137,8 @@ export const saveNewCityAs = async (
   race: string,
   unlockedAreas: UnlockedArea[],
   squadSize: number,
+  coinsCap: number,
+  suppliesCap: number,
   rankingPoints: number,
 ) => {
   const accountData: AccountData = {
@@ -228,6 +230,8 @@ export const saveNewCityAs = async (
         relic_steel: 0,
       },
       squadSize,
+      coinsCap,
+      suppliesCap,
       rankingPoints,
       expirationsEnd: {},
     },

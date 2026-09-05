@@ -1,9 +1,15 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { GameVars } from '../inject/gameVars';
+import { InitialWorldMapData } from '../model/initialWorldMapData';
 import { WatchedWonder } from '../model/kpSwap';
+import { NeighbourHelpData } from '../model/neighbourHelpBuildings';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
+import { WorldNeighbor } from '../model/worldNeighbors';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
+import { AutomationEntry } from './automationEntry';
+import { StrengthModifier } from './counterCalculation';
 import { TournamentGood } from './tournamentGuide';
 import { TournyData } from './tournyData';
 
@@ -64,6 +70,34 @@ interface OverlayState {
   // still name what is coming up when startup data mentions no tournament at all.
   lastTournament?: TournamentGood;
   setLastTournament: (good: TournamentGood) => void;
+
+  retrievingCounter: number;
+  // Whether the last count came from the hunt being called off rather than from the outstanding
+  // pages being worked off. A zero that arrives that way is not a finished scan, so it raises no
+  // alert. Every later count overwrites this, so it cannot be left standing.
+  retrievingCounterAbandoned: boolean;
+  setRetrievingCounter: (counter: number, abandoned?: boolean) => void;
+  initialWorldMapData: InitialWorldMapData | null;
+  setInitialWorldMapData: (data: InitialWorldMapData) => void;
+  worldNeighbors: WorldNeighbor[];
+  setWorldNeighbors: (neighbors: WorldNeighbor[]) => void;
+  neighbourHelpData?: NeighbourHelpData;
+  setNeighbourHelpData: (data: NeighbourHelpData) => void;
+  modifiers?: StrengthModifier[];
+  setModifiers: (modifiers: StrengthModifier[]) => void;
+
+  autoKpHunt?: boolean;
+  setAutoKpHunt: (autoKpHunt: boolean) => void;
+  kpHuntImportantThreshold: number;
+  setKpHuntImportantThreshold: (threshold: number) => void;
+
+  gameVars?: GameVars;
+  setGameVars: (gameVars: GameVars) => void;
+
+  // The Production tab's jobs. Persisted, so they are still there after a refresh; whether the
+  // tab is monitoring them is deliberately not, and a refresh always comes back stopped.
+  productionAutomations: AutomationEntry[];
+  setProductionAutomations: (entries: AutomationEntry[]) => void;
 }
 
 let overlayStore: ReturnType<typeof createOverlayStore>;
@@ -147,11 +181,36 @@ const createOverlayStore = (accountId: string) => {
         setTournyData: (data) => set({ tournyData: data }),
         lastTournament: undefined,
         setLastTournament: (good) => set({ lastTournament: good }),
+
+        retrievingCounter: 0,
+        retrievingCounterAbandoned: false,
+        setRetrievingCounter: (counter, abandoned = false) =>
+          set({ retrievingCounter: counter, retrievingCounterAbandoned: abandoned }),
+        initialWorldMapData: null,
+        setInitialWorldMapData: (data) => set({ initialWorldMapData: data }),
+        worldNeighbors: [],
+        setWorldNeighbors: (neighbors) => set({ worldNeighbors: neighbors }),
+        neighbourHelpData: undefined,
+        setNeighbourHelpData: (data) => set({ neighbourHelpData: data }),
+        modifiers: [],
+        setModifiers: (modifiers) => set({ modifiers }),
+
+        autoKpHunt: false,
+        setAutoKpHunt: (autoKpHunt) => set({ autoKpHunt }),
+        kpHuntImportantThreshold: 10,
+        setKpHuntImportantThreshold: (threshold) => set({ kpHuntImportantThreshold: threshold }),
+
+        gameVars: undefined,
+        setGameVars: (gameVars) => set({ gameVars }),
+
+        productionAutomations: [],
+        setProductionAutomations: (entries) => set({ productionAutomations: entries }),
       }),
       {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
+          // Exclude certain states from being persisted
           const {
             offeredGoods,
             forceUpdate,
@@ -160,8 +219,16 @@ const createOverlayStore = (accountId: string) => {
             messagesUpdate,
             messagesDetailsReceived,
             wonderKpUpdate,
+            retrievingCounter,
+            retrievingCounterAbandoned,
+            initialWorldMapData,
+            worldNeighbors,
+            neighbourHelpData,
+            autoKpHunt,
+            // gameVars,
             ...toPersist
           } = state;
+          // avatarPosition remains in `toPersist` automatically
           return toPersist;
         },
       },

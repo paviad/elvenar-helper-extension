@@ -23,8 +23,6 @@ export const setupAggregateRequestResponseListener = (): void => {
       const requestClass = payload.request.requestClass;
       const requestMethod = payload.request.requestMethod;
 
-      console.log('E:', payload.request.requestId, requestClass, requestMethod, payload);
-
       // Asked of the table once per thing to send, rather than sending once per matcher that
       // wants it. The table is allowed to name the same call twice, and what goes out says only
       // which call it is — so a second send would put identical data through the same processors

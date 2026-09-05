@@ -1,3 +1,5 @@
+import { ProductionClass } from './BuildingRaw';
+
 export interface Building {
   id: string;
   name: string;
@@ -29,6 +31,21 @@ export interface Building {
 
 export interface Production {
   isSwitchable: boolean;
+  /**
+   * Which kind of production this is. `ManualProductionVO` is the one you start by hand and
+   * collect when it is done; the others run themselves, are queued, or are switched between.
+   *
+   * Absent on buildings stored before this was captured, until the balancing data is fetched
+   * again - which the game does on its next load.
+   */
+  productionClass?: ProductionClass;
+  /**
+   * Seconds of production after which it can already be collected, short of the full run. Only
+   * some buildings offer it: a Desert Fortress can be collected two hours into a twelve hour
+   * production. Absent where the production has to finish, and where it was stored before this
+   * was captured - until the balancing data is fetched again.
+   */
+  earlyPickupTime?: number;
   products: Product[];
 }
 

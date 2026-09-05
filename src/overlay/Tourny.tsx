@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import { TournyAdvisor } from './TournyAdvisor';
+import { TournyPlanner } from './TournyPlanner';
 import { TournyPrep } from './TournyPrep';
 
 interface TournySubTab {
@@ -9,8 +10,12 @@ interface TournySubTab {
   render: () => React.ReactNode;
 }
 
-/** The bar is only drawn once there is more than one of these to choose between. */
+/**
+ * The bar is only drawn once there is more than one of these to choose between. The planner comes
+ * first because it is the one that can act on the game; the others only read.
+ */
 const SUB_TABS: TournySubTab[] = [
+  { key: 'planner', label: 'Planner', render: () => <TournyPlanner /> },
   { key: 'counters', label: 'Counters', render: () => <TournyAdvisor /> },
   { key: 'prep', label: 'Prep', render: () => <TournyPrep /> },
 ];
