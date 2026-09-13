@@ -19,11 +19,10 @@ export function ProductionTimeline(props: {
       const prodMap = badgesInProduction[badgeName];
       const id = `${timestamp}-${badgeName}`;
       const markers: { time: Date; amount: number }[] = [];
-      for (const secondsStr in prodMap) {
-        const seconds = parseInt(secondsStr, 10);
-        const amount = prodMap[seconds];
-        const time = new Date(timestamp + seconds * 1000);
-        markers.push({ time, amount });
+      for (const finishesAtStr in prodMap) {
+        const finishesAt = parseInt(finishesAtStr, 10);
+        const amount = prodMap[finishesAt];
+        markers.push({ time: new Date(finishesAt), amount });
       }
       result.push({ id, label: badgeName, markers });
     }

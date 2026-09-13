@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     setupCityEntitiesUpdatedListener(async (msg) => {
       await loadAccountManagerFromStorage(true);
+      // The reload replaces the stored account objects, so the store's copy is now stale. Views
+      // that read it rather than getAccountById would recompute from the old one on the bump.
+      const accountId = useTabStore.getState()?.accountId;
+      if (accountId) {
+        useTabStore.getState()?.setAccountData(getAccountById(accountId));
+      }
       useTabStore.getState()?.triggerForceUpdate();
     });
     createReactUi();

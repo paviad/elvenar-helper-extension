@@ -149,6 +149,7 @@ export function FellowshipAdventure() {
 
       const badgesInProduction = extractBadgesInProduction(
         accountData.cityQuery.cityEntities,
+        accountData.cityQuery.timestamp,
         boostedGoods,
         faRequirements,
         mmEnchantmentEnabled,

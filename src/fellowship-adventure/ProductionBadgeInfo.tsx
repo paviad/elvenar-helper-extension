@@ -2,6 +2,7 @@ export interface ProductionBadgeInfo {
   id: number;
   name: string;
   asset_name: string;
-  next_state_transition_in: number;
+  /** When the production finishes, in epoch milliseconds. */
+  finishesAt: number;
   productionAmount: number;
 }
