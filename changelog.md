@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **Fellowship Adventure: the production timeline keeps up without a page refresh.** The fix in 10.3.0 recorded when a production was started, but the timeline went on measuring every production from when the city loaded, so one started later showed up hours early, often already past due. It is now placed at its real finish time as soon as you start it, and the tab no longer waits on a refresh to pick up the change. Productions finishing within a minute of each other share one marker, placed at the last of them.
+
 ## v10.5.0
 - **Inventory: the buildings inside your Tomes are listed.** A Tome was one row that said nothing of what it held, so weighing one up meant opening it in the game and reading the choices off its window. Each tome building is now a row of its own, typed "Building (Tome)" and naming the Tome under its name, with the size, output, resale value and disenchant value it would have at the chapter the Tome was won in - the chapter the game fills in when the Tome is opened. Search finds them by the Tome's name, and "Aggregate by Name" keeps them apart from buildings already in hand, so a total never counts buildings not yet chosen. There is no Place button on these rows, there being nothing to place until the Tome is opened.
 - **Upgrade Finder: tome buildings are suggested too.** They are compared like anything else in the inventory - an evolving one at the stage your artifacts can reach - and the row names the Tome under the replacement, so you know which one to open. Replace hands you the building to place as usual. Grouping by replacement keeps each tome building to itself, and the search box finds them by the Tome's name.
