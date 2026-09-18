@@ -86,6 +86,12 @@ const RESOURCE_FIELDS: [string, (resources: Record<string, number>) => number | 
   ['wisdom_of_youth', (r) => readResource(r, 'ch25_wisdom_kid')],
   ['wisdom_of_adults', (r) => readResource(r, 'ch25_wisdom_adult')],
   ['wisdom_of_age', (r) => readResource(r, 'ch25_wisdom_elder')],
+  // The Throne exams spend Experience; Growth and Maturity feed the settlement upgrades.
+  ['experience_of_kids', (r) => readResource(r, 'ch25_xps_kid')],
+  ['experience_of_adults', (r) => readResource(r, 'ch25_xps_adult')],
+  ['experience_of_elders', (r) => readResource(r, 'ch25_xps_elder')],
+  ['growth', (r) => readResource(r, 'ch25_xpg_1')],
+  ['maturity', (r) => readResource(r, 'ch25_xpg_2')],
 ];
 
 /**

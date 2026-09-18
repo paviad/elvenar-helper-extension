@@ -131,6 +131,11 @@ describe('buildCityExport', () => {
         ch25_wisdom_kid: 7,
         ch25_wisdom_adult: 7,
         ch25_wisdom_elder: 7,
+        ch25_xps_kid: 2145,
+        ch25_xps_adult: 617,
+        ch25_xps_elder: 521,
+        ch25_xpg_1: 36940,
+        ch25_xpg_2: 22340,
       },
     });
 
@@ -143,6 +148,11 @@ describe('buildCityExport', () => {
       wisdom_of_youth: 7,
       wisdom_of_adults: 7,
       wisdom_of_age: 7,
+      experience_of_kids: 2145,
+      experience_of_adults: 617,
+      experience_of_elders: 521,
+      growth: 36940,
+      maturity: 22340,
     });
   });
 
@@ -151,6 +161,7 @@ describe('buildCityExport', () => {
 
     expect(result.resources).toEqual({ nox: 10907 });
     expect(result.resources).not.toHaveProperty('wisdom_of_life');
+    expect(result.resources).not.toHaveProperty('experience_of_kids');
     expect(result.resources).not.toHaveProperty('prosperity_available');
   });
 
