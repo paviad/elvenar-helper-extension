@@ -75,6 +75,38 @@ describe('recordKpGiven', () => {
     expect(given.gifts.map((g) => g.amount)).toEqual([20]);
   });
 
+  it('counts rapid gifts once each, however late and out of order their reports arrive', () => {
+    // Five 20 KP items in quick succession. Each answers over HTTP and is echoed down the
+    // socket, and the echoes land late, behind newer reports.
+    const at = (mine: number) => phase(mine, { invested: 100 + mine });
+    const given = after(
+      [at(0)],
+      [at(20)],
+      [at(40)],
+      [at(20)],
+      [at(60)],
+      [at(40)],
+      [at(80)],
+      [at(60)],
+      [at(100)],
+      [at(80)],
+      [at(100)],
+    );
+
+    expect(given.gifts.reduce((sum, g) => sum + g.amount, 0)).toBe(100);
+    expect(given.standing[`${OWNER}:B_Gr5_AW1`].mine).toBe(100);
+  });
+
+  it('ignores a late report from the level before', () => {
+    const given = after(
+      [phase(165, { invested: 500, required: 560 })],
+      [phase(30, { invested: 40, required: 600 })],
+      [phase(165, { invested: 500, required: 560 })],
+    );
+
+    expect(given.gifts.map((g) => g.amount)).toEqual([30]);
+  });
+
   it('counts all of your total in a level that has moved on since', () => {
     const given = after([phase(165, { invested: 500, required: 560 })], [phase(30, { invested: 40, required: 600 })]);
 

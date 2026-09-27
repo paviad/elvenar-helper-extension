@@ -17,23 +17,34 @@ const GIFT_CAPACITY = 500;
 const standingKey = (ownerId: number, baseName: string) => `${ownerId}:${baseName}`;
 
 /**
- * What a phase says you have given since the last one for the same wonder.
+ * What a phase says you have given since the mark for the same wonder, and where the mark
+ * stands afterwards.
  *
  * The first sight of a wonder only sets the mark: a total with nothing to compare it against
  * could be this contribution or a dozen earlier ones in the same level, and counting all of it
  * would fill a swap you have not paid. Opening the wonder's window reports the phase before you
  * give, which is what makes the gift itself measurable.
  *
- * A level that has moved on since the mark started from nothing, so all of your total in it is
- * new. An identical phase arriving twice — the game repeats itself — rises by nothing and
- * records nothing.
+ * Reports do not arrive in the order they were sent. Each gift is answered over HTTP and echoed
+ * down the socket, and clicking quickly puts late echoes behind newer answers. So the mark only
+ * ever rises: a report showing less than it is old news, and counting from it would count the
+ * same knowledge again on the next report.
+ *
+ * Levels are told apart by their requirement, which grows from one level to the next. A larger
+ * one is a level that has started since the mark, so all of your total in it is new; a smaller
+ * one is a late report from the level before, and is ignored.
  */
-function giftFrom(previous: KpStanding | undefined, next: KpStanding): number {
-  if (!previous) {
-    return 0;
+function giftFrom(previous: KpStanding | undefined, next: KpStanding): { amount: number; standing: KpStanding } {
+  if (!previous || next.required > previous.required) {
+    return { amount: previous ? next.mine : 0, standing: next };
   }
-  const sameLevel = previous.required === next.required && next.invested >= previous.invested;
-  return sameLevel ? next.mine - previous.mine : next.mine;
+  if (next.required < previous.required) {
+    return { amount: 0, standing: previous };
+  }
+  return {
+    amount: Math.max(0, next.mine - previous.mine),
+    standing: { ...next, mine: Math.max(previous.mine, next.mine) },
+  };
 }
 
 /**
@@ -64,15 +75,14 @@ export function recordKpGiven(
       const next: KpStanding = {
         mine: phase.contributions?.find((c) => c.player?.player_id === myPlayerId)?.knowledgePoints ?? 0,
         required: phase.requiredKnowledgePoints,
-        invested: phase.investedKnowledgePoints ?? 0,
         seenAt: now,
       };
 
-      const amount = giftFrom(standing[key], next);
+      const { amount, standing: mark } = giftFrom(standing[key], next);
       if (amount > 0) {
         gifts.push({ ownerId: phase.playerId, baseName: phase.entityBaseName, amount, at: now });
       }
-      standing[key] = next;
+      standing[key] = mark;
     }
   }
 

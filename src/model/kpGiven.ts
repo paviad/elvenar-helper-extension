@@ -21,8 +21,6 @@ export interface KpStanding {
   mine: number;
   /** The level's requirement, which is what tells one level from the next. */
   required: number;
-  /** The wonder's total, which only ever rises within a level. */
-  invested: number;
   seenAt: number;
 }
 
