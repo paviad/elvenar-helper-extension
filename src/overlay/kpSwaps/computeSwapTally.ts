@@ -184,6 +184,7 @@ export function computeSwapTally(
       recipientName,
       recipientPlayerId: recipientPost.author?.player_id ?? 0,
       recipientPost: normalize(recipientPost.post),
+      recipientWonder: triggers.get(normalize(recipientPost.post).toLowerCase()),
       recipientPostedAt: recipientPost.created_at,
       requestedWonder,
       myPostedAt,

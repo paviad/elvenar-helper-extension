@@ -26,6 +26,11 @@ export interface SwapEntry {
   recipientPlayerId: number;
   /** Their post, verbatim — it names the wonder they want. */
   recipientPost: string;
+  /**
+   * The wonder their post asks for, canonicalised to the game's spelling. Absent when the post
+   * is anything other than a plain "<wonder> please".
+   */
+  recipientWonder?: string;
   recipientPostedAt: number;
   /** The wonder you asked for, canonicalised to the game's spelling. */
   requestedWonder: string;

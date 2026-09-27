@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Divider,
   IconButton,
+  LinearProgress,
   List,
   ListItemButton,
   Popover,
@@ -25,6 +26,7 @@ import { AncientWonder, getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
+import { KpGift } from '../model/kpGiven';
 import { SwapEntry, swapPaidKey, SwapTally } from '../model/kpSwap';
 import { WonderKp } from '../model/wonderKp';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
@@ -39,6 +41,7 @@ import {
   plaqueFace,
   timestampType,
 } from './gild';
+import { allocateKpGiven } from './kpSwaps/allocateKpGiven';
 import { computeSwapTally } from './kpSwaps/computeSwapTally';
 import { getOwnedWonders } from './kpSwaps/getOwnedWonders';
 import { getUpgradingWonders } from './kpSwaps/getUpgradingWonders';
@@ -51,6 +54,7 @@ interface AccountSnapshot {
   playerId?: number;
   cityEntities?: CityEntity[];
   wonderKp?: WonderKp[];
+  kpGifts?: KpGift[];
 }
 
 // The exact-match rule means a typo posts a message that quietly does nothing, so the request
@@ -162,6 +166,7 @@ export const SwapsView = () => {
         playerId: data?.cityQuery?.userData?.player_id,
         cityEntities: data?.cityQuery?.cityEntities,
         wonderKp: data?.cityQuery?.wonderKp,
+        kpGifts: data?.kpGiven?.gifts,
       });
     }
     void loadAccount();
@@ -200,10 +205,29 @@ export const SwapsView = () => {
   }, [swapsClearedAt, account, wonders, tally.latestRequestAt, setSwapsClearedAt]);
 
   const paid = useMemo(() => new Set(paidSwaps), [paidSwaps]);
+
+  // What you have put into each payee's wonders since they asked, shared out across the swaps
+  // you owe them — see allocateKpGiven.
+  const given = useMemo(() => {
+    const baseNames = new Map((wonders ?? []).map((w) => [w.name, w.baseName]));
+    return allocateKpGiven(tally.entries, account?.kpGifts ?? [], (name) => baseNames.get(name));
+  }, [tally, account, wonders]);
+
+  // A swap is done when you tick it off or when the game has seen you give the full amount.
+  const settled = useMemo(
+    () =>
+      new Set(
+        tally.entries
+          .filter((e) => paid.has(swapPaidKey(e)) || (given.get(swapPaidKey(e)) ?? 0) >= e.amount)
+          .map(swapPaidKey),
+      ),
+    [tally, paid, given],
+  );
+
   // Grouped from the full list, not just the unpaid ones, so a payee keeps their place in the
   // list as you tick their threads off instead of jumping about under the cursor.
   const groups = useMemo(() => groupSwapsByPayee(tally.entries), [tally]);
-  const outstanding = useMemo(() => tally.entries.filter((e) => !paid.has(swapPaidKey(e))), [tally, paid]);
+  const outstanding = useMemo(() => tally.entries.filter((e) => !settled.has(swapPaidKey(e))), [tally, settled]);
   const payeesLeft = new Set(outstanding.map((e) => e.recipientPlayerId)).size;
 
   // Ticking also drops any key that no longer matches a live row, so posting the next round
@@ -393,6 +417,8 @@ export const SwapsView = () => {
                 key={group.playerId}
                 group={group}
                 paid={paid}
+                given={given}
+                settled={settled}
                 onToggleGroup={(nextPaid) => togglePaid(group.entries, nextPaid)}
                 onToggleEntry={(entry, nextPaid) => togglePaid([entry], nextPaid)}
               />
@@ -497,7 +523,12 @@ export const SwapsView = () => {
 
 interface PayeeCardProps {
   group: PayeeGroup;
+  /** Rows you have ticked off by hand. */
   paid: Set<string>;
+  /** Knowledge the game has seen you give toward each row. */
+  given: Map<string, number>;
+  /** Rows that are done, either way. */
+  settled: Set<string>;
   onToggleGroup: (nextPaid: boolean) => void;
   onToggleEntry: (entry: SwapEntry, nextPaid: boolean) => void;
 }
@@ -505,10 +536,18 @@ interface PayeeCardProps {
 // One card per person to repay. The header carries what you owe them in total — that is the
 // number you act on — and the rows beneath break it down per thread, since each thread has
 // its own amount and may name a different wonder.
-const PayeeCard = ({ group, paid, onToggleGroup, onToggleEntry }: PayeeCardProps) => {
-  const paidCount = group.entries.filter((e) => paid.has(swapPaidKey(e))).length;
+const PayeeCard = ({ group, paid, given, settled, onToggleGroup, onToggleEntry }: PayeeCardProps) => {
+  const givenTo = (entry: SwapEntry) => given.get(swapPaidKey(entry)) ?? 0;
+  // A row the game has seen paid in full stays done whatever the box says, so its box is not
+  // offered for unticking.
+  const paidInGame = (entry: SwapEntry) => givenTo(entry) >= entry.amount;
+
+  const paidCount = group.entries.filter((e) => settled.has(swapPaidKey(e))).length;
   const allPaid = paidCount === group.entries.length;
-  const owed = group.entries.filter((e) => !paid.has(swapPaidKey(e))).reduce((sum, e) => sum + e.amount, 0);
+  // What is still to give: a row partly paid counts only its remainder.
+  const owed = group.entries
+    .filter((e) => !settled.has(swapPaidKey(e)))
+    .reduce((sum, e) => sum + e.amount - givenTo(e), 0);
 
   return (
     <Stack direction='row' spacing={1.25} sx={{ alignItems: 'flex-start', opacity: allPaid ? 0.45 : 1 }}>
@@ -538,6 +577,7 @@ const PayeeCard = ({ group, paid, onToggleGroup, onToggleEntry }: PayeeCardProps
               size='small'
               checked={allPaid}
               indeterminate={paidCount > 0 && !allPaid}
+              disabled={group.entries.every(paidInGame)}
               onChange={() => onToggleGroup(!allPaid)}
               slotProps={{ input: { 'aria-label': `Mark everything owed to ${group.name} as given` } }}
               sx={{
@@ -553,7 +593,8 @@ const PayeeCard = ({ group, paid, onToggleGroup, onToggleEntry }: PayeeCardProps
 
           <Stack spacing={0.75}>
             {group.entries.map((entry) => {
-              const entryPaid = paid.has(swapPaidKey(entry));
+              const entryPaid = settled.has(swapPaidKey(entry));
+              const entryGiven = Math.min(givenTo(entry), entry.amount);
               return (
                 <Box key={swapPaidKey(entry)} sx={{ opacity: !allPaid && entryPaid ? 0.5 : 1 }}>
                   <Stack direction='row' spacing={1} sx={{ alignItems: 'flex-start' }}>
@@ -562,7 +603,8 @@ const PayeeCard = ({ group, paid, onToggleGroup, onToggleEntry }: PayeeCardProps
                       <Checkbox
                         size='small'
                         checked={entryPaid}
-                        onChange={() => onToggleEntry(entry, !entryPaid)}
+                        disabled={paidInGame(entry)}
+                        onChange={() => onToggleEntry(entry, !paid.has(swapPaidKey(entry)))}
                         slotProps={{
                           input: {
                             'aria-label': `Mark ${entry.amount} KP to ${group.name} for ${entry.subject} as given`,
@@ -590,6 +632,24 @@ const PayeeCard = ({ group, paid, onToggleGroup, onToggleEntry }: PayeeCardProps
                       <Typography sx={{ ...timestampType, display: 'block' }} noWrap>
                         {entry.subject} · you asked for {entry.requestedWonder}
                       </Typography>
+                      {/* Fills as the game reports you giving to them, whichever way you give. */}
+                      <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mt: 0.25 }}>
+                        <LinearProgress
+                          variant='determinate'
+                          value={(entryGiven / entry.amount) * 100}
+                          aria-label={`${entryGiven} of ${entry.amount} KP given to ${group.name}`}
+                          sx={{
+                            flex: 1,
+                            height: 4,
+                            borderRadius: 2,
+                            bgcolor: 'rgba(201, 162, 39, 0.18)',
+                            '& .MuiLinearProgress-bar': { bgcolor: gild.deep, borderRadius: 2 },
+                          }}
+                        />
+                        <Typography sx={{ ...timestampType, fontVariantNumeric: 'tabular-nums' }}>
+                          {entryGiven}/{entry.amount}
+                        </Typography>
+                      </Stack>
                     </Box>
                   </Stack>
                 </Box>

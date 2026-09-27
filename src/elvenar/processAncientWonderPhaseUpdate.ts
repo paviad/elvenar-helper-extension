@@ -5,6 +5,7 @@ import { WonderKp } from '../model/wonderKp';
 import { getAccountBySessionId } from './AccountManager';
 import { extractElvenarResponse } from './extractElvenarResponse';
 import { extractWonderKp } from './extractWonderKp';
+import { recordKpGiven } from './recordKpGiven';
 
 /** What the game sends back when a wonder's own window is opened. */
 interface OtherPlayerAncientWonders {
@@ -56,6 +57,13 @@ export const processAncientWonderPhaseUpdate = async (
   const updated = collectAncientWonderPhases(json);
 
   const playerId = cityQuery.userData?.player_id;
+
+  // Other players' wonders report back too — after you give to one, and when you open one —
+  // and your share in them is how the swap list knows what you have repaid.
+  if (accountData && updated.some((phase) => phase?.playerId !== playerId)) {
+    accountData.kpGiven = recordKpGiven(accountData.kpGiven, updated, playerId, Math.floor(Date.now() / 1000));
+  }
+
   const mine = updated.filter((phase) => phase?.entityBaseName && phase.playerId === playerId);
   if (mine.length === 0) {
     return;
