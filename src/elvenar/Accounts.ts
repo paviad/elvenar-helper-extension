@@ -8,6 +8,7 @@ import { FAStoreData } from '../model/faStageProgress';
 import { MessagesData } from '../model/gameMessage';
 import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
+import { KpGiven } from '../model/kpGiven';
 import { PotionEffect } from '../model/potionEffect';
 import { SeasonalEvent } from '../model/seasonalEvent';
 import { Trade } from '../model/trade';
@@ -82,6 +83,9 @@ export interface AccountData {
   faDataStore?: FAStoreData;
 
   messagesData?: MessagesData;
+
+  /** Knowledge you have put into other players' wonders, for the swap list to count off. */
+  kpGiven?: KpGiven;
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};

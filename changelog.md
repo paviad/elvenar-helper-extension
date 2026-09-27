@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **Swaps: see how much you have repaid each player.** Each player's card has a progress bar that fills as you give to their wonders — with knowledge points, rune shards or items — and a breakdown by wonder underneath. The card is marked done once you have given the full amount. Only what you give after posting in their thread counts.
+
 ## v10.5.1
 - **Fellowship Adventure: the production timeline keeps up without a page refresh.** The fix in 10.3.0 recorded when a production was started, but the timeline went on measuring every production from when the city loaded, so one started later showed up hours early, often already past due. It is now placed at its real finish time as soon as you start it, and the tab no longer waits on a refresh to pick up the change. Productions finishing within a minute of each other share one marker, placed at the last of them.
 - **City ▸ Export carries the chapter 25 Experience, Growth and Maturity.** The Throne exams spend Experience and the settlement upgrades spend Growth and Maturity, so the [Chapter 25 planner](https://paviad.github.io/elvenar-ch25-planner/) needs all three to work out what a city can afford. The export now holds the Experience of kids, adults and elders alongside Growth and Maturity, next to the Wisdoms already there.
