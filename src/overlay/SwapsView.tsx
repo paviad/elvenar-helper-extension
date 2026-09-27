@@ -210,7 +210,7 @@ export const SwapsView = () => {
   // list as you tick their threads off instead of jumping about under the cursor.
   const groups = useMemo(() => groupSwapsByPayee(tally.entries), [tally]);
 
-  // What the game has seen you put into each payee's wonders since they asked — see
+  // What the game has seen you put into each payee's wonders since you posted — see
   // givenToPayee for why it is counted per player rather than per thread.
   const given = useMemo(
     () => new Map(groups.map((g) => [g.playerId, givenToPayee(g.playerId, g.entries, account?.kpGifts ?? [])])),
@@ -517,7 +517,7 @@ interface PayeeCardProps {
   group: PayeeGroup;
   /** Rows you have ticked off by hand. */
   paid: Set<string>;
-  /** What the game has seen you give this player since they asked. */
+  /** What the game has seen you give this player since you posted. */
   given: GivenToPayee;
   wonderName: (baseName: string) => string;
   onToggleGroup: (nextPaid: boolean) => void;

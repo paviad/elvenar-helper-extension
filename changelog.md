@@ -1,7 +1,7 @@
 # Changelog
 
 ## Unreleased
-- **Swaps: a progress bar for each player you owe.** It fills with what you have given them since they asked, with a line for each of their wonders you gave to, and ticks the player off when it is full. Knowledge points, rune shards and items all count. It tracks players rather than threads, because a thread names its wonder in the player's own words ("any", "fav", a nickname).
+- **Swaps: a progress bar for each player you owe.** It fills with what you have given them since your post in their thread, with a line for each of their wonders you gave to, and ticks the player off when it is full. Knowledge points, rune shards and items all count. It tracks players rather than threads, because a thread names its wonder in the player's own words ("any", "fav", a nickname).
 
 ## v10.5.1
 - **Fellowship Adventure: the production timeline keeps up without a page refresh.** The fix in 10.3.0 recorded when a production was started, but the timeline went on measuring every production from when the city loaded, so one started later showed up hours early, often already past due. It is now placed at its real finish time as soon as you start it, and the tab no longer waits on a refresh to pick up the change. Productions finishing within a minute of each other share one marker, placed at the last of them.

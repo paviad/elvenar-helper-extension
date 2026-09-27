@@ -2,10 +2,11 @@ import { KpGift } from '../../model/kpGiven';
 import { SwapEntry, swapPaidKey } from '../../model/kpSwap';
 
 /**
- * How far before a request a gift may be dated and still count toward it. The gift is stamped
- * by this machine's clock and the request by the game's, which need not agree to the second.
+ * How far before your post a gift may be dated and still count toward it. The gift is stamped
+ * by this machine's clock and the post by the game's, which need not agree to the second. Kept
+ * short, since anything given much earlier was paying for something else.
  */
-const CLOCK_SLACK = 5 * 60;
+const CLOCK_SLACK = 60;
 
 export interface GivenToPayee {
   total: number;
@@ -14,18 +15,22 @@ export interface GivenToPayee {
 }
 
 /**
- * What you have put into one player's wonders since the oldest of their requests you owe.
+ * What you have put into one player's wonders since the oldest of your posts that left you
+ * owing them.
  *
  * Counted per player rather than per thread, because the threads say which wonder was wanted
  * only in whatever words the player chose — "any", "fav", a nickname — and the game only says
  * which wonder was given to. The two are shown side by side instead of being matched up.
- * Gifts from before they asked belong to an earlier round.
+ *
+ * Counted from your post rather than theirs: their request can be hours old, and in that time
+ * you may well have given them knowledge for a different thread entirely. A swap only lands on
+ * this list once you have posted in it, so what you give toward it comes after.
  */
 export function givenToPayee(playerId: number, entries: SwapEntry[], gifts: KpGift[]): GivenToPayee {
   if (entries.length === 0) {
     return { total: 0, byWonder: [] };
   }
-  const since = Math.min(...entries.map((e) => e.recipientPostedAt)) - CLOCK_SLACK;
+  const since = Math.min(...entries.map((e) => e.myPostedAt)) - CLOCK_SLACK;
 
   const byWonder = new Map<string, number>();
   for (const gift of gifts) {

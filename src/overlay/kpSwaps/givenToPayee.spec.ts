@@ -47,6 +47,14 @@ describe('givenToPayee', () => {
     expect(givenToPayee(PAYEE, entries, [gift(10, 'B_All_AW2', T + 60)]).total).toBe(10);
   });
 
+  it('leaves out a gift for another debt made after they asked but before you posted', () => {
+    // They asked at T; you paid them for a different thread at T + 120 and only answered
+    // this one an hour later.
+    const late = { ...entry('a', 60), myPostedAt: T + 3600 };
+
+    expect(givenToPayee(PAYEE, [late], [gift(20, 'B_All_AW2', T + 120)])).toEqual({ total: 0, byWonder: [] });
+  });
+
   it('leaves out gifts to someone else and from before they asked', () => {
     const gifts = [gift(5, 'B_All_AW2', T + 120, 8), gift(5, 'B_All_AW2', T - 3600)];
 
@@ -54,7 +62,8 @@ describe('givenToPayee', () => {
   });
 
   it('allows for the two clocks disagreeing by a little', () => {
-    expect(givenToPayee(PAYEE, [entry('a', 60)], [gift(5, 'B_All_AW2', T - 60)]).total).toBe(5);
+    // Your post is at T + 60 by the game's clock; the gift is stamped half a minute before it.
+    expect(givenToPayee(PAYEE, [entry('a', 60)], [gift(5, 'B_All_AW2', T + 30)]).total).toBe(5);
   });
 });
 
