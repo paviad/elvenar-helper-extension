@@ -7,7 +7,7 @@
     <title>ElvenAssist - Unofficial City Planner</title>
     <meta
       name="description"
-      content="The ultimate free, unofficial City Planner and Helper for Elvenar. Supports the latest chapters, live city syncing, and inventory management."
+      content="A free, unofficial city planner and in-game helper for Elvenar: live city planning, upgrade suggestions, inventory, KP swaps, tournaments and Fellowship Adventures. For Chrome, Firefox and Safari."
     />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -180,8 +180,15 @@
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: #fff;
-        margin-left: 1rem;
         backdrop-filter: blur(4px);
+      }
+
+      .cta-row {
+        margin-top: 2.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
       }
 
       .btn-outline:hover {
@@ -266,6 +273,12 @@
       .feature-card p {
         color: var(--text-muted);
         font-size: 1.05rem;
+      }
+
+      /* Positioned so the card's ::before sheen does not sit over it and swallow the click. */
+      .feature-card a {
+        position: relative;
+        color: var(--accent);
       }
 
       /* Marks a card as a recent addition. */
@@ -407,8 +420,8 @@
           margin: 0.75rem 0;
           width: 100%;
         }
-        .btn-outline {
-          margin-left: 0;
+        .cta-row {
+          gap: 0;
         }
         #carousel {
           aspect-ratio: 4/3;
@@ -450,18 +463,24 @@
 
         <!-- COMPLIANCE: Explicit Disclaimer text -->
         <p>
-          ElvenAssist is an <strong>unofficial, open-source</strong> City Planner and Inventory Manager built by fans.
+          ElvenAssist is an <strong>unofficial, open-source</strong> city planner and in-game helper built by fans.
           <br />
           <span style="font-size: 0.9em; opacity: 0.8; display: block; margin-top: 0.5rem">
             This extension is <strong>not</strong> developed, endorsed, or supported by InnoGames or Elvenar.
           </span>
         </p>
 
-        <div style="margin-top: 2.5rem">
+        <div class="cta-row">
           <a
             href="https://chromewebstore.google.com/detail/kikdpnpfhakidgkojboebobjlknflilc?utm_source=item-share-cb"
             class="btn btn-primary"
             ><i class="fab fa-chrome"></i> Add to Chrome</a
+          >
+          <a href="https://addons.mozilla.org/en-US/firefox/addon/elven-assist/" class="btn btn-primary"
+            ><i class="fab fa-firefox-browser"></i> Add to Firefox</a
+          >
+          <a href="https://apps.apple.com/us/app/elvenassist/id6757679219" class="btn btn-primary"
+            ><i class="fab fa-safari"></i> Get it for Safari</a
           >
           <a href="https://github.com/paviad/elvenar-helper-extension" class="btn btn-outline"
             ><i class="fab fa-github"></i> View Source</a
@@ -492,6 +511,26 @@
               src: 'ss1.jpg',
               alt: 'City Planner Interface',
               caption: 'Plan your city layout with drag-and-drop simplicity using live data.',
+            },
+            {
+              src: 'ss9.jpg',
+              alt: 'Isometric City View',
+              caption: 'See the same plan in an isometric view, closer to how the game draws it.',
+            },
+            {
+              src: 'ss6.jpg',
+              alt: 'Upgrade Finder',
+              caption: 'Upgrade Finder lists the inventory buildings that beat what you have placed.',
+            },
+            {
+              src: 'ss7.jpg',
+              alt: 'KP Swaps',
+              caption: 'Swaps tallies what you owe and fills a bar as you repay each player.',
+            },
+            {
+              src: 'ss8.jpg',
+              alt: 'Tournament Counters',
+              caption: 'Open a tournament province and see the squad to field against it.',
             },
             {
               src: 'ss3.jpg',
@@ -566,19 +605,67 @@
         <div class="container">
           <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem">Why Switch?</h2>
           <div class="features-grid">
-            <div class="feature-card is-new">
-              <span class="badge-new">NEW</span>
+            <div class="feature-card">
+              <i class="fas fa-city feature-icon"></i>
+              <h3>Live City Planner</h3>
+              <p>
+                Your city, straight from the game &mdash; no import. Drag buildings around, drop one on another to swap
+                them, change levels with +/- or remove one with Delete, unlock expansions, and undo any of it with
+                Ctrl+Z. Top-down, isometric and table views.
+              </p>
+            </div>
+
+            <div class="feature-card">
               <i class="fas fa-wand-magic-sparkles feature-icon"></i>
               <h3>Upgrade Finder</h3>
               <p>
                 Finds the event buildings sitting in your inventory that beat what you already have placed &mdash; only
-                the swaps that give up nothing, ranked by what they gain per square. Evolving buildings are measured at
-                the stage your artifacts can actually reach.
+                the swaps that give up nothing, ranked by what they gain per square, including buildings still inside a
+                Tome. Evolving buildings are measured at the stage your artifacts can actually reach.
               </p>
             </div>
 
             <div class="feature-card is-new">
               <span class="badge-new">NEW</span>
+              <i class="fas fa-handshake feature-icon"></i>
+              <h3>KP Swaps</h3>
+              <p>
+                Never lose track of a knowledge point swap again. Your debts are tallied from the threads you post in
+                and grouped by the player you owe, with a bar for how much of each you have repaid. It shows how much
+                room each of your wonders has to be asked for, and the KP instants you hold to repay with.
+              </p>
+            </div>
+
+            <div class="feature-card is-new">
+              <span class="badge-new">NEW</span>
+              <i class="fas fa-camera feature-icon"></i>
+              <h3>Screenshot &amp; Export</h3>
+              <p>
+                Save your whole city as a PNG, drawn at full size with labels, ready to paste into Discord. Or export it
+                as a file the
+                <a href="https://paviad.github.io/elvenar-ch25-planner/" target="_blank">Chapter 25 planner</a> reads.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <i class="fas fa-boxes feature-icon"></i>
+              <h3>Smart Inventory</h3>
+              <p>
+                Search, sort, and filter your inventory instantly. Find that lost event building in seconds. The
+                buildings inside your Tomes are listed too, and Copy Table sends the list to a spreadsheet.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <i class="fas fa-comments feature-icon"></i>
+              <h3>Chat &amp; Messages</h3>
+              <p>
+                A panel inside the game: guild chat with search and jump to first unread, and your Inbox and Outbox with
+                search across threads. Alt+C opens it.
+              </p>
+            </div>
+
+            <div class="feature-card">
               <i class="fas fa-trophy feature-icon"></i>
               <h3>Tournament Counters</h3>
               <p>
@@ -589,33 +676,29 @@
               </p>
             </div>
 
-            <div class="feature-card is-new">
-              <span class="badge-new">NEW</span>
-              <i class="fas fa-handshake feature-icon"></i>
-              <h3>KP Swaps</h3>
-              <p>
-                Never lose track of a knowledge point swap again. Your debts are tallied from the threads you post in
-                and grouped by the player you owe, with the amount read from the thread title. A button copies the exact
-                wording for any wonder standing in your city, so it is never mistyped.
-              </p>
-            </div>
-
             <div class="feature-card">
-              <i class="fas fa-city feature-icon"></i>
-              <h3>Live City Planner</h3>
+              <i class="fas fa-map-marked-alt feature-icon"></i>
+              <h3>Fellowship Adventure</h3>
               <p>
-                Works just like the tools you know, but uses live data directly from the game. No manual import
-                required.
+                Track badge progress in real-time. Visualize production timelines to know exactly when your badges will
+                be ready.
               </p>
             </div>
 
-            <!-- NEW FEATURE CARD: Build Menu -->
             <div class="feature-card">
               <i class="fas fa-hammer feature-icon"></i>
               <h3>Build Menu</h3>
               <p>
                 Add buildings directly to your city plan from a categorized catalog. Plan for future chapters before you
                 even unlock the buildings.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <i class="fas fa-scale-balanced feature-icon"></i>
+              <h3>Efficient Trades</h3>
+              <p>
+                Automatically detect lucrative opportunities: non-boosted ascended goods traded for your boosted ones.
               </p>
             </div>
 
@@ -627,26 +710,7 @@
                 are missing.
               </p>
             </div>
-            <div class="feature-card">
-              <i class="fas fa-boxes feature-icon"></i>
-              <h3>Smart Inventory</h3>
-              <p>Search, sort, and filter your inventory instantly. Find that lost event building in seconds.</p>
-            </div>
-            <div class="feature-card">
-              <i class="fas fa-scale-balanced feature-icon"></i>
-              <h3>Efficient Trades</h3>
-              <p>
-                Automatically detect lucrative opportunities: non-boosted ascended goods traded for your boosted ones.
-              </p>
-            </div>
-            <div class="feature-card">
-              <i class="fas fa-map-marked-alt feature-icon"></i>
-              <h3>Fellowship Adventure</h3>
-              <p>
-                Track badge progress in real-time. Visualize production timelines to know exactly when your badges will
-                be ready.
-              </p>
-            </div>
+
             <div class="feature-card">
               <i class="fas fa-shield-alt feature-icon"></i>
               <h3>Safe & Open Source</h3>
@@ -676,7 +740,7 @@
           <strong>Queen of Kelp Islands</strong> (Arendyll) and <strong>KibbleKat</strong> (Arendyll), with thanks.
         </p>
         <br />
-        <p>&copy; 2025 - <a href="https://github.com/paviad">paviad</a></p>
+        <p>&copy; 2025&ndash;2026 -<a href="https://github.com/paviad">paviad</a></p>
       </div>
     </footer>
   </body>
