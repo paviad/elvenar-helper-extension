@@ -55,6 +55,9 @@ interface OverlayState {
   // re-reads the stored figures instead of waiting for the next city load.
   wonderKpUpdate: number;
   triggerWonderKpUpdate: () => void;
+  // Bumped when the game pushes the inventory, so views showing what you hold re-read it.
+  inventoryUpdate: number;
+  triggerInventoryUpdate: () => void;
   // Persisted, so a page refresh does not blank the tab until the game happens to resend the
   // tournament responses. Every field is refreshed the moment a new one arrives, and the upgrade
   // timers are stored as absolute times so a reloaded copy still counts down correctly.
@@ -143,6 +146,8 @@ const createOverlayStore = (accountId: string) => {
         setWatchedWonders: (wonders) => set({ watchedWonders: wonders }),
         wonderKpUpdate: 0,
         triggerWonderKpUpdate: () => set((state) => ({ wonderKpUpdate: state.wonderKpUpdate + 1 })),
+        inventoryUpdate: 0,
+        triggerInventoryUpdate: () => set((state) => ({ inventoryUpdate: state.inventoryUpdate + 1 })),
         tournyData: undefined,
         setTournyData: (data) => set({ tournyData: data }),
         lastTournament: undefined,
@@ -160,6 +165,7 @@ const createOverlayStore = (accountId: string) => {
             messagesUpdate,
             messagesDetailsReceived,
             wonderKpUpdate,
+            inventoryUpdate,
             ...toPersist
           } = state;
           return toPersist;

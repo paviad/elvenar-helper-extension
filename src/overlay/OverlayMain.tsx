@@ -276,6 +276,13 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       );
     }
 
+    // Sent after the service worker has saved the new inventory, so a re-read picks it up.
+    listenerIds.push(
+      setupGenericResponseListener<void>('R:InventoryService/updateItems', () => {
+        useOverlayStore.getState().triggerInventoryUpdate();
+      }),
+    );
+
     listenerIds.push(
       setupGenericResponseListener<number | undefined>('R:QuestMilestoneService/updateQuestMilestone', (msg) => {
         const progress = msg.payload;

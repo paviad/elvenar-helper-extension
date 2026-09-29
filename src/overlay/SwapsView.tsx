@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import { AncientWonder, getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { countKpInstants, describeKpInstants } from '../inventory/kpInstants';
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
 import { KpGift } from '../model/kpGiven';
@@ -55,6 +56,8 @@ interface AccountSnapshot {
   cityEntities?: CityEntity[];
   wonderKp?: WonderKp[];
   kpGifts?: KpGift[];
+  /** KP instants on hand; absent until the game has sent the inventory. */
+  kpInstants?: Record<number, number>;
 }
 
 // The exact-match rule means a typo posts a message that quietly does nothing, so the request
@@ -117,6 +120,7 @@ export const SwapsView = () => {
   const watchedWonders = overlayStore((state) => state.watchedWonders);
   const setWatchedWonders = overlayStore((state) => state.setWatchedWonders);
   const wonderKpUpdate = overlayStore((state) => state.wonderKpUpdate);
+  const inventoryUpdate = overlayStore((state) => state.inventoryUpdate);
 
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
   const [wonders, setWonders] = useState<AncientWonder[] | null>(null);
@@ -167,10 +171,11 @@ export const SwapsView = () => {
         cityEntities: data?.cityQuery?.cityEntities,
         wonderKp: data?.cityQuery?.wonderKp,
         kpGifts: data?.kpGiven?.gifts,
+        kpInstants: data?.inventoryItems && countKpInstants(data.inventoryItems),
       });
     }
     void loadAccount();
-  }, [messagesUpdate, wonderKpUpdate]);
+  }, [messagesUpdate, wonderKpUpdate, inventoryUpdate]);
 
   // Until the watermark has been established, Infinity keeps every existing round out of the
   // list — so it never flashes your whole swap history on first open.
@@ -329,6 +334,15 @@ export const SwapsView = () => {
           </Button>
         )}
       </Box>
+
+      {/* What you have to repay with, next to what you owe. */}
+      {account.kpInstants && (
+        <Box sx={{ px: 1.5, py: 0.5, background: gild.cardTop, borderBottom: '1px solid', borderColor: gild.mid }}>
+          <Typography variant='caption' sx={{ color: gild.bronzeSoft, lineHeight: 1.3 }}>
+            {describeKpInstants(account.kpInstants)}
+          </Typography>
+        </Box>
+      )}
 
       {watchedWonders.length > 0 && (
         <Box
