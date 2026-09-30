@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **Swaps:** A payment made just before you posted in the next thread no longer counts toward that thread's player. Paying one player and then posting straight away is the usual rhythm of a round, and when both threads had the same player, the earlier payment filled part of the new debt.
+
 ## v10.6.0
 - **Swaps: the KP instants you hold are listed at the top.** One line shows how many of each size you have and what they add up to, so you can see what you have to repay with without opening the inventory. It follows the game as you use or receive instants.
 - **Swaps: see how much you have repaid each player.** Each player's card has a progress bar that fills as you give to their wonders — with knowledge points, rune shards or items — and a breakdown by wonder underneath. The card is marked done once you have given the full amount. Only what you give after posting in their thread counts.

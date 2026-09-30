@@ -1,13 +1,6 @@
 import { KpGift } from '../../model/kpGiven';
 import { SwapEntry, swapPaidKey } from '../../model/kpSwap';
 
-/**
- * How far before your post a gift may be dated and still count toward it. The gift is stamped
- * by this machine's clock and the post by the game's, which need not agree to the second. Kept
- * short, since anything given much earlier was paying for something else.
- */
-const CLOCK_SLACK = 60;
-
 export interface GivenToPayee {
   total: number;
   /** Largest first. */
@@ -30,7 +23,9 @@ export function givenToPayee(playerId: number, entries: SwapEntry[], gifts: KpGi
   if (entries.length === 0) {
     return { total: 0, byWonder: [] };
   }
-  const since = Math.min(...entries.map((e) => e.myPostedAt)) - CLOCK_SLACK;
+  // No allowance either side: gifts are stamped in the game's time, like the posts, and paying
+  // one player seconds before posting in the next thread is the ordinary rhythm of a round.
+  const since = Math.min(...entries.map((e) => e.myPostedAt));
 
   const byWonder = new Map<string, number>();
   for (const gift of gifts) {

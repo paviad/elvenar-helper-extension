@@ -61,7 +61,9 @@ export const processAncientWonderPhaseUpdate = async (
   // Other players' wonders report back too — after you give to one, and when you open one —
   // and your share in them is how the swap list knows what you have repaid.
   if (accountData && updated.some((phase) => phase?.playerId !== playerId)) {
-    accountData.kpGiven = recordKpGiven(accountData.kpGiven, updated, playerId, Math.floor(Date.now() / 1000));
+    // Stamped in the game's time, since it is set against your post times.
+    const now = Math.floor(Date.now() / 1000) + (accountData.serverClockOffset ?? 0);
+    accountData.kpGiven = recordKpGiven(accountData.kpGiven, updated, playerId, now);
   }
 
   const mine = updated.filter((phase) => phase?.entityBaseName && phase.playerId === playerId);

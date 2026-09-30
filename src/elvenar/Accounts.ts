@@ -86,6 +86,12 @@ export interface AccountData {
 
   /** Knowledge you have put into other players' wonders, for the swap list to count off. */
   kpGiven?: KpGiven;
+
+  /**
+   * Seconds to add to this machine's clock to read the game's, measured each time you post.
+   * Gifts are stamped with it so they can be set against post times to the second.
+   */
+  serverClockOffset?: number;
 }
 
 export const accounts_last_saved_single: Record<string, number> = {};

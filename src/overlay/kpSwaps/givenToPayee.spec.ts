@@ -61,9 +61,13 @@ describe('givenToPayee', () => {
     expect(givenToPayee(PAYEE, [entry('a', 60)], gifts)).toEqual({ total: 0, byWonder: [] });
   });
 
-  it('allows for the two clocks disagreeing by a little', () => {
-    // Your post is at T + 60 by the game's clock; the gift is stamped half a minute before it.
-    expect(givenToPayee(PAYEE, [entry('a', 60)], [gift(5, 'B_All_AW2', T + 30)]).total).toBe(5);
+  it('leaves out a gift made seconds before your post', () => {
+    // Paying off the thread before, then posting in this one straight away. Your post is at T + 60.
+    expect(givenToPayee(PAYEE, [entry('a', 60)], [gift(20, 'B_All_AW2', T + 47)]).total).toBe(0);
+  });
+
+  it('counts a gift made in the same second as your post', () => {
+    expect(givenToPayee(PAYEE, [entry('a', 60)], [gift(5, 'B_All_AW2', T + 60)]).total).toBe(5);
   });
 });
 

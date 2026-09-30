@@ -31,6 +31,11 @@ export async function processReplyMessage(
     const conversationPost = payload as MessageConversationPostVO;
     if (typeof conversationPost.conversationId === 'number' && conversationPost.messagePost) {
       appendPostToStoredMessage(accountData, conversationPost.conversationId, conversationPost.messagePost);
+      // The post was stamped by the game a moment ago, which makes it the best reading there is
+      // of how far this machine's clock is from the game's.
+      if (typeof conversationPost.messagePost.created_at === 'number') {
+        accountData.serverClockOffset = conversationPost.messagePost.created_at - Math.floor(Date.now() / 1000);
+      }
       continue;
     }
 
