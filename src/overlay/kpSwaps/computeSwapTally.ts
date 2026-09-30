@@ -1,8 +1,15 @@
 import { GameMessage, MessagePostVO, MessagesData } from '../../model/gameMessage';
-import { PendingRequest, SkippedSwapThread, SwapEntry, SwapTally } from '../../model/kpSwap';
+import {
+  DEFAULT_FULL_THREAD_POSTS,
+  FullThread,
+  PendingRequest,
+  SkippedSwapThread,
+  SwapEntry,
+  SwapTally,
+} from '../../model/kpSwap';
 import { parseSwapAmount } from './parseSwapAmount';
 
-const EMPTY: SwapTally = { entries: [], pendingRequests: [], skipped: [], latestRequestAt: 0 };
+const EMPTY: SwapTally = { entries: [], pendingRequests: [], skipped: [], fullThreads: [], latestRequestAt: 0 };
 
 // Game posts use bare "\r" for line breaks, so normalise before comparing.
 function normalize(text: string | undefined): string {
@@ -60,6 +67,45 @@ function dedupeThreads(messagesData: MessagesData | undefined): StoredThread[] {
   return [...best.entries()].map(([id, message]) => ({ id, message, overviewAt: overviewAt.get(id) ?? 0 }));
 }
 
+/**
+ * How far apart the last post in a thread and the opening of its replacement may be. Replacing
+ * a thread is one sitting's work — a notice in the old one, a new one with the same title — so
+ * this is generous without reaching back to a replacement from another day.
+ */
+const REPLACEMENT_WINDOW = 30 * 60;
+
+const subjectKey = (subject: string | undefined) => normalize(subject).toLowerCase().replace(/\s+/g, ' ');
+
+interface Opening {
+  threadId: string;
+  at: number;
+  wonder: string;
+}
+
+/**
+ * Threads you started with a request as their first post, by subject. A full swap thread is
+ * retired by posting a notice in it and starting a fresh one under the same title, and these
+ * are the fresh ones.
+ */
+function openingsBySubject(
+  threads: { id: string; message: GameMessage; posts: MessagePostVO[] }[],
+  triggers: Map<string, string>,
+  myPlayerId: number,
+): Map<string, Opening[]> {
+  const openings = new Map<string, Opening[]>();
+  for (const { id, message, posts } of threads) {
+    const first = posts[0];
+    const wonder =
+      first?.author?.player_id === myPlayerId ? triggers.get(normalize(first.post).toLowerCase()) : undefined;
+    if (!wonder) {
+      continue;
+    }
+    const key = subjectKey(message.subject);
+    openings.set(key, [...(openings.get(key) ?? []), { threadId: id, at: first.created_at, wonder }]);
+  }
+  return openings;
+}
+
 /** Lowercased "<wonder> please" -> the wonder's canonical spelling. */
 function buildTriggers(wonderNames: string[]): Map<string, string> {
   const triggers = new Map<string, string>();
@@ -95,20 +141,22 @@ export function computeSwapTally(
   wonderNames: string[],
   myPlayerId: number | undefined,
   since = 0,
+  fullThreadPosts = DEFAULT_FULL_THREAD_POSTS,
 ): SwapTally {
   if (!myPlayerId || wonderNames.length === 0) {
     return EMPTY;
   }
 
   const triggers = buildTriggers(wonderNames);
+  const threads = dedupeThreads(messagesData).map((t) => ({ ...t, posts: chronological(t.message.posts ?? []) }));
+  const openings = openingsBySubject(threads, triggers, myPlayerId);
   const entries: SwapEntry[] = [];
   const pendingRequests: PendingRequest[] = [];
   const skipped: SkippedSwapThread[] = [];
+  const fullThreads: FullThread[] = [];
   let latestRequestAt = 0;
 
-  for (const { id, message, overviewAt } of dedupeThreads(messagesData)) {
-    const posts = chronological(message.posts ?? []);
-
+  for (const { id, message, overviewAt, posts } of threads) {
     // The only thing that moves a thread's timestamp is a new post, so an overview newer than
     // the copy we hold means somebody has posted since we last fetched it — we just cannot see
     // who or what. The game sends the overview whenever the mail list refreshes but the posts
@@ -128,7 +176,27 @@ export function computeSwapTally(
       continue;
     }
 
-    const requestedWonder = triggers.get(normalize(posts[mine].post).toLowerCase());
+    // A last post of yours that is not a request can still be your turn in the chain: the notice
+    // that retires a full thread, with your request going into the new one instead. What marks
+    // it is the new thread — yours, under the same title, opened within the same sitting — so
+    // the notice itself can say anything. You still owe whoever posted before it.
+    const replacement = triggers.has(normalize(posts[mine].post).toLowerCase())
+      ? undefined
+      : (openings.get(subjectKey(message.subject)) ?? []).find(
+          (o) => o.threadId !== id && Math.abs(o.at - posts[mine].created_at) <= REPLACEMENT_WINDOW,
+        );
+
+    // Offered for retiring until its replacement is seen. A swap thread is one you have asked
+    // in, so a long thread of guild chatter is left alone.
+    if (
+      !replacement &&
+      posts.length >= fullThreadPosts &&
+      posts.some((p) => p.author?.player_id === myPlayerId && triggers.has(normalize(p.post).toLowerCase()))
+    ) {
+      fullThreads.push({ threadId: id, subject: message.subject || '(no subject)', posts: posts.length });
+    }
+
+    const requestedWonder = replacement?.wonder ?? triggers.get(normalize(posts[mine].post).toLowerCase());
     if (!requestedWonder) {
       continue;
     }
@@ -150,7 +218,9 @@ export function computeSwapTally(
     // timestamp is itself the news of a post after yours. Keeping it would go on subtracting
     // knowledge the wonder has already been given, since the payment reached the wonder's
     // invested total the moment it was made while the post reaches us only on the next fetch.
-    if (!stale && mine === posts.length - 1 && amount.kind === 'amount') {
+    //
+    // A retired thread asks for nothing: your request is waiting in the new one instead.
+    if (!replacement && !stale && mine === posts.length - 1 && amount.kind === 'amount') {
       pendingRequests.push({ threadId: id, requestedWonder, amount: amount.amount });
     }
 
@@ -192,6 +262,7 @@ export function computeSwapTally(
 
   entries.sort((a, b) => b.myPostedAt - a.myPostedAt);
   skipped.sort((a, b) => a.subject.localeCompare(b.subject));
+  fullThreads.sort((a, b) => b.posts - a.posts || a.subject.localeCompare(b.subject));
 
-  return { entries, pendingRequests, skipped, latestRequestAt };
+  return { entries, pendingRequests, skipped, fullThreads, latestRequestAt };
 }

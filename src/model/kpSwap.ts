@@ -57,12 +57,43 @@ export interface PendingRequest {
   amount: number;
 }
 
+/** How many posts make a swap thread worth retiring, until you choose otherwise. */
+export const DEFAULT_FULL_THREAD_POSTS = 100;
+const MIN_FULL_THREAD_POSTS = 100;
+const MAX_FULL_THREAD_POSTS = 1000;
+
+/**
+ * A post count typed into the setting, as a whole number within bounds, or undefined for
+ * something that is not a number at all. A thread is not worth retiring before a hundred
+ * posts, so the setting only ever raises the bar; the top is only there to keep a slip of the
+ * keyboard from switching the list off for good.
+ */
+export function clampFullThreadPosts(value: string | number): number | undefined {
+  const n = typeof value === 'number' ? value : Number(value.trim());
+  if (!Number.isFinite(n) || (typeof value === 'string' && value.trim() === '')) {
+    return undefined;
+  }
+  return Math.min(MAX_FULL_THREAD_POSTS, Math.max(MIN_FULL_THREAD_POSTS, Math.round(n)));
+}
+
+/**
+ * A swap thread of yours that has grown long enough to retire. The usual way is a notice in it
+ * and a fresh thread under the same title — see `computeSwapTally` for how that is recognised.
+ */
+export interface FullThread {
+  threadId: string;
+  subject: string;
+  posts: number;
+}
+
 export interface SwapTally {
   /** Debts from rounds you posted after the watermark. */
   entries: SwapEntry[];
   /** Requests still awaiting payment, whatever the watermark. */
   pendingRequests: PendingRequest[];
   skipped: SkippedSwapThread[];
+  /** Swap threads long enough to retire and not yet replaced, longest first. */
+  fullThreads: FullThread[];
   /**
    * Newest request post of yours across every thread, ignoring the watermark. Clearing the
    * list moves the watermark here, which is what retires the rounds currently shown. Taken

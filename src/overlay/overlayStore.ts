@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { WatchedWonder } from '../model/kpSwap';
+import { DEFAULT_FULL_THREAD_POSTS, WatchedWonder } from '../model/kpSwap';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
@@ -51,6 +51,10 @@ interface OverlayState {
   // stored figure to drift.
   watchedWonders: WatchedWonder[];
   setWatchedWonders: (wonders: WatchedWonder[]) => void;
+  // How many posts make a swap thread worth retiring. Yours to set, since guilds differ in how
+  // long they let a thread run.
+  fullThreadPosts: number;
+  setFullThreadPosts: (posts: number) => void;
   // Bumped when AncientWonderService reports a wonder's phase moving on, so the swap tab
   // re-reads the stored figures instead of waiting for the next city load.
   wonderKpUpdate: number;
@@ -144,6 +148,8 @@ const createOverlayStore = (accountId: string) => {
         setSwapsClearedAt: (at) => set({ swapsClearedAt: at }),
         watchedWonders: [],
         setWatchedWonders: (wonders) => set({ watchedWonders: wonders }),
+        fullThreadPosts: DEFAULT_FULL_THREAD_POSTS,
+        setFullThreadPosts: (posts) => set({ fullThreadPosts: posts }),
         wonderKpUpdate: 0,
         triggerWonderKpUpdate: () => set((state) => ({ wonderKpUpdate: state.wonderKpUpdate + 1 })),
         inventoryUpdate: 0,

@@ -5,8 +5,12 @@ const FOLDERS: MessageFolder[] = ['inbox', 'outbox'];
 
 // Store/overwrite a single message thread on the account. Responses that return one full
 // GuildMessageVO (markMessageAsRead, replyMessage) carry no folder, so the thread is matched
-// by id in whichever folder already holds it, defaulting to inbox.
-export function upsertStoredMessage(accountData: AccountData, message: GameMessage) {
+// by id in whichever folder already holds it, falling back to `newFolder` for one not seen yet.
+export function upsertStoredMessage(
+  accountData: AccountData,
+  message: GameMessage,
+  newFolder: MessageFolder = 'inbox',
+) {
   if (!message?.id) {
     return;
   }
@@ -15,7 +19,7 @@ export function upsertStoredMessage(accountData: AccountData, message: GameMessa
   const id = String(message.id);
 
   const targetFolder =
-    FOLDERS.find((f) => messagesData[f]?.messages[id] || messagesData[f]?.overview[id] !== undefined) ?? 'inbox';
+    FOLDERS.find((f) => messagesData[f]?.messages[id] || messagesData[f]?.overview[id] !== undefined) ?? newFolder;
 
   const folderData = messagesData[targetFolder] ?? { overview: {}, messages: {} };
   folderData.messages[id] = message;

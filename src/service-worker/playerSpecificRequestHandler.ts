@@ -19,6 +19,7 @@ import { processInventory } from '../elvenar/processInventory';
 import { processMessageMarkedAsRead } from '../elvenar/processMessageMarkedAsRead';
 import { processMessageOverview } from '../elvenar/processMessageOverview';
 import { processMessages } from '../elvenar/processMessages';
+import { processNewMessage } from '../elvenar/processNewMessage';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
@@ -150,6 +151,8 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:MessageService/fetchMessages': processMessages,
     'R:MessageService/markMessageAsRead': processMessageMarkedAsRead,
     'R:MessageService/replyMessage': processReplyMessage,
+    'R:MessageService/sendGuildMessage': processNewMessage,
+    'R:MessageService/sendMessage': processNewMessage,
 
     'R:TournamentService/getProvincesOverview': processTournyProvincesOverview,
     'R:WorldMapService/getProvinceInformation': processTournyProvinceInformation,
@@ -224,6 +227,8 @@ export const playerSpecificRequestHandlerInternal = async (
     case 'R:MessageService/fetchMessages':
     case 'R:MessageService/markMessageAsRead':
     case 'R:MessageService/replyMessage':
+    case 'R:MessageService/sendGuildMessage':
+    case 'R:MessageService/sendMessage':
       await sendMessagesUpdatedMessage(sharedInfo.tabId, msg.payload.type);
       break;
   }

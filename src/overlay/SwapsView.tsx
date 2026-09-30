@@ -5,6 +5,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import HistoryIcon from '@mui/icons-material/History';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import TuneIcon from '@mui/icons-material/Tune';
 import {
   Avatar,
   Box,
@@ -19,6 +20,7 @@ import {
   ListItemButton,
   Popover,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -28,7 +30,7 @@ import { countKpInstants, describeKpInstants } from '../inventory/kpInstants';
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
 import { KpGift } from '../model/kpGiven';
-import { SwapEntry, swapPaidKey, SwapTally } from '../model/kpSwap';
+import { clampFullThreadPosts, SwapEntry, swapPaidKey, SwapTally } from '../model/kpSwap';
 import { WonderKp } from '../model/wonderKp';
 import { ensureMinWidthAndHeight, expandPanel } from '../overlay';
 import {
@@ -86,6 +88,9 @@ async function copyText(text: string): Promise<boolean> {
 
 const requestTextFor = (wonderName: string) => `${wonderName} please`;
 
+/** Posted in a full thread to retire it, in the words the swap threads use. */
+const RETIRE_NOTICE = 'Please DELETE starting new thread';
+
 /** How long the "Copied" tick shows before the popover dismisses itself. */
 const COPIED_DISMISS_MS = 500;
 
@@ -120,13 +125,23 @@ export const SwapsView = () => {
   const watchedWonders = overlayStore((state) => state.watchedWonders);
   const setWatchedWonders = overlayStore((state) => state.setWatchedWonders);
   const wonderKpUpdate = overlayStore((state) => state.wonderKpUpdate);
+  const fullThreadPosts = overlayStore((state) => state.fullThreadPosts);
+  const setFullThreadPosts = overlayStore((state) => state.setFullThreadPosts);
   const inventoryUpdate = overlayStore((state) => state.inventoryUpdate);
 
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
   const [wonders, setWonders] = useState<AncientWonder[] | null>(null);
   const [wondersAnchor, setWondersAnchor] = useState<HTMLElement | null>(null);
+  const [settingsAnchor, setSettingsAnchor] = useState<HTMLElement | null>(null);
+  // What is in the box while you type, so a half-typed number is not thrown out or clamped
+  // under your fingers. Stored as soon as it reads as a number; put back as it was on leaving
+  // if it never did.
+  const [postsDraft, setPostsDraft] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Which full-thread button last copied, so it can say so for a moment.
+  const [copiedRetire, setCopiedRetire] = useState<string | null>(null);
+  const retireTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Switching back to Inbox unmounts this mid-countdown, so drop the pending dismissal.
   useEffect(
@@ -134,9 +149,23 @@ export const SwapsView = () => {
       if (closeTimer.current) {
         clearTimeout(closeTimer.current);
       }
+      if (retireTimer.current) {
+        clearTimeout(retireTimer.current);
+      }
     },
     [],
   );
+
+  const copyForRetiring = async (key: string, text: string) => {
+    if (!(await copyText(text))) {
+      return;
+    }
+    setCopiedRetire(key);
+    if (retireTimer.current) {
+      clearTimeout(retireTimer.current);
+    }
+    retireTimer.current = setTimeout(() => setCopiedRetire(null), 1500);
+  };
 
   useEffect(() => {
     ensureMinWidthAndHeight(400, 600);
@@ -182,8 +211,15 @@ export const SwapsView = () => {
   const wonderNames = useMemo(() => (wonders ?? []).map((w) => w.name), [wonders]);
 
   const tally: SwapTally = useMemo(
-    () => computeSwapTally(account?.messagesData, wonderNames, account?.playerId, swapsClearedAt ?? Infinity),
-    [account, wonderNames, swapsClearedAt],
+    () =>
+      computeSwapTally(
+        account?.messagesData,
+        wonderNames,
+        account?.playerId,
+        swapsClearedAt ?? Infinity,
+        fullThreadPosts,
+      ),
+    [account, wonderNames, swapsClearedAt, fullThreadPosts],
   );
 
   // Only the wonders you have built can be donated to, so that is the list worth offering.
@@ -328,6 +364,19 @@ export const SwapsView = () => {
             <AccountBalanceIcon fontSize='small' />
           </IconButton>
         </Tooltip>
+        <Tooltip title='Swaps settings'>
+          <IconButton
+            size='small'
+            aria-label='Swaps settings'
+            onClick={(e) => {
+              setPostsDraft(String(fullThreadPosts));
+              setSettingsAnchor(e.currentTarget);
+            }}
+            sx={{ color: gild.bronze }}
+          >
+            <TuneIcon fontSize='small' />
+          </IconButton>
+        </Tooltip>
         {tally.entries.length > 0 && (
           <Button size='small' onClick={clearAll} sx={{ color: gild.bronze, fontSize: 12 }}>
             Clear all
@@ -381,6 +430,52 @@ export const SwapsView = () => {
                   bgcolor: closed ? '#fff8e1' : 'rgba(255, 253, 246, 0.8)',
                 }}
               />
+            );
+          })}
+        </Box>
+      )}
+
+      {/* Only the text is offered: posting the notice and starting the new thread are yours
+          to do in the game. Once both are done the thread drops off this list by itself. */}
+      {tally.fullThreads.length > 0 && (
+        <Box
+          sx={{
+            px: 1.5,
+            py: 0.75,
+            background: gild.cardTop,
+            borderBottom: '1px solid',
+            borderColor: gild.mid,
+          }}
+        >
+          <Typography variant='caption' sx={{ color: gild.bronzeSoft, display: 'block', lineHeight: 1.3 }}>
+            Threads of {fullThreadPosts}+ posts — post the notice, then start a new one with the same title
+          </Typography>
+          {tally.fullThreads.map((full) => {
+            const noticeKey = `${full.threadId}:notice`;
+            const titleKey = `${full.threadId}:title`;
+            return (
+              <Stack key={full.threadId} direction='row' spacing={0.5} sx={{ alignItems: 'center', mt: 0.25 }}>
+                <Typography sx={{ ...bodyType, fontSize: 13, flex: 1, minWidth: 0 }} noWrap>
+                  {full.subject}
+                </Typography>
+                <Typography sx={{ ...timestampType, fontVariantNumeric: 'tabular-nums' }}>
+                  {full.posts} posts
+                </Typography>
+                <Button
+                  size='small'
+                  onClick={() => void copyForRetiring(noticeKey, RETIRE_NOTICE)}
+                  sx={{ color: gild.bronze, fontSize: 11, minWidth: 0, px: 0.75 }}
+                >
+                  {copiedRetire === noticeKey ? 'Copied' : 'Copy notice'}
+                </Button>
+                <Button
+                  size='small'
+                  onClick={() => void copyForRetiring(titleKey, full.subject)}
+                  sx={{ color: gild.bronze, fontSize: 11, minWidth: 0, px: 0.75 }}
+                >
+                  {copiedRetire === titleKey ? 'Copied' : 'Copy title'}
+                </Button>
+              </Stack>
             );
           })}
         </Box>
@@ -450,6 +545,46 @@ export const SwapsView = () => {
           )}
         </Box>
       )}
+
+      {/* In place for the same reason as the wonder list below: a portalled popover sits
+          behind the panel. */}
+      <Popover
+        open={settingsAnchor !== null}
+        anchorEl={settingsAnchor}
+        onClose={() => setSettingsAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        disablePortal
+        sx={{ zIndex: OVERLAY_POPOVER_Z_INDEX }}
+        slotProps={{ paper: { sx: { width: 240, p: 1.5, background: gild.cardTop } } }}
+      >
+        <Typography sx={{ ...authorType, mb: 1 }}>Swaps settings</Typography>
+        <TextField
+          size='small'
+          type='number'
+          label='Offer to replace a thread at'
+          value={postsDraft}
+          onChange={(e) => {
+            setPostsDraft(e.target.value);
+            const posts = clampFullThreadPosts(e.target.value);
+            if (posts !== undefined && String(posts) === e.target.value.trim()) {
+              setFullThreadPosts(posts);
+            }
+          }}
+          onBlur={() => {
+            const posts = clampFullThreadPosts(postsDraft);
+            if (posts !== undefined) {
+              setFullThreadPosts(posts);
+            }
+            setPostsDraft(String(posts ?? fullThreadPosts));
+          }}
+          // The game listens for keys on the page, so typing here must not reach it.
+          onKeyDown={(e) => e.stopPropagation()}
+          onKeyUp={(e) => e.stopPropagation()}
+          slotProps={{ htmlInput: { min: 100, max: 1000, step: 10 }, input: { endAdornment: 'posts' } }}
+          fullWidth
+        />
+      </Popover>
 
       <Popover
         open={wondersAnchor !== null}

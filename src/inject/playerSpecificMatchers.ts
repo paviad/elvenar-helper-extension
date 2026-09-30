@@ -165,6 +165,18 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   },
   {
     responseSelector: {
+      requestClass: 'MessageService',
+      requestMethod: 'sendGuildMessage',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'MessageService',
+      requestMethod: 'sendMessage',
+    },
+  },
+  {
+    responseSelector: {
       requestClass: 'TournamentService',
       requestMethod: 'getProvincesOverview',
     },

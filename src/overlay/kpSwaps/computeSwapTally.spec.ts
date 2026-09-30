@@ -1,4 +1,5 @@
 import { GameMessage, MessageFolder, MessagePostVO, MessagesData } from '../../model/gameMessage';
+import { DEFAULT_FULL_THREAD_POSTS as FULL_THREAD_POSTS } from '../../model/kpSwap';
 import { computeSwapTally } from './computeSwapTally';
 
 const ME = 100;
@@ -226,14 +227,14 @@ describe('computeSwapTally', () => {
   it('yields nothing without a player id or a wonder catalog', () => {
     const data = inbox(thread(7, '60 KP Thread', [post(ALICE, 'x', 100), post(ME, 'Golden Abyss please', 200)]));
 
-    const empty = { entries: [], pendingRequests: [], skipped: [], latestRequestAt: 0 };
+    const empty = { entries: [], pendingRequests: [], skipped: [], fullThreads: [], latestRequestAt: 0 };
 
     expect(computeSwapTally(data, WONDERS, undefined)).toEqual(empty);
     expect(computeSwapTally(data, [], ME)).toEqual(empty);
   });
 
   it('yields nothing when no messages are stored', () => {
-    const empty = { entries: [], pendingRequests: [], skipped: [], latestRequestAt: 0 };
+    const empty = { entries: [], pendingRequests: [], skipped: [], fullThreads: [], latestRequestAt: 0 };
 
     expect(computeSwapTally(undefined, WONDERS, ME)).toEqual(empty);
     expect(computeSwapTally({}, WONDERS, ME)).toEqual(empty);
@@ -241,6 +242,112 @@ describe('computeSwapTally', () => {
 
   // You post a request in every round, so a thread's most recent post of yours is a request
   // whether the round is live or was settled days ago. The watermark is what tells them apart.
+  describe('a full thread replaced by a new one', () => {
+    // The old thread: Bob, then Alice asking, then your notice retiring it.
+    const retired = (noticeAt = 300, subject = '20 KP Thread') =>
+      thread(7, subject, [
+        post(BOB, 'Martial Monastery please', 100),
+        post(ALICE, 'Needles of the Tempest please', 200),
+        post(ME, 'Please DELETE, starting a new thread', noticeAt),
+      ]);
+    const fresh = (openedAt = 310, subject = '20 KP Thread', by = ME) =>
+      thread(8, subject, [post(by, 'Golden Abyss please', openedAt)]);
+
+    it('still owes whoever posted before your notice, for the wonder you asked for in the new thread', () => {
+      const result = tally(inbox(retired(), fresh()));
+
+      expect(result.entries).toHaveLength(1);
+      expect(result.entries[0]).toMatchObject({
+        threadId: '7',
+        amount: 20,
+        recipientName: 'Alice',
+        recipientPlayerId: ALICE,
+        requestedWonder: 'Golden Abyss',
+        myPostedAt: 300,
+      });
+    });
+
+    it('waits for payment in the new thread only', () => {
+      const result = tally(inbox(retired(), fresh()));
+
+      expect(result.pendingRequests).toEqual([{ threadId: '8', requestedWonder: 'Golden Abyss', amount: 20 }]);
+    });
+
+    it('recognises it whichever of the two you did first', () => {
+      expect(tally(inbox(retired(400), fresh(310))).entries).toHaveLength(1);
+    });
+
+    it('lets clearing retire it like any other round', () => {
+      expect(tally(inbox(retired(), fresh()), 310).entries).toEqual([]);
+    });
+
+    it('matches the title however it is spaced or capitalised', () => {
+      expect(tally(inbox(retired(), fresh(310, '  20 kp   thread '))).entries).toHaveLength(1);
+    });
+
+    it('does not take a new thread under another title for a replacement', () => {
+      expect(tally(inbox(retired(), fresh(310, '30 KP Thread'))).entries).toEqual([]);
+    });
+
+    it('does not take a thread someone else opened for a replacement', () => {
+      expect(tally(inbox(retired(), fresh(310, '20 KP Thread', BOB))).entries).toEqual([]);
+    });
+
+    it('does not reach back to a thread opened in another sitting', () => {
+      expect(tally(inbox(retired(300), fresh(300 + 31 * 60))).entries).toEqual([]);
+    });
+  });
+
+  describe('fullThreads', () => {
+    /** A thread of `count` posts, alternating Bob and Alice, with `mine` as your last word. */
+    const long = (id: number, count: number, mine = 'Golden Abyss please', subject = '20 KP Thread') =>
+      thread(id, subject, [
+        ...Array.from({ length: count - 1 }, (_, i) => post(i % 2 ? ALICE : BOB, 'Martial Monastery please', i + 1)),
+        post(ME, mine, count),
+      ]);
+
+    it('offers a swap thread for retiring once it is long enough', () => {
+      expect(tally(inbox(long(7, FULL_THREAD_POSTS))).fullThreads).toEqual([
+        { threadId: '7', subject: '20 KP Thread', posts: FULL_THREAD_POSTS },
+      ]);
+    });
+
+    it('leaves a shorter one alone', () => {
+      expect(tally(inbox(long(7, FULL_THREAD_POSTS - 1))).fullThreads).toEqual([]);
+    });
+
+    it('keeps offering it after the notice, until the new thread is seen', () => {
+      const noticed = long(7, FULL_THREAD_POSTS, 'Please DELETE starting new thread');
+      noticed.posts.splice(-1, 0, post(ME, 'Golden Abyss please', FULL_THREAD_POSTS - 0.5));
+
+      expect(tally(inbox(noticed)).fullThreads.map((f) => f.threadId)).toEqual(['7']);
+
+      const replacement = thread(8, '20 KP Thread', [post(ME, 'Needles of the Tempest please', FULL_THREAD_POSTS + 5)]);
+      expect(tally(inbox(noticed, replacement)).fullThreads).toEqual([]);
+    });
+
+    it('leaves out a long thread you never asked in', () => {
+      const chatter = long(7, FULL_THREAD_POSTS, 'Happy birthday!', 'Guild chat');
+
+      expect(tally(inbox(chatter)).fullThreads).toEqual([]);
+    });
+
+    it('goes by the size you set', () => {
+      const data = inbox(long(7, 150));
+
+      expect(computeSwapTally(data, WONDERS, ME, 0, 150).fullThreads.map((f) => f.threadId)).toEqual(['7']);
+      expect(computeSwapTally(data, WONDERS, ME, 0, 151).fullThreads).toEqual([]);
+    });
+
+    it('lists the longest first', () => {
+      const result = tally(
+        inbox(long(7, FULL_THREAD_POSTS), long(8, FULL_THREAD_POSTS + 20, 'Golden Abyss please', '10 KP Thread')),
+      );
+
+      expect(result.fullThreads.map((f) => f.threadId)).toEqual(['8', '7']);
+    });
+  });
+
   describe('watermark', () => {
     const twoRounds = () =>
       inbox(
