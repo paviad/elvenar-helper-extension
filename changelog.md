@@ -17,6 +17,8 @@
 - **City Planner:** a building set down quickly after moving it no longer slips a tile.
 - **Chat:** older messages keep their authors' names after the chat reloads.
 - **Tourny Counters:** squad sizes are rounded up, as the game does.
+- **Reset Everything** also forgets the account picked in the open tab.
+- The "multiple accounts" notice no longer appears after visiting another city or saving a layout.
 
 ## v10.6.0
 - **Swaps: the KP instants you hold are listed at the top.** One line shows how many of each size you have and what they add up to, so you can see what you have to repay with without opening the inventory. It follows the game as you use or receive instants.

@@ -125,6 +125,9 @@ export const LayoutMain = () => {
       if (techTreeSpriteUrl) {
         await saveToStorage('techTreeSpriteUrl', techTreeSpriteUrl);
       }
+      // This tab's own state is kept in sessionStorage and would outlive the reload: the account
+      // picked, which no longer exists, and other members' imported stock.
+      useTabStore.persist.clearStorage();
       window.location.reload();
     }
   };

@@ -251,7 +251,8 @@ export async function saveAccount(accountId: string): Promise<boolean> {
   }
 
   const numAccounts = +((await getFromStorage('num_accounts')) || 0);
-  const currentNumAccounts = Object.keys(accounts).length;
+  // Accounts played, that is: a visited city, a saved layout or an autosave is no second account.
+  const currentNumAccounts = Object.values(accounts).filter((r) => !r.isDetached).length;
   if (numAccounts <= 1 && currentNumAccounts > 1) {
     await saveToStorage('notifyMultipleAccounts', 'true');
   }
