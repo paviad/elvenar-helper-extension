@@ -12,6 +12,8 @@ export async function refreshCity(city: CityContextType) {
     console.warn('ElvenAssist: No accountId set in CityViewState, cannot refresh city');
     return;
   }
+  // Written out first, or a save still waiting would put the autosave straight back.
+  await city.flushAutosave();
   await deleteCityById(`${accountId} (autosave)`);
   const response = await sendRefreshCityMessage(accountId);
   if (!response.success) {

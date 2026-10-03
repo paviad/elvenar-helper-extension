@@ -80,6 +80,8 @@ export interface CityContextType {
   replacedArea: ReplacedArea | null;
   setReplacedArea: (area: ReplacedArea | null) => void;
   triggerForceUpdate: () => void;
+  /** Writes out an autosave still waiting for edits to settle. Resolves once it is stored. */
+  flushAutosave: () => Promise<void>;
   forceUpdate: number;
   race: string;
   buildingFinder: BuildingFinder;
@@ -105,6 +107,13 @@ export interface CityContextType {
 const NO_BOOSTED_GOODS: string[] = [];
 
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
+
+/**
+ * How long edits must pause before the city is written out. A played account's autosave clones
+ * the whole account, trades and messages included, so holding '+' or Ctrl+Z down would otherwise
+ * write megabytes many times a second.
+ */
+const AUTOSAVE_DELAY_MS = 400;
 
 /**
  * The blocks with the entry's building put back at `pos`. A building a log entry names can be
@@ -225,9 +234,32 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     triggerLocalRefresh();
   }, [forceUpdate]);
 
+  // The save the latest edits are waiting on. Each edit replaces it, so only the last of a run of
+  // them is written; leaving the editor, switching city or closing the tab writes it at once.
+  const pendingAutosave = React.useRef<{ timer: ReturnType<typeof setTimeout>; save: () => Promise<void> } | null>(
+    null,
+  );
+  const flushAutosave = React.useCallback(async () => {
+    const pending = pendingAutosave.current;
+    if (!pending) return;
+    pendingAutosave.current = null;
+    clearTimeout(pending.timer);
+    await pending.save();
+  }, []);
+  React.useEffect(() => {
+    const onPageHide = () => void flushAutosave();
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      window.removeEventListener('pagehide', onPageHide);
+      void flushAutosave();
+    };
+  }, [flushAutosave]);
+
   React.useEffect(() => {
     setReady(false);
     async function fetchCityData() {
+      // A reload reads the autosave, so one still waiting has to be in it.
+      await flushAutosave();
       const { accountId } = latest.current;
       if (!accountId) {
         return;
@@ -257,7 +289,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       setRedoStack([]);
     }
     void fetchCityData();
-  }, [localRefresh]);
+  }, [localRefresh, flushAutosave]);
 
   // A latch, not a value anything renders: it is raised whenever a reload is about to
   // replace the blocks, and lowered by the save effect below to let that one replacement
@@ -285,26 +317,31 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const cityEntities = saveBack(Object.values(blocks));
-    if (isDetached) {
-      void saveCityInPlace(accountId, cityEntities, chapter, unlockedAreas);
+    const accountName = getAccountById(accountId)?.cityQuery?.accountName || accountId;
+    // Autosaving an autosave would fork the city again on every move.
+    if (!isDetached && accountName.endsWith(' (autosave)')) {
       return;
     }
 
-    const accountName = getAccountById(accountId)?.cityQuery?.accountName || accountId;
-    // Autosaving an autosave would fork the city again on every move.
-    if (accountName.endsWith(' (autosave)')) {
-      return;
+    // Everything the save needs is taken now, so a save that runs late still writes this city
+    // as it stood after this edit, to the account it was made in.
+    const cityEntities = saveBack(Object.values(blocks));
+    const save = isDetached
+      ? () => saveCityInPlace(accountId, cityEntities, chapter, unlockedAreas)
+      : () =>
+          saveCurrentCityAs(
+            accountId,
+            `${accountId} (autosave)`,
+            cityEntities,
+            chapter,
+            `${accountName} (autosave)`,
+            unlockedAreas,
+          );
+    if (pendingAutosave.current) {
+      clearTimeout(pendingAutosave.current.timer);
     }
-    void saveCurrentCityAs(
-      accountId,
-      `${accountId} (autosave)`,
-      cityEntities,
-      chapter,
-      `${accountName} (autosave)`,
-      unlockedAreas,
-    );
-  }, [blocks, unlockedAreas, ready, dragIndex]);
+    pendingAutosave.current = { timer: setTimeout(() => void flushAutosave(), AUTOSAVE_DELAY_MS), save };
+  }, [blocks, unlockedAreas, ready, dragIndex, flushAutosave]);
 
   React.useEffect(() => {
     if (cityEntities[0].length === 0) {
@@ -559,6 +596,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       replacedArea,
       setReplacedArea,
       triggerForceUpdate,
+      flushAutosave,
       forceUpdate,
       race,
       buildingFinder,
@@ -600,6 +638,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       unlockAreaMode,
       replacedArea,
       triggerForceUpdate,
+      flushAutosave,
       forceUpdate,
       race,
       buildingFinder,
