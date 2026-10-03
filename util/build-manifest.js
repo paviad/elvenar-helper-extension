@@ -1,5 +1,18 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
+
+// The short hash of HEAD, with `+dirty` when the working tree has uncommitted changes; null when
+// git is unavailable.
+function gitCommit() {
+  try {
+    const git = (cmd) => execSync(`git ${cmd}`, { cwd: __dirname, encoding: 'utf8' }).trim();
+    const hash = git('rev-parse --short HEAD');
+    return git('status --porcelain') ? `${hash}+dirty` : hash;
+  } catch {
+    return null;
+  }
+}
 
 // 1. Parse Command Line Arguments
 const args = process.argv.slice(2);
@@ -50,6 +63,14 @@ content = content.replace(/,\s*([}\]])/g, '$1');
 try {
   // 7. Validate and Format JSON
   const parsedJson = JSON.parse(content);
+
+  // Dev builds name the commit they were built from, shown on chrome://extensions in place of the
+  // version. Store packages keep the plain version.
+  if (!isProd && browser === 'chrome') {
+    const commit = gitCommit();
+    if (commit) parsedJson.version_name = `${parsedJson.version} (${commit})`;
+  }
+
   const finalJson = JSON.stringify(parsedJson, null, 2);
 
   // 8. Write to destination
