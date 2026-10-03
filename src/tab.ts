@@ -23,12 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAccountsSavedHandler();
 
     setupOtherPlayerCityUpdatedListener(async () => {
-      await loadAccountManagerFromStorage(true);
+      await loadAccountManagerFromStorage();
       useTabStore.getState()?.triggerForceUpdate();
       useTabStore.getState()?.setOtherCityUpdated(true);
     });
     setupCityEntitiesUpdatedListener(async (msg) => {
-      await loadAccountManagerFromStorage(true);
+      await loadAccountManagerFromStorage();
       // The reload replaces the stored account objects, so the store's copy is now stale. Views
       // that read it rather than getAccountById would recompute from the old one on the bump.
       const accountId = useTabStore.getState()?.accountId;
@@ -52,7 +52,7 @@ const setupAccountsSavedHandler = () => {
       const accountId = useTabStore.getState()?.accountId;
       const accountIdInMessage = getAccountByTabId(tabId);
       if (accountId && accountId === accountIdInMessage) {
-        await loadAccountManagerFromStorage(true);
+        await loadAccountManagerFromStorage();
         const accountData = getAccountById(accountId);
         useTabStore.getState()?.setAccountData(accountData);
       }

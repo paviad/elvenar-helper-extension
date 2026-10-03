@@ -180,7 +180,7 @@ export const MessagesView = () => {
         setFolderData({});
         return;
       }
-      await loadSingleAccountFromStorage(accountId, true);
+      await loadSingleAccountFromStorage(accountId);
       setFolderData(getAccountById(accountId)?.messagesData ?? {});
     }
     void load();

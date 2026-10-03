@@ -19,7 +19,7 @@ export async function refreshCity(city: CityContextType) {
     return;
   }
   setGlobalError(undefined);
-  await loadAccountManagerFromStorage(true);
+  await loadAccountManagerFromStorage();
   city.setSearchTerm(''); // Re-apply search term
   city.setMoveLog((_) => []); // Clear move log to prevent stale data issues
   city.setRedoStack((_) => []); // Clear redo stack as well

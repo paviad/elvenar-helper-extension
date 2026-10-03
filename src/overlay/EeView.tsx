@@ -29,7 +29,7 @@ export const EeView = () => {
         return;
       }
 
-      await loadSingleAccountFromStorage(accountId, true);
+      await loadSingleAccountFromStorage(accountId);
       const missingEe = await getEeMissingBuildings(accountId);
 
       setBuildings(missingEe);

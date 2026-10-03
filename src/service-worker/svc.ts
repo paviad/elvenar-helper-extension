@@ -10,7 +10,7 @@ import {
   getAccountById,
   getAccountByTabId,
   loadAccountManagerFromStorage,
-  saveAllAccounts,
+  saveAccount,
 } from '../elvenar/AccountManager';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
@@ -65,7 +65,7 @@ async function initialize() {
     }
   });
   setupCitySavedListener((msg) => {
-    void loadAccountManagerFromStorage(true);
+    void loadAccountManagerFromStorage();
   });
   setupRefreshCityListener(async (msg) => {
     await loadAccountManagerFromStorage();
@@ -79,7 +79,7 @@ async function initialize() {
     try {
       await loadAccountManagerFromStorage();
       await sendCityDataQuery({ ...accountData.sharedInfo, reqUrl: accountData.cityQuery.url });
-      await saveAllAccounts();
+      await saveAccount(msg.accountId);
       return { success: true };
     } catch (error) {
       console.error('Error in refreshCityListener sendCityDataQuery:', error);

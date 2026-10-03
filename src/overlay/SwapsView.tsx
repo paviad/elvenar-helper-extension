@@ -192,7 +192,7 @@ export const SwapsView = () => {
         setAccount({});
         return;
       }
-      await loadSingleAccountFromStorage(accountId, true);
+      await loadSingleAccountFromStorage(accountId);
       const data = getAccountById(accountId);
       setAccount({
         messagesData: data?.messagesData,

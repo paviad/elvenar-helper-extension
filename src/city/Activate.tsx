@@ -15,7 +15,7 @@ export function Activate() {
   React.useEffect(() => {
     async function loadData() {
       if (routeAccountId) {
-        await loadAccountManagerFromStorage(true);
+        await loadAccountManagerFromStorage();
         setAccountId(routeAccountId);
         setDoNavigate(true);
         await nav('/city', { replace: true });

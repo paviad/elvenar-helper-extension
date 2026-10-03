@@ -1,7 +1,15 @@
-import { getAllKeysFromStorage, getFromStorage, removeFromStorage } from '../chrome/storage';
+import { getAllKeysFromStorage, getFromStorage, getManyFromStorage, removeFromStorage } from '../chrome/storage';
 import { CityEntity } from '../model/cityEntity';
 import { UnlockedArea } from '../model/unlockedArea';
-import { AccountData, accounts, accounts_last_saved_single, saveSingleAccount } from './Accounts';
+import {
+  AccountData,
+  accountKey,
+  accounts,
+  accountStampKey,
+  heldStamps,
+  parseStamp,
+  saveSingleAccount,
+} from './Accounts';
 import { dbVersion, migrate } from './migrations';
 
 let saveHook: (() => void) | null = null;
@@ -19,19 +27,25 @@ export function generateAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
 }
 
+/**
+ * Puts an account in place. Handing back the object already held keeps it tied to the stored copy
+ * it was read from; a different object is an account built here as a whole, and its next save
+ * replaces whatever is stored.
+ */
 export function setAccountData(accountId: string, accountData: AccountData) {
+  if (accounts[accountId] !== accountData) {
+    heldStamps[accountId] = undefined;
+  }
   accounts[accountId] = accountData;
 }
 
-export async function saveAllAccounts() {
-  const allKeys = Object.keys(accounts);
-  for (const accountId of allKeys) {
-    await saveSingleAccount(accountId);
-  }
-
-  if (saveHook) {
+/** Saves one account, and lets the account list know when it was written. */
+export async function saveAccount(accountId: string) {
+  const saved = await saveSingleAccount(accountId);
+  if (saved && saveHook) {
     saveHook();
   }
+  return saved;
 }
 
 export function getAccountIdBySessionId(sessionId: string): string | undefined {
@@ -65,42 +79,77 @@ export function getAccountById(accountId: string): AccountData | undefined {
   return accounts[accountId];
 }
 
-let loadReadyResolve: () => void;
-const loadReadyPromise: Record<string, Promise<void> | undefined> = {};
-const initialized: Record<string, boolean> = {};
+/** Reads are numbered as they start, so a caller can tell one that started after it asked. */
+let readsStarted = 0;
+/** The read of each account under way, if any. */
+const reading: Record<string, { number: number; done: Promise<void> } | undefined> = {};
 
-export const loadSingleAccountFromStorage = async (accountId: string, refresh = false) => {
-  const accountsLastSavedRaw = await getFromStorage(`accounts_last_saved_${accountId}`);
-  if (accountsLastSavedRaw) {
-    const accountsLastSaved = parseInt(accountsLastSavedRaw, 10);
-    if (accounts_last_saved_single[accountId] && accountsLastSaved > accounts_last_saved_single[accountId]) {
-      refresh = true;
+/** Whether the copy held here is what storage holds under `storedStamp`. */
+function isHeldCopyCurrent(accountId: string, storedStamp: number) {
+  if (!(accountId in accounts)) {
+    return false;
+  }
+  // Built here and not saved yet: nothing in storage is newer than it.
+  const heldStamp = heldStamps[accountId];
+  return heldStamp === undefined || heldStamp === storedStamp;
+}
+
+async function readAccount(accountId: string) {
+  // The account and its stamp in one read, so the stamp is the one this copy was saved under.
+  const stored = await getManyFromStorage([accountKey(accountId), accountStampKey(accountId)]);
+  const accountRaw = stored[accountKey(accountId)];
+  if (!accountRaw) {
+    // Deleted elsewhere.
+    delete accounts[accountId];
+    delete heldStamps[accountId];
+    return;
+  }
+  accounts[accountId] = JSON.parse(accountRaw) as AccountData;
+  heldStamps[accountId] = parseStamp(stored[accountStampKey(accountId)]);
+}
+
+/**
+ * Brings the copy of an account held here up to what storage held when this was called.
+ *
+ * The small stamp beside the account tells whether the large account itself needs reading. A
+ * read that was already under way when this was called may have taken its copy before a save
+ * the caller is reacting to, so it is waited out and the stamp looked at again; a read that
+ * started after the call is good enough to join. However many callers arrive while one read is
+ * out, at most one further read follows it.
+ */
+export const loadSingleAccountFromStorage = async (accountId: string): Promise<void> => {
+  const askedAfter = readsStarted;
+  for (;;) {
+    const underWay = reading[accountId];
+    if (underWay) {
+      if (underWay.number > askedAfter) {
+        return underWay.done;
+      }
+      await underWay.done.catch(() => undefined);
+      continue;
     }
-  }
 
-  if (initialized[accountId] && !refresh) {
-    return;
+    const storedStamp = parseStamp(await getFromStorage(accountStampKey(accountId)));
+    if (reading[accountId]) {
+      // Another caller started a read while we were looking at the stamp.
+      continue;
+    }
+    if (isHeldCopyCurrent(accountId, storedStamp)) {
+      return;
+    }
+
+    const number = ++readsStarted;
+    const done = readAccount(accountId).finally(() => {
+      if (reading[accountId]?.number === number) {
+        reading[accountId] = undefined;
+      }
+    });
+    reading[accountId] = { number, done };
+    return done;
   }
-  initialized[accountId] = false;
-  if (loadReadyPromise[accountId]) {
-    await loadReadyPromise[accountId];
-    return;
-  }
-  loadReadyPromise[accountId] = new Promise<void>((resolve) => {
-    loadReadyResolve = resolve;
-  });
-  const accountsRaw = await getFromStorage(`accounts_${accountId}`);
-  if (accountsRaw) {
-    const parsedAccounts = JSON.parse(accountsRaw) as AccountData;
-    accounts[accountId] = { ...parsedAccounts };
-  }
-  initialized[accountId] = true;
-  loadReadyPromise[accountId] = undefined;
-  accounts_last_saved_single[accountId] = new Date().getTime();
-  loadReadyResolve();
 };
 
-export const loadAccountManagerFromStorage = async (refresh = false) => {
+export const loadAccountManagerFromStorage = async () => {
   await migrate(dbVersion);
 
   const keys = await getAllKeysFromStorage();
@@ -109,14 +158,16 @@ export const loadAccountManagerFromStorage = async (refresh = false) => {
 
   const storedAccountIds = new Set(accountKeys.map((k) => k.replace('accounts_', '')));
   for (const accountId of Object.keys(accounts)) {
-    if (!storedAccountIds.has(accountId)) {
+    // Deleted elsewhere - unless it was built here and is about to be saved.
+    if (!storedAccountIds.has(accountId) && heldStamps[accountId] !== undefined) {
       delete accounts[accountId];
+      delete heldStamps[accountId];
     }
   }
 
   for (const accountId of storedAccountIds) {
     try {
-      await loadSingleAccountFromStorage(accountId, refresh);
+      await loadSingleAccountFromStorage(accountId);
     } catch (err) {
       console.warn(`ElvenAssist: Failed to load account ${accountId} from storage, skipping. Error:`, err);
       await removeFromStorage([`accounts_${accountId}`, `accounts_last_saved_${accountId}`]);
@@ -130,6 +181,19 @@ export const getAllStoredAccounts = (includeAutosave = false): [string, AccountD
   }
   return Object.entries(accounts).filter(([accountId]) => !accountId.endsWith(' (autosave)'));
 };
+
+/**
+ * Puts a city saved from the editor in place of whatever is held under its name. The editor owns
+ * saved cities and the service worker owns the accounts being played, and each saves only what it
+ * owns, so a name that belongs to an account being played is refused.
+ */
+function replaceDetachedCity(accountId: string, accountData: AccountData) {
+  const existing = accounts[accountId];
+  if (existing && !existing.isDetached) {
+    throw new Error(`ElvenAssist: ${accountId} is an account being played, a city cannot be saved over it`);
+  }
+  setAccountData(accountId, accountData);
+}
 
 export const saveNewCityAs = async (
   accountId: string,
@@ -232,8 +296,8 @@ export const saveNewCityAs = async (
       expirationsEnd: {},
     },
   };
-  accounts[accountId] = accountData;
-  await saveAllAccounts();
+  replaceDetachedCity(accountId, accountData);
+  await saveAccount(accountId);
 };
 
 export const saveCurrentCityAs = async (
@@ -244,6 +308,8 @@ export const saveCurrentCityAs = async (
   name?: string,
   unlockedAreas?: UnlockedArea[],
 ) => {
+  // The copy is taken whole, so take it from what is stored now.
+  await loadSingleAccountFromStorage(currentAccountId);
   const currentAccount = getAccountById(currentAccountId);
   if (!currentAccount) {
     throw new Error('ElvenAssist: Current account not found');
@@ -275,8 +341,8 @@ export const saveCurrentCityAs = async (
   if (unlockedAreas) {
     newAccountData.cityQuery.unlockedAreas = unlockedAreas;
   }
-  accounts[newAccountId] = newAccountData;
-  await saveAllAccounts();
+  replaceDetachedCity(newAccountId, newAccountData);
+  await saveAccount(newAccountId);
 };
 
 export const saveCityInPlace = async (
@@ -300,10 +366,11 @@ export const saveCityInPlace = async (
   if (unlockedAreas) {
     accountData.cityQuery.unlockedAreas = unlockedAreas;
   }
-  await saveAllAccounts();
+  await saveAccount(accountId);
 };
 
 export const deleteCityById = async (accountId: string) => {
   delete accounts[accountId];
+  delete heldStamps[accountId];
   await removeFromStorage([`accounts_${accountId}`, `accounts_last_saved_${accountId}`, `research_${accountId}`]);
 };
