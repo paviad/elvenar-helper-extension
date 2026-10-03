@@ -1,6 +1,7 @@
 // src/fellowship-adventure/FaSummary.tsx
 import React, { useMemo } from 'react';
 import { Box, Button, Chip, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { useAccount } from '../elvenar/useAccount';
 import { Badges, getBadgeMap } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
 
@@ -24,7 +25,7 @@ export const FaSummary: React.FC<FaSummaryProps> = ({
   const accountId = useTabStore((state) => state.accountId);
   const removeImportedStock = useTabStore((state) => state.removeImportedStock);
   const clearImportedStock = useTabStore((state) => state.clearImportedStock);
-  const accountData = useTabStore((state) => state.accountData);
+  const accountData = useAccount(accountId);
 
   React.useEffect(() => {
     async function fetchBadgeMap() {

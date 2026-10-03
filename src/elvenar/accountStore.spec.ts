@@ -10,14 +10,15 @@ import {
 } from '../testing/fakeStorage';
 import { AccountData } from './Accounts';
 import {
-  clearSaveHook,
+  accountListVersion,
+  accountVersion,
   getAccountById,
   loadAccount,
   loadAllAccounts,
   putAccount,
   removeAccount,
   saveAccount,
-  setSaveHook,
+  subscribeToAccounts,
 } from './accountStore';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -217,20 +218,69 @@ describe('saveAccount', () => {
     expect(await saveAccount('l')).toBe(false);
     expect(storedPosts('l')).toBeUndefined();
   });
+});
 
-  it('tells the save hook about a save, and not about a refused one', async () => {
-    const hook = jest.fn();
-    setSaveHook(hook);
-    saveElsewhere('m', { posts: 1 });
-    await loadAccount('m');
+describe('subscribeToAccounts', () => {
+  const watch = () => {
+    const seen: string[] = [];
+    const unsubscribe = subscribeToAccounts((accountId) => seen.push(accountId));
+    return { seen, unsubscribe };
+  };
 
-    await saveAccount('m');
-    saveElsewhere('m', { posts: 2 });
+  it('reports a read that brought a new copy, and only that', async () => {
+    saveElsewhere('s1', { posts: 1 });
+    const { seen, unsubscribe } = watch();
+
+    await loadAccount('s1');
+    await loadAccount('s1');
+    saveElsewhere('s1', { posts: 2 });
+    await loadAccount('s1');
+    unsubscribe();
+
+    expect(seen).toEqual(['s1', 's1']);
+  });
+
+  it('reports a put, a save, a deletion elsewhere and a removal', async () => {
+    saveElsewhere('s2', { posts: 1 });
+    saveElsewhere('s3', { posts: 1 });
+    await loadAccount('s2');
+    await loadAccount('s3');
+    const { seen, unsubscribe } = watch();
+
+    putAccount('s4', { posts: 1 } as unknown as AccountData);
+    await saveAccount('s2');
+    deleteElsewhere('s3');
+    await loadAccount('s3');
+    await removeAccount('s2');
+    unsubscribe();
+
+    expect(seen).toEqual(['s4', 's2', 's3', 's2']);
+  });
+
+  it('counts a save, which may follow a change made in place', async () => {
+    saveElsewhere('s5', { posts: 1 });
+    await loadAccount('s5');
+    const before = accountVersion('s5');
+    const listBefore = accountListVersion();
+
+    setPosts('s5', 2);
+    await saveAccount('s5');
+
+    expect(accountVersion('s5')).toBe(before + 1);
+    expect(accountListVersion()).toBe(listBefore + 1);
+  });
+
+  it('does not report a refused save', async () => {
+    saveElsewhere('s6', { posts: 1 });
+    await loadAccount('s6');
+    saveElsewhere('s6', { posts: 2 });
     quietErrors();
-    await saveAccount('m');
-    clearSaveHook();
+    const { seen, unsubscribe } = watch();
 
-    expect(hook).toHaveBeenCalledTimes(1);
+    await saveAccount('s6');
+    unsubscribe();
+
+    expect(seen).toEqual([]);
   });
 });
 

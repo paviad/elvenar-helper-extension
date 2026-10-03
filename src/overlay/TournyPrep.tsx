@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { getAccountById, loadAccount } from '../elvenar/accountStore';
 import { getBattleUnitTypes } from '../elvenar/getBattleUnitTypes';
+import { useAccount } from '../elvenar/useAccount';
 import { ArmyDetails } from '../model/armyDetails';
 import { BattleUnitType } from '../model/battleUnitType';
 import { SeasonalEvent } from '../model/seasonalEvent';
@@ -27,10 +27,12 @@ export const TournyPrep = () => {
   const setLastTournament = store((state) => state.setLastTournament);
 
   const [almanac, setAlmanac] = useState<BattleUnitType[]>([]);
-  const [armyDetails, setArmyDetails] = useState<ArmyDetails | null>(null);
-  const [tournaments, setTournaments] = useState<SeasonalEvent[] | undefined>(undefined);
-  // `remainingTime` is relative to when the events were read, so that moment is kept to count from.
-  const [readAt, setReadAt] = useState<number | undefined>(undefined);
+  const cityQuery = useAccount(getAccountId())?.cityQuery;
+  const armyDetails: ArmyDetails | null = cityQuery?.armyDetails ?? null;
+  const tournaments: SeasonalEvent[] | undefined = cityQuery?.tournaments;
+  // `remainingTime` counts from when the game sent the events, which is when the city data
+  // holding them was written - not when this view happened to read it, which can be hours later.
+  const readAt = cityQuery?.timestamp;
   const [now, setNow] = useState(() => Date.now());
   const [chosen, setChosen] = useState<Which | undefined>(undefined);
 
@@ -41,18 +43,9 @@ export const TournyPrep = () => {
     return () => clearInterval(ticker);
   }, []);
 
+  // The almanac is the game's, not the account's, and does not change while the page is open.
   useEffect(() => {
     async function load() {
-      const accountId = getAccountId();
-      if (!accountId) return;
-
-      await loadAccount(accountId);
-      const accountData = getAccountById(accountId);
-
-      setArmyDetails(accountData?.cityQuery?.armyDetails ?? null);
-      setTournaments(accountData?.cityQuery?.tournaments);
-      setReadAt(Date.now());
-
       try {
         setAlmanac(await getBattleUnitTypes());
       } catch (err) {

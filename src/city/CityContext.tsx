@@ -5,6 +5,7 @@ import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { getMaxChapter } from '../elvenar/getMaxChapter';
 import { getMaxLevels } from '../elvenar/getMaxLevels';
+import { useAccount } from '../elvenar/useAccount';
 import { CityEntityEx } from '../model/cityEntity';
 import { Effect } from '../model/effect';
 import { StageProvision } from '../model/stageProvision';
@@ -139,19 +140,17 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = React.useState<boolean>(false);
   const [modified, setModified] = React.useState<boolean>(false);
 
-  // Account data is only replaced when the city is switched or reloaded, and a reload
-  // bumps forceUpdate, so those two cover every change to what this reads. forceUpdate is
-  // not referenced in the body — getAccountById reads a module-level store, which the lint
-  // rule cannot see, so the bump is the only thing telling us that store has moved on.
-  const { race, boostedGoods, isDetached } = React.useMemo(() => {
-    const accountData = accountId ? getAccountById(accountId) : undefined;
-    return {
-      race: accountData?.cityQuery?.userData.race ?? 'humans',
-      boostedGoods: accountData?.cityQuery?.boostedGoods ?? NO_BOOSTED_GOODS,
-      isDetached: accountData?.isDetached ?? true,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accountId, forceUpdate]);
+  const accountData = useAccount(accountId);
+  const race = accountData?.cityQuery?.userData.race ?? 'humans';
+  const isDetached = accountData?.isDetached ?? true;
+  // The account being played is read again after every save of it, which comes with every game
+  // response, and each read brings a new array. The goods themselves hardly ever change, so they
+  // are what decides whether everything worked out from them is worked out again.
+  const boostedGoodsKey = accountData?.cityQuery?.boostedGoods?.join(',') ?? '';
+  const boostedGoods = React.useMemo(
+    () => (boostedGoodsKey ? boostedGoodsKey.split(',') : NO_BOOSTED_GOODS),
+    [boostedGoodsKey],
+  );
 
   // Values the effects below read at the moment they fire, but which are not themselves
   // reasons to fire. Listing them as dependencies would turn each into a trigger — a

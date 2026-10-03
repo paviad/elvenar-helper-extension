@@ -4,7 +4,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
-import { clearSaveHook, listAccounts, setSaveHook } from '../elvenar/accountStore';
+import { getAccountById } from '../elvenar/accountStore';
+import { useAccountList } from '../elvenar/useAccount';
 import HelperAvatar from '../helper/HelperAvatar';
 import { useHelper } from '../helper/HelperContext';
 import { useTabStore } from '../util/tabStore';
@@ -15,14 +16,11 @@ import { StorageDialog } from './StorageDialog';
 const ERROR_BAR_HEIGHT = 48; // px
 
 export const LayoutMain = () => {
-  const forceUpdate = useTabStore((state) => state.forceUpdate);
-
   const setAccountId = useTabStore((state) => state.setAccountId);
   const accountId = useTabStore((state) => state.accountId);
   const globalError = useTabStore((state) => state.globalError);
   const setGlobalError = useTabStore((state) => state.setGlobalError);
-  // Dummy account list for dropdown
-  const accountList = listAccounts();
+  const accountList = useAccountList();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const selectedAccount = accountList.find(([id]) => id === accountId)?.[1];
   const accountName = selectedAccount?.cityQuery?.accountName || 'Select Account';
@@ -38,17 +36,8 @@ export const LayoutMain = () => {
   const setTechSprite = useTabStore((state) => state.setTechSprite);
   const helper = useHelper();
 
-  const [saved, triggerSaved] = React.useReducer((x) => x + 1, 0);
-
-  // Registering the hook is a side effect on module-level state, so it belongs in an
-  // effect rather than the render body — it used to run on every render, and left a
-  // closure over this component behind after unmount. triggerSaved is stable, so this
-  // registers once.
-  React.useEffect(() => {
-    setSaveHook(triggerSaved);
-    return () => clearSaveHook();
-  }, []);
-
+  // A save can be what makes this more than one account, so the notice is looked for again
+  // whenever the accounts change.
   React.useEffect(() => {
     async function Do() {
       const notifyMultipleAccounts = await getFromStorage('notifyMultipleAccounts');
@@ -58,7 +47,7 @@ export const LayoutMain = () => {
       }
     }
     void Do();
-  }, [saved, helper]);
+  }, [accountList, helper]);
 
   React.useEffect(() => {
     async function getSpriteUrl() {
@@ -86,19 +75,14 @@ export const LayoutMain = () => {
 
   // Picking an account when none is selected is a real side effect, so it stays an effect.
   // Reading the selected account's names is not, so it does not - they were held in state
-  // and written from here, which meant the title bar lagged a render behind the selection
-  // and, because accountList was never a dependency, could miss a rename outright.
-  // Both effects below re-read the accounts rather than closing over the render's copy:
-  // listAccounts builds a new array on every call, so as a dependency it would
-  // fire them on every render, and as an omitted one it left them reading a stale list.
+  // and written from here, which meant the title bar lagged a render behind the selection.
   React.useEffect(() => {
     if (accountId) {
       return;
     }
-    const accounts = listAccounts();
-    const firstNonDetachedAccount = accounts.find(([, data]) => !data.isDetached);
-    setAccountId(firstNonDetachedAccount ? firstNonDetachedAccount[0] : accounts[0]?.[0]);
-  }, [accountId, forceUpdate, setAccountId]);
+    const firstNonDetachedAccount = accountList.find(([, data]) => !data.isDetached);
+    setAccountId(firstNonDetachedAccount ? firstNonDetachedAccount[0] : accountList[0]?.[0]);
+  }, [accountId, accountList, setAccountId]);
 
   const otherCityUpdated = useTabStore((state) => state.otherCityUpdated);
   const setOtherCityUpdated = useTabStore((state) => state.setOtherCityUpdated);
@@ -106,7 +90,7 @@ export const LayoutMain = () => {
     if (otherCityUpdated) {
       // Reset the flag
       setOtherCityUpdated(false);
-      const visitedCity = listAccounts().find((r) => r[0] === 'Visited')?.[1].cityQuery?.accountName || '???';
+      const visitedCity = getAccountById('Visited')?.cityQuery?.accountName || '???';
       helper.showMessage('visited_other', { params: [visitedCity] });
     }
   }, [otherCityUpdated, setOtherCityUpdated, helper]);

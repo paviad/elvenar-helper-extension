@@ -24,17 +24,34 @@ const accounts: Record<string, AccountData> = {};
  */
 const heldStamps: Record<string, number | undefined> = {};
 
-let saveHook: (() => void) | null = null;
+/**
+ * A count per account of the changes to it seen here: replaced by a read or a put, deleted, or
+ * saved, which may follow a change made to it in place. A view compares counts rather than
+ * objects, since a change made in place leaves the object the same.
+ */
+const versions: Record<string, number> = {};
+/** The same count across all accounts, for views that list them. */
+let listVersion = 0;
+const listeners = new Set<(accountId: string) => void>();
 
-/** Called after each account this context saves, so a list of accounts can be redrawn. */
-export function setSaveHook(hook: () => void) {
-  saveHook = hook;
+function changed(accountId: string) {
+  versions[accountId] = (versions[accountId] ?? 0) + 1;
+  listVersion++;
+  for (const listener of listeners) {
+    listener(accountId);
+  }
 }
 
-/** Paired with setSaveHook so the layout can drop its hook when it unmounts. */
-export function clearSaveHook() {
-  saveHook = null;
+/** Calls `listener` after every change to an account held here. Returns the unsubscribe. */
+export function subscribeToAccounts(listener: (accountId: string) => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
+
+export const accountVersion = (accountId: string) => versions[accountId] ?? 0;
+export const accountListVersion = () => listVersion;
 
 export function generateAccountId(playerId: number, worldId: string): string {
   return `${playerId}@${worldId}`;
@@ -87,6 +104,7 @@ export function putAccount(accountId: string, accountData: AccountData) {
     heldStamps[accountId] = undefined;
   }
   accounts[accountId] = accountData;
+  changed(accountId);
 }
 
 /** Reads are numbered as they start, so a caller can tell one that started after it asked. */
@@ -110,8 +128,11 @@ async function readAccount(accountId: string) {
   const accountRaw = stored[accountKey(accountId)];
   if (!accountRaw) {
     // Deleted elsewhere.
-    delete accounts[accountId];
-    delete heldStamps[accountId];
+    if (accountId in accounts) {
+      delete accounts[accountId];
+      delete heldStamps[accountId];
+      changed(accountId);
+    }
     return;
   }
   let account: AccountData;
@@ -123,11 +144,13 @@ async function readAccount(accountId: string) {
     console.warn(`ElvenAssist: Account ${accountId} in storage is corrupt, deleting it. Error:`, err);
     delete accounts[accountId];
     delete heldStamps[accountId];
+    changed(accountId);
     await removeFromStorage([accountKey(accountId), accountStampKey(accountId)]);
     return;
   }
   accounts[accountId] = account;
   heldStamps[accountId] = parseStamp(stored[accountStampKey(accountId)]);
+  changed(accountId);
 }
 
 /**
@@ -185,6 +208,7 @@ export const loadAllAccounts = async () => {
     if (!storedAccountIds.has(accountId) && heldStamps[accountId] !== undefined) {
       delete accounts[accountId];
       delete heldStamps[accountId];
+      changed(accountId);
     }
   }
 
@@ -240,8 +264,7 @@ export async function saveAccount(accountId: string): Promise<boolean> {
     [accountStampKey(accountId)]: stamp.toString(),
   });
   heldStamps[accountId] = stamp;
-
-  saveHook?.();
+  changed(accountId);
   return true;
 }
 
@@ -249,5 +272,6 @@ export async function saveAccount(accountId: string): Promise<boolean> {
 export async function removeAccount(accountId: string) {
   delete accounts[accountId];
   delete heldStamps[accountId];
+  changed(accountId);
   await removeFromStorage([accountKey(accountId), accountStampKey(accountId), `research_${accountId}`]);
 }

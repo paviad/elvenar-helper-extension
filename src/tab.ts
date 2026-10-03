@@ -6,7 +6,7 @@ import {
   setupOtherPlayerCityUpdatedListener,
 } from './chrome/messages';
 import { createReactUi } from './city/createReactUi';
-import { getAccountById, getAccountByTabId, loadAllAccounts } from './elvenar/accountStore';
+import { getAccountByTabId, loadAccount, loadAllAccounts } from './elvenar/accountStore';
 import { useTabStore } from './util/tabStore';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
@@ -29,12 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     setupCityEntitiesUpdatedListener(async (msg) => {
       await loadAllAccounts();
-      // The reload replaces the stored account objects, so the store's copy is now stale. Views
-      // that read it rather than getAccountById would recompute from the old one on the bump.
-      const accountId = useTabStore.getState()?.accountId;
-      if (accountId) {
-        useTabStore.getState()?.setAccountData(getAccountById(accountId));
-      }
+      // The views showing an account redraw by themselves; this is for the city grid, which takes
+      // the new layout only when told to, since it would otherwise throw away unsaved moves.
       useTabStore.getState()?.triggerForceUpdate();
     });
     createReactUi();
@@ -52,9 +48,7 @@ const setupAccountsSavedHandler = () => {
       const accountId = useTabStore.getState()?.accountId;
       const accountIdInMessage = getAccountByTabId(tabId);
       if (accountId && accountId === accountIdInMessage) {
-        await loadAllAccounts();
-        const accountData = getAccountById(accountId);
-        useTabStore.getState()?.setAccountData(accountData);
+        await loadAccount(accountId);
       }
     }
     handleUpdate().catch((error) => {

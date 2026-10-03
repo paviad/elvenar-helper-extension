@@ -4,8 +4,8 @@ import SecurityIcon from '@mui/icons-material/Security';
 import ShieldMoonIcon from '@mui/icons-material/ShieldMoon';
 import TimerIcon from '@mui/icons-material/Timer';
 import { Alert, Box, Chip, Divider, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import { getAccountById, loadAccount } from '../elvenar/accountStore';
 import { getBattleUnitTypes } from '../elvenar/getBattleUnitTypes';
+import { useAccount } from '../elvenar/useAccount';
 import { ArmyDetails, TroopType } from '../model/armyDetails';
 import { BattleUnitType } from '../model/battleUnitType';
 import { Army, TournyProvinceInformation } from '../model/tourny/provinceInformation';
@@ -67,8 +67,10 @@ export const TournyAdvisor = () => {
   const tournyData = store((state) => state.tournyData);
 
   const [almanac, setAlmanac] = useState<BattleUnitType[]>([]);
-  const [armyDetails, setArmyDetails] = useState<ArmyDetails | null>(null);
-  const [tournamentRunning, setTournamentRunning] = useState(false);
+  const cityQuery = useAccount(getAccountId())?.cityQuery;
+  const armyDetails: ArmyDetails | null = cityQuery?.armyDetails ?? null;
+  // 'new' covers the window between a round being announced and the first fight.
+  const tournamentRunning = !!cityQuery?.tournaments?.some((t) => t.state === 'running' || t.state === 'new');
   const [now, setNow] = useState(() => Date.now());
 
   const spriteUrl = chrome.runtime.getURL('military_sprite.png');
@@ -78,19 +80,9 @@ export const TournyAdvisor = () => {
     return () => clearInterval(ticker);
   }, []);
 
+  // The almanac is the game's, not the account's, and does not change while the page is open.
   useEffect(() => {
     async function load() {
-      const accountId = getAccountId();
-      if (!accountId) return;
-
-      await loadAccount(accountId);
-      const accountData = getAccountById(accountId);
-
-      setArmyDetails(accountData?.cityQuery?.armyDetails ?? null);
-      // 'new' covers the window between a round being announced and the first fight.
-      const tournaments = accountData?.cityQuery?.tournaments;
-      setTournamentRunning(!!tournaments?.some((t) => t.state === 'running' || t.state === 'new'));
-
       try {
         setAlmanac(await getBattleUnitTypes());
       } catch (err) {
@@ -98,7 +90,7 @@ export const TournyAdvisor = () => {
       }
     }
     void load();
-  }, [tournyData]);
+  }, []);
 
   /** What the player can actually field, which is the roster the composition is drawn from. */
   const roster = useMemo(() => {

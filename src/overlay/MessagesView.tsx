@@ -14,7 +14,6 @@ import {
   Badge,
   Box,
   Chip,
-  CircularProgress,
   Collapse,
   IconButton,
   List,
@@ -27,7 +26,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { getAccountById, loadAccount } from '../elvenar/accountStore';
+import { useAccount } from '../elvenar/useAccount';
 import { GameMessage, MessageFolder, MessageFolderData, MessagePostVO } from '../model/gameMessage';
 import { ensureMinWidthAndHeight } from '../overlay';
 import {
@@ -144,16 +143,18 @@ interface Match {
 /** What the pane switch at the top selects: a message folder, or the swap tally. */
 type MessagesPane = MessageFolder | 'swaps';
 
+const NO_FOLDERS: Partial<Record<MessageFolder, MessageFolderData>> = {};
+
 export const MessagesView = () => {
   const overlayStore = getOverlayStore();
-  const messagesUpdate = overlayStore((state) => state.messagesUpdate);
   const messagesDetailsReceived = overlayStore((state) => state.messagesDetailsReceived);
 
   const [folder, setFolder] = useState<MessageFolder>('inbox');
   // Swaps rides alongside the folders rather than replacing the selected one, so coming back
   // from it lands on whichever folder you were reading.
   const [showSwaps, setShowSwaps] = useState(false);
-  const [folderData, setFolderData] = useState<Partial<Record<MessageFolder, MessageFolderData>> | null>(null);
+  const folderData: Partial<Record<MessageFolder, MessageFolderData>> =
+    useAccount(getAccountId())?.messagesData ?? NO_FOLDERS;
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [searchActive, setSearchActive] = useState(false);
@@ -172,19 +173,6 @@ export const MessagesView = () => {
   useEffect(() => {
     ensureMinWidthAndHeight(400, 600);
   }, []);
-
-  useEffect(() => {
-    async function load() {
-      const accountId = getAccountId();
-      if (!accountId) {
-        setFolderData({});
-        return;
-      }
-      await loadAccount(accountId);
-      setFolderData(getAccountById(accountId)?.messagesData ?? {});
-    }
-    void load();
-  }, [messagesUpdate]);
 
   const current = folderData?.[folder];
 
@@ -274,14 +262,6 @@ export const MessagesView = () => {
       : navigated
         ? `${currentMatchIndex + 1} / ${matches.length}`
         : `${matches.length} match${matches.length === 1 ? '' : 'es'}`;
-
-  if (folderData === null) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', p: 4 }}>
-        <CircularProgress size={32} />
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>

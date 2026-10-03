@@ -25,7 +25,7 @@ import {
   Typography,
 } from '@mui/material';
 import { AncientWonder, getBuildingFinder } from '../city/buildingFinder';
-import { getAccountById, loadAccount } from '../elvenar/accountStore';
+import { useAccount } from '../elvenar/useAccount';
 import { countKpInstants, describeKpInstants } from '../inventory/kpInstants';
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
@@ -116,7 +116,6 @@ const centered = {
 
 export const SwapsView = () => {
   const overlayStore = getOverlayStore();
-  const messagesUpdate = overlayStore((state) => state.messagesUpdate);
   const messagesDetailsReceived = overlayStore((state) => state.messagesDetailsReceived);
   const paidSwaps = overlayStore((state) => state.paidSwaps);
   const setPaidSwaps = overlayStore((state) => state.setPaidSwaps);
@@ -124,12 +123,21 @@ export const SwapsView = () => {
   const setSwapsClearedAt = overlayStore((state) => state.setSwapsClearedAt);
   const watchedWonders = overlayStore((state) => state.watchedWonders);
   const setWatchedWonders = overlayStore((state) => state.setWatchedWonders);
-  const wonderKpUpdate = overlayStore((state) => state.wonderKpUpdate);
   const fullThreadPosts = overlayStore((state) => state.fullThreadPosts);
   const setFullThreadPosts = overlayStore((state) => state.setFullThreadPosts);
-  const inventoryUpdate = overlayStore((state) => state.inventoryUpdate);
 
-  const [account, setAccount] = useState<AccountSnapshot | null>(null);
+  const accountData = useAccount(getAccountId());
+  const account: AccountSnapshot = useMemo(
+    () => ({
+      messagesData: accountData?.messagesData,
+      playerId: accountData?.cityQuery?.userData?.player_id,
+      cityEntities: accountData?.cityQuery?.cityEntities,
+      wonderKp: accountData?.cityQuery?.wonderKp,
+      kpGifts: accountData?.kpGiven?.gifts,
+      kpInstants: accountData?.inventoryItems && countKpInstants(accountData.inventoryItems),
+    }),
+    [accountData],
+  );
   const [wonders, setWonders] = useState<AncientWonder[] | null>(null);
   const [wondersAnchor, setWondersAnchor] = useState<HTMLElement | null>(null);
   const [settingsAnchor, setSettingsAnchor] = useState<HTMLElement | null>(null);
@@ -184,27 +192,6 @@ export const SwapsView = () => {
     }
     void loadWonders();
   }, []);
-
-  useEffect(() => {
-    async function readAccount() {
-      const accountId = getAccountId();
-      if (!accountId) {
-        setAccount({});
-        return;
-      }
-      await loadAccount(accountId);
-      const data = getAccountById(accountId);
-      setAccount({
-        messagesData: data?.messagesData,
-        playerId: data?.cityQuery?.userData?.player_id,
-        cityEntities: data?.cityQuery?.cityEntities,
-        wonderKp: data?.cityQuery?.wonderKp,
-        kpGifts: data?.kpGiven?.gifts,
-        kpInstants: data?.inventoryItems && countKpInstants(data.inventoryItems),
-      });
-    }
-    void readAccount();
-  }, [messagesUpdate, wonderKpUpdate, inventoryUpdate]);
 
   // Until the watermark has been established, Infinity keeps every existing round out of the
   // list — so it never flashes your whole swap history on first open.
@@ -319,7 +306,7 @@ export const SwapsView = () => {
     expandPanel(false);
   };
 
-  if (account === null || wonders === null) {
+  if (wonders === null) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1, p: 4 }}>
         <CircularProgress size={32} />

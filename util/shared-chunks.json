@@ -9,6 +9,7 @@
     "./src/elvenar/getExpirations.ts",
     "./src/elvenar/getPremiumBuildingHints.ts",
     "./src/elvenar/migrations.ts",
+    "./src/elvenar/useAccount.ts",
     "./src/util/compression.ts",
     "./src/util/formatTimeLeft.tsx",
     "./src/widgets/DiscordButton.tsx"

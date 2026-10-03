@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Box } from '@mui/material';
-import { getAccountById } from '../elvenar/accountStore';
+import { useAccount } from '../elvenar/useAccount';
 import { State } from '../model/cityEntity';
 import { formatResourceName } from '../util/formatResourceName';
 import { CityProvider, useCity } from './CityContext';
@@ -45,14 +45,11 @@ function CityViewInner() {
   // two used to carry, which froze them mid-drag by leaving stale state in place.
   const settledBlocks = useSettledValue(city.blocks, city.dragIndex === null);
 
+  const transcendenceData = useAccount(city.accountId)?.transcendenceData;
   const transcendenceViewModels = useMemo(() => {
     if (!city.accountId) {
       return NO_TRANSCENDENCE;
     }
-
-    // Account data is only replaced when the city is switched or reloaded, and a reload
-    // bumps forceUpdate, so those two cover every change to what this reads.
-    const transcendenceData = getAccountById(city.accountId)?.transcendenceData;
 
     if (!transcendenceData) {
       return NO_TRANSCENDENCE;
@@ -86,10 +83,7 @@ function CityViewInner() {
             endTime: b.transcendence.endTime,
           }) satisfies TranscendenceViewModel,
       );
-    // forceUpdate is not referenced in the body: getAccountById reads a module-level store,
-    // which the lint rule cannot see, so the bump is the only signal that it has moved on.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settledBlocks, city.buildingFinder, city.accountId, city.forceUpdate]);
+  }, [settledBlocks, city.buildingFinder, city.accountId, transcendenceData]);
 
   const switchableProductionViewModels = useMemo(() => {
     // The goods names come from the context, which already loads them once for the whole

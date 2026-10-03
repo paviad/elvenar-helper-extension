@@ -1,6 +1,7 @@
 // src/fellowship-adventure/FaStockSidePanel.tsx
 import React from 'react';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { useAccount } from '../elvenar/useAccount';
 import { Badges, getBadgeMap } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
 
@@ -12,7 +13,7 @@ export const FaStockSidePanel: React.FC<FaStockSidePanelProps> = ({ badges = {} 
   const [BADGE_MAP, setBadgeMap] = React.useState<Record<string, string>>({});
 
   const accountId = useTabStore((state) => state.accountId);
-  const accountData = useTabStore((state) => state.accountData);
+  const accountData = useAccount(accountId);
 
   // Safely extract the human-readable name, falling back to the ID if missing
   const ownerName = accountData?.cityQuery?.userData?.user_name || accountId;

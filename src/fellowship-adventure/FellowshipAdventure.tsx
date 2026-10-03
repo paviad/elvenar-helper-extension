@@ -5,6 +5,7 @@ import { getFromStorage, saveToStorage } from '../chrome/storage';
 import { generateCity } from '../city/generateCity';
 import { AccountData, FaQuest } from '../elvenar/Accounts';
 import { getEffects } from '../elvenar/getEffects';
+import { useAccount } from '../elvenar/useAccount';
 import { Badges } from '../model/badges';
 import { useTabStore } from '../util/tabStore';
 import { badgeSpriteInfo } from './badgeSpriteInfo';
@@ -47,8 +48,7 @@ export function FellowshipAdventure() {
   const [paramsLoaded, setParamsLoaded] = React.useState(false);
 
   const accountId = useTabStore((state) => state.accountId);
-  const accountData = useTabStore((state) => state.accountData);
-  const forceUpdate = useTabStore((state) => state.forceUpdate);
+  const accountData = useAccount(accountId);
 
   // Access the scoped store and actions
   const importedStockByAccount = useTabStore((state) => state.importedStockByAccount);
@@ -169,7 +169,7 @@ export function FellowshipAdventure() {
     return () => {
       cancelled = true;
     };
-  }, [accountId, accountData, mmEnchantmentEnabled, enchantmentBonus, forceUpdate, paramsLoaded]);
+  }, [accountId, accountData, mmEnchantmentEnabled, enchantmentBonus, paramsLoaded]);
 
   // State moves first and storage catches up: the slider calls this on every drag tick, so making
   // the redraw wait on a storage round trip would make it feel like it was sticking.

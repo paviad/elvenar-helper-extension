@@ -24,6 +24,7 @@ import {
 import { useNavigate } from 'react-router';
 import { getBuildingFinder } from '../city/buildingFinder';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
+import { useAccount } from '../elvenar/useAccount';
 import { InventoryItem } from '../model/inventoryItem';
 import { formatResourceName } from '../util/formatResourceName';
 import { useTabStore } from '../util/tabStore';
@@ -78,7 +79,7 @@ export const InventoryMain = () => {
   const [boostedGoods, setBoostedGoods] = React.useState<string[]>([]);
 
   const accountId = useTabStore((state) => state.accountId);
-  const accountData = useTabStore((state) => state.accountData);
+  const accountData = useAccount(accountId);
   const navigate = useNavigate();
 
   // Zustand Store UI State

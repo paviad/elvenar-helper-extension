@@ -25,10 +25,6 @@ interface OverlayState {
   setLastSeenChat: (timestamp: number) => void;
   autoOpenTrade?: boolean;
   setAutoOpenTrade: (autoOpen: boolean) => void;
-  eeUpdate: number;
-  triggerEeUpdate: () => void;
-  messagesUpdate: number;
-  triggerMessagesUpdate: () => void;
   // Session-scoped: true once a fetchMessages (detail) response arrived this session.
   // Not persisted, so a fresh session starts false and the view flags stored data as stale.
   messagesDetailsReceived: boolean;
@@ -55,13 +51,6 @@ interface OverlayState {
   // long they let a thread run.
   fullThreadPosts: number;
   setFullThreadPosts: (posts: number) => void;
-  // Bumped when AncientWonderService reports a wonder's phase moving on, so the swap tab
-  // re-reads the stored figures instead of waiting for the next city load.
-  wonderKpUpdate: number;
-  triggerWonderKpUpdate: () => void;
-  // Bumped when the game pushes the inventory, so views showing what you hold re-read it.
-  inventoryUpdate: number;
-  triggerInventoryUpdate: () => void;
   // Persisted, so a page refresh does not blank the tab until the game happens to resend the
   // tournament responses. Every field is refreshed the moment a new one arrives, and the upgrade
   // timers are stored as absolute times so a reloaded copy still counts down correctly.
@@ -134,10 +123,6 @@ const createOverlayStore = (accountId: string) => {
         setLastSeenChat: (timestamp) => set({ lastSeenChat: timestamp }),
         autoOpenTrade: true,
         setAutoOpenTrade: (autoOpen) => set({ autoOpenTrade: autoOpen }),
-        eeUpdate: 0,
-        triggerEeUpdate: () => set((state) => ({ eeUpdate: state.eeUpdate + 1 })),
-        messagesUpdate: 0,
-        triggerMessagesUpdate: () => set((state) => ({ messagesUpdate: state.messagesUpdate + 1 })),
         messagesDetailsReceived: false,
         setMessagesDetailsReceived: (received) => set({ messagesDetailsReceived: received }),
         quests: undefined,
@@ -150,10 +135,6 @@ const createOverlayStore = (accountId: string) => {
         setWatchedWonders: (wonders) => set({ watchedWonders: wonders }),
         fullThreadPosts: DEFAULT_FULL_THREAD_POSTS,
         setFullThreadPosts: (posts) => set({ fullThreadPosts: posts }),
-        wonderKpUpdate: 0,
-        triggerWonderKpUpdate: () => set((state) => ({ wonderKpUpdate: state.wonderKpUpdate + 1 })),
-        inventoryUpdate: 0,
-        triggerInventoryUpdate: () => set((state) => ({ inventoryUpdate: state.inventoryUpdate + 1 })),
         tournyData: undefined,
         setTournyData: (data) => set({ tournyData: data }),
         lastTournament: undefined,
@@ -163,17 +144,7 @@ const createOverlayStore = (accountId: string) => {
         name: `overlay-store-${accountId}`,
         storage: createJSONStorage(() => chromeStorage),
         partialize: (state) => {
-          const {
-            offeredGoods,
-            forceUpdate,
-            overlayExpanded,
-            eeUpdate,
-            messagesUpdate,
-            messagesDetailsReceived,
-            wonderKpUpdate,
-            inventoryUpdate,
-            ...toPersist
-          } = state;
+          const { offeredGoods, forceUpdate, overlayExpanded, messagesDetailsReceived, ...toPersist } = state;
           return toPersist;
         },
       },

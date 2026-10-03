@@ -284,7 +284,11 @@ const messageReceiver = (
 ): boolean | undefined => {
   const callback1 = callbackMap[message.type];
   const callbacks2 = Object.values(callbackMap2)
-    .filter((entry) => entry.messageType === message.type)
+    .filter(
+      (entry) =>
+        entry.messageType === message.type ||
+        (entry.messageType === ANY_GENERIC_RESPONSE && message.type.startsWith('genericResponse:')),
+    )
     .map((entry) => entry.callback);
   const callbacks = callback1 ? [callback1, ...callbacks2] : callbacks2;
 
@@ -327,6 +331,19 @@ export const setupGenericResponseListener = <T>(
 ) => {
   const id = crypto.randomUUID();
   callbackMap2[id] = { messageType: `genericResponse:${reqRespType}`, callback };
+  return id;
+};
+
+const ANY_GENERIC_RESPONSE = 'genericResponse:*';
+
+/**
+ * Called for every game response the service worker has handled for this tab. It is sent once
+ * the service worker has saved what the response changed, so a stored account read from here on
+ * includes it.
+ */
+export const setupAnyGenericResponseListener = (callback: (message: GenericResponseMessage<unknown>) => void) => {
+  const id = crypto.randomUUID();
+  callbackMap2[id] = { messageType: ANY_GENERIC_RESPONSE, callback };
   return id;
 };
 

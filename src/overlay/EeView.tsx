@@ -3,14 +3,14 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'; // Represents enc
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import { Box, Chip, CircularProgress, Divider, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
-import { loadAccount } from '../elvenar/accountStore';
+import { useAccount } from '../elvenar/useAccount';
 import { formatTimeLeft } from '../util/formatTimeLeft';
 import { EeMissingBuilding, getEeMissingBuildings } from '../util/getEeMissingBuildings';
-import { getAccountId, getOverlayStore } from './overlayStore';
+import { getAccountId } from './overlayStore';
 
 export const EeView = () => {
-  const overlayStore = getOverlayStore();
-  const eeUpdate = overlayStore((state) => state.eeUpdate);
+  const accountId = getAccountId();
+  const account = useAccount(accountId);
 
   const [buildings, setBuildings] = useState<EeMissingBuilding[] | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -21,22 +21,21 @@ export const EeView = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Worked out again whenever the account is: getEeMissingBuildings reads the one held now.
   useEffect(() => {
-    async function Do() {
-      const accountId = getAccountId();
-
-      if (!accountId) {
-        return;
-      }
-
-      await loadAccount(accountId);
-      const missingEe = await getEeMissingBuildings(accountId);
-
-      setBuildings(missingEe);
+    if (!accountId || !account) {
+      return;
     }
-
-    void Do();
-  }, [eeUpdate]);
+    let superseded = false;
+    void getEeMissingBuildings(accountId).then((missingEe) => {
+      if (!superseded) {
+        setBuildings(missingEe);
+      }
+    });
+    return () => {
+      superseded = true;
+    };
+  }, [accountId, account]);
 
   // Sort by help received first (descending time left), then alphabetically by name
   const sortedBuildings = useMemo(() => {

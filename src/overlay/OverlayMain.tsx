@@ -17,15 +17,16 @@ import {
 } from '@mui/material';
 import { createPortal } from 'react-dom';
 import {
-  clearActiveEffectsUpdatedListener,
   clearGenericResponseListener,
   clearMessagesUpdatedListener,
   clearTradeParsedListener,
-  setupActiveEffectsUpdatedListener,
+  setupAnyGenericResponseListener,
   setupGenericResponseListener,
   setupMessagesUpdatedListener,
   setupTradeParsedListener,
 } from '../chrome/messages';
+import { loadAccount } from '../elvenar/accountStore';
+import { isAccountOnScreen } from '../elvenar/useAccount';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { TournyProvinceInformation } from '../model/tourny/provinceInformation';
@@ -41,7 +42,7 @@ import { MessagesView } from './MessagesView';
 import { sameOfferedGoods } from './offeredGoods';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
-import { getOverlayStore } from './overlayStore';
+import { getAccountId, getOverlayStore } from './overlayStore';
 import { OverlayTab, OverlayTabKey, shortcutLetter, visibleOverlayTabs } from './overlayTabs';
 import { parseSocketMessage } from './parseSocketMessage';
 import { QuestJournal } from './QuestJournal';
@@ -57,6 +58,9 @@ const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
 const SIZE_PRESET_ORDER: OverlaySizePreset[] = ['small', 'large'];
 
 const DISCORD_INVITE_URL = 'https://discord.gg/zYzUUDcMrv';
+
+/** How long the overlay lets game responses gather before reading the account they saved. */
+const ACCOUNT_READ_DELAY_MS = 300;
 
 interface OverlayMainProps {
   /**
@@ -226,23 +230,16 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }
     });
 
-    setupActiveEffectsUpdatedListener(() => {
-      useOverlayStore.getState().triggerEeUpdate();
-    });
-
     setupMessagesUpdatedListener((msg) => {
-      const store = useOverlayStore.getState();
-      store.triggerMessagesUpdate();
       // A detail response means the user opened Messages in-game this session -> data is live.
       if (msg.reqRespType === 'R:MessageService/fetchMessages') {
-        store.setMessagesDetailsReceived(true);
+        useOverlayStore.getState().setMessagesDetailsReceived(true);
       }
     });
 
     return () => {
       window.removeEventListener('message', messageHandler);
       clearTradeParsedListener();
-      clearActiveEffectsUpdatedListener();
       clearMessagesUpdatedListener();
     };
   }, [useOverlayStore]);
@@ -266,20 +263,22 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   useEffect(() => {
     const listenerIds: string[] = [];
 
-    for (const type of ['R:AncientWonderService/phaseUpdated', 'R:AncientWonderService/getOtherPlayerAncientWonders']) {
-      listenerIds.push(
-        setupGenericResponseListener<void>(type, () => {
-          // The service worker has already folded the new figures into the stored account;
-          // this only tells the swap tab to read them again.
-          useOverlayStore.getState().triggerWonderKpUpdate();
-        }),
-      );
-    }
-
-    // Sent after the service worker has saved the new inventory, so a re-read picks it up.
+    // Every response arrives after the service worker has saved the account, so this is where the
+    // views here catch up with it, and every view showing the account redraws. The service worker
+    // saves after each response whether or not it changed anything, and the account runs to
+    // megabytes, read on the game's own thread: a burst of clicks would read it again for each
+    // one. A read starts a moment after the first response of a burst instead, and takes in the
+    // rest; the account is not read at all while no view here shows it.
+    let readPending: ReturnType<typeof setTimeout> | undefined;
     listenerIds.push(
-      setupGenericResponseListener<void>('R:InventoryService/updateItems', () => {
-        useOverlayStore.getState().triggerInventoryUpdate();
+      setupAnyGenericResponseListener(() => {
+        readPending ??= setTimeout(() => {
+          readPending = undefined;
+          const accountId = getAccountId();
+          if (accountId && isAccountOnScreen(accountId)) {
+            void loadAccount(accountId);
+          }
+        }, ACCOUNT_READ_DELAY_MS);
       }),
     );
 
@@ -365,6 +364,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     );
 
     return () => {
+      clearTimeout(readPending);
       listenerIds.forEach((id) => {
         clearGenericResponseListener(id);
       });
