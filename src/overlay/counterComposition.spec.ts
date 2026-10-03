@@ -26,8 +26,7 @@ const ROSTER_IDS = [
 
 const roster = ALMANAC.filter((u) => ROSTER_IDS.includes(u.unitTypeId));
 
-const wave = (...unitTypeIds: string[]): Army[] =>
-  unitTypeIds.map((unitTypeId) => ({ unitTypeId, size: 100 }) as Army);
+const wave = (...unitTypeIds: string[]): Army[] => unitTypeIds.map((unitTypeId) => ({ unitTypeId, size: 100 }) as Army);
 
 const compose = (army: Army[], stock?: Record<string, number>) =>
   calculateCounterComposition(army, roster, ALMANAC, PLAYER_SQUAD_SIZE, stock);
@@ -107,6 +106,15 @@ describe('calculateCounterComposition', () => {
     const dryad = result?.slots.find((s) => s.unit.unitTypeId === 'tg_lr_4');
     expect(dryad?.sizePerSquad).toBe(PLAYER_SQUAD_SIZE);
     expect(dryad?.totalUnits).toBe(PLAYER_SQUAD_SIZE * 2);
+  });
+
+  it('rounds a squad up when the squad size does not divide by the unit weight', () => {
+    const army = wave('mob_hblr_5', 'mob_hblr_5', 'mob_hblr_5', 'mob_hbhm_5', 'mob_hbhm_5');
+    const result = calculateCounterComposition(army, roster, ALMANAC, PLAYER_SQUAD_SIZE + 1, undefined);
+
+    // 5101 / 4 is 1275.25: a squad of Orc Strategists holds 1276 of them, not 1275.
+    const strategist = result?.slots.find((s) => s.unit.unitTypeId === 'tg_hr_4');
+    expect(strategist?.sizePerSquad).toBe(1276);
   });
 
   it('always fills exactly five squads', () => {

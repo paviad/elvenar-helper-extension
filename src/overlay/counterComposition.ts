@@ -30,7 +30,7 @@ export interface CompositionSlot {
   building: TrainingBuilding;
   /** How many of the five squad slots this unit fills. */
   squads: number;
-  /** Units in one squad — `floor(playerSquadSize / unitWeight)`, as the game sizes them. */
+  /** Units in one squad — `ceil(playerSquadSize / unitWeight)`, as the game sizes them. */
   sizePerSquad: number;
   /** What fielding this part of the composition costs you in total. */
   totalUnits: number;
@@ -68,8 +68,7 @@ const strengthAgainst = (attacker: BattleUnitType | undefined, targetTroopType: 
   attacker?.strengths?.[TROOP_TYPE_MAP[targetTroopType]] || 0;
 
 /** Heavy ranged out of the barracks or mercenary camp reaches the whole map. */
-const hasFullMapRange = ({ building, troopType }: ParsedUnitId): boolean =>
-  troopType === 'hr' && building !== 'tg';
+const hasFullMapRange = ({ building, troopType }: ParsedUnitId): boolean => troopType === 'hr' && building !== 'tg';
 
 const isRanged = ({ troopType }: ParsedUnitId): boolean => troopType === 'lr' || troopType === 'hr';
 
@@ -108,8 +107,7 @@ const rankAgainst = (candidates: Candidate[], enemy: BattleUnitType | undefined,
   candidates
     .map<RankedPick>((candidate) => ({
       candidate,
-      score:
-        strengthAgainst(candidate.unit, enemyTroopType) - strengthAgainst(enemy, candidate.parsed.troopType),
+      score: strengthAgainst(candidate.unit, enemyTroopType) - strengthAgainst(enemy, candidate.parsed.troopType),
     }))
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
@@ -155,7 +153,7 @@ export function calculateCounterComposition(
 
   const candidates = roster.reduce<Candidate[]>((acc, unit) => {
     const parsed = parseUnitId(unit.unitTypeId);
-    const sizePerSquad = unit.unitWeight > 0 ? Math.floor(playerSquadSize / unit.unitWeight) : 0;
+    const sizePerSquad = unit.unitWeight > 0 ? Math.ceil(playerSquadSize / unit.unitWeight) : 0;
     if (parsed && sizePerSquad > 0) {
       acc.push({ unit, parsed, sizePerSquad });
     }
