@@ -261,21 +261,32 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     const removals: (() => void)[] = [];
 
     // Every response arrives after the service worker has saved the account, so this is where the
-    // views here catch up with it, and every view showing the account redraws. The service worker
-    // saves after each response whether or not it changed anything, and the account runs to
+    // views here catch up with it, and every view showing the account redraws. The account runs to
     // megabytes, read on the game's own thread: a burst of clicks would read it again for each
     // one. A read starts a moment after the first response of a burst instead, and takes in the
-    // rest; the account is not read at all while no view here shows it.
+    // rest. The account is not read at all while no view here shows it, nor while the panel is
+    // collapsed - the views stay mounted then, but nobody can see them - and is read once on
+    // expanding instead.
     let readPending: ReturnType<typeof setTimeout> | undefined;
+    const readIfShown = () => {
+      const accountId = getAccountId();
+      if (accountId && useOverlayStore.getState().overlayExpanded && isAccountOnScreen(accountId)) {
+        void loadAccount(accountId);
+      }
+    };
     removals.push(
       listen('genericResponse', () => {
         readPending ??= setTimeout(() => {
           readPending = undefined;
-          const accountId = getAccountId();
-          if (accountId && isAccountOnScreen(accountId)) {
-            void loadAccount(accountId);
-          }
+          readIfShown();
         }, ACCOUNT_READ_DELAY_MS);
+      }),
+    );
+    removals.push(
+      useOverlayStore.subscribe((state, previous) => {
+        if (state.overlayExpanded && !previous.overlayExpanded) {
+          readIfShown();
+        }
       }),
     );
 

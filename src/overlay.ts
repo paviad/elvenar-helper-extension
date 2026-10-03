@@ -530,6 +530,8 @@ async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlo
   store.persist.onFinishHydration((state) => {
     const chapter = getAccountById(accountId)?.cityQuery?.chapter || 0;
     state.setChapter(chapter);
+    // The panel can be opened while the hourglass is still up, before there was a store to tell.
+    state.setOverlayExpanded(getOverlaySize() !== undefined);
 
     if (!state.lastSeenChat) {
       // First time setup, set last seen chat to now
