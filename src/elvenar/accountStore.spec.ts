@@ -140,6 +140,29 @@ describe('loadAllAccounts', () => {
 
     expect(posts('all3')).toBe(3);
   });
+
+  it('deletes an account whose stored record is corrupt', async () => {
+    saveElsewhere('corrupt', { posts: 1 });
+    stored['accounts_corrupt'] = '{"posts": 1';
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    await loadAllAccounts();
+
+    expect(getAccountById('corrupt')).toBeUndefined();
+    expect(stored['accounts_corrupt']).toBeUndefined();
+  });
+
+  it('keeps an account in storage when reading it fails', async () => {
+    saveElsewhere('unreadable', { posts: 4 });
+    storageModule.getManyFromStorage.mockImplementationOnce(() => Promise.reject(new Error('storage failed')));
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    await loadAllAccounts();
+    expect(storedPosts('unreadable')).toBe(4);
+
+    await loadAllAccounts();
+    expect(posts('unreadable')).toBe(4);
+  });
 });
 
 describe('saveAccount', () => {

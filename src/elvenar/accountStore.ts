@@ -114,7 +114,19 @@ async function readAccount(accountId: string) {
     delete heldStamps[accountId];
     return;
   }
-  accounts[accountId] = JSON.parse(accountRaw) as AccountData;
+  let account: AccountData;
+  try {
+    account = JSON.parse(accountRaw) as AccountData;
+  } catch (err) {
+    // Storage writes a value whole or not at all, so a record that does not parse will never
+    // parse, and keeping it only fails every read after this one.
+    console.warn(`ElvenAssist: Account ${accountId} in storage is corrupt, deleting it. Error:`, err);
+    delete accounts[accountId];
+    delete heldStamps[accountId];
+    await removeFromStorage([accountKey(accountId), accountStampKey(accountId)]);
+    return;
+  }
+  accounts[accountId] = account;
   heldStamps[accountId] = parseStamp(stored[accountStampKey(accountId)]);
 }
 
@@ -180,8 +192,8 @@ export const loadAllAccounts = async () => {
     try {
       await loadAccount(accountId);
     } catch (err) {
+      // Storage itself failed. The account may be perfectly sound, so it is kept for the next try.
       console.warn(`ElvenAssist: Failed to load account ${accountId} from storage, skipping. Error:`, err);
-      await removeFromStorage([accountKey(accountId), accountStampKey(accountId)]);
     }
   }
 };

@@ -5,6 +5,7 @@
 - **Swaps:** A payment made just before you posted in the next thread no longer counts toward that thread's player. Paying one player and then posting straight away is the usual rhythm of a round, and when both threads had the same player, the earlier payment filled part of the new debt.
 - **The helper window keeps up when the game sends several updates at once,** such as the three that follow starting a new thread. It could show the older picture until the next update arrived; it now always shows what arrived last.
 - **The City Planner no longer overwrites your game data.** Saving a city, or moving a building while autosave was on, wrote every account back from the planner tab's copy, so messages, trades and knowledge points recorded since you opened the tab could be lost. The planner now saves only the city you are editing. If the same city is open in two planner tabs, the later save is not written over the earlier one; that tab asks you to reload instead.
+- **A browser storage error no longer deletes an account.** If the extension could not read an account from storage when it started, it deleted that account. It now skips it and tries again next time; only a record that is actually damaged is removed.
 
 ## v10.6.0
 - **Swaps: the KP instants you hold are listed at the top.** One line shows how many of each size you have and what they add up to, so you can see what you have to repay with without opening the inventory. It follows the game as you use or receive instants.
