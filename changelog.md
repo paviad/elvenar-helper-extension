@@ -8,6 +8,7 @@
 - **City Planner:** an imported city gets a squad size estimated from its chapter, instead of the chapter number.
 - **Tourny Prep:** the tournament countdown no longer overstates the time left when the game has been open a while.
 - A browser storage error no longer deletes an account.
+- Updates the game sends after the browser has been idle for a while are no longer missed.
 
 ## v10.6.0
 - **Swaps: the KP instants you hold are listed at the top.** One line shows how many of each size you have and what they add up to, so you can see what you have to repay with without opening the inventory. It follows the game as you use or receive instants.

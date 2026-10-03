@@ -2,6 +2,7 @@ import { setListener, setupMessageListener } from '../chrome/messages';
 import { getAccountById, getAccountByTabId, loadAllAccounts, saveAccount } from '../elvenar/accountStore';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
+import { accountManagerReady } from './accountManagerReady';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
 import { nonSpecificRequestHandler } from './nonSpecificRequestHandler';
 import { openOrRestoreTab } from './openOrRestoreTab';
@@ -24,14 +25,6 @@ console.log('Elvenar Extension: Service Worker Loaded');
 (globalThis as unknown as { ElvenAssist: Record<string, unknown> }).ElvenAssist = {
   researchResources: researchResourcesReport,
 };
-
-/**
- * The accounts read back from storage, started as early as possible and awaited by any handler
- * that looks an account up. The service worker is torn down whenever it goes idle, so a message
- * can wake it and be delivered while `accounts` is still the empty object a fresh worker starts
- * with - a lookup made then finds nothing at all.
- */
-const accountManagerReady = loadAllAccounts();
 
 async function initialize() {
   setupMessageListener();

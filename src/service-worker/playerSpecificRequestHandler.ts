@@ -32,6 +32,7 @@ import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypoint
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
+import { accountManagerReady } from './accountManagerReady';
 
 type Processor = (
   untypedResponseArray: ElvenarRequestResponseEntry[],
@@ -85,6 +86,10 @@ export const playerSpecificRequestHandlerInternal = async (
   if (!/^(Q:|R:)/.test(msg.payload.type)) {
     return;
   }
+
+  // A message is often what woke the worker, so the accounts may still be on their way in from
+  // storage. Waited for here, inside the concatMap, so the messages keep the order they arrived in.
+  await accountManagerReady;
 
   const sharedInfo = msg.payload.payload.sharedInfo;
   sharedInfo.tabId = sender.tab?.id || -1;
