@@ -1,7 +1,7 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { TranscendenceResponse } from '../model/transcendence';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 
 export const processTranscendenceService = async (
   untypedJson: unknown,

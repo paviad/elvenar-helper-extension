@@ -2,7 +2,7 @@ import { setupAggregateRequestResponseListener } from './chrome/aggregateRequest
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
 import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { setupSocketResponseListener } from './chrome/socketResponse';
-import { getAccountById, getAccountByTabId, loadAccountManagerFromStorage } from './elvenar/AccountManager';
+import { getAccountById, getAccountByTabId, loadAllAccounts } from './elvenar/accountStore';
 import { createOverlayUi } from './overlay/createOverlayUi';
 import {
   DEFAULT_OVERLAY_SIZE,
@@ -510,7 +510,7 @@ const initFunc = () => {
 };
 
 async function setup(tabId: number, contentDiv: HTMLDivElement, headerActionsSlot: HTMLDivElement) {
-  await loadAccountManagerFromStorage();
+  await loadAllAccounts();
   const accountId = getAccountByTabId(tabId);
   if (!accountId) {
     return;

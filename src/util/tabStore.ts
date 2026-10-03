@@ -1,8 +1,8 @@
 // src/util/tabStore.ts
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { getAccountById } from '../elvenar/AccountManager';
 import { AccountData } from '../elvenar/Accounts';
+import { getAccountById } from '../elvenar/accountStore';
 import { Badges } from '../model/badges';
 
 interface TabState {

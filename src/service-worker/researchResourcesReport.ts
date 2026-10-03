@@ -1,4 +1,4 @@
-import { getAllStoredAccounts, loadAccountManagerFromStorage } from '../elvenar/AccountManager';
+import { listAccounts, loadAllAccounts } from '../elvenar/accountStore';
 import { buildChapterResearchGraph, ExportedTechnology } from '../elvenar/buildChapterResearchGraph';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
 import { getResearchStatus } from '../elvenar/getResearchStatus';
@@ -30,8 +30,8 @@ export interface ResearchResourcesReport {
  *   await ElvenAssist.researchResources('accountId') // a particular one
  */
 export async function researchResourcesReport(accountId?: string): Promise<ResearchResourcesReport | undefined> {
-  await loadAccountManagerFromStorage();
-  const stored = getAllStoredAccounts().map(([id]) => id);
+  await loadAllAccounts();
+  const stored = listAccounts().map(([id]) => id);
 
   const id = accountId ?? (stored.length === 1 ? stored[0] : undefined);
   if (!id) {

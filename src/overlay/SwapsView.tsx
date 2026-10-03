@@ -25,7 +25,7 @@ import {
   Typography,
 } from '@mui/material';
 import { AncientWonder, getBuildingFinder } from '../city/buildingFinder';
-import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { getAccountById, loadAccount } from '../elvenar/accountStore';
 import { countKpInstants, describeKpInstants } from '../inventory/kpInstants';
 import { CityEntity } from '../model/cityEntity';
 import { MessagesData } from '../model/gameMessage';
@@ -186,13 +186,13 @@ export const SwapsView = () => {
   }, []);
 
   useEffect(() => {
-    async function loadAccount() {
+    async function readAccount() {
       const accountId = getAccountId();
       if (!accountId) {
         setAccount({});
         return;
       }
-      await loadSingleAccountFromStorage(accountId);
+      await loadAccount(accountId);
       const data = getAccountById(accountId);
       setAccount({
         messagesData: data?.messagesData,
@@ -203,7 +203,7 @@ export const SwapsView = () => {
         kpInstants: data?.inventoryItems && countKpInstants(data.inventoryItems),
       });
     }
-    void loadAccount();
+    void readAccount();
   }, [messagesUpdate, wonderKpUpdate, inventoryUpdate]);
 
   // Until the watermark has been established, Infinity keeps every existing round out of the

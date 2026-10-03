@@ -4,7 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
-import { clearSaveHook, getAllStoredAccounts, setSaveHook } from '../elvenar/AccountManager';
+import { clearSaveHook, listAccounts, setSaveHook } from '../elvenar/accountStore';
 import HelperAvatar from '../helper/HelperAvatar';
 import { useHelper } from '../helper/HelperContext';
 import { useTabStore } from '../util/tabStore';
@@ -22,7 +22,7 @@ export const LayoutMain = () => {
   const globalError = useTabStore((state) => state.globalError);
   const setGlobalError = useTabStore((state) => state.setGlobalError);
   // Dummy account list for dropdown
-  const accountList = getAllStoredAccounts();
+  const accountList = listAccounts();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const selectedAccount = accountList.find(([id]) => id === accountId)?.[1];
   const accountName = selectedAccount?.cityQuery?.accountName || 'Select Account';
@@ -89,13 +89,13 @@ export const LayoutMain = () => {
   // and written from here, which meant the title bar lagged a render behind the selection
   // and, because accountList was never a dependency, could miss a rename outright.
   // Both effects below re-read the accounts rather than closing over the render's copy:
-  // getAllStoredAccounts builds a new array on every call, so as a dependency it would
+  // listAccounts builds a new array on every call, so as a dependency it would
   // fire them on every render, and as an omitted one it left them reading a stale list.
   React.useEffect(() => {
     if (accountId) {
       return;
     }
-    const accounts = getAllStoredAccounts();
+    const accounts = listAccounts();
     const firstNonDetachedAccount = accounts.find(([, data]) => !data.isDetached);
     setAccountId(firstNonDetachedAccount ? firstNonDetachedAccount[0] : accounts[0]?.[0]);
   }, [accountId, forceUpdate, setAccountId]);
@@ -106,7 +106,7 @@ export const LayoutMain = () => {
     if (otherCityUpdated) {
       // Reset the flag
       setOtherCityUpdated(false);
-      const visitedCity = getAllStoredAccounts().find((r) => r[0] === 'Visited')?.[1].cityQuery?.accountName || '???';
+      const visitedCity = listAccounts().find((r) => r[0] === 'Visited')?.[1].cityQuery?.accountName || '???';
       helper.showMessage('visited_other', { params: [visitedCity] });
     }
   }, [otherCityUpdated, setOtherCityUpdated, helper]);

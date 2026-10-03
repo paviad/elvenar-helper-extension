@@ -1,7 +1,7 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Ingredient } from '../model/ingredient';
 import { PotionEffect } from '../model/potionEffect';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function processCauldron(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {

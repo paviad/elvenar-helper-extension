@@ -8,8 +8,7 @@ import {
   sendMessagesUpdatedMessage,
   sendOtherPlayerCityDataUpdatedMessage,
 } from '../chrome/messages';
-import { getAccountBySessionId, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
-import { saveSingleAccount } from '../elvenar/Accounts';
+import { getAccountBySessionId, loadAccount, saveAccount } from '../elvenar/accountStore';
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processAncientWonderPhaseUpdate } from '../elvenar/processAncientWonderPhaseUpdate';
 import { processCityData } from '../elvenar/processCityData';
@@ -114,7 +113,7 @@ export const playerSpecificRequestHandlerInternal = async (
       return;
     }
 
-    await loadSingleAccountFromStorage(accountId);
+    await loadAccount(accountId);
   }
 
   const processors: Processors = {
@@ -189,7 +188,7 @@ export const playerSpecificRequestHandlerInternal = async (
     return;
   }
 
-  await saveSingleAccount(accountId);
+  await saveAccount(accountId);
 
   await sendGenericResponse(msg.payload.type, result, sharedInfo.tabId);
 
@@ -210,7 +209,7 @@ export const playerSpecificRequestHandlerInternal = async (
       }
       break;
     case 'Q:OtherPlayerService/visitPlayer':
-      await saveSingleAccount(result as string);
+      await saveAccount(result as string);
       await sendOtherPlayerCityDataUpdatedMessage();
       break;
     case 'Q:SpireService/getEncounter':

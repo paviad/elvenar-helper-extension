@@ -6,12 +6,7 @@ import {
   setupOpenExtensionTabListener,
   setupRefreshCityListener,
 } from '../chrome/messages';
-import {
-  getAccountById,
-  getAccountByTabId,
-  loadAccountManagerFromStorage,
-  saveAccount,
-} from '../elvenar/AccountManager';
+import { getAccountById, getAccountByTabId, loadAllAccounts, saveAccount } from '../elvenar/accountStore';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
@@ -43,7 +38,7 @@ console.log('Elvenar Extension: Service Worker Loaded');
  * can wake it and be delivered while `accounts` is still the empty object a fresh worker starts
  * with - a lookup made then finds nothing at all.
  */
-const accountManagerReady = loadAccountManagerFromStorage();
+const accountManagerReady = loadAllAccounts();
 
 async function initialize() {
   setupMessageListener();
@@ -65,10 +60,10 @@ async function initialize() {
     }
   });
   setupCitySavedListener((msg) => {
-    void loadAccountManagerFromStorage();
+    void loadAllAccounts();
   });
   setupRefreshCityListener(async (msg) => {
-    await loadAccountManagerFromStorage();
+    await loadAllAccounts();
     const accountData = getAccountById(msg.accountId);
     if (!accountData || !accountData.cityQuery) {
       return {
@@ -77,7 +72,7 @@ async function initialize() {
       };
     }
     try {
-      await loadAccountManagerFromStorage();
+      await loadAllAccounts();
       await sendCityDataQuery({ ...accountData.sharedInfo, reqUrl: accountData.cityQuery.url });
       await saveAccount(msg.accountId);
       return { success: true };

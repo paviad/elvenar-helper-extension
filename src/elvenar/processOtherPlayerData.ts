@@ -4,8 +4,8 @@ import { OtherPlayerClass } from '../model/otherPlayer';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
-import { setAccountData } from './AccountManager';
 import { AccountData } from './Accounts';
+import { putAccount } from './accountStore';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function processOtherPlayerData(
@@ -137,7 +137,7 @@ export async function processOtherPlayerData(
     isDetached: true,
   } satisfies AccountData;
 
-  setAccountData(accountId, data);
+  putAccount(accountId, data);
 
   return accountId;
 }

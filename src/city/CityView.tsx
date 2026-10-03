@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Box } from '@mui/material';
-import { getAccountById } from '../elvenar/AccountManager';
+import { getAccountById } from '../elvenar/accountStore';
 import { State } from '../model/cityEntity';
 import { formatResourceName } from '../util/formatResourceName';
 import { CityProvider, useCity } from './CityContext';

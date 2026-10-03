@@ -4,7 +4,7 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { AvailableTechnology, ResearchStatus, TechnologyProgressResponse } from '../model/researchStatus';
 import { ResearchTechnology } from '../model/researchTechnology';
 import { smartCompress } from '../util/compression';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 import { extractElvenarResponse } from './extractElvenarResponse';
 import { getResearchTechnologies } from './getResearchTechnologies';
 

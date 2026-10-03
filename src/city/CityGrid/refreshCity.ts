@@ -1,7 +1,8 @@
 import { sendRefreshCityMessage } from '../../chrome/messages';
-import { deleteCityById, loadAccountManagerFromStorage } from '../../elvenar/AccountManager';
+import { loadAllAccounts } from '../../elvenar/accountStore';
 import { useTabStore } from '../../util/tabStore';
 import { CityContextType } from '../CityContext';
+import { deleteCityById } from '../savedCities';
 
 export async function refreshCity(city: CityContextType) {
   const { accountId, triggerForceUpdate } = city;
@@ -19,7 +20,7 @@ export async function refreshCity(city: CityContextType) {
     return;
   }
   setGlobalError(undefined);
-  await loadAccountManagerFromStorage();
+  await loadAllAccounts();
   city.setSearchTerm(''); // Re-apply search term
   city.setMoveLog((_) => []); // Clear move log to prevent stale data issues
   city.setRedoStack((_) => []); // Clear redo stack as well

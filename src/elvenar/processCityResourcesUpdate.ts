@@ -1,6 +1,6 @@
 import { Badges, Relics } from '../model/badges';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export const processCityResourcesUpdate = async (untypedJson: unknown, sharedInfo: ExtensionSharedInfo) => {

@@ -1,5 +1,5 @@
-import { getAccountById } from '../elvenar/AccountManager';
 import { AccountData } from '../elvenar/Accounts';
+import { getAccountById } from '../elvenar/accountStore';
 import { getBuildings } from '../elvenar/getBuildings';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getExpirations } from '../elvenar/getExpirations';
@@ -11,7 +11,7 @@ import { Tome } from '../model/tome';
 import { makeBuilding } from '../testing/fixtures';
 import { generateInventory } from './generateInventory';
 
-jest.mock('../elvenar/AccountManager', () => ({ getAccountById: jest.fn() }));
+jest.mock('../elvenar/accountStore', () => ({ getAccountById: jest.fn() }));
 jest.mock('../elvenar/getBuildings');
 jest.mock('../elvenar/getEvolvingBuildings');
 jest.mock('../elvenar/getExpirations');

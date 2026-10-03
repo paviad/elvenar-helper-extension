@@ -3,7 +3,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'; // Represents enc
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import { Box, Chip, CircularProgress, Divider, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
-import { loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { loadAccount } from '../elvenar/accountStore';
 import { formatTimeLeft } from '../util/formatTimeLeft';
 import { EeMissingBuilding, getEeMissingBuildings } from '../util/getEeMissingBuildings';
 import { getAccountId, getOverlayStore } from './overlayStore';
@@ -29,7 +29,7 @@ export const EeView = () => {
         return;
       }
 
-      await loadSingleAccountFromStorage(accountId);
+      await loadAccount(accountId);
       const missingEe = await getEeMissingBuildings(accountId);
 
       setBuildings(missingEe);

@@ -27,7 +27,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { getAccountById, loadAccount } from '../elvenar/accountStore';
 import { GameMessage, MessageFolder, MessageFolderData, MessagePostVO } from '../model/gameMessage';
 import { ensureMinWidthAndHeight } from '../overlay';
 import {
@@ -180,7 +180,7 @@ export const MessagesView = () => {
         setFolderData({});
         return;
       }
-      await loadSingleAccountFromStorage(accountId);
+      await loadAccount(accountId);
       setFolderData(getAccountById(accountId)?.messagesData ?? {});
     }
     void load();

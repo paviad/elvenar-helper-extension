@@ -1,7 +1,7 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { InventoryItem } from '../model/inventoryItem';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 import { extractElvenarResponse } from './extractElvenarResponse';
 
 // eslint-disable-next-line @typescript-eslint/require-await

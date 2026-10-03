@@ -1,5 +1,5 @@
-import { getFromStorage, saveToStorage } from '../chrome/storage';
-import { AccountData, accounts, saveSingleAccount } from './Accounts';
+import { getFromStorage, saveManyToStorage, saveToStorage } from '../chrome/storage';
+import { AccountData, accountKey, accountStampKey } from './Accounts';
 
 export const loadAccountManagerFromStorageV1 = async () => {
   const accountsRaw = await getFromStorage('accounts');
@@ -11,13 +11,22 @@ export const loadAccountManagerFromStorageV1 = async () => {
   return accountsV1;
 };
 
+/** Splits the one record of all accounts that version 1 kept into a record per account. */
 export const migrateV1ToV2 = async () => {
   const accountsV1 = await loadAccountManagerFromStorageV1();
-  for (const [accountId, accountData] of Object.entries(accountsV1)) {
+  const accountIds = Object.keys(accountsV1);
+  for (const accountId of accountIds) {
     console.log(`ElvenAssist: Migrating account ${accountId}`);
-    accounts[accountId] = accountData;
-    await saveSingleAccount(accountId);
+    await saveManyToStorage({
+      [accountKey(accountId)]: JSON.stringify(accountsV1[accountId]),
+      [accountStampKey(accountId)]: Date.now().toString(),
+    });
   }
+  const numAccounts = +((await getFromStorage('num_accounts')) || 0);
+  if (numAccounts <= 1 && accountIds.length > 1) {
+    await saveToStorage('notifyMultipleAccounts', 'true');
+  }
+  await saveToStorage('num_accounts', accountIds.length.toString());
 };
 
 export const migrate = async (latestVersion: number) => {

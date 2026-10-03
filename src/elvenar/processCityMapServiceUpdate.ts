@@ -1,6 +1,6 @@
 import { CityEntity } from '../model/cityEntity';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 
 /**
  * Folds the entities the game just reported into the stored city, stamping each with the moment

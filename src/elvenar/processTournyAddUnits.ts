@@ -1,7 +1,7 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { TournyAddUnits } from '../model/tourny/addUnits';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 
 /**
  * Applies an army delta to the cached squad sizes, so troop counts stay current without waiting

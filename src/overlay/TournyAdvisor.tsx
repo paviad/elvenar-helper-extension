@@ -4,7 +4,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import ShieldMoonIcon from '@mui/icons-material/ShieldMoon';
 import TimerIcon from '@mui/icons-material/Timer';
 import { Alert, Box, Chip, Divider, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { getAccountById, loadAccount } from '../elvenar/accountStore';
 import { getBattleUnitTypes } from '../elvenar/getBattleUnitTypes';
 import { ArmyDetails, TroopType } from '../model/armyDetails';
 import { BattleUnitType } from '../model/battleUnitType';
@@ -83,7 +83,7 @@ export const TournyAdvisor = () => {
       const accountId = getAccountId();
       if (!accountId) return;
 
-      await loadSingleAccountFromStorage(accountId);
+      await loadAccount(accountId);
       const accountData = getAccountById(accountId);
 
       setArmyDetails(accountData?.cityQuery?.armyDetails ?? null);
@@ -352,7 +352,10 @@ const CompositionView = ({
             )}
 
             {unitStock && (
-              <Tooltip title={short ? `Train ${(slot.totalUnits - held).toLocaleString()} more` : 'You have enough'} arrow>
+              <Tooltip
+                title={short ? `Train ${(slot.totalUnits - held).toLocaleString()} more` : 'You have enough'}
+                arrow
+              >
                 <Typography
                   variant='caption'
                   color={short ? 'error.main' : 'text.secondary'}

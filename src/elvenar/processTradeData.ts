@@ -1,6 +1,6 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Trade } from '../model/trade';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function processTradeData(untypedJson: unknown, sharedInfo: ExtensionSharedInfo) {

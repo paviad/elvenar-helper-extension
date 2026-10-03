@@ -2,7 +2,7 @@ import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntr
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { FAOverviewData } from '../model/faOverview';
 import { FAStoreData } from '../model/faStageProgress';
-import { getAccountById, getAccountIdBySessionId } from './AccountManager';
+import { getAccountById, getAccountIdBySessionId } from './accountStore';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function processUpdateWaypointsOverview(

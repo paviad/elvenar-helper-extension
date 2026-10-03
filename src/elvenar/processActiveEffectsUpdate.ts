@@ -1,7 +1,7 @@
 import { ActiveEffectsResponse } from '../model/active-effect';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 
 export const processActiveEffectsUpdate = async (
   untypedJson: unknown,

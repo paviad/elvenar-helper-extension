@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { loadAccountManagerFromStorage } from '../elvenar/AccountManager';
+import { loadAllAccounts } from '../elvenar/accountStore';
 import { useTabStore } from '../util/tabStore';
 
 export function Activate() {
@@ -15,7 +15,7 @@ export function Activate() {
   React.useEffect(() => {
     async function loadData() {
       if (routeAccountId) {
-        await loadAccountManagerFromStorage();
+        await loadAllAccounts();
         setAccountId(routeAccountId);
         setDoNavigate(true);
         await nav('/city', { replace: true });

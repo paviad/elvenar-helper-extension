@@ -9,8 +9,8 @@ import { Quest } from '../model/quest';
 import { SeasonalEvent } from '../model/seasonalEvent';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
-import { generateAccountId, getAccountBySessionId, setAccountData } from './AccountManager';
 import { AccountData, FaQuest } from './Accounts';
+import { generateAccountId, getAccountBySessionId, putAccount } from './accountStore';
 import { extractWonderKp } from './extractWonderKp';
 
 interface StartupEffect {
@@ -206,7 +206,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     isDetached: false,
   } satisfies AccountData;
 
-  setAccountData(accountId, data);
+  putAccount(accountId, data);
   await setMaxChapter(maxChapter);
 }
 

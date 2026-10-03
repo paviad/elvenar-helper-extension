@@ -1,5 +1,5 @@
 import { getBuildingFinder } from '../city/buildingFinder';
-import { getAccountById } from '../elvenar/AccountManager';
+import { getAccountById } from '../elvenar/accountStore';
 import { getEffects } from '../elvenar/getEffects';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { getCulturalBuildings } from './getCulturalBuildings';

@@ -1,13 +1,6 @@
 import React from 'react';
 import { sendCitySavedMessage } from '../chrome/messages';
-import {
-  deleteCityById,
-  getAccountById,
-  getAllStoredAccounts,
-  saveCityInPlace,
-  saveCurrentCityAs,
-  saveNewCityAs,
-} from '../elvenar/AccountManager';
+import { getAccountById, listAccounts } from '../elvenar/accountStore';
 import { getBuildings } from '../elvenar/getBuildings';
 import { getChapterResearch } from '../elvenar/getChapterResearch';
 import { getExpirations } from '../elvenar/getExpirations';
@@ -33,6 +26,7 @@ import { resetMovedInPlace, saveBack } from './generateCity';
 import { getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { getHoveredBlockId, setHoveredBlockId } from './hoveredBlockStore';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
+import { deleteCityById, saveCityInPlace, saveCurrentCityAs, saveNewCityAs } from './savedCities';
 
 interface ShowLevelDialogData {
   open: boolean;
@@ -593,7 +587,7 @@ export const useCityGridState = () => {
   }
 
   function importCity() {
-    const storedAccounts = getAllStoredAccounts();
+    const storedAccounts = listAccounts();
     const existingCities = storedAccounts
       .filter(([id, data]) => data.isDetached && id !== 'Visited' && !id.endsWith(' (autosave)'))
       .map(([name]) => name);
@@ -654,7 +648,7 @@ export const useCityGridState = () => {
   }
 
   function saveCityAs() {
-    const storedAccounts = getAllStoredAccounts();
+    const storedAccounts = listAccounts();
     const existingCities = storedAccounts
       .filter(([id, data]) => data.isDetached && id !== 'Visited' && !id.endsWith(' (autosave)'))
       .map(([name]) => name);
@@ -694,7 +688,7 @@ export const useCityGridState = () => {
     setShowDeleteConfirmationDialog({ open: false });
     if (!city.accountId) return;
     await deleteCityById(city.accountId);
-    const storedAccounts = getAllStoredAccounts();
+    const storedAccounts = listAccounts();
     if (storedAccounts.length > 0) {
       const [firstAccountId] = storedAccounts[0];
       city.setAccountId(firstAccountId);

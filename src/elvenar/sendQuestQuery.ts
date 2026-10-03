@@ -1,5 +1,5 @@
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { getAccountById, getAccountIdBySessionId, setAccountData } from './AccountManager';
+import { getAccountById, getAccountIdBySessionId, putAccount } from './accountStore';
 
 export async function sendQuestQuery(sharedInfo: ExtensionSharedInfo) {
   const { reqUrl: url, reqReferrer: referrer, reqBody } = sharedInfo;
@@ -64,5 +64,5 @@ export async function sendQuestQuery(sharedInfo: ExtensionSharedInfo) {
   }
   accountData.faEndTime = fa ? fa.remainingTime + Date.now() : undefined;
 
-  setAccountData(accountId, accountData);
+  putAccount(accountId, accountData);
 }

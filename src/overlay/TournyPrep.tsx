@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { getAccountById, loadSingleAccountFromStorage } from '../elvenar/AccountManager';
+import { getAccountById, loadAccount } from '../elvenar/accountStore';
 import { getBattleUnitTypes } from '../elvenar/getBattleUnitTypes';
 import { ArmyDetails } from '../model/armyDetails';
 import { BattleUnitType } from '../model/battleUnitType';
 import { SeasonalEvent } from '../model/seasonalEvent';
 import { getAccountId, getOverlayStore } from './overlayStore';
+import { TournamentBriefing } from './TournamentBriefing';
 import { TOURNAMENT_GUIDES } from './tournamentGuide';
 import { readTournamentStatus, upcomingTournament } from './tournamentSchedule';
-import { TournamentBriefing } from './TournamentBriefing';
 import { resolveTrainingSuggestions } from './trainingSuggestions';
 
 type Which = 'running' | 'upcoming';
@@ -46,7 +46,7 @@ export const TournyPrep = () => {
       const accountId = getAccountId();
       if (!accountId) return;
 
-      await loadSingleAccountFromStorage(accountId);
+      await loadAccount(accountId);
       const accountData = getAccountById(accountId);
 
       setArmyDetails(accountData?.cityQuery?.armyDetails ?? null);

@@ -2,7 +2,7 @@ import { AncientWonderPhase } from '../model/ancientWonderPhase';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { WonderKp } from '../model/wonderKp';
-import { getAccountBySessionId } from './AccountManager';
+import { getAccountBySessionId } from './accountStore';
 import { extractElvenarResponse } from './extractElvenarResponse';
 import { extractWonderKp } from './extractWonderKp';
 import { recordKpGiven } from './recordKpGiven';
