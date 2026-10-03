@@ -15,6 +15,7 @@
 - **City Planner:** an imported city keeps its chapter. Older exports get the chapter of their most advanced building, not 0.
 - **City Planner:** a building whose level is changed from the menu is fully at its new level, so the +/- keys and Export now see it.
 - **City Planner:** a building set down quickly after moving it no longer slips a tile.
+- **Chat:** older messages keep their authors' names after the chat reloads.
 
 ## v10.6.0
 - **Swaps: the KP instants you hold are listed at the top.** One line shows how many of each size you have and what they add up to, so you can see what you have to repay with without opening the inventory. It follows the game as you use or receive instants.

@@ -163,11 +163,16 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       if (!socketMessage) return;
 
       if (socketMessage.type === 'chat/rpc/get-history') {
-        userMap.current =
-          socketMessage.body.payload.users.reduce<Record<string, string>>((map, user) => {
+        // Merged into what is known rather than replacing it: the stored chat reaches back further
+        // than one page of history does, and the members who wrote its older messages may not be
+        // listed in this one. Their names would otherwise turn into bare player ids.
+        userMap.current = socketMessage.body.payload.users.reduce<Record<string, string>>(
+          (map, user) => {
             map[user.id] = user.metadata.public_name;
             return map;
-          }, {}) || {};
+          },
+          { ...useOverlayStore.getState().userMap },
+        );
 
         useOverlayStore.getState().setUserMap(userMap.current);
         addChatMessages(socketMessage.body.payload.messages);
