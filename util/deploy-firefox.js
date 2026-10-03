@@ -22,7 +22,14 @@ const envContent = fs.readFileSync(envPath, 'utf8');
 const secrets = {};
 envContent.split(/\r?\n/).forEach((line) => {
   const match = line.match(/^\s*set\s+([A-Z_0-9]+)=(.*)$/i);
-  if (match) secrets[match[1]] = match[2].trim();
+  if (match) {
+    let value = match[2].trim();
+    // Strip surrounding double or single quotes if they exist
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    secrets[match[1]] = value;
+  }
 });
 
 const requiredKeys = ['MOZ_API_KEY', 'MOZ_API_SECRET'];
@@ -66,9 +73,19 @@ try {
 }
 
 // 5. Generate Source Code Zip
-console.log(`📦 Creating Source Code Archive...`);
+// From the release tag rather than HEAD: the reviewers rebuild from this source and compare it to
+// the uploaded build, so it has to be the commit that build was packed from.
+const tag = `v${version}`;
 try {
-  execSync(`git archive --format=zip --output "${sourceZipFile}" HEAD`);
+  execSync(`git rev-parse -q --verify "refs/tags/${tag}"`, { stdio: 'ignore' });
+} catch (error) {
+  console.error(`❌ Error: Git tag '${tag}' does not exist locally.`);
+  process.exit(1);
+}
+
+console.log(`📦 Creating Source Code Archive from ${tag}...`);
+try {
+  execSync(`git archive --format=zip --output "${sourceZipFile}" "${tag}"`);
   console.log(`   Source Zip created: ${path.basename(sourceZipFile)}`);
 } catch (error) {
   console.error('❌ Error creating source zip. Do you have git installed?');
@@ -83,11 +100,17 @@ try {
     `--source-dir "${tempSignDir}" ` +
     `--upload-source-code "${sourceZipFile}" ` +
     `--channel "listed" ` +
-    `--api-key "${secrets.MOZ_API_KEY}" ` +
-    `--api-secret "${secrets.MOZ_API_SECRET}" ` +
     `--artifacts-dir "./build/firefox_artifacts"`;
-
-  execSync(command, { stdio: 'inherit' });
+  // Pass the API credentials via environment variables, which web-ext reads, so that they do not
+  // show up in the process list the way command-line arguments do
+  execSync(command, {
+    stdio: 'inherit',
+    env: {
+      ...process.env, // Preserve existing environment variables (like PATH for npx)
+      WEB_EXT_API_KEY: secrets.MOZ_API_KEY,
+      WEB_EXT_API_SECRET: secrets.MOZ_API_SECRET,
+    },
+  });
   console.log(`\n✅ [SUCCESS] Firefox Version ${version} submitted for review!`);
 
   // Cleanup
