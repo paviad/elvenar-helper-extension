@@ -120,8 +120,10 @@ const callbackRequest = (details: {
   return;
 };
 
+// Only the tech tree sprite is looked for here. Every request the game makes used to wake the
+// worker, the bodies of its own calls copied across with them, just to be checked against it.
 const filter = {
-  urls: ['https://*.elvenar.com/*', 'https://*.innogamescdn.com/*'],
+  urls: ['https://*.innogamescdn.com/*atlas-techtree.gui.chapternavigation-*'],
 };
 
-chrome.webRequest.onBeforeRequest.addListener(callbackRequest, filter, ['requestBody']);
+chrome.webRequest.onBeforeRequest.addListener(callbackRequest, filter);
