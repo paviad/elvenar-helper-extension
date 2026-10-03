@@ -1,11 +1,4 @@
-import {
-  setupCitySavedListener,
-  setupInterceptedNonSpecificRequestListener,
-  setupInterceptedPlayerSpecificRequestListener,
-  setupMessageListener,
-  setupOpenExtensionTabListener,
-  setupRefreshCityListener,
-} from '../chrome/messages';
+import { setListener, setupMessageListener } from '../chrome/messages';
 import { getAccountById, getAccountByTabId, loadAllAccounts, saveAccount } from '../elvenar/accountStore';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
@@ -42,7 +35,7 @@ const accountManagerReady = loadAllAccounts();
 
 async function initialize() {
   setupMessageListener();
-  setupOpenExtensionTabListener(async (msg, sender) => {
+  setListener('openExtensionTab', async (msg, sender) => {
     // The overlay is waiting on this handler's promise, and a rejection would reach it as a closed
     // message port - which it reads as the extension having gone away, and puts up the reload
     // cross for. Failures here are ours to report, not the overlay's.
@@ -59,10 +52,10 @@ async function initialize() {
       console.error('ElvenAssist: Error opening the extension tab:', error);
     }
   });
-  setupCitySavedListener((msg) => {
+  setListener('citySaved', (msg) => {
     void loadAllAccounts();
   });
-  setupRefreshCityListener(async (msg) => {
+  setListener('refreshCity', async (msg) => {
     await loadAllAccounts();
     const accountData = getAccountById(msg.accountId);
     if (!accountData || !accountData.cityQuery) {
@@ -84,8 +77,8 @@ async function initialize() {
       };
     }
   });
-  setupInterceptedNonSpecificRequestListener((msg) => void nonSpecificRequestHandler(msg));
-  setupInterceptedPlayerSpecificRequestListener((msg, sender) => void playerSpecificRequestHandler(msg, sender));
+  setListener('interceptedNonSpecificRequest', (msg) => void nonSpecificRequestHandler(msg));
+  setListener('interceptedPlayerSpecificRequest', (msg, sender) => void playerSpecificRequestHandler(msg, sender));
   await accountManagerReady;
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }

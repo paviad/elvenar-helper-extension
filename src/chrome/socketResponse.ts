@@ -1,6 +1,6 @@
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { SocketResponseMessage } from '../inject/socketResponses';
-import { sendInterceptedPlayerSpecificRequest } from './messages';
+import { sendRuntime } from './messages';
 
 /**
  * Relays websocket-pushed responses to the service worker as ordinary `R:` messages.
@@ -33,7 +33,7 @@ export const setupSocketResponseListener = (): void => {
           payload: { request: response, response: [response], sharedInfo },
         } satisfies PlayerSpecificMessage;
 
-        await sendInterceptedPlayerSpecificRequest(message);
+        await sendRuntime('interceptedPlayerSpecificRequest', { payload: message });
       }
     }
 

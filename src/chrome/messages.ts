@@ -25,6 +25,10 @@ export interface RuntimeMessages {
 
 /** Sent with chrome.tabs.sendMessage, which reaches the content scripts of one tab. */
 export interface TabMessages {
+  /**
+   * A game response the service worker has handled for this tab. It is sent once the service
+   * worker has saved what the response changed, so a stored account read from here on includes it.
+   */
   genericResponse: { reqRespType: string; payload: unknown };
   cityDataUpdated: { tabId: number };
   tradeParsed: { trades: TradeSummary[] };
@@ -57,17 +61,7 @@ type FieldsArg<F> = keyof F extends never ? [] : [fields: F];
 
 export type InterceptedPlayerSpecificRequest = MessageOf<'interceptedPlayerSpecificRequest'>;
 export type InterceptedNonSpecificRequest = MessageOf<'interceptedNonSpecificRequest'>;
-export type AccountsSavedRuntimeMessage = MessageOf<'accountsSavedRuntime'>;
-export type RefreshCityMessage = MessageOf<'refreshCity'>;
-export type CityEntitiesUpdatedMessage = MessageOf<'cityEntitiesUpdated'>;
-export type OtherPlayerCityUpdatedMessage = MessageOf<'otherPlayerCityUpdated'>;
-export type CitySavedMessage = MessageOf<'citySaved'>;
-export type OpenExtensionTabMessage = MessageOf<'openExtensionTab'>;
 export type GenericResponseMessage<T> = Omit<MessageOf<'genericResponse'>, 'payload'> & { payload: T };
-export type CityDataUpdatedMessage = MessageOf<'cityDataUpdated'>;
-export type TradeParsedMessage = MessageOf<'tradeParsed'>;
-export type ActiveEffectsUpdatedMessage = MessageOf<'activeEffectsUpdated'>;
-export type MessagesUpdatedMessage = MessageOf<'messagesUpdated'>;
 
 // ============================================================================
 // SENDING
@@ -111,22 +105,9 @@ export const sendToTab = async <K extends keyof TabMessages>(
   }
 };
 
-/** --- Named senders --- **/
-
-export const sendInterceptedPlayerSpecificRequest = (payload: PlayerSpecificMessage) =>
-  sendRuntime('interceptedPlayerSpecificRequest', { payload });
-
-export const sendInterceptedNonSpecificRequest = (payload: NonSpecificMessage) =>
-  sendRuntime('interceptedNonSpecificRequest', { payload });
-
+/** Asks the service worker to read a city again. A refresh nobody answers counts as a failure. */
 export const sendRefreshCityMessage = async (accountId: string): Promise<MessageResponse> =>
   (await sendRuntime('refreshCity', { accountId })) ?? { success: false, message: 'No answer from the extension' };
-
-export const sendCityEntitiesUpdatedMessage = (tabId: number) => sendRuntime('cityEntitiesUpdated', { tabId });
-
-export const sendOtherPlayerCityDataUpdatedMessage = () => sendRuntime('otherPlayerCityUpdated');
-
-export const sendCitySavedMessage = (accountId: string) => sendRuntime('citySaved', { accountId });
 
 /**
  * Sends a game response the service worker has handled to the tab it came from, then tells the
@@ -136,16 +117,6 @@ export const sendGenericResponse = async <T>(reqRespType: string, payload: T, ta
   await sendToTab(tabId, 'genericResponse', { reqRespType, payload });
   await sendRuntime('accountsSavedRuntime', { tabId });
 };
-
-export const sendCityDataUpdatedMessage = (tabId: number) => sendToTab(tabId, 'cityDataUpdated', { tabId });
-
-export const sendTradeParsedMessage = (tabId: number, trades: TradeSummary[]) =>
-  sendToTab(tabId, 'tradeParsed', { trades });
-
-export const sendActiveEffectsUpdatedMessage = (tabId: number) => sendToTab(tabId, 'activeEffectsUpdated', { tabId });
-
-export const sendMessagesUpdatedMessage = (tabId: number, reqRespType: string) =>
-  sendToTab(tabId, 'messagesUpdated', { tabId, reqRespType });
 
 // ============================================================================
 // LISTENING
@@ -247,81 +218,13 @@ const messageReceiver = (
 
 export const setupMessageListener = () => chrome.runtime.onMessage.addListener(messageReceiver);
 
-/** --- Generic responses --- **/
-
-/** Removal functions for the listeners that are removed by an id. */
-const removalsById = new Map<string, () => void>();
-
-const addListenerWithId = (remove: () => void) => {
-  const id = crypto.randomUUID();
-  removalsById.set(id, remove);
-  return id;
-};
-
-const removeListenerById = (id: string) => {
-  removalsById.get(id)?.();
-  removalsById.delete(id);
-};
-
-export const setupGenericResponseListener = <T>(
+/** Calls `callback` for each game response of one type the service worker has handled for this tab. */
+export const listenForGenericResponse = <T>(
   reqRespType: string,
   callback: (message: GenericResponseMessage<T>) => void,
 ) =>
-  addListenerWithId(
-    listen('genericResponse', (message) => {
-      if (message.reqRespType === reqRespType) {
-        callback(message as GenericResponseMessage<T>);
-      }
-    }),
-  );
-
-/**
- * Called for every game response the service worker has handled for this tab. It is sent once
- * the service worker has saved what the response changed, so a stored account read from here on
- * includes it.
- */
-export const setupAnyGenericResponseListener = (callback: (message: GenericResponseMessage<unknown>) => void) =>
-  addListenerWithId(listen('genericResponse', callback));
-
-export const clearGenericResponseListener = removeListenerById;
-
-export const setupAccountsSavedRuntimeListener = (callback: MessageListener<'accountsSavedRuntime'>) =>
-  addListenerWithId(listen('accountsSavedRuntime', callback));
-
-/** --- Named listeners --- **/
-// Each of these replaces the listener set for its type by an earlier call.
-
-export const setupInterceptedPlayerSpecificRequestListener = (
-  callback: MessageListener<'interceptedPlayerSpecificRequest'>,
-) => setListener('interceptedPlayerSpecificRequest', callback);
-
-export const setupInterceptedNonSpecificRequestListener = (
-  callback: MessageListener<'interceptedNonSpecificRequest'>,
-) => setListener('interceptedNonSpecificRequest', callback);
-
-export const setupRefreshCityListener = (callback: MessageListener<'refreshCity'>) =>
-  setListener('refreshCity', callback);
-
-export const setupCityEntitiesUpdatedListener = (callback: MessageListener<'cityEntitiesUpdated'>) =>
-  setListener('cityEntitiesUpdated', callback);
-
-export const setupOtherPlayerCityUpdatedListener = (callback: MessageListener<'otherPlayerCityUpdated'>) =>
-  setListener('otherPlayerCityUpdated', callback);
-
-export const setupCitySavedListener = (callback: MessageListener<'citySaved'>) => setListener('citySaved', callback);
-
-export const setupOpenExtensionTabListener = (callback: MessageListener<'openExtensionTab'>) =>
-  setListener('openExtensionTab', callback);
-
-export const setupCityDataUpdatedListener = (callback: MessageListener<'cityDataUpdated'>) =>
-  setListener('cityDataUpdated', callback);
-
-export const setupTradeParsedListener = (callback: MessageListener<'tradeParsed'>) =>
-  setListener('tradeParsed', callback);
-
-export const clearTradeParsedListener = () => clearListener('tradeParsed');
-
-export const setupMessagesUpdatedListener = (callback: MessageListener<'messagesUpdated'>) =>
-  setListener('messagesUpdated', callback);
-
-export const clearMessagesUpdatedListener = () => clearListener('messagesUpdated');
+  listen('genericResponse', (message) => {
+    if (message.reqRespType === reqRespType) {
+      callback(message as GenericResponseMessage<T>);
+    }
+  });

@@ -16,15 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import { createPortal } from 'react-dom';
-import {
-  clearGenericResponseListener,
-  clearMessagesUpdatedListener,
-  clearTradeParsedListener,
-  setupAnyGenericResponseListener,
-  setupGenericResponseListener,
-  setupMessagesUpdatedListener,
-  setupTradeParsedListener,
-} from '../chrome/messages';
+import { clearListener, listen, listenForGenericResponse, setListener } from '../chrome/messages';
 import { loadAccount } from '../elvenar/accountStore';
 import { isAccountOnScreen } from '../elvenar/useAccount';
 import { ReceivedWebsocketMessage } from '../inject/websocketMessages';
@@ -195,7 +187,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
 
     window.addEventListener('message', messageHandler);
 
-    setupTradeParsedListener((tradesMsg) => {
+    setListener('tradeParsed', (tradesMsg) => {
       const store = useOverlayStore.getState();
       if (store.chapter < 18) {
         return;
@@ -230,7 +222,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }
     });
 
-    setupMessagesUpdatedListener((msg) => {
+    setListener('messagesUpdated', (msg) => {
       // A detail response means the user opened Messages in-game this session -> data is live.
       if (msg.reqRespType === 'R:MessageService/fetchMessages') {
         useOverlayStore.getState().setMessagesDetailsReceived(true);
@@ -239,8 +231,8 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
 
     return () => {
       window.removeEventListener('message', messageHandler);
-      clearTradeParsedListener();
-      clearMessagesUpdatedListener();
+      clearListener('tradeParsed');
+      clearListener('messagesUpdated');
     };
   }, [useOverlayStore]);
 
@@ -261,7 +253,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const activeSizePreset = matchOverlaySizePreset(sizeAtMenuOpen);
 
   useEffect(() => {
-    const listenerIds: string[] = [];
+    const removals: (() => void)[] = [];
 
     // Every response arrives after the service worker has saved the account, so this is where the
     // views here catch up with it, and every view showing the account redraws. The service worker
@@ -270,8 +262,8 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
     // one. A read starts a moment after the first response of a burst instead, and takes in the
     // rest; the account is not read at all while no view here shows it.
     let readPending: ReturnType<typeof setTimeout> | undefined;
-    listenerIds.push(
-      setupAnyGenericResponseListener(() => {
+    removals.push(
+      listen('genericResponse', () => {
         readPending ??= setTimeout(() => {
           readPending = undefined;
           const accountId = getAccountId();
@@ -282,8 +274,8 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }),
     );
 
-    listenerIds.push(
-      setupGenericResponseListener<number | undefined>('R:QuestMilestoneService/updateQuestMilestone', (msg) => {
+    removals.push(
+      listenForGenericResponse<number | undefined>('R:QuestMilestoneService/updateQuestMilestone', (msg) => {
         const progress = msg.payload;
         setInitialQuestIndex(progress);
         if (progress === undefined) {
@@ -292,8 +284,8 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }),
     );
 
-    listenerIds.push(
-      setupGenericResponseListener<TournyProvince[] | undefined>('R:TournamentService/getProvincesOverview', (msg) => {
+    removals.push(
+      listenForGenericResponse<TournyProvince[] | undefined>('R:TournamentService/getProvincesOverview', (msg) => {
         const provinces = msg.payload;
         if (!provinces) {
           return;
@@ -321,8 +313,8 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }),
     );
 
-    listenerIds.push(
-      setupGenericResponseListener<TournyProvinceInformation>('R:WorldMapService/getProvinceInformation', (msg) => {
+    removals.push(
+      listenForGenericResponse<TournyProvinceInformation>('R:WorldMapService/getProvinceInformation', (msg) => {
         const provinceInfo = msg.payload;
         const tournyData = useOverlayStore.getState().tournyData || emptyTournyData();
         useOverlayStore.getState().setTournyData({
@@ -335,8 +327,8 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }),
     );
 
-    listenerIds.push(
-      setupGenericResponseListener<TournyTime | undefined>('R:WorldMapService/updateTournamentTime', (msg) => {
+    removals.push(
+      listenForGenericResponse<TournyTime | undefined>('R:WorldMapService/updateTournamentTime', (msg) => {
         const tournyTime = msg.payload;
         if (!tournyTime) {
           return;
@@ -365,9 +357,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
 
     return () => {
       clearTimeout(readPending);
-      listenerIds.forEach((id) => {
-        clearGenericResponseListener(id);
-      });
+      removals.forEach((remove) => remove());
     };
   }, [useOverlayStore, setQuests]);
 

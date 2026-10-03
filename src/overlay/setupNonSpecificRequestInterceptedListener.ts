@@ -1,4 +1,4 @@
-import { sendInterceptedNonSpecificRequest } from '../chrome/messages';
+import { sendRuntime } from '../chrome/messages';
 import { NonSpecificMessage } from '../inject/nonSpecificMessages';
 
 export function setupNonSpecificRequestInterceptedListener() {
@@ -18,7 +18,7 @@ export function setupNonSpecificRequestInterceptedListener() {
       case 'EVOLVING_BUILDINGS':
       case 'BATTLE_UNIT_TYPES':
       case 'RESEARCH_TECHNOLOGIES':
-        void sendInterceptedNonSpecificRequest(event.data);
+        void sendRuntime('interceptedNonSpecificRequest', { payload: event.data });
         break;
       default:
         event.data satisfies never;

@@ -1,4 +1,4 @@
-import { sendTradeParsedMessage } from '../chrome/messages';
+import { sendToTab } from '../chrome/messages';
 import { AccountData } from '../elvenar/Accounts';
 import { TradeSummary } from '../model/tradeSummary';
 
@@ -31,5 +31,5 @@ export const tradeOpenedCallback = async (accountData: AccountData, tabId: numbe
     player: trade.trader.name,
   }));
 
-  await sendTradeParsedMessage(tabId > 0 ? tabId : accountData.cityQuery.tabId, summary);
+  await sendToTab(tabId > 0 ? tabId : accountData.cityQuery.tabId, 'tradeParsed', { trades: summary });
 };

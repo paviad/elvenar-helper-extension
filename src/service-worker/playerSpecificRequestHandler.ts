@@ -1,13 +1,5 @@
 import { catchError, concatMap, EMPTY, from, Subject } from 'rxjs';
-import {
-  InterceptedPlayerSpecificRequest,
-  sendActiveEffectsUpdatedMessage,
-  sendCityDataUpdatedMessage,
-  sendCityEntitiesUpdatedMessage,
-  sendGenericResponse,
-  sendMessagesUpdatedMessage,
-  sendOtherPlayerCityDataUpdatedMessage,
-} from '../chrome/messages';
+import { InterceptedPlayerSpecificRequest, sendGenericResponse, sendRuntime, sendToTab } from '../chrome/messages';
 import { getAccountBySessionId, loadAccount, saveAccount } from '../elvenar/accountStore';
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processAncientWonderPhaseUpdate } from '../elvenar/processAncientWonderPhaseUpdate';
@@ -194,7 +186,7 @@ export const playerSpecificRequestHandlerInternal = async (
 
   switch (msg.payload.type) {
     case 'Q:StartupService/getData':
-      await sendCityDataUpdatedMessage(sharedInfo.tabId);
+      await sendToTab(sharedInfo.tabId, 'cityDataUpdated', { tabId: sharedInfo.tabId });
       break;
     case 'Q:TradeService/getOtherPlayersTrades':
       {
@@ -210,17 +202,17 @@ export const playerSpecificRequestHandlerInternal = async (
       break;
     case 'Q:OtherPlayerService/visitPlayer':
       await saveAccount(result as string);
-      await sendOtherPlayerCityDataUpdatedMessage();
+      await sendRuntime('otherPlayerCityUpdated');
       break;
     case 'Q:SpireService/getEncounter':
       // await sendSpireEncounterStartedMessage();
       break;
     case 'R:TranscendenceService/allBuildingsStates':
     case 'R:CityMapService/reset':
-      await sendCityEntitiesUpdatedMessage(sharedInfo.tabId);
+      await sendRuntime('cityEntitiesUpdated', { tabId: sharedInfo.tabId });
       break;
     case 'R:EffectsService/update':
-      await sendActiveEffectsUpdatedMessage(sharedInfo.tabId);
+      await sendToTab(sharedInfo.tabId, 'activeEffectsUpdated', { tabId: sharedInfo.tabId });
       break;
     case 'R:MessageService/getMessageOverview':
     case 'R:MessageService/fetchMessages':
@@ -228,7 +220,7 @@ export const playerSpecificRequestHandlerInternal = async (
     case 'R:MessageService/replyMessage':
     case 'R:MessageService/sendGuildMessage':
     case 'R:MessageService/sendMessage':
-      await sendMessagesUpdatedMessage(sharedInfo.tabId, msg.payload.type);
+      await sendToTab(sharedInfo.tabId, 'messagesUpdated', { tabId: sharedInfo.tabId, reqRespType: msg.payload.type });
       break;
   }
 };

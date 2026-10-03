@@ -49,23 +49,23 @@ describe('listeners', () => {
     expect(sendResponse).not.toHaveBeenCalled();
   });
 
-  it('replaces the listener a named setup function set before', () => {
-    const { setupCitySavedListener } = loadModule();
+  it('replaces the listener setListener set before', () => {
+    const { setListener } = loadModule();
     const first = jest.fn();
     const second = jest.fn();
-    setupCitySavedListener(first);
-    setupCitySavedListener(second);
+    setListener('citySaved', first);
+    setListener('citySaved', second);
     deliver({ type: 'citySaved', accountId: 'a' });
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledWith({ type: 'citySaved', accountId: 'a' }, {});
   });
 
   it('keeps every listener added with listen, until it is removed', () => {
-    const { listen, setupCitySavedListener } = loadModule();
+    const { listen, setListener } = loadModule();
     const named = jest.fn();
     const first = jest.fn();
     const second = jest.fn();
-    setupCitySavedListener(named);
+    setListener('citySaved', named);
     const removeFirst = listen('citySaved', first);
     listen('citySaved', second);
 
@@ -78,13 +78,13 @@ describe('listeners', () => {
     expect(second).toHaveBeenCalledTimes(2);
   });
 
-  it('clears only the named listener', () => {
-    const { listen, setupTradeParsedListener, clearTradeParsedListener } = loadModule();
+  it('clears only the listener setListener set', () => {
+    const { listen, setListener, clearListener } = loadModule();
     const named = jest.fn();
     const other = jest.fn();
-    setupTradeParsedListener(named);
+    setListener('tradeParsed', named);
     listen('tradeParsed', other);
-    clearTradeParsedListener();
+    clearListener('tradeParsed');
     deliver({ type: 'tradeParsed', trades: [] });
     expect(named).not.toHaveBeenCalled();
     expect(other).toHaveBeenCalledTimes(1);
@@ -143,19 +143,18 @@ describe('answers', () => {
 });
 
 describe('generic responses', () => {
-  it('reaches the listeners for its request type and the ones for any type, until cleared', () => {
-    const { setupGenericResponseListener, setupAnyGenericResponseListener, clearGenericResponseListener } =
-      loadModule();
+  it('reaches the listeners for its request type and the ones for any type, until removed', () => {
+    const { listen, listenForGenericResponse } = loadModule();
     const matching = jest.fn();
     const other = jest.fn();
     const any = jest.fn();
-    const id = setupGenericResponseListener('R:A/b', matching);
-    setupGenericResponseListener('R:C/d', other);
-    setupAnyGenericResponseListener(any);
+    const removeMatching = listenForGenericResponse('R:A/b', matching);
+    listenForGenericResponse('R:C/d', other);
+    listen('genericResponse', any);
 
     const message = { type: 'genericResponse', reqRespType: 'R:A/b', payload: 1 };
     deliver(message);
-    clearGenericResponseListener(id);
+    removeMatching();
     deliver(message);
 
     expect(matching).toHaveBeenCalledTimes(1);
@@ -178,9 +177,9 @@ describe('generic responses', () => {
 
 describe('sending', () => {
   it('sends the type and fields as one message', async () => {
-    const { sendCitySavedMessage, sendOtherPlayerCityDataUpdatedMessage } = loadModule();
-    await sendCitySavedMessage('a');
-    await sendOtherPlayerCityDataUpdatedMessage();
+    const { sendRuntime } = loadModule();
+    await sendRuntime('citySaved', { accountId: 'a' });
+    await sendRuntime('otherPlayerCityUpdated');
     expect(runtimeSendMessage).toHaveBeenNthCalledWith(1, { type: 'citySaved', accountId: 'a' });
     expect(runtimeSendMessage).toHaveBeenNthCalledWith(2, { type: 'otherPlayerCityUpdated' });
   });
@@ -202,9 +201,9 @@ describe('sending', () => {
   });
 
   it('resolves a tab message that could not be delivered to undefined', async () => {
-    const { sendTradeParsedMessage } = loadModule();
+    const { sendToTab } = loadModule();
     tabsSendMessage.mockRejectedValue(new Error('Receiving end does not exist.'));
-    await expect(sendTradeParsedMessage(3, [])).resolves.toBeUndefined();
+    await expect(sendToTab(3, 'tradeParsed', { trades: [] })).resolves.toBeUndefined();
   });
 
   it('turns an unanswered refresh into a failure', async () => {

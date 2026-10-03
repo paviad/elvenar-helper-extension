@@ -2,7 +2,7 @@ import { playerSpecificMatchers } from '../inject/playerSpecificMatchers';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
-import { sendInterceptedPlayerSpecificRequest } from './messages';
+import { sendRuntime } from './messages';
 
 export interface AggregateRequestResponse {
   request: ElvenarRequestResponseEntry;
@@ -47,7 +47,7 @@ export const setupAggregateRequestResponseListener = (): void => {
           },
         } satisfies PlayerSpecificMessage;
 
-        await sendInterceptedPlayerSpecificRequest(message);
+        await sendRuntime('interceptedPlayerSpecificRequest', { payload: message });
       }
 
       for (const response of payload.response) {
@@ -65,7 +65,7 @@ export const setupAggregateRequestResponseListener = (): void => {
           },
         } satisfies PlayerSpecificMessage;
 
-        await sendInterceptedPlayerSpecificRequest(message);
+        await sendRuntime('interceptedPlayerSpecificRequest', { payload: message });
       }
     }
 

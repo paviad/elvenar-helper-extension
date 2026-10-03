@@ -1,10 +1,5 @@
 import { debounceTime, groupBy, mergeMap, Subject } from 'rxjs';
-import {
-  setupAccountsSavedRuntimeListener,
-  setupCityEntitiesUpdatedListener,
-  setupMessageListener,
-  setupOtherPlayerCityUpdatedListener,
-} from './chrome/messages';
+import { listen, setListener, setupMessageListener } from './chrome/messages';
 import { createReactUi } from './city/createReactUi';
 import { getAccountByTabId, loadAccount, loadAllAccounts } from './elvenar/accountStore';
 import { useTabStore } from './util/tabStore';
@@ -22,12 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupAccountsSavedHandler();
 
-    setupOtherPlayerCityUpdatedListener(async () => {
+    setListener('otherPlayerCityUpdated', async () => {
       await loadAllAccounts();
       useTabStore.getState()?.triggerForceUpdate();
       useTabStore.getState()?.setOtherCityUpdated(true);
     });
-    setupCityEntitiesUpdatedListener(async (msg) => {
+    setListener('cityEntitiesUpdated', async (msg) => {
       await loadAllAccounts();
       // The views showing an account redraw by themselves; this is for the city grid, which takes
       // the new layout only when told to, since it would otherwise throw away unsaved moves.
@@ -56,7 +51,7 @@ const setupAccountsSavedHandler = () => {
     });
   });
   // eslint-disable-next-line @typescript-eslint/require-await
-  setupAccountsSavedRuntimeListener(async (msg) => {
+  listen('accountsSavedRuntime', async (msg) => {
     updateSubject.next(msg.tabId);
   });
 };

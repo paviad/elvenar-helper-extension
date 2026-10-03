@@ -1,5 +1,5 @@
 import React from 'react';
-import { sendCitySavedMessage } from '../chrome/messages';
+import { sendRuntime } from '../chrome/messages';
 import { getAccountById, listAccounts } from '../elvenar/accountStore';
 import { getBuildings } from '../elvenar/getBuildings';
 import { getChapterResearch } from '../elvenar/getChapterResearch';
@@ -642,7 +642,7 @@ export const useCityGridState = () => {
         squadSize,
         rankingPoints,
       );
-      await sendCitySavedMessage('imported_' + name);
+      await sendRuntime('citySaved', { accountId: 'imported_' + name });
       setAccountId(name);
     } catch (e) {
       setGlobalError('Failed to decode or parse imported city data.');
@@ -681,7 +681,7 @@ export const useCityGridState = () => {
     setSaveAsDialog({ open: false, defaultName: '', existingCities: [] });
     const cityEntities = saveBack(Object.values(blocks));
     await saveCurrentCityAs(city.accountId!, name, cityEntities, city.chapter, undefined, city.unlockedAreas);
-    await sendCitySavedMessage(name);
+    await sendRuntime('citySaved', { accountId: name });
     resetMovedInPlace(Object.values(blocks));
     setAccountId(name);
   }

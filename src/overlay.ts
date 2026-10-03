@@ -1,6 +1,6 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
-import { requestRuntime, setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import { requestRuntime, setListener, setupMessageListener } from './chrome/messages';
 import { setupSocketResponseListener } from './chrome/socketResponse';
 import { getAccountById, getAccountByTabId, loadAllAccounts } from './elvenar/accountStore';
 import { createOverlayUi } from './overlay/createOverlayUi';
@@ -501,7 +501,7 @@ const initFunc = () => {
   watchExtensionContext();
 
   setupMessageListener();
-  setupCityDataUpdatedListener(({ tabId }) => {
+  setListener('cityDataUpdated', ({ tabId }) => {
     waitingIcon.remove();
     setup(tabId, content, reactHeaderActions).catch((err) => {
       console.error('Error setting up overlay:', err);
