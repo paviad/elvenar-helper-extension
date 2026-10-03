@@ -1,8 +1,9 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { DEFAULT_FULL_THREAD_POSTS, WatchedWonder } from '../model/kpSwap';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
+import { createDebouncedJsonStorage } from '../util/debouncedJsonStorage';
 import { ParsedQuestExport } from '../util/parseQuestExport';
 import { TournamentGood } from './tournamentGuide';
 import { TournyData } from './tournyData';
@@ -142,7 +143,8 @@ const createOverlayStore = (accountId: string) => {
       }),
       {
         name: `overlay-store-${accountId}`,
-        storage: createJSONStorage(() => chromeStorage),
+        // Written a second after changes pause: the whole store, chat included, goes out each time.
+        storage: createDebouncedJsonStorage(chromeStorage, 1000),
         partialize: (state) => {
           const { offeredGoods, forceUpdate, overlayExpanded, messagesDetailsReceived, ...toPersist } = state;
           return toPersist;
