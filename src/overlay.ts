@@ -1,6 +1,6 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
-import { setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
+import { requestRuntime, setupCityDataUpdatedListener, setupMessageListener } from './chrome/messages';
 import { setupSocketResponseListener } from './chrome/socketResponse';
 import { getAccountById, getAccountByTabId, loadAllAccounts } from './elvenar/accountStore';
 import { createOverlayUi } from './overlay/createOverlayUi';
@@ -201,7 +201,7 @@ const initFunc = () => {
     if (isDragging) return;
     void (async () => {
       try {
-        await chrome.runtime.sendMessage({ type: 'openExtensionTab' });
+        await requestRuntime('openExtensionTab');
       } catch (error) {
         console.error('Error opening extension tab:', error);
         reportPossibleContextLoss(error);

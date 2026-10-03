@@ -4,419 +4,324 @@ import { TradeSummary } from '../model/tradeSummary';
 import { reportPossibleContextLoss } from './extensionContext';
 
 // ============================================================================
-// 1. RUNTIME MESSAGES (Global / Background Bound) - TYPES
+// PROTOCOL
 // ============================================================================
-// Sent via chrome.runtime.sendMessage
+// Each entry is a message type and the fields the message carries besides `type`. These are
+// interfaces rather than types so that another module can add messages to them.
 
-export interface InterceptedPlayerSpecificRequest {
-  type: 'interceptedPlayerSpecificRequest';
-  payload: PlayerSpecificMessage;
+type NoFields = Record<never, never>;
+
+/** Sent with chrome.runtime.sendMessage, which reaches the service worker and every extension page. */
+export interface RuntimeMessages {
+  interceptedPlayerSpecificRequest: { payload: PlayerSpecificMessage };
+  interceptedNonSpecificRequest: { payload: NonSpecificMessage };
+  accountsSavedRuntime: { tabId: number };
+  refreshCity: { accountId: string };
+  cityEntitiesUpdated: { tabId: number };
+  otherPlayerCityUpdated: NoFields;
+  citySaved: { accountId: string };
+  openExtensionTab: NoFields;
 }
 
-export interface InterceptedNonSpecificRequest {
-  type: 'interceptedNonSpecificRequest';
-  payload: NonSpecificMessage;
+/** Sent with chrome.tabs.sendMessage, which reaches the content scripts of one tab. */
+export interface TabMessages {
+  genericResponse: { reqRespType: string; payload: unknown };
+  cityDataUpdated: { tabId: number };
+  tradeParsed: { trades: TradeSummary[] };
+  activeEffectsUpdated: { tabId: number };
+  messagesUpdated: {
+    tabId: number;
+    // Which player-specific response triggered this (e.g. 'R:MessageService/fetchMessages').
+    reqRespType: string;
+  };
 }
 
-export interface GenericResponseMessage<T> {
-  type: `genericResponse:${string}`;
-  reqRespType: string;
-  payload: T;
+/** What a listener answers with, for the messages that are answered. The rest get no answer. */
+export interface MessageResponses {
+  refreshCity: MessageResponse;
 }
-
-export interface AccountsSavedRuntimeMessage {
-  type: `accountsSavedRuntime`;
-  tabId: number;
-}
-
-export interface RefreshCityMessage {
-  type: 'refreshCity';
-  accountId: string;
-}
-
-export interface CityEntitiesUpdatedMessage {
-  type: 'cityEntitiesUpdated';
-  tabId: number;
-}
-
-export interface OtherPlayerCityUpdatedMessage {
-  type: 'otherPlayerCityUpdated';
-}
-
-export interface CitySavedMessage {
-  type: 'citySaved';
-  accountId: string;
-}
-
-export interface TradeOpenedMessage {
-  type: 'tradeOpened';
-}
-
-export interface OpenExtensionTabMessage {
-  type: 'openExtensionTab';
-}
-
-// ============================================================================
-// 2. TAB MESSAGES (Content Script / UI Bound) - TYPES
-// ============================================================================
-// Sent via chrome.tabs.sendMessage (requires tabId)
-
-export interface CityDataUpdatedMessage {
-  type: 'cityDataUpdated';
-  tabId: number;
-}
-
-export interface TradeParsedMessage {
-  type: 'tradeParsed';
-  trades: {
-    offer: string;
-    need: string;
-    player: string;
-  }[];
-}
-
-export interface ActiveEffectsUpdatedMessage {
-  type: 'activeEffectsUpdated';
-  tabId: number;
-}
-
-export interface MissingEeMessage {
-  type: 'missingEe';
-  tabId: number;
-  entityIds: number[];
-}
-
-export interface MessagesUpdatedMessage {
-  type: 'messagesUpdated';
-  tabId: number;
-  // Which player-specific response triggered this (e.g. 'R:MessageService/fetchMessages').
-  reqRespType: string;
-}
-
-// ============================================================================
-// UNION TYPES & UTILITIES
-// ============================================================================
-
-export type AllMessages =
-  | InterceptedPlayerSpecificRequest
-  | InterceptedNonSpecificRequest
-  | RefreshCityMessage
-  | CityEntitiesUpdatedMessage
-  | OtherPlayerCityUpdatedMessage
-  | CitySavedMessage
-  | TradeOpenedMessage
-  | OpenExtensionTabMessage
-  | CityDataUpdatedMessage
-  | TradeParsedMessage
-  | ActiveEffectsUpdatedMessage
-  | MissingEeMessage
-  | MessagesUpdatedMessage;
 
 export interface MessageResponse {
   success: boolean;
   message?: string;
 }
 
+type AllMessageFields = RuntimeMessages & TabMessages;
+export type MessageType = keyof AllMessageFields;
+export type MessageOf<K extends MessageType> = { type: K } & AllMessageFields[K];
+export type AllMessages = { [K in MessageType]: MessageOf<K> }[MessageType];
+export type ResponseOf<K extends MessageType> = K extends keyof MessageResponses ? MessageResponses[K] : void;
+
+/** A message with no fields is sent without a fields argument. */
+type FieldsArg<F> = keyof F extends never ? [] : [fields: F];
+
+export type InterceptedPlayerSpecificRequest = MessageOf<'interceptedPlayerSpecificRequest'>;
+export type InterceptedNonSpecificRequest = MessageOf<'interceptedNonSpecificRequest'>;
+export type AccountsSavedRuntimeMessage = MessageOf<'accountsSavedRuntime'>;
+export type RefreshCityMessage = MessageOf<'refreshCity'>;
+export type CityEntitiesUpdatedMessage = MessageOf<'cityEntitiesUpdated'>;
+export type OtherPlayerCityUpdatedMessage = MessageOf<'otherPlayerCityUpdated'>;
+export type CitySavedMessage = MessageOf<'citySaved'>;
+export type OpenExtensionTabMessage = MessageOf<'openExtensionTab'>;
+export type GenericResponseMessage<T> = Omit<MessageOf<'genericResponse'>, 'payload'> & { payload: T };
+export type CityDataUpdatedMessage = MessageOf<'cityDataUpdated'>;
+export type TradeParsedMessage = MessageOf<'tradeParsed'>;
+export type ActiveEffectsUpdatedMessage = MessageOf<'activeEffectsUpdated'>;
+export type MessagesUpdatedMessage = MessageOf<'messagesUpdated'>;
+
 // ============================================================================
-// SENDER FUNCTIONS
+// SENDING
 // ============================================================================
 
-/** --- 1. Runtime Senders (chrome.runtime) --- **/
+/**
+ * Sends a runtime message and resolves to its answer, which is undefined when no listener gave
+ * one. Rejects when the message could not be delivered, typically because the extension has gone
+ * away under this page.
+ */
+export const requestRuntime = async <K extends keyof RuntimeMessages>(
+  type: K,
+  ...[fields]: FieldsArg<RuntimeMessages[K]>
+): Promise<ResponseOf<K> | undefined> => (await chrome.runtime.sendMessage({ type, ...fields })) as ResponseOf<K>;
 
-export const sendInterceptedPlayerSpecificRequest = async (payload: PlayerSpecificMessage) => {
+/** Like {@link requestRuntime}, but a failure is reported and logged, and resolves to undefined. */
+export const sendRuntime = async <K extends keyof RuntimeMessages>(
+  type: K,
+  ...fields: FieldsArg<RuntimeMessages[K]>
+): Promise<ResponseOf<K> | undefined> => {
   try {
-    await chrome.runtime.sendMessage({
-      type: 'interceptedPlayerSpecificRequest',
-      payload,
-    } satisfies InterceptedPlayerSpecificRequest);
+    return await requestRuntime(type, ...fields);
   } catch (e) {
-    // The game keeps this one busy, so it is usually the first to notice the extension going away.
     reportPossibleContextLoss(e);
-    console.log('ElvenAssist: Error sending interceptedPlayerSpecificRequest:', e, payload);
+    console.log(`ElvenAssist: Error sending ${type} message:`, e);
+    return undefined;
   }
 };
 
-export const sendInterceptedNonSpecificRequest = async (payload: NonSpecificMessage) => {
+/** Sends a message to one tab and resolves to its answer. A failure is logged and resolves to undefined. */
+export const sendToTab = async <K extends keyof TabMessages>(
+  tabId: number,
+  type: K,
+  ...[fields]: FieldsArg<TabMessages[K]>
+): Promise<ResponseOf<K> | undefined> => {
   try {
-    await chrome.runtime.sendMessage({
-      type: 'interceptedNonSpecificRequest',
-      payload,
-    } satisfies InterceptedNonSpecificRequest);
+    return (await chrome.tabs.sendMessage(tabId, { type, ...fields })) as ResponseOf<K>;
   } catch (e) {
-    reportPossibleContextLoss(e);
-    console.log('ElvenAssist: Error sending interceptedNonSpecificRequest:', e);
+    console.log(`ElvenAssist: Error sending ${type} message:`, e);
+    return undefined;
   }
 };
 
-export const sendRefreshCityMessage = async (accountId: string): Promise<MessageResponse> => {
-  let resolveFn: (response: MessageResponse) => void = () => {};
-  const responsePromise = new Promise<MessageResponse>((resolve) => (resolveFn = resolve));
-  chrome.runtime.sendMessage(
-    {
-      type: 'refreshCity',
-      accountId,
-    } satisfies RefreshCityMessage,
-    undefined,
-    resolveFn,
-  );
-  return await responsePromise;
-};
+/** --- Named senders --- **/
 
-export const sendCityEntitiesUpdatedMessage = async (tabId: number) => {
-  try {
-    await chrome.runtime.sendMessage({
-      type: 'cityEntitiesUpdated',
-      tabId,
-    } satisfies CityEntitiesUpdatedMessage);
-  } catch (e) {
-    reportPossibleContextLoss(e);
-    console.log('ElvenAssist: Error sending cityEntitiesUpdated message:', e);
-  }
-};
+export const sendInterceptedPlayerSpecificRequest = (payload: PlayerSpecificMessage) =>
+  sendRuntime('interceptedPlayerSpecificRequest', { payload });
 
-export const sendOtherPlayerCityDataUpdatedMessage = async () => {
-  try {
-    await chrome.runtime.sendMessage({ type: 'otherPlayerCityUpdated' } satisfies OtherPlayerCityUpdatedMessage);
-  } catch (e) {
-    reportPossibleContextLoss(e);
-    console.log('ElvenAssist: Error sending otherPlayerCityUpdated message:', e);
-  }
-};
+export const sendInterceptedNonSpecificRequest = (payload: NonSpecificMessage) =>
+  sendRuntime('interceptedNonSpecificRequest', { payload });
 
-export const sendCitySavedMessage = async (accountId: string) => {
-  try {
-    await chrome.runtime.sendMessage({
-      type: 'citySaved',
-      accountId,
-    } satisfies CitySavedMessage);
-  } catch (e) {
-    reportPossibleContextLoss(e);
-    console.log('ElvenAssist: Error sending citySaved message:', e);
-  }
-};
+export const sendRefreshCityMessage = async (accountId: string): Promise<MessageResponse> =>
+  (await sendRuntime('refreshCity', { accountId })) ?? { success: false, message: 'No answer from the extension' };
 
-export const sendTradeOpenedMessage = async () => {
-  try {
-    await chrome.runtime.sendMessage({
-      type: 'tradeOpened',
-    } satisfies TradeOpenedMessage);
-  } catch (e) {
-    reportPossibleContextLoss(e);
-    console.log('ElvenAssist: Error sending tradeOpened message:', e);
-  }
-};
+export const sendCityEntitiesUpdatedMessage = (tabId: number) => sendRuntime('cityEntitiesUpdated', { tabId });
 
-/** --- 2. Tab Senders (chrome.tabs) --- **/
+export const sendOtherPlayerCityDataUpdatedMessage = () => sendRuntime('otherPlayerCityUpdated');
 
+export const sendCitySavedMessage = (accountId: string) => sendRuntime('citySaved', { accountId });
+
+/**
+ * Sends a game response the service worker has handled to the tab it came from, then tells the
+ * extension pages that the accounts it changed have been saved.
+ */
 export const sendGenericResponse = async <T>(reqRespType: string, payload: T, tabId: number) => {
-  try {
-    await chrome.tabs.sendMessage(tabId, {
-      type: `genericResponse:${reqRespType}`,
-      reqRespType,
-      payload,
-    } satisfies GenericResponseMessage<T>);
-    await chrome.runtime.sendMessage({ type: 'accountsSavedRuntime', tabId } satisfies AccountsSavedRuntimeMessage);
-  } catch (e) {
-    console.log('ElvenAssist: Error sending genericResponse message:', e);
-  }
+  await sendToTab(tabId, 'genericResponse', { reqRespType, payload });
+  await sendRuntime('accountsSavedRuntime', { tabId });
 };
 
-export const sendCityDataUpdatedMessage = async (tabId: number) => {
-  try {
-    await chrome.tabs.sendMessage(tabId, { type: 'cityDataUpdated', tabId } satisfies CityDataUpdatedMessage);
-  } catch (e) {
-    console.log('ElvenAssist: Error sending cityDataUpdated message:', e);
-  }
-};
+export const sendCityDataUpdatedMessage = (tabId: number) => sendToTab(tabId, 'cityDataUpdated', { tabId });
 
-export const sendTradeParsedMessage = async (tabId: number, trades: TradeSummary[]) => {
-  await chrome.tabs.sendMessage(tabId, {
-    type: 'tradeParsed',
-    trades,
-  } satisfies TradeParsedMessage);
-};
+export const sendTradeParsedMessage = (tabId: number, trades: TradeSummary[]) =>
+  sendToTab(tabId, 'tradeParsed', { trades });
 
-export const sendActiveEffectsUpdatedMessage = async (tabId: number) => {
-  try {
-    await chrome.tabs.sendMessage(tabId, {
-      type: 'activeEffectsUpdated',
-      tabId,
-    } satisfies ActiveEffectsUpdatedMessage);
-  } catch (e) {
-    console.log('ElvenAssist: Error sending activeEffectsUpdated message:', e);
-  }
-};
+export const sendActiveEffectsUpdatedMessage = (tabId: number) => sendToTab(tabId, 'activeEffectsUpdated', { tabId });
 
-export const sendMissingEeMessage = async (tabId: number, entityIds: number[]) => {
-  try {
-    await chrome.tabs.sendMessage(tabId, { type: 'missingEe', tabId, entityIds } satisfies MissingEeMessage);
-  } catch (e) {
-    console.log('ElvenAssist: Error sending missingEe message:', e);
-  }
-};
-
-export const sendMessagesUpdatedMessage = async (tabId: number, reqRespType: string) => {
-  try {
-    await chrome.tabs.sendMessage(tabId, {
-      type: 'messagesUpdated',
-      tabId,
-      reqRespType,
-    } satisfies MessagesUpdatedMessage);
-  } catch (e) {
-    console.log('ElvenAssist: Error sending messagesUpdated message:', e);
-  }
-};
+export const sendMessagesUpdatedMessage = (tabId: number, reqRespType: string) =>
+  sendToTab(tabId, 'messagesUpdated', { tabId, reqRespType });
 
 // ============================================================================
-// LISTENER SETUP & ROUTING
+// LISTENING
 // ============================================================================
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const callbackMap: Record<string, (...args: any[]) => any> = {};
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const callbackMap2: Record<string, { messageType: string; callback: (...args: any[]) => any }> = {};
+type Listener = (message: AllMessages, sender: chrome.runtime.MessageSender) => unknown;
 
+/** The listeners for each message type, keyed by whatever their registration removes them with. */
+const listeners = new Map<string, Map<unknown, Listener>>();
+
+/** The key of the one listener per type that {@link setListener} replaces. */
+const SLOT = Symbol('slot');
+
+const addListener = (type: MessageType, key: unknown, listener: Listener) => {
+  let forType = listeners.get(type);
+  if (!forType) {
+    forType = new Map();
+    listeners.set(type, forType);
+  }
+  forType.set(key, listener);
+  return () => {
+    if (forType.get(key) === listener) {
+      forType.delete(key);
+    }
+  };
+};
+
+export type MessageListener<K extends MessageType> = (
+  message: MessageOf<K>,
+  sender: chrome.runtime.MessageSender,
+) => ResponseOf<K> | Promise<ResponseOf<K>>;
+
+/**
+ * Calls `listener` for every message of this type that reaches this page, alongside any other
+ * listeners for it. Returns a function that removes it.
+ */
+export const listen = <K extends MessageType>(type: K, listener: MessageListener<K>) =>
+  addListener(type, Symbol(type), listener as Listener);
+
+/** Sets this page's one replaceable listener for a message type, replacing the previous one. */
+export const setListener = <K extends MessageType>(type: K, listener: MessageListener<K>) =>
+  addListener(type, SLOT, listener as Listener);
+
+export const clearListener = (type: MessageType) => {
+  listeners.get(type)?.delete(SLOT);
+};
+
+/**
+ * Runs the listeners for a message. The answer is the first one a listener gives that is not
+ * undefined; when none gives one, an undefined answer goes back once they have all finished.
+ */
 const messageReceiver = (
   message: AllMessages,
   sender: chrome.runtime.MessageSender,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sendResponse: (response?: any) => void,
+  sendResponse: (response?: unknown) => void,
 ): boolean | undefined => {
-  const callback1 = callbackMap[message.type];
-  const callbacks2 = Object.values(callbackMap2)
-    .filter(
-      (entry) =>
-        entry.messageType === message.type ||
-        (entry.messageType === ANY_GENERIC_RESPONSE && message.type.startsWith('genericResponse:')),
-    )
-    .map((entry) => entry.callback);
-  const callbacks = callback1 ? [callback1, ...callbacks2] : callbacks2;
-
-  let rc2: boolean | undefined = undefined;
-
-  for (const callback of callbacks) {
-    if (callback) {
-      const rc = callback(message, sender);
-      if (rc instanceof Promise) {
-        rc.then((r) => sendResponse(r)).catch((e) => {
-          console.log('ElvenAssist: Error in message handler for message', message, e);
-        });
-        rc2 = true;
-      } else {
-        sendResponse(rc);
-      }
-    } else {
-      sendResponse();
-    }
+  const forType = listeners.get(message.type);
+  if (!forType?.size) {
+    return undefined;
   }
 
-  return rc2;
+  const logError = (e: unknown) => console.log('ElvenAssist: Error in message handler for message', message, e);
+
+  const results = [...forType.values()].map((listener) => {
+    try {
+      return listener(message, sender);
+    } catch (e) {
+      logError(e);
+      return undefined;
+    }
+  });
+  const pending = results.filter((r): r is Promise<unknown> => r instanceof Promise);
+  const answer = results.find((r) => !(r instanceof Promise) && r !== undefined);
+
+  if (answer !== undefined || pending.length === 0) {
+    pending.forEach((p) => void p.catch(logError));
+    sendResponse(answer);
+    return undefined;
+  }
+
+  let answered = false;
+  const respond = (r: unknown) => {
+    if (!answered) {
+      answered = true;
+      sendResponse(r);
+    }
+  };
+  void Promise.allSettled(
+    pending.map((p) =>
+      p.then((r) => {
+        if (r !== undefined) {
+          respond(r);
+        }
+      }, logError),
+    ),
+  ).then(() => respond(undefined));
+  return true;
 };
 
 export const setupMessageListener = () => chrome.runtime.onMessage.addListener(messageReceiver);
 
-/** --- 1. Runtime Listeners --- **/
+/** --- Generic responses --- **/
 
-export const setupInterceptedPlayerSpecificRequestListener = (
-  callback: (message: InterceptedPlayerSpecificRequest, sender: chrome.runtime.MessageSender) => void,
-) => (callbackMap['interceptedPlayerSpecificRequest'] = callback);
+/** Removal functions for the listeners that are removed by an id. */
+const removalsById = new Map<string, () => void>();
 
-export const setupInterceptedNonSpecificRequestListener = (
-  callback: (message: InterceptedNonSpecificRequest) => void,
-) => (callbackMap['interceptedNonSpecificRequest'] = callback);
+const addListenerWithId = (remove: () => void) => {
+  const id = crypto.randomUUID();
+  removalsById.set(id, remove);
+  return id;
+};
+
+const removeListenerById = (id: string) => {
+  removalsById.get(id)?.();
+  removalsById.delete(id);
+};
 
 export const setupGenericResponseListener = <T>(
   reqRespType: string,
   callback: (message: GenericResponseMessage<T>) => void,
-) => {
-  const id = crypto.randomUUID();
-  callbackMap2[id] = { messageType: `genericResponse:${reqRespType}`, callback };
-  return id;
-};
-
-const ANY_GENERIC_RESPONSE = 'genericResponse:*';
+) =>
+  addListenerWithId(
+    listen('genericResponse', (message) => {
+      if (message.reqRespType === reqRespType) {
+        callback(message as GenericResponseMessage<T>);
+      }
+    }),
+  );
 
 /**
  * Called for every game response the service worker has handled for this tab. It is sent once
  * the service worker has saved what the response changed, so a stored account read from here on
  * includes it.
  */
-export const setupAnyGenericResponseListener = (callback: (message: GenericResponseMessage<unknown>) => void) => {
-  const id = crypto.randomUUID();
-  callbackMap2[id] = { messageType: ANY_GENERIC_RESPONSE, callback };
-  return id;
-};
+export const setupAnyGenericResponseListener = (callback: (message: GenericResponseMessage<unknown>) => void) =>
+  addListenerWithId(listen('genericResponse', callback));
 
-export const clearGenericResponseListener = (id: string) => {
-  if (callbackMap2[id]) {
-    delete callbackMap2[id];
-  }
-};
+export const clearGenericResponseListener = removeListenerById;
 
-export const setupAccountsSavedRuntimeListener = (
-  callback: (message: AccountsSavedRuntimeMessage) => Promise<void>,
-) => {
-  const id = crypto.randomUUID();
-  callbackMap2[id] = { messageType: `accountsSavedRuntime`, callback };
-  return id;
-};
+export const setupAccountsSavedRuntimeListener = (callback: MessageListener<'accountsSavedRuntime'>) =>
+  addListenerWithId(listen('accountsSavedRuntime', callback));
 
-export const clearAccountsSavedRuntimeListener = (id: string) => {
-  if (callbackMap2[id]) {
-    delete callbackMap2[id];
-  }
-};
+/** --- Named listeners --- **/
+// Each of these replaces the listener set for its type by an earlier call.
 
-export const setupRefreshCityListener = (callback: (message: RefreshCityMessage) => Promise<MessageResponse>) =>
-  (callbackMap['refreshCity'] = callback);
+export const setupInterceptedPlayerSpecificRequestListener = (
+  callback: MessageListener<'interceptedPlayerSpecificRequest'>,
+) => setListener('interceptedPlayerSpecificRequest', callback);
 
-export const setupCityEntitiesUpdatedListener = (
-  callback: (message: CityEntitiesUpdatedMessage) => void | Promise<void>,
-) => (callbackMap['cityEntitiesUpdated'] = callback);
+export const setupInterceptedNonSpecificRequestListener = (
+  callback: MessageListener<'interceptedNonSpecificRequest'>,
+) => setListener('interceptedNonSpecificRequest', callback);
 
-export const clearCityEntitiesUpdatedListener = () => {
-  delete callbackMap['cityEntitiesUpdated'];
-};
+export const setupRefreshCityListener = (callback: MessageListener<'refreshCity'>) =>
+  setListener('refreshCity', callback);
 
-export const setupOtherPlayerCityUpdatedListener = (
-  callback: (message: OtherPlayerCityUpdatedMessage) => void | Promise<void>,
-) => (callbackMap['otherPlayerCityUpdated'] = callback);
+export const setupCityEntitiesUpdatedListener = (callback: MessageListener<'cityEntitiesUpdated'>) =>
+  setListener('cityEntitiesUpdated', callback);
 
-export const setupCitySavedListener = (callback: (message: CitySavedMessage) => void) =>
-  (callbackMap['citySaved'] = callback);
+export const setupOtherPlayerCityUpdatedListener = (callback: MessageListener<'otherPlayerCityUpdated'>) =>
+  setListener('otherPlayerCityUpdated', callback);
 
-export const setupTradeOpenedListener = (callback: () => void) => (callbackMap['tradeOpened'] = callback);
+export const setupCitySavedListener = (callback: MessageListener<'citySaved'>) => setListener('citySaved', callback);
 
-export const setupOpenExtensionTabListener = (
-  callback: (message: OpenExtensionTabMessage, sender: chrome.runtime.MessageSender) => void | Promise<void>,
-) => (callbackMap['openExtensionTab'] = callback);
+export const setupOpenExtensionTabListener = (callback: MessageListener<'openExtensionTab'>) =>
+  setListener('openExtensionTab', callback);
 
-/** --- 2. Tab Listeners --- **/
+export const setupCityDataUpdatedListener = (callback: MessageListener<'cityDataUpdated'>) =>
+  setListener('cityDataUpdated', callback);
 
-export const setupCityDataUpdatedListener = (callback: (tabId: CityDataUpdatedMessage) => void) =>
-  (callbackMap['cityDataUpdated'] = callback);
+export const setupTradeParsedListener = (callback: MessageListener<'tradeParsed'>) =>
+  setListener('tradeParsed', callback);
 
-export const setupTradeParsedListener = (callback: (tradesMsg: TradeParsedMessage) => void) =>
-  (callbackMap['tradeParsed'] = callback);
+export const clearTradeParsedListener = () => clearListener('tradeParsed');
 
-export const clearTradeParsedListener = () => {
-  delete callbackMap['tradeParsed'];
-};
+export const setupMessagesUpdatedListener = (callback: MessageListener<'messagesUpdated'>) =>
+  setListener('messagesUpdated', callback);
 
-export const setupActiveEffectsUpdatedListener = (
-  callback: (message: ActiveEffectsUpdatedMessage) => void | Promise<void>,
-) => (callbackMap['activeEffectsUpdated'] = callback);
-
-export const clearActiveEffectsUpdatedListener = () => {
-  delete callbackMap['activeEffectsUpdated'];
-};
-
-export const setupMissingEeListener = (callback: (message: MissingEeMessage) => void) =>
-  (callbackMap['missingEe'] = callback);
-
-export const setupMessagesUpdatedListener = (callback: (message: MessagesUpdatedMessage) => void | Promise<void>) =>
-  (callbackMap['messagesUpdated'] = callback);
-
-export const clearMessagesUpdatedListener = () => {
-  delete callbackMap['messagesUpdated'];
-};
+export const clearMessagesUpdatedListener = () => clearListener('messagesUpdated');
