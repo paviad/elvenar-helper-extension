@@ -13,7 +13,6 @@ import { isOverlapping } from './isOverlapping';
  */
 export const commitDrop = (city: ReturnType<typeof useCity>) => {
   const setMoveLog = city.setMoveLog;
-  const clearRedoStack = city.clearRedoStack;
 
   const blocks = city.blocks;
   const setBlocks = city.setBlocks;
@@ -98,7 +97,6 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
         duplicatedBlock: originalPos ? undefined : block,
       },
     ]);
-    clearRedoStack();
 
     // The drag carries straight on with the displaced building, holding the spot the
     // dragged one vacated where that is free: dropping it there then needs no move of its
@@ -132,7 +130,6 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
           movedChanged: block.moved === isOriginal,
         },
       ]);
-      clearRedoStack(); // Clear redo stack on new move
     }
   } else {
     // This is a duplicate drop
@@ -148,7 +145,6 @@ export const commitDrop = (city: ReturnType<typeof useCity>) => {
         duplicatedBlock: block,
       },
     ]);
-    clearRedoStack();
   }
 
   setDragIndex(null);

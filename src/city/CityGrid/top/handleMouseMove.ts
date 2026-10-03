@@ -42,6 +42,12 @@ const processMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEvent,
   const mouseY = e.clientY - rect.top - paddingPx;
 
   if (dragIndex !== null) {
+    // Sampled during a drag that has since ended - dropped, swapped onto another building or
+    // cancelled. Acting on it would move a building that has already been set down.
+    if (city.dragIndexRef.current !== dragIndex) {
+      return;
+    }
+
     const newX = Math.max(
       -PaddingTiles,
       Math.min(GridMax - blocks[dragIndex].width + PaddingTiles, Math.round((mouseX - dragOffset.x) / sGridSize)),

@@ -23,6 +23,7 @@ export const saveNewCityAs = async (
   accountId: string,
   cityEntities: CityEntity[],
   race: string,
+  chapter: number,
   unlockedAreas: UnlockedArea[],
   squadSize: number,
   rankingPoints: number,
@@ -45,7 +46,7 @@ export const saveNewCityAs = async (
       cityEntities,
       unlockedAreas,
       maxChapter: 0,
-      chapter: 0,
+      chapter,
       userData: {
         player_id: 0,
         city_name: '',

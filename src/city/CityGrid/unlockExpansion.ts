@@ -22,7 +22,6 @@ export const unlockExpansion = (city: ReturnType<typeof useCity>, cx: number, cy
       unlockedArea: area,
     },
   ]);
-  city.clearRedoStack();
   city.setUnlockAreaMode(false);
   city.setMenu(null);
 };

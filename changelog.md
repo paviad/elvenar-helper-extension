@@ -9,6 +9,12 @@
 - **Tourny Prep:** the tournament countdown no longer overstates the time left when the game has been open a while.
 - A browser storage error no longer deletes an account.
 - Updates the game sends after the browser has been idle for a while are no longer missed.
+- **City Planner:** Ctrl+Z and Ctrl+Y after deleting a building or selling streets no longer leave a blank page. Sell Streets can now be undone.
+- **City Planner:** Export works in every game language. It used to do nothing for players whose game is in Polish, Russian, Greek and other languages with letters beyond Western European ones.
+- **City Planner:** Import says what is wrong with a string it cannot use. A broken string can no longer be saved and stop the planner from opening.
+- **City Planner:** an imported city keeps its chapter. Older exports get the chapter of their most advanced building, not 0.
+- **City Planner:** a building whose level is changed from the menu is fully at its new level, so the +/- keys and Export now see it.
+- **City Planner:** a building set down quickly after moving it no longer slips a tile.
 
 ## v10.6.0
 - **Swaps: the KP instants you hold are listed at the top.** One line shows how many of each size you have and what they add up to, so you can see what you have to repay with without opening the inventory. It follows the game as you use or receive instants.

@@ -47,7 +47,9 @@ const processIsoMouseMove = (city: ReturnType<typeof useCity>, e: React.MouseEve
   };
 
   if (dragIndex !== null) {
-    if (!blocks[dragIndex]) {
+    // Sampled during a drag that has since ended - dropped, swapped onto another building or
+    // cancelled. Acting on it would move a building that has already been set down.
+    if (city.dragIndexRef.current !== dragIndex || !blocks[dragIndex]) {
       return;
     }
 

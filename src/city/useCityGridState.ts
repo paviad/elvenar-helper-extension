@@ -8,7 +8,6 @@ import { useHelper } from '../helper/HelperContext';
 import { generateInventory } from '../inventory/generateInventory';
 import { InventoryRowRef, isInventoryRow } from '../inventory/inventoryRowRef';
 import { CityEntity, CityEntityEx } from '../model/cityEntity';
-import { UnlockedArea } from '../model/unlockedArea';
 import { generateUniqueId } from '../util/generateUniqueId';
 import { guessRankingPointsFromChapter } from '../util/guessRankingPointsFromChapter';
 import { guessSquadSizeFromChapter } from '../util/guessSquadSizeFromChapter';
@@ -23,6 +22,7 @@ import { isOverlapping } from './CityGrid/isOverlapping';
 import { blockAtLevel, isLevelKey, stepLevelAndStage } from './CityGrid/levelChange';
 import { screenshotFrame } from './CityGrid/screenshotFrame';
 import { CityScene } from './CityGrid/top/CityScreenshotSvg';
+import { CityImportError, encodeCityExport, parseCityImport } from './cityImport';
 import { resetMovedInPlace, saveBack } from './generateCity';
 import { getCityBlockFromCityEntity } from './getCityBlockFromCityEntity';
 import { getHoveredBlockId, setHoveredBlockId } from './hoveredBlockStore';
@@ -63,7 +63,6 @@ export const useCityGridState = () => {
     setSearchTerm,
     setMenu,
     dragIndex,
-    clearRedoStack,
   } = city;
 
   // Global Store State
@@ -184,18 +183,25 @@ export const useCityGridState = () => {
           const { [dragIndex]: _, ...updated } = prev;
           return updated;
         });
-        setMoveLog((prev) => [
-          ...prev,
-          {
-            id: block.id,
-            name: block.name,
-            from: { x: block.x, y: block.y },
-            to: { x: block.x, y: block.y },
-            movedChanged: false,
-            type: 'delete',
-            deletedBlock: block,
-          } satisfies MoveLogInterface,
-        ]);
+        // A carried building is logged where it was picked up from, not under the cursor. One that
+        // was never put down - fresh from the build menu, a duplicate, or what an earlier entry
+        // already logged as deleted - leaves nothing for undo to bring back.
+        const originalPos = city.originalPos;
+        if (originalPos) {
+          const deletedBlock = { ...block, x: originalPos.x, y: originalPos.y };
+          setMoveLog((prev) => [
+            ...prev,
+            {
+              id: block.id,
+              name: block.name,
+              from: originalPos,
+              to: originalPos,
+              movedChanged: false,
+              type: 'delete',
+              deletedBlock,
+            } satisfies MoveLogInterface,
+          ]);
+        }
         setDragIndex(null);
         setDragOffset({ x: 0, y: 0 });
       }
@@ -242,7 +248,6 @@ export const useCityGridState = () => {
             deletedBlock: block,
           } satisfies MoveLogInterface,
         ]);
-        clearRedoStack();
         setHoveredBlockId(null);
         return;
       }
@@ -280,7 +285,6 @@ export const useCityGridState = () => {
             nextBlock: newBlock,
           } satisfies MoveLogInterface,
         ]);
-        clearRedoStack();
         return;
       }
 
@@ -314,7 +318,7 @@ export const useCityGridState = () => {
     const listener = (event: KeyboardEvent) => void handleKeyDown(event);
     window.addEventListener('keydown', listener);
     return () => window.removeEventListener('keydown', listener);
-  }, [dragIndex, blocks, setBlocks, setDragIndex, setDragOffset, setMoveLog, setOriginalPos, clearRedoStack]);
+  }, [dragIndex, blocks, setBlocks, setDragIndex, setDragOffset, setMoveLog, setOriginalPos]);
 
   // Keyboard Shortcuts (Ctrl+S, Alt+B). saveCity closes over the current blocks, so
   // it is reached through a ref: depending on blocks directly detached and reattached
@@ -394,15 +398,13 @@ export const useCityGridState = () => {
       return;
     }
 
+    // Through blockAtLevel, like the +/- keys, so the entity and game id move to the new level
+    // along with the label and footprint - the keys and the export read the level off the entity.
     const newBlock = {
-      ...blockToDup,
+      ...blockAtLevel(blockToDup, { level: newLevel, stage: blockToDup.entity.stage }, newBuilding),
       id: generateUniqueId(),
       x: blockToDup.x + 1,
       y: blockToDup.y + 1,
-      label: `${newLevel}`,
-      level: newLevel,
-      width: newBuilding.width,
-      length: newBuilding.length,
       moved: true,
     } satisfies CityBlock;
 
@@ -430,7 +432,24 @@ export const useCityGridState = () => {
   }
 
   const sellStreets = () => {
+    const streets = Object.values(blocks).filter((b) => b.type === 'street');
+    if (streets.length === 0) return;
     setBlocks((prev) => Object.fromEntries(Object.entries(prev).filter(([_, b]) => b.type !== 'street')));
+    setMoveLog((prev) => [
+      ...prev,
+      ...streets.map(
+        (block) =>
+          ({
+            id: block.id,
+            name: block.name,
+            from: { x: block.x, y: block.y },
+            to: { x: block.x, y: block.y },
+            movedChanged: false,
+            type: 'delete',
+            deletedBlock: block,
+          }) satisfies MoveLogInterface,
+      ),
+    ]);
   };
 
   /**
@@ -557,9 +576,7 @@ export const useCityGridState = () => {
       now: Date.now(),
     });
 
-    const jsonStr = JSON.stringify(exportData);
-    const base64Str = btoa(jsonStr);
-    setExportDialog({ open: true, exportStr: base64Str });
+    setExportDialog({ open: true, exportStr: encodeCityExport(JSON.stringify(exportData)) });
   }
 
   // The city is drawn for the picture the moment the item is clicked, and rasterised
@@ -596,21 +613,19 @@ export const useCityGridState = () => {
   }
 
   async function handleImport(name: string, data: string) {
+    const existing = getAccountById(name);
+    if (existing && !existing.isDetached) {
+      setGlobalError(`"${name}" is the name of an account you play. Import the city under another name.`);
+      return;
+    }
     try {
-      const jsonStr = atob(data.trim());
-      const importData = JSON.parse(jsonStr) as {
-        city_map: {
-          entities: CityEntity[];
-          unlocked_areas: UnlockedArea[];
-        };
-        user_data: { race: string };
-      }; // Type assertion could be stricter here
+      const importData = parseCityImport(data);
 
       const buildingFinder = getBuildingFinder();
       await buildingFinder.ensureInitialized();
 
       let minChapter = 0;
-      const cityEntities = importData.city_map.entities.map((e: CityEntity) => {
+      const cityEntities = importData.entities.map((e) => {
         const levelMatch = /_(\d+)$/.exec(e.cityentity_id);
         const level = e.level || (levelMatch ? parseInt(levelMatch[1]) : 1);
         const building = buildingFinder.getBuilding(e.cityentity_id, level);
@@ -632,20 +647,24 @@ export const useCityGridState = () => {
         } satisfies CityEntity;
       });
 
-      const rankingPoints = guessRankingPointsFromChapter(minChapter);
-      const squadSize = guessSquadSizeFromChapter(minChapter);
+      // Older exports do not say, and the latest chapter any of the buildings needs is the
+      // closest guess there is - the city has reached at least that one.
+      const chapter = importData.chapter ?? Math.max(minChapter, 1);
+      const rankingPoints = guessRankingPointsFromChapter(chapter);
+      const squadSize = guessSquadSizeFromChapter(chapter);
       await saveNewCityAs(
         name,
         cityEntities,
-        importData.user_data.race,
-        importData.city_map.unlocked_areas,
+        importData.race,
+        chapter,
+        importData.unlockedAreas,
         squadSize,
         rankingPoints,
       );
       await sendRuntime('citySaved', { accountId: 'imported_' + name });
       setAccountId(name);
     } catch (e) {
-      setGlobalError('Failed to decode or parse imported city data.');
+      setGlobalError(e instanceof CityImportError ? e.message : 'Failed to decode or parse imported city data.');
     }
   }
 

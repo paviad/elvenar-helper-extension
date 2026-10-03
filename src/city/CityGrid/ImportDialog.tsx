@@ -1,4 +1,5 @@
 import React from 'react';
+import { CityImportError, parseCityImport } from '../cityImport';
 
 // --- Types ---
 interface ImportDialogProps {
@@ -8,6 +9,19 @@ interface ImportDialogProps {
   existingCities?: string[];
 }
 
+// --- Validation Logic ---
+/** What is wrong with the string, or null when it is a city that can be imported. */
+const findProblem = (str: string): string | null => {
+  if (!str || !str.trim()) return 'Nothing pasted';
+  try {
+    parseCityImport(str);
+    return null;
+  } catch (e) {
+    return e instanceof CityImportError ? e.message : 'This is not an exported city.';
+  }
+};
+const validateInput = (str: string): boolean => findProblem(str) === null;
+
 const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, existingCities = [] }) => {
   const [dataString, setDataString] = React.useState('');
   const [name, setName] = React.useState('');
@@ -16,23 +30,10 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const nameInputRef = React.useRef<HTMLInputElement>(null);
 
-  // --- Validation Logic ---
-  const validateInput = (str: string): boolean => {
-    if (!str || !str.trim()) return false;
-    try {
-      // 1. Check if Base64
-      const decoded = atob(str.trim());
-      // 2. Check if JSON
-      JSON.parse(decoded);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
   // Re-read whenever dataString changes. As an effect writing state this ran a render
   // behind the textarea, so the Import button was enabled against the previous keystroke.
-  const isValid = validateInput(dataString);
+  const problem = findProblem(dataString);
+  const isValid = problem === null;
 
   // Reset state & Check Clipboard when dialog opens
   React.useEffect(() => {
@@ -130,7 +131,7 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport, 
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
                   Paste Data String
-                  {showValidationError && <span style={styles.errorLabel}> (Invalid Format)</span>}
+                  {showValidationError && <span style={styles.errorLabel}> ({problem})</span>}
                 </label>
                 <textarea
                   ref={textareaRef}

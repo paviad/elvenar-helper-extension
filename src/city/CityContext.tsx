@@ -34,14 +34,20 @@ export interface ReplacedArea {
 
 export interface CityContextType {
   moveLog: MoveLogInterface[];
+  /** Records a change. Whatever was undone before it can no longer be redone. */
   setMoveLog: (fn: (prev: MoveLogInterface[]) => MoveLogInterface[]) => void;
   redoStack: MoveLogInterface[];
   setRedoStack: (fn: (prev: MoveLogInterface[]) => MoveLogInterface[]) => void;
-  clearRedoStack: () => void;
   blocks: Record<number, CityBlock>;
   setBlocks: (fn: (prev: Record<number, CityBlock>) => Record<number, CityBlock>) => void;
   overwriteBlocks: (blocks: Record<number, CityBlock>) => void;
   dragIndex: number | null;
+  /**
+   * The building being carried as of the last commit. Mouse moves are sampled and acted on a
+   * moment later, with the context they were made in; this is how such a move tells that the drag
+   * it belongs to has ended since.
+   */
+  dragIndexRef: React.RefObject<number | null>;
   setDragIndex: (index: number | null) => void;
   dragOffset: { x: number; y: number };
   setDragOffset: (offset: { x: number; y: number }) => void;
@@ -100,11 +106,25 @@ const NO_BOOSTED_GOODS: string[] = [];
 
 const CityContext = React.createContext<CityContextType | undefined>(undefined);
 
+/**
+ * The blocks with the entry's building put back at `pos`. A building a log entry names can be
+ * gone by the time the entry is replayed, and is then left out rather than rebuilt from nothing.
+ */
+function withBlockAt(prev: Record<number, CityBlock>, entry: MoveLogInterface, pos: { x: number; y: number }) {
+  const block = prev[entry.id];
+  if (!block) return prev;
+  return { ...prev, [entry.id]: { ...block, x: pos.x, y: pos.y, moved: entry.movedChanged !== block.moved } };
+}
+
 export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [moveLog, setMoveLog] = React.useState<MoveLogInterface[]>([]);
   const [redoStack, setRedoStack] = React.useState<MoveLogInterface[]>([]);
   const [blocks, setBlocks] = React.useState<Record<number, CityBlock>>({});
   const [dragIndex, setDragIndex] = React.useState<number | null>(null);
+  const dragIndexRef = React.useRef<number | null>(null);
+  React.useLayoutEffect(() => {
+    dragIndexRef.current = dragIndex;
+  }, [dragIndex]);
   const [dragOffset, setDragOffset] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [originalPos, setOriginalPos] = React.useState<{ x: number; y: number } | null>(null);
   const [searchTerm, setSearchTerm] = React.useState<string>('');
@@ -366,7 +386,11 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     return allSquares.filter((x) => !setOfBlockSquares.has(x)).length;
   }, [settledBlocks, unlockedAreas]);
 
-  const clearRedoStack = React.useCallback(() => {
+  // Any change made after an undo starts history afresh: a redo replayed on top of it would act
+  // on buildings that change may have deleted or moved. Done here rather than by each caller, so
+  // that no action can forget it.
+  const recordChange = React.useCallback((fn: (prev: MoveLogInterface[]) => MoveLogInterface[]) => {
+    setMoveLog(fn);
     setRedoStack([]);
   }, []);
 
@@ -435,27 +459,10 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
           const { [dropped.id]: _, ...rest } = prev;
           return { ...rest, [g.id]: g };
         }
-        return {
-          ...prev,
-          [last.id]: {
-            ...prev[last.id],
-            x: last.from.x,
-            y: last.from.y,
-            moved: last.movedChanged !== prev[last.id].moved,
-          },
-          [g.id]: g,
-        };
+        return { ...withBlockAt(prev, last, last.from), [g.id]: g };
       });
     } else {
-      setBlocks((prev) => ({
-        ...prev,
-        [last.id]: {
-          ...prev[last.id],
-          x: last.from.x,
-          y: last.from.y,
-          moved: last.movedChanged !== prev[last.id].moved,
-        },
-      }));
+      setBlocks((prev) => withBlockAt(prev, last, last.from));
     }
     setMoveLog((prev) => prev.slice(0, -1));
     setRedoStack((prev) => [...prev, last]);
@@ -484,29 +491,11 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       const g = last.nextBlock;
       const dropped = last.duplicatedBlock;
       setBlocks((prev) => {
-        const withDropped = dropped
-          ? { ...prev, [dropped.id]: dropped }
-          : {
-              ...prev,
-              [last.id]: {
-                ...prev[last.id],
-                x: last.to.x,
-                y: last.to.y,
-                moved: last.movedChanged !== prev[last.id].moved,
-              },
-            };
+        const withDropped = dropped ? { ...prev, [dropped.id]: dropped } : withBlockAt(prev, last, last.to);
         return g ? { ...withDropped, [g.id]: g } : withDropped;
       });
     } else {
-      setBlocks((prev) => ({
-        ...prev,
-        [last.id]: {
-          ...prev[last.id],
-          x: last.to.x,
-          y: last.to.y,
-          moved: last.movedChanged !== prev[last.id].moved,
-        },
-      }));
+      setBlocks((prev) => withBlockAt(prev, last, last.to));
     }
     setMoveLog((prev) => [...prev, last]);
     setRedoStack((prev) => prev.slice(0, -1));
@@ -533,10 +522,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const defaultValue: CityContextType = React.useMemo(
     () => ({
       moveLog,
-      setMoveLog,
+      setMoveLog: recordChange,
       redoStack,
       setRedoStack,
-      clearRedoStack,
       blocks,
       setBlocks,
       overwriteBlocks: setBlocks,
@@ -556,6 +544,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       menuRef,
       svgRef,
       mousePositionRef,
+      dragIndexRef,
       accountId,
       setAccountId,
       techSprite,
@@ -592,7 +581,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     [
       moveLog,
       redoStack,
-      clearRedoStack,
+      recordChange,
       blocks,
       dragIndex,
       dragOffset,
