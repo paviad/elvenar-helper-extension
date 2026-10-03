@@ -85,7 +85,7 @@ export class GlobalHttpInterceptorService {
               // console.log('AggregateRequestResponse matches playerSpecificMatcher response', matcher.id, payload);
 
               matcher.local!([response]).catch((error) => {
-                console.error('Error in local handler for messageType', matcher, error);
+                console.warn('Error in local handler for messageType', matcher, error);
               });
             }
           }
@@ -143,26 +143,33 @@ export class GlobalHttpInterceptorService {
         return;
       }
 
-      if (this.urlMatch) {
-        const decodedString = decodeRequestBody(body);
+      // This runs inside the game's own call to send(), so nothing in it may throw: an exception
+      // here would stop the game's request from ever going out. Not being able to read a request
+      // costs us that request, never the game.
+      try {
+        if (this.urlMatch) {
+          const decodedString = decodeRequestBody(body);
 
-        const referer = this.urlMatch[1];
-        const worldId = this.urlMatch[2];
-        const sessionId = this.urlMatch[3];
+          const referer = this.urlMatch[1];
+          const worldId = this.urlMatch[2];
+          const sessionId = this.urlMatch[3];
 
-        this.sharedInfo.reqReferrer = referer;
-        this.sharedInfo.worldId = worldId;
-        this.sharedInfo.reqUrl = requestUrl;
-        this.sharedInfo.sessionId = sessionId;
-        this.sharedInfo.reqBody = decodedString;
-        latestSharedInfo = this.sharedInfo;
+          this.sharedInfo.reqReferrer = referer;
+          this.sharedInfo.worldId = worldId;
+          this.sharedInfo.reqUrl = requestUrl;
+          this.sharedInfo.sessionId = sessionId;
+          this.sharedInfo.reqBody = decodedString;
+          latestSharedInfo = this.sharedInfo;
 
-        const requestGeneric = JSON.parse(decodedString.substring(10)) as ElvenarRequestResponseEntry[];
+          const requestGeneric = JSON.parse(decodedString.substring(10)) as ElvenarRequestResponseEntry[];
 
-        const requestNonce = decodedString.substring(0, 10);
-        for (const request of requestGeneric) {
-          addRequest(request, requestNonce, this.sharedInfo);
+          const requestNonce = decodedString.substring(0, 10);
+          for (const request of requestGeneric) {
+            addRequest(request, requestNonce, this.sharedInfo);
+          }
         }
+      } catch (error) {
+        console.warn('ElvenAssist: Error reading game request:', error);
       }
 
       this.onreadystatechange = (...cbArgs) => {
@@ -192,7 +199,7 @@ export class GlobalHttpInterceptorService {
               }
             }
           } catch (error) {
-            console.error('Error parsing response JSON:', error);
+            console.warn('Error parsing response JSON:', error);
           }
         }
 

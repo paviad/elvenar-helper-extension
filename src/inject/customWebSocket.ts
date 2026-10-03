@@ -183,7 +183,7 @@ const matchAgainstLocalHandlers = (body: unknown) => {
           matcher.responseSelector!.requestMethod === requestMethod
         ) {
           matcher.local!([resp]).catch((error) => {
-            console.error('Error in local handler for messageType', matcher, error);
+            console.warn('Error in local handler for messageType', matcher, error);
           });
         }
       }
