@@ -8,7 +8,7 @@ import {
   stored,
   storedAccount,
 } from '../testing/fakeStorage';
-import { AccountData } from './Accounts';
+import { AccountData, accountStampKey } from './Accounts';
 import {
   accountListVersion,
   accountVersion,
@@ -197,6 +197,31 @@ describe('saveAccount', () => {
 
     expect(await saveAccount('j')).toBe(true);
     expect(await saveAccount('j')).toBe(true);
+  });
+
+  it('skips a save that would write again what it wrote last', async () => {
+    saveElsewhere('j2', { posts: 1 });
+    await loadAccount('j2');
+    setPosts('j2', 2);
+    await saveAccount('j2');
+    const stamp = stored[accountStampKey('j2')];
+    const before = accountVersion('j2');
+    storageModule.saveManyToStorage.mockClear();
+
+    expect(await saveAccount('j2')).toBe(true);
+    expect(storageModule.saveManyToStorage).not.toHaveBeenCalled();
+    expect(stored[accountStampKey('j2')]).toBe(stamp);
+    expect(accountVersion('j2')).toBe(before);
+  });
+
+  it('writes again after a change made in place since its last save', async () => {
+    saveElsewhere('j3', { posts: 1 });
+    await loadAccount('j3');
+    await saveAccount('j3');
+    setPosts('j3', 2);
+
+    expect(await saveAccount('j3')).toBe(true);
+    expect(storedPosts('j3')).toBe(2);
   });
 
   it('replaces what is stored with an account built here as a whole', async () => {

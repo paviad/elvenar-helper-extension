@@ -25,6 +25,14 @@ const accounts: Record<string, AccountData> = {};
 const heldStamps: Record<string, number | undefined> = {};
 
 /**
+ * What this context last wrote for each account, kept only until the account is read or put
+ * again. The service worker saves after every response the game sends, most of which change
+ * nothing; a save that would write this again is skipped, and with it every other context's
+ * re-read of a record that runs to megabytes. Only a context that saves holds these.
+ */
+const lastWritten: Record<string, string | undefined> = {};
+
+/**
  * A count per account of the changes to it seen here: replaced by a read or a put, deleted, or
  * saved, which may follow a change made to it in place. A view compares counts rather than
  * objects, since a change made in place leaves the object the same.
@@ -102,6 +110,7 @@ export const listAccounts = (includeAutosave = false): [string, AccountData][] =
 export function putAccount(accountId: string, accountData: AccountData) {
   if (accounts[accountId] !== accountData) {
     heldStamps[accountId] = undefined;
+    lastWritten[accountId] = undefined;
   }
   accounts[accountId] = accountData;
   changed(accountId);
@@ -131,6 +140,7 @@ async function readAccount(accountId: string) {
     if (accountId in accounts) {
       delete accounts[accountId];
       delete heldStamps[accountId];
+      delete lastWritten[accountId];
       changed(accountId);
     }
     return;
@@ -144,12 +154,14 @@ async function readAccount(accountId: string) {
     console.warn(`ElvenAssist: Account ${accountId} in storage is corrupt, deleting it. Error:`, err);
     delete accounts[accountId];
     delete heldStamps[accountId];
+    delete lastWritten[accountId];
     changed(accountId);
     await removeFromStorage([accountKey(accountId), accountStampKey(accountId)]);
     return;
   }
   accounts[accountId] = account;
   heldStamps[accountId] = parseStamp(stored[accountStampKey(accountId)]);
+  lastWritten[accountId] = undefined;
   changed(accountId);
 }
 
@@ -208,6 +220,7 @@ export const loadAllAccounts = async () => {
     if (!storedAccountIds.has(accountId) && heldStamps[accountId] !== undefined) {
       delete accounts[accountId];
       delete heldStamps[accountId];
+      delete lastWritten[accountId];
       changed(accountId);
     }
   }
@@ -250,21 +263,30 @@ export async function saveAccount(accountId: string): Promise<boolean> {
     return false;
   }
 
+  const json = JSON.stringify(account);
+  if (heldStamp !== undefined && json === lastWritten[accountId]) {
+    // Stored already, under the stamp checked above.
+    return true;
+  }
+
   const numAccounts = +((await getFromStorage('num_accounts')) || 0);
   // Accounts played, that is: a visited city, a saved layout or an autosave is no second account.
   const currentNumAccounts = Object.values(accounts).filter((r) => !r.isDetached).length;
   if (numAccounts <= 1 && currentNumAccounts > 1) {
     await saveToStorage('notifyMultipleAccounts', 'true');
   }
-  await saveToStorage('num_accounts', currentNumAccounts.toString());
+  if (numAccounts !== currentNumAccounts) {
+    await saveToStorage('num_accounts', currentNumAccounts.toString());
+  }
 
   // Two saves in the same millisecond must still tell apart.
   const stamp = Math.max(Date.now(), storedStamp + 1);
   await saveManyToStorage({
-    [accountKey(accountId)]: JSON.stringify(account),
+    [accountKey(accountId)]: json,
     [accountStampKey(accountId)]: stamp.toString(),
   });
   heldStamps[accountId] = stamp;
+  lastWritten[accountId] = json;
   changed(accountId);
   return true;
 }
@@ -273,6 +295,7 @@ export async function saveAccount(accountId: string): Promise<boolean> {
 export async function removeAccount(accountId: string) {
   delete accounts[accountId];
   delete heldStamps[accountId];
+  delete lastWritten[accountId];
   changed(accountId);
   await removeFromStorage([accountKey(accountId), accountStampKey(accountId), `research_${accountId}`]);
 }
