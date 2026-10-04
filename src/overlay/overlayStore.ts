@@ -149,6 +149,15 @@ const createOverlayStore = (accountId: string) => {
           const { offeredGoods, forceUpdate, overlayExpanded, messagesDetailsReceived, ...toPersist } = state;
           return toPersist;
         },
+        // zustand catches whatever goes wrong while the saved state is read back - including a
+        // throw in an `onFinishHydration` listener, which is where the panel gets built - and hands
+        // it only to this callback. Without one it vanishes, and a failed build is an empty panel
+        // with nothing in the console to say why.
+        onRehydrateStorage: () => (_state, error) => {
+          if (error) {
+            console.error('Error restoring the overlay store:', error);
+          }
+        },
       },
     ),
   );
