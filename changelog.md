@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v10.7.0
 - **Swaps: help replacing a full thread.** A swap thread that reaches 100 posts (you can change the number in the Swaps settings) is listed at the top of Swaps, with buttons to copy the notice and the title for the new thread. Post the notice and start the new thread with the same title, and the player you owe in the old thread stays on the list. The extension recognises the replacement from the new thread, so the notice can say anything, and it sees the new thread as soon as you start it.
 - **Swaps:** A payment made just before you posted in the next thread no longer counts toward that thread's player. Paying one player and then posting straight away is the usual rhythm of a round, and when both threads had the same player, the earlier payment filled part of the new debt.
 - **The helper window keeps up with the game.** Its tabs refresh after every update the game sends, including several in quick succession, instead of sometimes showing an older picture.
