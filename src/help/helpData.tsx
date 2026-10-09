@@ -34,7 +34,6 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'upgrade-finder',
     title: 'Upgrade Finder',
     content: <UpgradeFinder />,
-    isNew: true,
   },
   {
     id: 'inventory',

@@ -1,7 +1,7 @@
 import React from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
 import MenuIcon from '@mui/icons-material/Menu';
-import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
 import { getAccountById } from '../elvenar/accountStore';
@@ -177,22 +177,7 @@ export const LayoutMain = () => {
           </Menu>
 
           <Button component={NavLink} to='/city' color='inherit' sx={{ mr: 2 }}>
-            <Badge
-              badgeContent='NEW'
-              color='secondary'
-              sx={{
-                '& .MuiBadge-badge': {
-                  fontSize: '0.6rem',
-                  height: 16,
-                  minWidth: 16,
-                  px: 0.5,
-                  top: -6,
-                  right: -10,
-                },
-              }}
-            >
-              City
-            </Badge>
+            City
           </Button>
           <Button component={NavLink} to='/inventory' color='inherit' sx={{ mr: 2 }}>
             Inventory
@@ -213,29 +198,12 @@ export const LayoutMain = () => {
             }}
           />
 
-          {/* Help Button, badged while it has something new to show */}
+          {/* Help Button */}
           <Button
             component={NavLink}
             to='/help'
             color='inherit'
-            startIcon={
-              <Badge
-                badgeContent='NEW'
-                color='secondary'
-                sx={{
-                  '& .MuiBadge-badge': {
-                    fontSize: '0.6rem',
-                    height: 16,
-                    minWidth: 16,
-                    px: 0.5,
-                    top: -4,
-                    right: -6,
-                  },
-                }}
-              >
-                <HelpOutlineIcon />
-              </Badge>
-            }
+            startIcon={<HelpOutlineIcon />}
             sx={{ textTransform: 'none', fontSize: '1rem', mr: 6 }}
           >
             Help

@@ -52,7 +52,6 @@ export const OVERLAY_TABS: OverlayTab[] = [
     key: 'tourny',
     label: 'Tourny',
     shortcut: 'KeyT',
-    isNew: true,
     help: 'A counter composition for every tournament province you open, and what to train for the round ahead.',
   },
 ];
