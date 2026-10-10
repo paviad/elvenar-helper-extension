@@ -157,6 +157,7 @@ module.exports = (env) => [
       'elvenassist-inject': './src/inject/inject-main.ts',
       'elvenassist-spirewizard': './src/spirewizard/spirewizard-main.ts',
       'elvenassist-spirewizard-inject': './src/spirewizard/spirewizard-inject.ts',
+      'elvenassist-cauldron': './src/cauldron/cauldron-main.ts',
     },
     ...commonConfig(env, { manifestFileName: 'prod.manifest.json' }),
     // Only this compiler splits chunks, so the record is kept here rather than in commonConfig

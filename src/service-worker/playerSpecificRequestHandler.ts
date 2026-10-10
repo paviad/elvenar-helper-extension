@@ -3,6 +3,8 @@ import { InterceptedPlayerSpecificRequest, sendGenericResponse, sendRuntime, sen
 import { getAccountBySessionId, loadAccount, saveAccount } from '../elvenar/accountStore';
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processAncientWonderPhaseUpdate } from '../elvenar/processAncientWonderPhaseUpdate';
+import { processCauldron } from '../elvenar/processCauldron';
+import { processCauldronOpened } from '../elvenar/processCauldronOpened';
 import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
@@ -119,8 +121,8 @@ export const playerSpecificRequestHandlerInternal = async (
     'Q:StartupService/getData': processCityData,
     'Q:InventoryService/getItems': processInventory,
     'Q:TradeService/getOtherPlayersTrades': processTradeData,
-    // 'Q:CauldronService/getIngredients': processCauldron,
-    // 'Q:CauldronService/getPotionEffects': processCauldron,
+    'Q:CauldronService/getIngredients': processCauldron,
+    'Q:IndicatorsService/clearIndicator': processCauldronOpened,
     'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
     'Q:SpireService/getEncounter': processSpireEncounterStart,
     'Q:SpireDiplomacyService/submit': processSpireDiplomacySubmit,

@@ -5,10 +5,8 @@ import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { FAStoreData } from '../model/faStageProgress';
 import { MessagesData } from '../model/gameMessage';
-import { Ingredient } from '../model/ingredient';
 import { InventoryItem } from '../model/inventoryItem';
 import { KpGiven } from '../model/kpGiven';
-import { PotionEffect } from '../model/potionEffect';
 import { SeasonalEvent } from '../model/seasonalEvent';
 import { Trade } from '../model/trade';
 import { Transcendence } from '../model/transcendence';
@@ -17,8 +15,13 @@ import { ElvenarUserData } from '../model/userData';
 import { WonderKp } from '../model/wonderKp';
 
 export interface CauldronQuery {
-  potionEffects: PotionEffect[];
-  ingredients: Ingredient[];
+  /** This week's premium ingredients as the Cauldron Optimizer's indexes (0-11). */
+  premiumIngredients: number[];
+  /**
+   * The game session they were read in. The game sends no ingredients during the cooldown, so
+   * what is stored may be from an earlier week; only those read in the current session are sent.
+   */
+  sessionId: string;
 }
 export interface FaQuest {
   id: number;

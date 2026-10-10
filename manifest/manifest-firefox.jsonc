@@ -87,6 +87,15 @@
         "elvenassist-spirewizard.bundle.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://cauldron-optimizer.vercel.app/*"
+      ],
+      "js": [
+        "elvenassist-cauldron.bundle.js"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "icons": {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { CauldronOptimizerIntegration } from './topics/CauldronOptimizerIntegration';
 import { CityPlanner } from './topics/CityPlanner';
 import { FellowshipAdventure } from './topics/FellowshipAdventure';
 import { InGameAssistant } from './topics/InGameAssistant';
@@ -49,5 +50,11 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'spire-wizard',
     title: 'Spire Wizard',
     content: <SpireWizardIntegration />,
+  },
+  {
+    id: 'cauldron-optimizer',
+    title: 'Cauldron Optimizer',
+    content: <CauldronOptimizerIntegration />,
+    isNew: true,
   },
 ];
