@@ -1,6 +1,7 @@
 import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
+import { CultureBonus } from '../model/cultureBonus';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { FAStoreData } from '../model/faStageProgress';
@@ -58,6 +59,8 @@ export interface CityQuery {
   enchantmentsEnd?: Record<string, number>;
   /** Your wonders currently taking knowledge points, kept current by AncientWonderService. */
   wonderKp?: WonderKp[];
+  /** The culture bonus ladder as the game reported it at startup. */
+  cultureBonus?: CultureBonus;
 }
 
 export interface AccountData {

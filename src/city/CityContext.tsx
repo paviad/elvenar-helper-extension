@@ -7,6 +7,7 @@ import { getMaxChapter } from '../elvenar/getMaxChapter';
 import { getMaxLevels } from '../elvenar/getMaxLevels';
 import { useAccount } from '../elvenar/useAccount';
 import { CityEntityEx } from '../model/cityEntity';
+import { CultureBonus } from '../model/cultureBonus';
 import { Effect } from '../model/effect';
 import { StageProvision } from '../model/stageProvision';
 import { UnlockedArea } from '../model/unlockedArea';
@@ -98,6 +99,8 @@ export interface CityContextType {
   /** Provision and requirement totals, derived from the blocks. */
   cityTotals: CityTotals;
   resources: Record<string, number>;
+  /** The culture bonus ladder from the game, absent for a city the game has not reported. */
+  cultureBonus?: CultureBonus;
   emptySquares: number;
   modified: boolean;
   maxChapter: number;
@@ -148,6 +151,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [effects, setEffects] = React.useState<Effect[]>([]);
   const [rankingPoints, setRankingPoints] = React.useState<number>(0);
   const [resources, setResources] = React.useState<Record<string, number>>({});
+  const [cultureBonus, setCultureBonus] = React.useState<CultureBonus | undefined>(undefined);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
@@ -283,6 +287,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
         setSquadSize(accountData.cityQuery.squadSize || 0);
         setRankingPoints(accountData.cityQuery.rankingPoints || 0);
         setResources(accountData.cityQuery.cityResources || {});
+        setCultureBonus(accountData.cityQuery.cultureBonus);
       }
       setSearchTerm('');
       setMoveLog([]);
@@ -612,6 +617,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       setRankingPoints,
       cityTotals,
       resources,
+      cultureBonus,
       emptySquares,
       modified,
       maxChapter,
@@ -651,6 +657,7 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       rankingPoints,
       cityTotals,
       resources,
+      cultureBonus,
       emptySquares,
       modified,
       maxChapter,

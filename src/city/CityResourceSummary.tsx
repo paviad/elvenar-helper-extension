@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { calculateCityBonuses } from './calculateCityBonuses';
 import { useCity } from './CityContext';
+import { CultureBonusBar } from './CultureBonusBar';
 import { useSettledValue } from './useSettledValue';
 
 export const CityResourceSummary = () => {
@@ -74,6 +75,7 @@ export const CityResourceSummary = () => {
     icon: React.ReactNode,
     data: { provided: number; required: number; net: number },
     color: string,
+    footer?: React.ReactNode,
   ) => {
     // Calculate usage percentage for the bar
     // If net is negative, we want the bar to be full (error color),
@@ -148,6 +150,7 @@ export const CityResourceSummary = () => {
             Used: {data.required.toLocaleString()}
           </Typography>
         </Stack>
+        {footer}
       </Box>
     );
   };
@@ -173,7 +176,13 @@ export const CityResourceSummary = () => {
         <AccordionDetails>
           {renderRow('Population', <PeopleIcon fontSize='small' />, summary.population, '#4caf50')}
           <Divider sx={{ my: 1.5 }} />
-          {renderRow('Culture', <WbSunnyIcon fontSize='small' />, summary.culture, '#ff9800')}
+          {renderRow(
+            'Culture',
+            <WbSunnyIcon fontSize='small' />,
+            summary.culture,
+            '#ff9800',
+            city.cultureBonus && <CultureBonusBar bonus={city.cultureBonus} availableCulture={summary.culture.net} />,
+          )}
 
           {(summary.prosperity.provided > 0 || summary.prosperity.required > 0) && (
             <>

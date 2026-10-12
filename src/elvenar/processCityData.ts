@@ -4,6 +4,7 @@ import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { BoostedGoods } from '../model/boostedGoods';
 import { CityEntity } from '../model/cityEntity';
+import { CultureBonus } from '../model/cultureBonus';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { Quest } from '../model/quest';
 import { SeasonalEvent } from '../model/seasonalEvent';
@@ -47,6 +48,11 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
         effects: StartupEffect[];
         seasonal_events?: SeasonalEvent[];
         army_details?: ArmyDetails;
+        city_culture?: {
+          cultureBonusLevels?: number[];
+          requiredCultureBonusLevels?: number[];
+          neighbourlyHelpCultureBonus?: number;
+        };
       }
     | undefined;
 
@@ -158,6 +164,15 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
     ),
   ) as Record<keyof Relics, number>;
 
+  const cityCulture = startupService.city_culture;
+  const cultureBonus: CultureBonus | undefined = cityCulture?.requiredCultureBonusLevels?.length
+    ? {
+        thresholds: cityCulture.requiredCultureBonusLevels,
+        percentages: cityCulture.cultureBonusLevels || [],
+        neighbourlyHelpBonus: cityCulture.neighbourlyHelpCultureBonus || 0,
+      }
+    : undefined;
+
   const tournaments = startupService.seasonal_events?.filter((r) => r.type === 'tournament') || [];
 
   const worldNames: Record<string, string> = {
@@ -201,6 +216,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       expirationsEnd,
       enchantmentsEnd,
       wonderKp: extractWonderKp(startupService.ancient_wonder_phases, user_data.player_id),
+      cultureBonus,
     },
     sharedInfo,
     isDetached: false,
