@@ -76,6 +76,9 @@ export interface AccountData {
 
   cauldron?: CauldronQuery;
 
+  /** Level of the wonder that cuts cauldron ingredient costs; 0 while it is not built. */
+  cauldronWonderLevel?: number;
+
   faEndTime?: number;
 
   transcendenceData?: Transcendence[];

@@ -26,10 +26,18 @@ const post = (message: object) => window.postMessage(message, window.location.or
 
 const autofill = (sync: CauldronSync) => {
   filling = true;
-  // Saved too: the world then keeps the diploma count without the player having to. Only ever our
-  // own world is selected here, and the site leaves the premium ingredients out of a save, so
-  // nothing is kept that would be wrong next week.
-  post({ type: 'cauldron:autofill', n_diploma: sync.diplomas, premium_ingr: sync.premiumIngredients, save: true });
+  // Saved too: the world then keeps the diploma count and wonder level without the player having
+  // to. Only ever our own world is selected here, and every sync sends this week's numbers again,
+  // so nothing kept goes stale.
+  post({
+    type: 'cauldron:autofill',
+    n_diploma: sync.diplomas,
+    premium_ingr: sync.premiumIngredients,
+    wonder_level: sync.wonderLevel,
+    // The site takes 1 or more; a bad field would refuse the whole fill, save included
+    wp_max: sync.witchPoints && sync.witchPoints >= 1 ? sync.witchPoints : undefined,
+    save: true,
+  });
 };
 
 const takePending = (): CauldronSync | undefined => {

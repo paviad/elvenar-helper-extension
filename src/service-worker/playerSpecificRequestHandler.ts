@@ -5,6 +5,7 @@ import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdat
 import { processAncientWonderPhaseUpdate } from '../elvenar/processAncientWonderPhaseUpdate';
 import { processCauldron } from '../elvenar/processCauldron';
 import { processCauldronOpened } from '../elvenar/processCauldronOpened';
+import { processCauldronWonder } from '../elvenar/processCauldronWonder';
 import { processCityData } from '../elvenar/processCityData';
 import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
@@ -132,7 +133,7 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:InventoryService/updateItems': processInventory,
     'R:CityMapService/reset': processCityMapServiceUpdate,
     'R:TranscendenceService/allBuildingsStates': processTranscendenceService,
-    'R:EffectsService/update': processActiveEffectsUpdate,
+    'R:EffectsService/update': [processActiveEffectsUpdate, processCauldronWonder],
     'R:AncientWonderService/phaseUpdated': processAncientWonderPhaseUpdate,
     'R:AncientWonderService/getOtherPlayerAncientWonders': processAncientWonderPhaseUpdate,
     'R:ResearchService/startup': processResearchStatus,

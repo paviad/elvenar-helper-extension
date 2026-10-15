@@ -34,7 +34,13 @@ export const CauldronOptimizerIntegration = () => (
       <ListItem>
         <ListItemText
           primary='Premium ingredients'
-          secondary="This week's premium ingredients, so recipes avoid them. The game only tells which they are when you log in while the cauldron is ready to brew, so during the cooldown only the diplomas are filled in. If the cooldown ended since you logged in, reload the game first."
+          secondary="This week's premium ingredients, so recipes avoid them. The game only tells which they are when you log in while the cauldron is ready to brew, so during the cooldown they are left out. If the cooldown ended since you logged in, reload the game first."
+        />
+      </ListItem>
+      <ListItem>
+        <ListItemText
+          primary='Wonder level and Witch Points'
+          secondary='The level of the wonder that makes ingredients cheaper, and your Witch Points as the most a recipe may cost.'
         />
       </ListItem>
     </List>

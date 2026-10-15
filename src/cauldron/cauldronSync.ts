@@ -11,6 +11,10 @@ export interface CauldronSync {
   diplomas?: number;
   /** This week's premium ingredients as the site's indexes (0-11); unknown during the cooldown. */
   premiumIngredients?: number[];
+  /** Level of the wonder that cuts ingredient costs (0-35, 0 while it is not built). */
+  wonderLevel?: number;
+  /** Witch Points the player has, the most a recipe may cost. */
+  witchPoints?: number;
 }
 
 export const CAULDRON_SITE_ORIGIN = 'https://cauldron-optimizer.vercel.app';

@@ -29,6 +29,8 @@ export const processCauldronOpened = async (
     worldName: cauldronWorldName(cityQuery.userData.user_name, sharedInfo.worldId),
     diplomas: cityQuery.cityResources?.researchtree_diplomas,
     premiumIngredients: cauldron?.sessionId === sharedInfo.sessionId ? cauldron.premiumIngredients : undefined,
+    wonderLevel: accountData.cauldronWonderLevel,
+    witchPoints: cityQuery.cityResources?.cauldron_witchpoints,
   };
 
   // Like the Spire Wizard: the content script on the site's tabs takes it, every other tab has no
