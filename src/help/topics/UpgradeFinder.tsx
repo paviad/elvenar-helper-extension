@@ -77,7 +77,7 @@ export const UpgradeFinder = () => (
       <ListItem>
         <ListItemText
           primary='Buildings inside Tomes'
-          secondary='A building a Tome can be opened for is weighed like one in the inventory, at the chapter the Tome was won in, and its row names the Tome under the replacement. Replace hands it to you to place just the same; opening the Tome for it is yours to do.'
+          secondary='A Tome building is weighed like one in the inventory, at the chapter the Tome was won in, and its row names the Tome under the replacement. Replace hands it to you to place just the same; opening the Tome for it is yours to do.'
         />
       </ListItem>
     </List>

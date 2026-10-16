@@ -361,7 +361,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
           Inventory buildings that beat a placed building on everything it provides (mana, seeds, orcs, unurium, nox and
           culture), per square and in total. Production is per 24h. Evolving buildings from the inventory are compared
           at the highest stage your artifacts can reach; placed evolving buildings are never suggested for replacement.
-          Buildings a Tome can be opened for are weighed too, and say which Tome under their name.
+          Tome buildings are weighed too, and say which Tome under their name.
         </Typography>
         {noInventory && (
           <Alert severity='info' sx={{ mt: 1 }}>
