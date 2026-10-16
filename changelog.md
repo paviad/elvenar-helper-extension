@@ -1,5 +1,9 @@
 # Changelog
 
+## v10.8.0
+- **The Cauldron Optimizer is filled in from the game.** Keep the [Cauldron Optimizer](https://cauldron-optimizer.vercel.app/home) open in another tab and log in there, then open the Cauldron in the Magic Academy: ElvenAssist sends it your diploma count, this week's premium ingredients, the effects you left switched on in the cauldron's Upgrade Effects screen, the level of the wonder that makes ingredients cheaper, and your Witch Points. Switching an effect on or off in the game updates the optimizer straight away. Each of your cities gets a world of its own there, named after your player and server (such as EA-Balrogville-en3), so your own worlds are never changed. The game only says which ingredients are premium when you log in while the cauldron is ready to brew, so during the cooldown they are left out. See Help ▸ Cauldron Optimizer.
+- **City Planner: the culture bonus level is shown in the resource summary.** A bar under the culture row is notched at each culture bonus level and filled to where the city stands. Hover it for the bonus you get and the culture each level needs.
+
 ## v10.7.0
 - **Swaps: help replacing a full thread.** A swap thread that reaches 100 posts (you can change the number in the Swaps settings) is listed at the top of Swaps, with buttons to copy the notice and the title for the new thread. Post the notice and start the new thread with the same title, and the player you owe in the old thread stays on the list. The extension recognises the replacement from the new thread, so the notice can say anything, and it sees the new thread as soon as you start it.
 - **Swaps:** A payment made just before you posted in the next thread no longer counts toward that thread's player. Paying one player and then posting straight away is the usual rhythm of a round, and when both threads had the same player, the earlier payment filled part of the new debt.
