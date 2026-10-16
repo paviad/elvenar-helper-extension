@@ -51,6 +51,18 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   },
   {
     requestSelector: {
+      requestClass: 'CauldronService',
+      requestMethod: 'getPotionEffects',
+    },
+  },
+  {
+    requestSelector: {
+      requestClass: 'CauldronService',
+      requestMethod: 'setPotionEffectEnabled',
+    },
+  },
+  {
+    requestSelector: {
       requestClass: 'IndicatorsService',
       requestMethod: 'clearIndicator',
     },

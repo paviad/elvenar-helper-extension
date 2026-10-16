@@ -39,6 +39,12 @@ export const CauldronOptimizerIntegration = () => (
       </ListItem>
       <ListItem>
         <ListItemText
+          primary='Selected effects'
+          secondary="The effects you left switched on in the cauldron's Upgrade Effects screen. Switching one on or off there updates the optimizer straight away."
+        />
+      </ListItem>
+      <ListItem>
+        <ListItemText
           primary='Wonder level and Witch Points'
           secondary='The level of the wonder that makes ingredients cheaper, and your Witch Points as the most a recipe may cost.'
         />

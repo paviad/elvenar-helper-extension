@@ -11,6 +11,8 @@ export interface CauldronSync {
   diplomas?: number;
   /** This week's premium ingredients as the site's indexes (0-11); unknown during the cooldown. */
   premiumIngredients?: number[];
+  /** Unlocked effects the player has switched on, as the site's indexes (0 to diplomas - 1). */
+  selectedEffects?: number[];
   /** Level of the wonder that cuts ingredient costs (0-35, 0 while it is not built). */
   wonderLevel?: number;
   /** Witch Points the player has, the most a recipe may cost. */
@@ -51,3 +53,31 @@ export const premiumIngredientIndexes = (ingredients: Ingredient[]) =>
     .map((ingredient) => ingredientIndex(ingredient.id))
     .filter((index): index is number => index !== undefined)
     .sort((a, b) => a - b);
+
+/**
+ * The game numbers the potion effects `pe_301` onwards in the order diplomas unlock them, the order
+ * the site lists them in, so `pe_301` (Coins) is the site's effect 0.
+ */
+export const effectIndex = (id: string): number | undefined => {
+  const match = /^pe_(\d+)$/.exec(id);
+  const index = match ? Number(match[1]) - 301 : -1;
+  return index >= 0 ? index : undefined;
+};
+
+/**
+ * The effects switched off, as sorted site indexes. The game leaves `enabled` out of an effect
+ * switched off rather than sending false, so anything but true is off.
+ */
+export const disabledEffectIndexes = (effects: { id: string; enabled?: boolean }[]) =>
+  effects
+    .filter((effect) => effect.enabled !== true)
+    .map((effect) => effectIndex(effect.id))
+    .filter((index): index is number => index !== undefined)
+    .sort((a, b) => a - b);
+
+/**
+ * The unlocked effects left on. The site only takes indexes below the diploma count, and the game
+ * also reports effects not unlocked yet as on, so those are left out.
+ */
+export const selectedEffectIndexes = (diplomas: number, disabled: number[]) =>
+  Array.from({ length: diplomas }, (_, index) => index).filter((index) => !disabled.includes(index));

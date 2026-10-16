@@ -79,6 +79,12 @@ export interface AccountData {
   /** Level of the wonder that cuts cauldron ingredient costs; 0 while it is not built. */
   cauldronWonderLevel?: number;
 
+  /**
+   * Potion effects the player switched off on the cauldron's upgrade screen, as the optimizer's
+   * effect indexes. Effects start out on, so any effect not listed is on.
+   */
+  cauldronDisabledEffects?: number[];
+
   faEndTime?: number;
 
   transcendenceData?: Transcendence[];

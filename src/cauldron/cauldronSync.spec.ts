@@ -1,5 +1,12 @@
 import { Ingredient } from '../model/ingredient';
-import { cauldronWorldName, ingredientIndex, premiumIngredientIndexes } from './cauldronSync';
+import {
+  cauldronWorldName,
+  disabledEffectIndexes,
+  effectIndex,
+  ingredientIndex,
+  premiumIngredientIndexes,
+  selectedEffectIndexes,
+} from './cauldronSync';
 
 const ingredient = (id: string, isPremium: boolean): Ingredient => ({ id, name: id, isPremium, description: '' });
 
@@ -51,5 +58,44 @@ describe('premiumIngredientIndexes', () => {
 
   it('is empty when the game sent no ingredients, as during the cooldown', () => {
     expect(premiumIngredientIndexes([])).toEqual([]);
+  });
+});
+
+describe('effectIndex', () => {
+  it('maps the game effect ids to the site indexes', () => {
+    expect(effectIndex('pe_301')).toBe(0);
+    expect(effectIndex('pe_325')).toBe(24);
+  });
+
+  it('rejects anything else', () => {
+    expect(effectIndex('pe_300')).toBeUndefined();
+    expect(effectIndex('marble')).toBeUndefined();
+  });
+});
+
+describe('disabledEffectIndexes', () => {
+  it('lists only the effects switched off, sorted', () => {
+    expect(
+      disabledEffectIndexes([
+        { id: 'pe_310', enabled: false },
+        { id: 'pe_301', enabled: true },
+        { id: 'pe_303', enabled: false },
+        { id: 'pe_302', enabled: true },
+      ]),
+    ).toEqual([2, 9]);
+  });
+
+  it('counts an effect without enabled as switched off, as the game sends it', () => {
+    expect(disabledEffectIndexes([{ id: 'pe_304' }, { id: 'pe_301', enabled: true }])).toEqual([3]);
+  });
+});
+
+describe('selectedEffectIndexes', () => {
+  it('keeps the unlocked effects left on', () => {
+    expect(selectedEffectIndexes(5, [1, 3])).toEqual([0, 2, 4]);
+  });
+
+  it('ignores switched-off effects not unlocked yet', () => {
+    expect(selectedEffectIndexes(3, [7])).toEqual([0, 1, 2]);
   });
 });

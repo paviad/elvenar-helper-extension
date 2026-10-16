@@ -1,7 +1,7 @@
-import { CauldronSync, cauldronWorldName } from '../cauldron/cauldronSync';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountBySessionId } from './accountStore';
+import { sendCauldronSync } from './sendCauldronSync';
 
 /**
  * Opening the Cauldron tab of the Magic Academy clears its `cauldron_brewing` indicator, and the
@@ -19,28 +19,7 @@ export const processCauldronOpened = async (
   }
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
-  const cityQuery = accountData?.cityQuery;
-  if (!cityQuery) {
-    return;
-  }
-
-  const cauldron = accountData.cauldron;
-  const sync: CauldronSync = {
-    worldName: cauldronWorldName(cityQuery.userData.user_name, sharedInfo.worldId),
-    diplomas: cityQuery.cityResources?.researchtree_diplomas,
-    premiumIngredients: cauldron?.sessionId === sharedInfo.sessionId ? cauldron.premiumIngredients : undefined,
-    wonderLevel: accountData.cauldronWonderLevel,
-    witchPoints: cityQuery.cityResources?.cauldron_witchpoints,
-  };
-
-  // Like the Spire Wizard: the content script on the site's tabs takes it, every other tab has no
-  // listener and refuses.
-  const tabs = await chrome.tabs.query({});
-  for (const tab of tabs) {
-    if (tab.id) {
-      chrome.tabs.sendMessage(tab.id, { type: 'cauldronSync', payload: sync }).catch(() => {
-        /* no listener */
-      });
-    }
+  if (accountData) {
+    await sendCauldronSync(accountData, sharedInfo);
   }
 };

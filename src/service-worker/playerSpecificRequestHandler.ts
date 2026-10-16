@@ -16,6 +16,7 @@ import { processMessages } from '../elvenar/processMessages';
 import { processNewMessage } from '../elvenar/processNewMessage';
 import { processNotifications } from '../elvenar/processNotifications';
 import { processOtherPlayerData } from '../elvenar/processOtherPlayerData';
+import { processPotionEffects, processPotionEffectToggled } from '../elvenar/processPotionEffects';
 import { processQuestMilestoneUpdate } from '../elvenar/processQuestMilestoneUpdate';
 import { processQuestUpdates } from '../elvenar/processQuestUpdates';
 import { processReplyMessage } from '../elvenar/processReplyMessage';
@@ -123,6 +124,8 @@ export const playerSpecificRequestHandlerInternal = async (
     'Q:InventoryService/getItems': processInventory,
     'Q:TradeService/getOtherPlayersTrades': processTradeData,
     'Q:CauldronService/getIngredients': processCauldron,
+    'Q:CauldronService/getPotionEffects': processPotionEffects,
+    'Q:CauldronService/setPotionEffectEnabled': processPotionEffectToggled,
     'Q:IndicatorsService/clearIndicator': processCauldronOpened,
     'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
     'Q:SpireService/getEncounter': processSpireEncounterStart,
