@@ -21,3 +21,10 @@ export const OVERLAY_MENU_Z_INDEX = 10001;
  * They have to clear the panel itself or they open behind it.
  */
 export const OVERLAY_DIALOG_Z_INDEX = 10002;
+
+/**
+ * Tooltips. They portal to the body like dialogs, and MUI puts them at 1500 - under the panel, so
+ * none of the overlay's tooltips could be seen. Above everything else here, dialogs included,
+ * since a tooltip is only ever up while the pointer rests on what it explains.
+ */
+export const OVERLAY_TOOLTIP_Z_INDEX = 10003;
