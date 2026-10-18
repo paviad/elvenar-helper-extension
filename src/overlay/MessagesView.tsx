@@ -76,10 +76,23 @@ function lastPost(message: GameMessage) {
   return [...message.posts].reduce((latest, p) => (p.created_at > latest.created_at ? p : latest), message.posts[0]);
 }
 
-function threadSearchText(message: GameMessage): string {
-  return [subjectText(message), ...postsNewestFirst(message).flatMap((p) => [authorName(p), postText(p)])]
-    .join('\n')
-    .toLowerCase();
+/** What a query searches: the thread's text, or (with a "to:" prefix) only its recipients. */
+type SearchField = 'text' | 'recipients';
+
+function parseSearch(raw: string): { field: SearchField; term: string } {
+  const lower = raw.trim().toLowerCase();
+  if (lower.startsWith('to:')) return { field: 'recipients', term: lower.slice(3).trim() };
+  return { field: 'text', term: lower };
+}
+
+// The fields a query looks in, in the same canonical order they are highlighted in.
+function searchFields(message: GameMessage, field: SearchField): string[] {
+  if (field === 'recipients') return message.recipients ?? [];
+  return [subjectText(message), ...postsNewestFirst(message).flatMap((p) => [authorName(p), postText(p)])];
+}
+
+function threadSearchText(message: GameMessage, field: SearchField): string {
+  return searchFields(message, field).join('\n').toLowerCase();
 }
 
 function countOccurrences(text: string, lowerTerm: string): number {
@@ -159,14 +172,14 @@ export const MessagesView = () => {
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const term = searchTerm.trim().toLowerCase();
+  const { field, term } = parseSearch(searchTerm);
 
   // Where the user has cycled to, tagged with the query and folder it was cycled in. A
   // change to either leaves the tag no longer matching, which is the "not navigated yet"
   // state an effect used to reset this into - a render later than the results it belonged
   // to. Same shape as the chat pane's cursor.
   const [matchCursor, setMatchCursor] = useState<{ key: string; index: number } | null>(null);
-  const cursorKey = `${folder}::${term}`;
+  const cursorKey = `${folder}::${field}::${term}`;
   const navigated = matchCursor?.key === cursorKey; // true once the user cycles into a match
   const currentMatchIndex = navigated ? matchCursor.index : 0;
 
@@ -184,11 +197,11 @@ export const MessagesView = () => {
       .sort((a, b) => b.updatedAt - a.updatedAt);
   }, [current]);
 
-  // Threads that contain the term somewhere (subject / author / post text).
+  // Threads that contain the term somewhere (subject / author / post text, or recipients).
   const filteredThreads = useMemo(() => {
     if (!term) return threads;
-    return threads.filter((t) => threadSearchText(t.message).includes(term));
-  }, [threads, term]);
+    return threads.filter((t) => threadSearchText(t.message, field).includes(term));
+  }, [threads, field, term]);
 
   // Flat, ordered list of every occurrence across the filtered threads. Built in the same
   // field order as highlightNodes renders them, so match N maps to the Nth rendered <mark>.
@@ -197,18 +210,13 @@ export const MessagesView = () => {
     const result: Match[] = [];
     for (const { id, message } of filteredThreads) {
       let within = 0;
-      const add = (text: string) => {
+      for (const text of searchFields(message, field)) {
         const n = countOccurrences(text, term);
         for (let k = 0; k < n; k++) result.push({ threadId: id, within: within++ });
-      };
-      add(subjectText(message));
-      for (const p of postsNewestFirst(message)) {
-        add(authorName(p));
-        add(postText(p));
       }
     }
     return result;
-  }, [filteredThreads, term]);
+  }, [filteredThreads, field, term]);
 
   const gotoMatch = (rawIndex: number) => {
     if (matches.length === 0) return;
@@ -348,7 +356,7 @@ export const MessagesView = () => {
             autoFocus
             size='small'
             fullWidth
-            placeholder='Search messages…'
+            placeholder='Search messages… (to: searches recipients)'
             sx={{
               '& .MuiOutlinedInput-root': {
                 background: gild.cardTop,
@@ -440,6 +448,7 @@ export const MessagesView = () => {
         <MessageDetail
           message={selectedMessage}
           onBack={() => setSelectedId(null)}
+          field={field}
           term={term}
           currentWithin={currentWithin}
         />
@@ -479,7 +488,9 @@ export const MessagesView = () => {
           }}
         >
           <SearchIcon fontSize='large' />
-          <Typography variant='body2'>No messages match “{searchTerm.trim()}”.</Typography>
+          <Typography variant='body2'>
+            {field === 'recipients' ? `No messages sent to “${term}”.` : `No messages match “${searchTerm.trim()}”.`}
+          </Typography>
         </Box>
       ) : (
         <List disablePadding sx={{ flexGrow: 1, overflowY: 'auto', minHeight: 0, background: gild.parchment }}>
@@ -585,19 +596,22 @@ export const MessagesView = () => {
 interface MessageDetailProps {
   message: GameMessage;
   onBack: () => void;
+  field?: SearchField; // which fields the search term is highlighted in
   term?: string; // lowercased search term to highlight ('' = none)
   currentWithin?: number; // occurrence index of the current match within this thread (-1 = none)
 }
 
-const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: MessageDetailProps) => {
+const MessageDetail = ({ message, onBack, field = 'text', term = '', currentWithin = -1 }: MessageDetailProps) => {
   const posts = useMemo(() => postsNewestFirst(message), [message]);
 
   const [recipientsOpen, setRecipientsOpen] = useState(false);
+  const recipientSearch = field === 'recipients' && !!term;
 
-  // Collapse recipients again whenever a different message is opened.
+  // Collapse recipients again whenever a different message is opened - unless the search is
+  // over recipients, whose matches only show (and can only be scrolled to) with the list open.
   useEffect(() => {
-    setRecipientsOpen(false);
-  }, [message.id]);
+    setRecipientsOpen(recipientSearch);
+  }, [message.id, recipientSearch]);
 
   // Refs to each rendered <mark>, keyed by per-thread occurrence index, so we can scroll to
   // the current match. Reset on every render; refs are re-registered during commit below.
@@ -614,13 +628,19 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
       markRefs.current[index] = el;
     },
   };
-  const hl = (text: string): React.ReactNode => (term ? highlightNodes(text, term, ctx) : text);
+  // Highlight only the fields the search looked in, so mark N is the thread's Nth match.
+  const hlIn =
+    (f: SearchField) =>
+    (text: string): React.ReactNode =>
+      term && field === f ? highlightNodes(text, term, ctx) : text;
+  const hl = hlIn('text');
+  const hlRecipient = hlIn('recipients');
 
   useEffect(() => {
     if (currentWithin < 0) return;
     const el = markRefs.current[currentWithin];
     if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  }, [currentWithin, message.id, term]);
+  }, [currentWithin, message.id, term, recipientsOpen]);
 
   const recipientCount = message.recipients?.length ?? 0;
 
@@ -747,7 +767,7 @@ const MessageDetail = ({ message, onBack, term = '', currentWithin = -1 }: Messa
               {message.recipients?.map((r) => (
                 <Chip
                   key={r}
-                  label={r}
+                  label={hlRecipient(r)}
                   size='small'
                   variant='outlined'
                   sx={{ color: gild.bronze, borderColor: gild.mid, bgcolor: 'rgba(255, 253, 246, 0.7)' }}
