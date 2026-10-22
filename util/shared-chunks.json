@@ -12,6 +12,7 @@
     "./src/elvenar/useAccount.ts",
     "./src/util/compression.ts",
     "./src/util/formatTimeLeft.tsx",
-    "./src/widgets/DiscordButton.tsx"
+    "./src/widgets/DiscordButton.tsx",
+    "./src/widgets/appTheme.ts"
   ]
 }

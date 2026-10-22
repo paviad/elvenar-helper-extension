@@ -1,4 +1,5 @@
 import React from 'react';
+import { createTheme, ThemeProvider } from '@mui/material';
 import { createRoot } from 'react-dom/client';
 import { createHashRouter, Navigate } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
@@ -7,6 +8,7 @@ import { HelpPage } from '../help/HelpPage';
 import { HelperProvider } from '../helper/HelperContext';
 import { InventoryMain } from '../inventory/InventoryMain';
 import { LayoutMain } from '../layout/LayoutMain';
+import { appThemeOptions } from '../widgets/appTheme';
 import { Activate } from './Activate';
 import { CityMain } from './CityMain';
 
@@ -26,12 +28,16 @@ const router = createHashRouter([
   },
 ]);
 
+const appTheme = createTheme(appThemeOptions);
+
 export function createReactUi() {
   const root = createRoot(document.getElementById('root') as HTMLElement);
   // root.render(<CityMain />);
   root.render(
-    <HelperProvider>
-      <RouterProvider router={router} />
-    </HelperProvider>,
+    <ThemeProvider theme={appTheme}>
+      <HelperProvider>
+        <RouterProvider router={router} />
+      </HelperProvider>
+    </ThemeProvider>,
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { createTheme, ThemeProvider } from '@mui/material';
 import { createRoot, Root } from 'react-dom/client';
+import { appThemeOptions } from '../widgets/appTheme';
 import { OverlayMain } from './OverlayMain';
 import { OVERLAY_TOOLTIP_Z_INDEX } from './overlayStacking';
 
@@ -9,10 +10,10 @@ import { OVERLAY_TOOLTIP_Z_INDEX } from './overlayStacking';
 const roots = new WeakMap<HTMLElement, Root>();
 
 /**
- * MUI's defaults but for the tooltips' stacking, which has to clear the panel. Set once here
+ * The shared theme plus the tooltips' stacking, which has to clear the panel. Set once here
  * rather than on each Tooltip, so a tooltip added later cannot open invisible again.
  */
-const overlayTheme = createTheme({ zIndex: { tooltip: OVERLAY_TOOLTIP_Z_INDEX } });
+const overlayTheme = createTheme(appThemeOptions, { zIndex: { tooltip: OVERLAY_TOOLTIP_Z_INDEX } });
 
 export function createOverlayUi(el: HTMLDivElement, headerActionsSlot?: HTMLElement) {
   const root = roots.get(el) ?? createRoot(el);
