@@ -30,6 +30,8 @@ interface CityToolbarProps {
   showSaveButton: boolean;
   onDeleteHighlighted: (highlighted: boolean) => void;
   onUnlockArea: () => void;
+  onEditCultureModifications: () => void;
+  canEditCultureModifications: boolean;
   hasHighlightedBlocks: boolean;
   searchTerm: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -53,6 +55,8 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
   showSaveButton,
   onDeleteHighlighted,
   onUnlockArea,
+  onEditCultureModifications,
+  canEditCultureModifications,
   hasHighlightedBlocks,
   searchTerm,
   onSearchChange,
@@ -138,6 +142,19 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
             <span>
               <MenuItem onClick={closeMenus(onUnlockArea)} disabled={viewMode !== 'top'}>
                 Unlock Area
+              </MenuItem>
+            </span>
+          </Tooltip>
+          <Tooltip
+            title={
+              canEditCultureModifications
+                ? 'Plan how much neighborly help and Ensorcelled Endowment the city gets'
+                : 'The help and enchantments of a city you play come from the game. Save it as a new city to change them.'
+            }
+          >
+            <span>
+              <MenuItem onClick={closeMenus(onEditCultureModifications)} disabled={!canEditCultureModifications}>
+                Edit Culture Modifications...
               </MenuItem>
             </span>
           </Tooltip>

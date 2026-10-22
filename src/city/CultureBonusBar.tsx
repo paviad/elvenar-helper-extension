@@ -1,14 +1,24 @@
 import React from 'react';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { CultureBonus, getCultureBonusLevel } from '../model/cultureBonus';
+import { CultureHelp } from './calculateCultureHelp';
 
 const FILL = '#ffb300';
 
 /**
- * How far the city's spare culture reaches up the game's culture bonus ladder: a bar notched at
- * each level's threshold, filled to where the city stands. The numbers live in the tooltip.
+ * How far the city's spare culture reaches up its culture bonus ladder: a bar notched at each
+ * level's threshold, filled to where the city stands. The numbers live in the tooltip.
+ * `plannedHelp` is given for a ladder worked out for a plan rather than sent by the game.
  */
-export const CultureBonusBar = ({ bonus, availableCulture }: { bonus: CultureBonus; availableCulture: number }) => {
+export const CultureBonusBar = ({
+  bonus,
+  availableCulture,
+  plannedHelp,
+}: {
+  bonus: CultureBonus;
+  availableCulture: number;
+  plannedHelp?: CultureHelp;
+}) => {
   const level = getCultureBonusLevel(bonus, availableCulture);
   const culture = availableCulture + bonus.neighbourlyHelpBonus;
   const top = bonus.thresholds[bonus.thresholds.length - 1] || 1;
@@ -42,6 +52,12 @@ export const CultureBonusBar = ({ bonus, availableCulture }: { bonus: CultureBon
       <Typography variant='caption' component='div'>
         Neighborly help bonus: {bonus.neighbourlyHelpBonus.toLocaleString()}
       </Typography>
+      {plannedHelp && (
+        <Typography variant='caption' component='div' sx={{ fontStyle: 'italic' }}>
+          Planned: {plannedHelp.helped} of {plannedHelp.helpable} culture buildings helped, {plannedHelp.enchanted}{' '}
+          enchanted
+        </Typography>
+      )}
       <Typography variant='caption' component='div'>
         {level.neededForNext === undefined
           ? 'Top level reached'

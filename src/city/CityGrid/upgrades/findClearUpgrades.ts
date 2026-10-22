@@ -3,6 +3,7 @@ import { BuildingEx } from '../../../model/buildingEx';
 import { InventoryItem } from '../../../model/inventoryItem';
 import { Stage, StageProvision } from '../../../model/stageProvision';
 import { CityBlock } from '../../CityBlock';
+import { canReceiveNeighbourlyHelp } from '../../neighbourlyHelp';
 
 /** Production resources the upgrade finder reasons about, plus culture (a provision). */
 export const UPGRADE_PRODUCTION_RESOURCES = ['mana', 'seeds', 'orcs', 'unurium', 'nox'];
@@ -315,7 +316,7 @@ export function findClearUpgrades(
       const profile = buildProfile(building, evolvingBuildings, block.stage);
       if (!hasConsideredOutput(profile)) return null;
 
-      return { building, profile, isThin: building.width === 1 || building.length === 1 };
+      return { building, profile, isThin: !canReceiveNeighbourlyHelp(building) };
     };
 
     const target = resolve();
@@ -340,7 +341,7 @@ export function findClearUpgrades(
     for (const candidate of candidates) {
       // A 1xN building collects less neighbourly help, so it never replaces a
       // building that is at least two tiles on both sides.
-      if (!target.isThin && (candidate.building.width === 1 || candidate.building.length === 1)) continue;
+      if (!target.isThin && !canReceiveNeighbourlyHelp(candidate.building)) continue;
 
       if (!dominates(candidate.profile, profile)) continue;
 

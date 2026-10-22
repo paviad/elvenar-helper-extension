@@ -21,6 +21,7 @@ import { useTabStore } from '../../../util/tabStore';
 import { getBuildingFinder } from '../../buildingFinder';
 import { getChapterProgress } from '../../chapterProgress';
 import { useCity } from '../../CityContext';
+import { canReceiveNeighbourlyHelp } from '../../neighbourlyHelp';
 import { createSearchMatcher } from '../../searchMatcher';
 
 interface TableRowData {
@@ -173,8 +174,8 @@ export const TableCityView = () => {
       // Push 1xN or Nx1 buildings to the bottom if sorting by a resource other than population
       const isResourceColumn = !['name', 'chapter', 'size'].includes(orderBy);
       if (isResourceColumn && orderBy !== 'population') {
-        const aIsUnhelpable = a.width === 1 || a.length === 1;
-        const bIsUnhelpable = b.width === 1 || b.length === 1;
+        const aIsUnhelpable = !canReceiveNeighbourlyHelp(a);
+        const bIsUnhelpable = !canReceiveNeighbourlyHelp(b);
 
         if (aIsUnhelpable && !bIsUnhelpable) return order === 'asc' ? 1 : -1;
         if (!aIsUnhelpable && bIsUnhelpable) return order === 'asc' ? -1 : 1;

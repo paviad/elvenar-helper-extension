@@ -1,7 +1,7 @@
 import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
-import { CultureBonus } from '../model/cultureBonus';
+import { CultureBonus, CultureHelpState, CultureModifiers } from '../model/cultureBonus';
 import { EnsorcelledEndowment } from '../model/ensorcelledEndowment';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { FAStoreData } from '../model/faStageProgress';
@@ -61,6 +61,13 @@ export interface CityQuery {
   wonderKp?: WonderKp[];
   /** The culture bonus ladder as the game reported it at startup. */
   cultureBonus?: CultureBonus;
+  /**
+   * Which buildings were helped and enchanted at startup. A city saved from a played account
+   * keeps the copy, and is planned like it until its own modifiers are set.
+   */
+  cultureHelpState?: CultureHelpState;
+  /** The neighbourly help and enchantments a saved city was set to be planned with. */
+  cultureModifiers?: CultureModifiers;
 }
 
 export interface AccountData {

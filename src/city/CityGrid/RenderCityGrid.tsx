@@ -10,6 +10,7 @@ import { setHoverForDrag } from '../hoveredBlockStore';
 import { NewBuildingSelector } from '../NewBuildingSelector';
 import { useCityGridState } from '../useCityGridState';
 import { CityToolbar } from './CityToolbar';
+import { CultureModificationsDialog } from './CultureModificationsDialog';
 import ExportDialog from './ExportDialog';
 import ImportDialog from './ImportDialog';
 import { subscribeToIsoMouseMove } from './iso/handleIsoMouseMove';
@@ -29,6 +30,7 @@ export const RenderCityGrid = () => {
 
   // Use Custom Hook for Logic & State
   const state = useCityGridState();
+  const [cultureDialogOpen, setCultureDialogOpen] = React.useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -116,6 +118,8 @@ export const RenderCityGrid = () => {
         showSaveButton={false}
         onDeleteHighlighted={state.deleteHighlightedBlocks}
         onUnlockArea={() => city.setUnlockAreaMode(true)}
+        onEditCultureModifications={() => setCultureDialogOpen(true)}
+        canEditCultureModifications={city.isDetached}
         hasHighlightedBlocks={hasHighlighted}
         searchTerm={city.searchTerm}
         onSearchChange={state.handleSearchChange}
@@ -188,6 +192,7 @@ export const RenderCityGrid = () => {
           exportString={state.exportDialog.exportStr}
         />
 
+        {cultureDialogOpen && <CultureModificationsDialog onClose={() => setCultureDialogOpen(false)} />}
         {/* ScreenshotDialog Modal. The picture is kept on close so the dialog fades out on it. */}
         <ScreenshotDialog
           open={state.screenshotDialog.open}

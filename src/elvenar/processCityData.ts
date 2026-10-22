@@ -12,6 +12,7 @@ import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 import { AccountData, FaQuest } from './Accounts';
 import { generateAccountId, getAccountBySessionId, putAccount } from './accountStore';
+import { extractCultureHelpState } from './extractCultureHelpState';
 import { extractWonderKp } from './extractWonderKp';
 
 interface StartupEffect {
@@ -217,6 +218,7 @@ export async function processCityData(untypedJson: unknown, sharedInfo: Extensio
       enchantmentsEnd,
       wonderKp: extractWonderKp(startupService.ancient_wonder_phases, user_data.player_id),
       cultureBonus,
+      cultureHelpState: extractCultureHelpState(startupService.effects || []),
     },
     sharedInfo,
     isDetached: false,

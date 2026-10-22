@@ -1,4 +1,24 @@
-import { CultureBonus, getCultureBonusLevel } from './cultureBonus';
+import { computeCultureBonus, CultureBonus, getCultureBonusLevel } from './cultureBonus';
+
+describe('computeCultureBonus', () => {
+  // Culture and population demand, and the thresholds the game sent for that city.
+  it.each([
+    ['a chapter 5 city', 8379, 8203, [0, 3300, 6600, 9900, 13000]],
+    ['another chapter 5 city', 12041, 16678, [0, 5700, 11000, 17000, 23000]],
+    ['a chapter 25 city', 3929556, 2904432, [0, 1400000, 2700000, 4100000, 5500000]],
+    ['the same city ten days earlier', 3881232, 2869547, [0, 1400000, 2700000, 4100000, 5400000]],
+  ])('matches the ladder the game sent for %s', (_, culture, population, thresholds) => {
+    expect(computeCultureBonus(culture, population)).toEqual({
+      thresholds,
+      percentages: [100, 125, 150, 160, 170],
+      neighbourlyHelpBonus: 0,
+    });
+  });
+
+  it('puts every level at 0 for a city with no demand', () => {
+    expect(computeCultureBonus(0, 0).thresholds).toEqual([0, 0, 0, 0, 0]);
+  });
+});
 
 // Taken from a live startup response (chapter 25, with a +864% spell running).
 const bonus: CultureBonus = {

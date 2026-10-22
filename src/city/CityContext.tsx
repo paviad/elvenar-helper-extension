@@ -7,20 +7,21 @@ import { getMaxChapter } from '../elvenar/getMaxChapter';
 import { getMaxLevels } from '../elvenar/getMaxLevels';
 import { useAccount } from '../elvenar/useAccount';
 import { CityEntityEx } from '../model/cityEntity';
-import { CultureBonus } from '../model/cultureBonus';
+import { CultureBonus, CultureHelpState, CultureModifiers } from '../model/cultureBonus';
 import { Effect } from '../model/effect';
 import { StageProvision } from '../model/stageProvision';
 import { UnlockedArea } from '../model/unlockedArea';
 import { useTabStore } from '../util/tabStore';
 import { BuildingFinder, getBuildingFinder } from './buildingFinder';
 import { calculateCityTotals, CityTotals } from './calculateCityTotals';
+import { cultureModifiersFromState } from './calculateCultureHelp';
 import { CityBlock } from './CityBlock';
 import { generateCity, saveBack } from './generateCity';
 import { generateCityBlocks } from './generateCityBlocks';
 import { generateUnlockedAreas } from './generateUnlockedAreas';
 import { BlockOpacity } from './gridConstants';
 import { MoveLogInterface } from './MoveLog/moveLogInterface';
-import { saveCityInPlace, saveCurrentCityAs } from './savedCities';
+import { saveCityInPlace, saveCultureModifiers, saveCurrentCityAs } from './savedCities';
 import { findMatchingBlockIds } from './searchMatcher';
 import { useSettledValue } from './useSettledValue';
 
@@ -99,8 +100,20 @@ export interface CityContextType {
   /** Provision and requirement totals, derived from the blocks. */
   cityTotals: CityTotals;
   resources: Record<string, number>;
-  /** The culture bonus ladder from the game, absent for a city the game has not reported. */
+  /**
+   * The culture bonus ladder the game reported for the account being played, kept while its
+   * autosave is open. Absent for saved and visited cities, whose ladder the game never sent.
+   */
   cultureBonus?: CultureBonus;
+  /**
+   * The neighbourly help and enchantments the city is planned with: what a saved city was set
+   * to, or else how the played account it comes from stood at startup.
+   */
+  cultureModifiers?: CultureModifiers;
+  /** Sets the help and enchantments of a saved city. */
+  setCultureModifiers: (modifiers: CultureModifiers) => Promise<void>;
+  /** Whether the city open is a saved one rather than an account being played. */
+  isDetached: boolean;
   emptySquares: number;
   modified: boolean;
   maxChapter: number;
@@ -152,6 +165,8 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const [rankingPoints, setRankingPoints] = React.useState<number>(0);
   const [resources, setResources] = React.useState<Record<string, number>>({});
   const [cultureBonus, setCultureBonus] = React.useState<CultureBonus | undefined>(undefined);
+  const [storedCultureModifiers, setCultureModifiersState] = React.useState<CultureModifiers | undefined>(undefined);
+  const [cultureHelpState, setCultureHelpState] = React.useState<CultureHelpState | undefined>(undefined);
 
   const accountId = useTabStore((state) => state.accountId);
   const setAccountId = useTabStore((state) => state.setAccountId);
@@ -250,6 +265,16 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
     clearTimeout(pending.timer);
     await pending.save();
   }, []);
+  const setCultureModifiers = React.useCallback(
+    async (modifiers: CultureModifiers) => {
+      const { accountId, isDetached } = latest.current;
+      if (!accountId || !isDetached) return;
+      await flushAutosave();
+      await saveCultureModifiers(accountId, modifiers);
+      setCultureModifiersState(modifiers);
+    },
+    [flushAutosave],
+  );
   React.useEffect(() => {
     const onPageHide = () => void flushAutosave();
     window.addEventListener('pagehide', onPageHide);
@@ -287,7 +312,13 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
         setSquadSize(accountData.cityQuery.squadSize || 0);
         setRankingPoints(accountData.cityQuery.rankingPoints || 0);
         setResources(accountData.cityQuery.cityResources || {});
-        setCultureBonus(accountData.cityQuery.cultureBonus);
+        // Read from the city itself rather than its autosave, so an account being played always
+        // shows what the game sent last. A saved city carries a copy of the ladder too, but that
+        // belongs to the city as it was played; it keeps only its help and enchantments.
+        const own = getAccountById(accountId);
+        setCultureBonus(own && !own.isDetached ? own.cityQuery?.cultureBonus : undefined);
+        setCultureModifiersState(own?.isDetached ? own.cityQuery?.cultureModifiers : undefined);
+        setCultureHelpState(own?.cityQuery?.cultureHelpState);
       }
       setSearchTerm('');
       setMoveLog([]);
@@ -393,6 +424,14 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
   const cityTotals = React.useMemo(
     () => calculateCityTotals(Object.values(settledBlocks), buildingFinder, evolvingBuildings),
     [settledBlocks, buildingFinder, evolvingBuildings],
+  );
+
+  const cultureModifiers = React.useMemo(
+    () =>
+      storedCultureModifiers ??
+      (cultureHelpState &&
+        cultureModifiersFromState(Object.values(settledBlocks), buildingFinder, evolvingBuildings, cultureHelpState)),
+    [storedCultureModifiers, cultureHelpState, settledBlocks, buildingFinder, evolvingBuildings],
   );
 
   const allTypes = React.useMemo(() => {
@@ -618,6 +657,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       cityTotals,
       resources,
       cultureBonus,
+      cultureModifiers,
+      setCultureModifiers,
+      isDetached,
       emptySquares,
       modified,
       maxChapter,
@@ -658,6 +700,9 @@ export const CityProvider = ({ children }: { children: React.ReactNode }) => {
       cityTotals,
       resources,
       cultureBonus,
+      cultureModifiers,
+      setCultureModifiers,
+      isDetached,
       emptySquares,
       modified,
       maxChapter,

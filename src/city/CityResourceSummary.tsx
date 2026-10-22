@@ -13,62 +13,12 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { calculateCityBonuses } from './calculateCityBonuses';
-import { useCity } from './CityContext';
 import { CultureBonusBar } from './CultureBonusBar';
-import { useSettledValue } from './useSettledValue';
+import { useCultureLadder } from './useCultureLadder';
 
 export const CityResourceSummary = () => {
-  const city = useCity();
   const [collapsed, setCollapsed] = useState(false);
-  // The totals in context already only move on drop; match that here so the bonus
-  // lookups do not rescan the city mid-drag either.
-  const settledBlocks = useSettledValue(city.blocks, city.dragIndex === null);
-  const blocks = React.useMemo(() => Object.values(settledBlocks), [settledBlocks]);
-  const blocksIdAndLevel = React.useMemo(() => blocks.map((b) => ({ id: b.gameId, level: b.level })), [blocks]);
-  const { residentialBonus, availablePopulationBonus, cultureByRankingPoints, extraAvailableCulture } = React.useMemo(
-    () => calculateCityBonuses(city.effects, city.squadSize, blocksIdAndLevel),
-    [city.effects, city.squadSize, blocksIdAndLevel],
-  );
-
-  const summary = React.useMemo(() => {
-    const {
-      popProvided,
-      popRequired,
-      cultureProvided,
-      cultureRequired,
-      prosperityProvided,
-      prosperityRequired,
-      residentialPop,
-      awLevels,
-      mhRankingPoints,
-    } = city.cityTotals;
-
-    const extraResidential = Math.round(residentialPop * (residentialBonus - 1));
-    const extraAvailablePopulation = Math.ceil(popRequired * availablePopulationBonus);
-    const extraCultureFromRanking = Math.round(cultureByRankingPoints * mhRankingPoints * awLevels);
-
-    const totalPopulationProvided = popProvided + extraResidential + extraAvailablePopulation;
-    const totalCultureProvided = cultureProvided + extraAvailableCulture + extraCultureFromRanking;
-
-    return {
-      population: {
-        provided: totalPopulationProvided,
-        required: popRequired,
-        net: totalPopulationProvided - popRequired,
-      },
-      culture: {
-        provided: totalCultureProvided,
-        required: cultureRequired,
-        net: totalCultureProvided - cultureRequired,
-      },
-      prosperity: {
-        provided: prosperityProvided,
-        required: prosperityRequired,
-        net: prosperityProvided - prosperityRequired,
-      },
-    };
-  }, [city.cityTotals, residentialBonus, availablePopulationBonus, cultureByRankingPoints, extraAvailableCulture]);
+  const { summary, cultureHelp, cultureBonus, asReported } = useCultureLadder();
 
   const renderRow = (
     label: string,
@@ -181,7 +131,11 @@ export const CityResourceSummary = () => {
             <WbSunnyIcon fontSize='small' />,
             summary.culture,
             '#ff9800',
-            city.cultureBonus && <CultureBonusBar bonus={city.cultureBonus} availableCulture={summary.culture.net} />,
+            <CultureBonusBar
+              bonus={cultureBonus}
+              availableCulture={summary.culture.net}
+              plannedHelp={asReported ? undefined : cultureHelp}
+            />,
           )}
 
           {(summary.prosperity.provided > 0 || summary.prosperity.required > 0) && (

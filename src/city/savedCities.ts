@@ -1,6 +1,7 @@
 import { AccountData } from '../elvenar/Accounts';
 import { getAccountById, loadAccount, putAccount, removeAccount, saveAccount } from '../elvenar/accountStore';
 import { CityEntity } from '../model/cityEntity';
+import { CultureModifiers } from '../model/cultureBonus';
 import { UnlockedArea } from '../model/unlockedArea';
 import { useTabStore } from '../util/tabStore';
 
@@ -197,6 +198,25 @@ export const saveCityInPlace = async (
     useTabStore
       .getState()
       .setGlobalError('This city was changed in another tab, so your last change was not saved. Reload this tab.');
+  }
+};
+
+/** Sets how much neighbourly help and enchantment a saved city is planned with. */
+export const saveCultureModifiers = async (accountId: string, modifiers: CultureModifiers) => {
+  const accountData = getAccountById(accountId);
+  if (!accountData?.cityQuery) {
+    throw new Error('ElvenAssist: Account has no city data');
+  }
+  if (!accountData.isDetached) {
+    throw new Error('ElvenAssist: The help and enchantments of an account being played come from the game');
+  }
+  accountData.cityQuery.cultureModifiers = modifiers;
+  if (!(await saveAccount(accountId))) {
+    useTabStore
+      .getState()
+      .setGlobalError(
+        'This city was changed in another tab, so the culture modifications were not saved. Reload this tab.',
+      );
   }
 };
 
