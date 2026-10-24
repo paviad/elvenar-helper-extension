@@ -1,6 +1,6 @@
 import { setupAggregateRequestResponseListener } from './chrome/aggregateRequestResponse';
 import { onExtensionContextLost, reportPossibleContextLoss, watchExtensionContext } from './chrome/extensionContext';
-import { requestRuntime, setListener, setupMessageListener } from './chrome/messages';
+import { requestRuntime, sendRuntime, setListener, setupMessageListener } from './chrome/messages';
 import { setupSocketResponseListener } from './chrome/socketResponse';
 import { getAccountById, getAccountByTabId, loadAllAccounts } from './elvenar/accountStore';
 import { GameVars } from './inject/gameVars';
@@ -17,7 +17,7 @@ import {
 } from './overlay/overlaySize';
 import { generateOverlayStore, getAccountId, getOverlayStore } from './overlay/overlayStore';
 import { getProductionWatchStatus, subscribeToProductionWatch } from './overlay/productionWatcher';
-import { reportGameClientScript, reportGameRenderConfig } from './overlay/reportGameClientScript';
+import { reportGameRenderConfig } from './overlay/reportGameClientScript';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
 import { updateSpireBadge } from './overlay/spireBadge';
 
@@ -111,7 +111,11 @@ const initFunc = () => {
     setupNonSpecificRequestInterceptedListener();
     setupAggregateRequestResponseListener();
     setupSocketResponseListener();
-    reportGameClientScript();
+    // injectMutate loads the game script inline, so there is no script tag for master's
+    // reportGameClientScript to find; the URL it read from loadGameCode comes with the game vars.
+    void gameVarsReady.then((vars) => sendRuntime('gameClientScript', { url: vars.gameScriptUrl }));
+    // The render config comes from the CDN by XHR whatever loads the game script, so it is found
+    // the same way here as on master.
     reportGameRenderConfig();
     setupGameVarsListener();
     setupGameStateListener();
