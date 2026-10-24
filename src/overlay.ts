@@ -13,6 +13,7 @@ import {
   saveOverlaySize,
 } from './overlay/overlaySize';
 import { generateOverlayStore, getAccountId, getOverlayStore } from './overlay/overlayStore';
+import { reportGameClientScript } from './overlay/reportGameClientScript';
 import { setupNonSpecificRequestInterceptedListener } from './overlay/setupNonSpecificRequestInterceptedListener';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
@@ -73,6 +74,7 @@ const initFunc = () => {
     setupNonSpecificRequestInterceptedListener();
     setupAggregateRequestResponseListener();
     setupSocketResponseListener();
+    reportGameClientScript();
   }
 
   // Create the div

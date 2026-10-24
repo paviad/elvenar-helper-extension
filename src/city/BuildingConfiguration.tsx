@@ -42,18 +42,25 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
     setConfigValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAdd = () => {
-    const config: BuildingConfig = {};
-    const fields = building.supportedFields || [];
+  const fields = building.supportedFields || [];
 
+  /** Only the fields this building takes, each settled on a value. */
+  const settleConfig = (): BuildingConfig => {
+    const config: BuildingConfig = {};
     if (fields.includes('Level')) config.level = configValues.level || 1;
     if (fields.includes('Chapter')) config.chapter = configValues.chapter || 1;
     if (fields.includes('Stage')) config.stage = configValues.stage || 1;
-
-    onAdd(config);
+    return config;
   };
 
-  const fields = building.supportedFields || [];
+  const handleAdd = () => {
+    onAdd(settleConfig());
+  };
+
+  // Follows the level and chapter, as the building looks different at each.
+  const pictureUrl = building.getLargeIconUrl?.(settleConfig());
+  const [failedPictureUrl, setFailedPictureUrl] = React.useState<string>();
+  const showPicture = pictureUrl !== undefined && pictureUrl !== failedPictureUrl;
 
   // Calculate dynamic size based on level
   let currentWidth = building.width;
@@ -157,13 +164,14 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
               )}
             </Stack>
 
-            {/* Grid Preview Column */}
+            {/* Preview Column: the building's picture beside its footprint */}
             <Box
               sx={{
                 flex: 1,
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: 'space-evenly',
                 alignItems: 'center',
+                gap: 2,
                 p: 2,
                 backgroundColor: 'background.default',
                 borderRadius: 1,
@@ -173,6 +181,15 @@ export const BuildingConfiguration: React.FC<BuildingConfigurationProps> = ({
                 overflow: 'hidden',
               }}
             >
+              {showPicture && (
+                <Box
+                  component='img'
+                  src={pictureUrl}
+                  alt={building.name}
+                  onError={() => setFailedPictureUrl(pictureUrl)}
+                  sx={{ width: 176, height: 176, objectFit: 'contain', flexShrink: 0 }}
+                />
+              )}
               <svg
                 width={gridWidth}
                 height={gridHeight}

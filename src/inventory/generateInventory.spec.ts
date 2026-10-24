@@ -12,6 +12,7 @@ import { makeBuilding } from '../testing/fixtures';
 import { generateInventory } from './generateInventory';
 
 jest.mock('../elvenar/accountStore', () => ({ getAccountById: jest.fn() }));
+jest.mock('../elvenar/getBuildingPreviews');
 jest.mock('../elvenar/getBuildings');
 jest.mock('../elvenar/getEvolvingBuildings');
 jest.mock('../elvenar/getExpirations');

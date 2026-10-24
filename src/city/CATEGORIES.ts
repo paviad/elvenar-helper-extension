@@ -22,6 +22,8 @@ export interface BuildingDefinition {
   width: number;
   length: number;
   iconUrl?: string; // Optional image URL
+  /** The building's 176 x 176 picture for the given configuration, when there is one. */
+  getLargeIconUrl?: (config: BuildingConfig) => string | undefined;
   supportedFields?: BuildingField[];
   maxLevel?: number;
   maxStage?: number;

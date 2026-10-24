@@ -7,6 +7,7 @@ import { CityEntity } from '../model/cityEntity';
 import { makeBuildingLevels, makeCityBlock, makeCityEntityEx } from '../testing/fixtures';
 import { generateCity, resetMovedInPlace, saveBack } from './generateCity';
 
+jest.mock('../elvenar/getBuildingPreviews');
 jest.mock('../elvenar/getBuildings');
 jest.mock('../elvenar/getEvolvingBuildings');
 jest.mock('../elvenar/getExpirations');

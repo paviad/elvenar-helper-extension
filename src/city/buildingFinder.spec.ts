@@ -7,6 +7,7 @@ import { StageProvision } from '../model/stageProvision';
 import { makeBuilding, makeBuildingLevels } from '../testing/fixtures';
 import { BuildingFinder, getBuildingFinder } from './buildingFinder';
 
+jest.mock('../elvenar/getBuildingPreviews');
 jest.mock('../elvenar/getBuildings');
 jest.mock('../elvenar/getEvolvingBuildings');
 jest.mock('../elvenar/getExpirations');

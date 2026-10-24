@@ -231,9 +231,15 @@ export const NewBuildingSelector: React.FC<NewBuildingSelectorProps> = ({
                     variant='rounded'
                     src={building.iconUrl}
                     alt={building.name}
-                    sx={{ bgcolor: 'primary.light' }}
+                    // Avatar falls back to its children when the picture is missing or fails to load.
+                    slotProps={{ img: { loading: 'lazy', style: { objectFit: 'contain' } } }}
+                    sx={
+                      building.iconUrl
+                        ? { width: 64, height: 48, bgcolor: 'transparent', mr: 1 }
+                        : { bgcolor: 'primary.light' }
+                    }
                   >
-                    {!building.iconUrl && <BusinessIcon />}
+                    <BusinessIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText

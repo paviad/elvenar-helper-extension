@@ -21,6 +21,8 @@ export interface RuntimeMessages {
   otherPlayerCityUpdated: NoFields;
   citySaved: { accountId: string };
   openExtensionTab: NoFields;
+  /** The URL of the client script the game page runs, which the building pictures are read from. */
+  gameClientScript: { url: string };
 }
 
 /** Sent with chrome.tabs.sendMessage, which reaches the content scripts of one tab. */

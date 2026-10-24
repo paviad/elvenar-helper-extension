@@ -3,6 +3,7 @@
     "./src/city/buildingFinder.ts",
     "./src/city/vestigeOfEternity.ts",
     "./src/elvenar/Accounts.ts",
+    "./src/elvenar/getBuildingPreviews.ts",
     "./src/elvenar/getBuildings.ts",
     "./src/elvenar/getEffects.ts",
     "./src/elvenar/getEvolvingBuildings.ts",

@@ -1,3 +1,5 @@
+import { BuildingPreviews, buildingPreviewUrl } from '../elvenar/buildingPreviews';
+import { getBuildingPreviews } from '../elvenar/getBuildingPreviews';
 import { getBuildings } from '../elvenar/getBuildings';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
 import { getExpirations } from '../elvenar/getExpirations';
@@ -6,7 +8,7 @@ import { Building } from '../model/building';
 import { BuildingEx } from '../model/buildingEx';
 import { CityEntityExData } from '../model/cityEntity';
 import { StageProvision } from '../model/stageProvision';
-import { BuildingCategory, BuildingDefinition, BuildingField } from './CATEGORIES';
+import { BuildingCategory, BuildingConfig, BuildingDefinition, BuildingField } from './CATEGORIES';
 import { getTypeFromEntity } from './getCityBlockFromCityEntity';
 
 interface bAndC {
@@ -54,6 +56,7 @@ export class BuildingFinder {
   private hintsDictionaryLowerCase: Record<string, string> = {};
   private evolvingBuildingsDictionary: Record<string, StageProvision> = {};
   private expirations: Record<string, number> = {};
+  private previews: BuildingPreviews | undefined;
 
   private getBaseName(goodsId: string): bAndC {
     const baseNameRex = /(.*?)(_\d+)?$/;
@@ -95,6 +98,7 @@ export class BuildingFinder {
     const evolvingBuildings = await getEvolvingBuildings();
 
     this.expirations = await getExpirations();
+    this.previews = await getBuildingPreviews();
 
     this.hintsDictionary = Object.fromEntries(premiumHints.map((h) => [h.id.replace(/_\d+$/, ''), h.section]));
     this.hintsDictionaryLowerCase = Object.fromEntries(
@@ -330,6 +334,23 @@ export class BuildingFinder {
       return undefined;
     };
 
+    const getGetLargeIconUrlFunction = (
+      buildings: Building[],
+    ): ((config: BuildingConfig) => string | undefined) | undefined => {
+      const previews = this.previews;
+      if (!previews) return undefined;
+      return (config: BuildingConfig) => {
+        // The ids adding the building resolves a configuration to, in the same order.
+        const baseName = buildings[0].base_name;
+        const qual = config.level || config.chapter;
+        const ids = [qual ? `${baseName}_${qual}` : undefined, baseName, buildings[0].id];
+        for (const id of ids) {
+          const url = id && buildingPreviewUrl(previews, id, 'large');
+          if (url) return url;
+        }
+      };
+    };
+
     const getMaxLevelsLocal = (buildings: Building[]): number | undefined => {
       const rc = buildings[buildings.length - 1].level;
       return rc;
@@ -357,6 +378,9 @@ export class BuildingFinder {
           category: getCategory(r[0]),
           width: r[0].width,
           length: r[0].length,
+          // The first level, as the game's build menu shows it.
+          iconUrl: this.previews && buildingPreviewUrl(this.previews, r[0].id),
+          getLargeIconUrl: getGetLargeIconUrlFunction(r),
           supportedFields: getSupportedFields(r),
           getSizeAtLevel: getGetSizeAtLevelFunction(r),
           maxLevel: getMaxLevelsLocal(r),
