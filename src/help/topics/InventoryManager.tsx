@@ -38,8 +38,8 @@ export const InventoryManager = () => (
       </ListItem>
       <ListItem>
         <ListItemText
-          primary='Buildings inside Tomes'
-          secondary="A Tome is opened for one of a fixed set of rewards. Each Tome building is listed as a row of its own, typed 'Building (Tome)' and naming the Tome under the building's name, with the size, output and resale value it would have at the chapter the Tome was won in. Searching for the Tome's name finds them too. Pick 'Building' in the Type dropdown to see only what is already in the inventory. These rows have no Place button: there is nothing to place until the Tome is opened."
+          primary='Tome contents'
+          secondary="Each Tome is followed by what it can be opened for, with the Tome named under each row. Tome buildings are typed 'Building (Tome)' and show the size, output and resale value they would have at the chapter the Tome was won in; they have no Place button until the Tome is opened. Artifacts, goods and resource choices are typed 'Item (Tome)', 'Good (Tome)' and 'Choice (Tome)', one row per pick: '4 Royal Restoration' counts in the RR column, an artifact shows its spell fragments. A choice the game sizes to your chapter, such as the resources of a Tome of the Plentiful, shows what it gives in the chapter you are in now - '800,000 Mana' - and grows as you advance; a Rune Shard is named for its wonder. Until the game has been loaded once with this version, a choice shows only the Tome's multiplier ('Mana ×10'). Search for the Tome's name to see everything in it, or turn off 'Tome Contents' to see only what is in hand."
         />
       </ListItem>
     </List>

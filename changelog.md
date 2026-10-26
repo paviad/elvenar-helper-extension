@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **Inventory: everything in your Tomes is listed**, not just the buildings: artifacts, goods, resources and Rune Shards too. Choices that grow with your chapter show what they give now, such as 800,000 mana from a Tome of the Plentiful in chapter 25, and Rune Shards are named for their wonder. Royal Restoration from a Tome counts in the RR column, and artifacts show their spell fragments. The new Tome Contents switch hides them all.
+
 ## v10.8.0
 - **The Cauldron Optimizer is filled in from the game.** Keep the [Cauldron Optimizer](https://cauldron-optimizer.vercel.app/home) open in another tab and log in there, then open the Cauldron in the Magic Academy: ElvenAssist sends it your diploma count, this week's premium ingredients, the effects you left switched on in the cauldron's Upgrade Effects screen, the level of the wonder that makes ingredients cheaper, and your Witch Points. Switching an effect on or off in the game updates the optimizer straight away. Each of your cities gets a world of its own there, named after your player and server (such as EA-Balrogville-en3), so your own worlds are never changed. The game only says which ingredients are premium when you log in while the cauldron is ready to brew, so during the cooldown they are left out. See Help ▸ Cauldron Optimizer.
 - **City Planner: the culture bonus level is shown in the resource summary.** A bar under the culture row is notched at each culture bonus level and filled to where the city stands. Hover it for the bonus you get and the culture each level needs.

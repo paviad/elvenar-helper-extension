@@ -44,6 +44,8 @@ interface TabState {
   setInvAggregate: (b: boolean) => void;
   invShowPerSquare: boolean;
   setInvShowPerSquare: (b: boolean) => void;
+  invShowTomeContents: boolean;
+  setInvShowTomeContents: (b: boolean) => void;
 
   // --- FA Persisted Settings Defaults ---
   importedStockByAccount: Record<string, Record<string, Partial<Badges>>>;
@@ -95,6 +97,8 @@ export const useTabStore = create<TabState>()(
       setInvAggregate: (b) => set({ invAggregate: b }),
       invShowPerSquare: false,
       setInvShowPerSquare: (b) => set({ invShowPerSquare: b }),
+      invShowTomeContents: true,
+      setInvShowTomeContents: (b) => set({ invShowTomeContents: b }),
 
       // --- FA Persisted Settings Defaults ---
       importedStockByAccount: {},
@@ -141,6 +145,7 @@ export const useTabStore = create<TabState>()(
           invSortDir,
           invAggregate,
           invShowPerSquare,
+          invShowTomeContents,
           ...toPersist
         } = state;
         return toPersist;

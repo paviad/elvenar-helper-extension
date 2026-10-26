@@ -47,6 +47,15 @@ export function resolveTomeBuildingId(subType: string, chapter: number | undefin
   return id;
 }
 
+/**
+ * A flexible reward is a good the game sizes to the player's chapter when the tome is opened,
+ * so the tome itself says only which good, and a multiplier: `frog_mana_RSK` x10. The good is
+ * read off the subtype; undefined when the subtype does not follow that pattern.
+ */
+export function getFlexibleRewardGood(subType: string): string | undefined {
+  return /^frog_(.+?)(?:_RSK)?$/.exec(subType)?.[1];
+}
+
 /** The buildings a tome can be opened for, at the chapter it was won in. */
 export function getTomeBuildings(tome: Tome, chapter: number | undefined, race?: string): TomeBuilding[] {
   return (tome.rewards ?? []).filter(isBuildingReward).map((reward) => ({

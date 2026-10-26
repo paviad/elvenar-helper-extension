@@ -1,28 +1,29 @@
 import { getBuildingFinder } from '../city/buildingFinder';
 import { getAccountById } from '../elvenar/accountStore';
 import { getEvolvingBuildings } from '../elvenar/getEvolvingBuildings';
+import { getFlexibleRewards } from '../elvenar/getFlexibleRewards';
+import { getGoodDefinitions } from '../elvenar/getGoodsNames';
 import { getItemDefinitions } from '../elvenar/getItemDefinitions';
 import { getTomes } from '../elvenar/getTomes';
 import { BuildingEx } from '../model/buildingEx';
 import { InventoryItem } from '../model/inventoryItem';
 import { ItemDefinition } from '../model/itemDefinition';
-import { Tome } from '../model/tome';
+import { Reward, Tome } from '../model/tome';
 import { getBuildingProvisionsAndProduction } from '../util/getBuildingProvisionsAndProduction';
-import { getTomeBuildings } from './tomeBuildings';
+import { FlexibleRewardContext, resolveFlexibleReward } from './flexibleRewards';
+import { getFlexibleRewardGood, getTomeBuildings, isBuildingReward } from './tomeBuildings';
 
 export interface GenerateInventoryOptions {
   /**
-   * Also list, after each tome, the buildings it can be opened for. Off by default: the city
-   * planner and the Upgrade Finder read the inventory too, and a building not yet chosen is
-   * neither placeable nor a swap in hand.
+   * Also list, after each tome, what it can be opened for: only the buildings, or everything.
+   * Left out by default, since a reward not yet chosen is not in hand. The Upgrade Finder
+   * takes the buildings alone: it counts the artifacts in the inventory, and one inside a
+   * tome is not one owned.
    */
-  includeTomeBuildings?: boolean;
+  tomeContents?: 'buildings' | 'all';
 }
 
-export async function generateInventory(
-  accountId: string,
-  { includeTomeBuildings = false }: GenerateInventoryOptions = {},
-) {
+export async function generateInventory(accountId: string, { tomeContents }: GenerateInventoryOptions = {}) {
   const accountData = getAccountById(accountId);
   if (!accountData || !accountData.inventoryItems) {
     return;
@@ -50,6 +51,17 @@ export async function generateInventory(
 
   const items = await getItemDefinitions();
   const tomes = await getTomes();
+  const goods = tomeContents === 'all' ? await getGoodDefinitions() : [];
+  const goodsNames = Object.fromEntries(goods.map(({ id, name }) => [id, name]));
+
+  // A tome's flexible reward is sized to the chapter the player is in now.
+  const flexibleRewardContext: FlexibleRewardContext = {
+    flexibleRewards: tomeContents === 'all' ? await getFlexibleRewards() : [],
+    chapter: accountData.cityQuery?.chapter,
+    race,
+    boostedGoods: accountData.cityQuery?.boostedGoods ?? [],
+    goods,
+  };
 
   const itemsDictionary = items.reduce(
     (acc, item) => {
@@ -109,14 +121,20 @@ export async function generateInventory(
     city_entity: 'Building',
     reward_selection_kit: 'Tome',
     item: 'Item',
+    good: 'Good',
+    flexible_reward: 'Choice',
   };
 
   function getPrettyType(type: string): string {
     return prettyTypes[type] || type;
   }
 
-  /** A building a tome can be opened for. Not a type the game has, so it maps from nothing. */
-  const tomeBuildingType = 'Building (Tome)';
+  /** What a tome can be opened for, typed apart from the same thing already in the inventory. */
+  function getTomeRowType(type: string): string {
+    return `${getPrettyType(type)} (Tome)`;
+  }
+
+  const tomeBuildingType = getTomeRowType('city_entity');
 
   const keysSet = new Set<string>();
 
@@ -164,6 +182,72 @@ export async function generateInventory(
     });
   }
 
+  /** A good's name. The game names those of chapters still to come "!!Missing text" or "!!Dummy". */
+  function getGoodName(id: string): string | undefined {
+    const name = goodsNames[id];
+    return name && !name.startsWith('!!') ? name : undefined;
+  }
+
+  function getRewardName(reward: Reward): string {
+    if (reward.type === 'item') {
+      return itemsDictionary[reward.subType]?.name || reward.subType;
+    }
+    if (reward.type === 'runeShard') {
+      // The goods name a rune shard for its wonder.
+      const wonder = getGoodName(reward.subType);
+      return wonder ? `${wonder} Rune Shard` : reward.subType;
+    }
+    if (reward.type === 'flexible_reward') {
+      const good = getFlexibleRewardGood(reward.subType);
+      return (good && getGoodName(good)) || reward.subType;
+    }
+    return getGoodName(reward.subType) || reward.subType;
+  }
+
+  /** A quantity reads "800,000 Mana"; a multiplier, all a tome says of a flexible reward, "Mana ×10". */
+  function getRewardLabel(reward: Reward, isMultiplier: boolean): string {
+    const name = getRewardName(reward);
+    const amount = reward.amount ?? 1;
+    if (amount <= 1) {
+      return name;
+    }
+    return isMultiplier ? `${name} ×${amount}` : `${amount.toLocaleString()} ${name}`;
+  }
+
+  /**
+   * A row for each reward of a tome that is not a building. Each counts one pick, as the
+   * tome offers it - 4 Royal Restoration - so a row's amount is the number of tomes. A
+   * flexible reward is shown as what it comes to at the player's chapter; until the game has
+   * described it, by the multiplier the tome names it with.
+   */
+  function getTomeRewardRows(tomeItem: InventoryItem, tome: Tome): InventoryItem[] {
+    return (tome.rewards ?? [])
+      .filter((reward) => !isBuildingReward(reward))
+      .map((offered) => {
+        const resolved =
+          offered.type === 'flexible_reward' ? resolveFlexibleReward(offered, flexibleRewardContext) : undefined;
+        const reward = resolved ?? offered;
+        const amount = reward.amount ?? 1;
+        const fragments = reward.type === 'item' ? Number(itemsDictionary[reward.subType]?.spellFragments) || 0 : 0;
+        const isResaleResource = reward.subType === 'combiningcatalyst' || reward.subType === 'royalrestoration';
+
+        return {
+          ...tomeItem,
+          type: getTomeRowType(offered.type),
+          subtype: offered.subType,
+          amount: tomeItem.amount,
+          name: getRewardLabel(reward, offered.type === 'flexible_reward' && !resolved),
+          resaleResources: isResaleResource ? { [reward.subType]: amount } : {},
+          chapter: undefined,
+          spellFragments: Math.round(fragments * amount * spellFragmentsFactor) || undefined,
+          size: undefined,
+          stage: undefined,
+          building: undefined,
+          fromTome: tome.name,
+        } satisfies InventoryItem;
+      });
+  }
+
   const inventory = inventoryItems.flatMap((r) => {
     const building = getBuilding(r);
     const item = getItem(r);
@@ -199,10 +283,11 @@ export async function generateInventory(
       transcendence: r.properties?.find((p) => p.__class__ === 'InventoryItemTranscendedBuildingPropertyVO'),
     } satisfies InventoryItem;
 
-    if (!includeTomeBuildings || !tome) {
+    if (!tomeContents || !tome) {
       return [row];
     }
-    return [row, ...getTomeBuildingRows(r, tome, row.chapter)];
+    const buildingRows = getTomeBuildingRows(r, tome, row.chapter);
+    return tomeContents === 'all' ? [row, ...buildingRows, ...getTomeRewardRows(r, tome)] : [row, ...buildingRows];
   });
 
   const sortedKeys = Array.from(keysSet).sort((a, b) => {

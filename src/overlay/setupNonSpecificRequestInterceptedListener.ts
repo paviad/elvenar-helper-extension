@@ -13,6 +13,7 @@ export function setupNonSpecificRequestInterceptedListener() {
       case 'ITEMS':
       case 'EFFECTS':
       case 'TOMES':
+      case 'FLEXIBLE_REWARDS':
       case 'PREMIUM_BUILDING_HINTS':
       case 'GOODS_NAMES':
       case 'EVOLVING_BUILDINGS':

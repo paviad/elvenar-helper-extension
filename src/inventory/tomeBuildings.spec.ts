@@ -1,5 +1,5 @@
 import { Tome } from '../model/tome';
-import { getTomeBuildings, isBuildingReward, resolveTomeBuildingId } from './tomeBuildings';
+import { getFlexibleRewardGood, getTomeBuildings, isBuildingReward, resolveTomeBuildingId } from './tomeBuildings';
 
 function makeTome(overrides: Partial<Tome> = {}): Tome {
   return {
@@ -100,5 +100,17 @@ describe('getTomeBuildings', () => {
 
   it('survives a tome that lists no rewards', () => {
     expect(getTomeBuildings(makeTome({ rewards: undefined as unknown as Tome['rewards'] }), 18)).toEqual([]);
+  });
+});
+
+describe('getFlexibleRewardGood', () => {
+  it('reads the good off the subtype, with or without the tome suffix', () => {
+    expect(getFlexibleRewardGood('frog_mana_RSK')).toBe('mana');
+    expect(getFlexibleRewardGood('frog_orcs')).toBe('orcs');
+    expect(getFlexibleRewardGood('frog_runeshards1')).toBe('runeshards1');
+  });
+
+  it('knows no good for a subtype that does not follow the pattern', () => {
+    expect(getFlexibleRewardGood('royalrestoration')).toBeUndefined();
   });
 });

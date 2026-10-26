@@ -38,6 +38,12 @@ export const nonSpecificMatchers: NonSpecificMatcherSpecification[] = [
       /^https:\/\/[a-z]+\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.rewards\.reward_selection_kit\.RewardSelectionKit_[a-f0-9]{32}\.json$/,
   },
   {
+    id: 'flexibleRewards',
+    messageType: 'FLEXIBLE_REWARDS',
+    regex:
+      /^https:\/\/[a-z]+\.innogamescdn\.com\/frontend\/\/static\/[a-z]{2}_[A-Z]{2}\/xml\.balancing\.rewards\.flexible\.FlexibleRewards_[a-f0-9]{32}\.json$/,
+  },
+  {
     id: 'premiumBuildingHints',
     messageType: 'PREMIUM_BUILDING_HINTS',
     regex:

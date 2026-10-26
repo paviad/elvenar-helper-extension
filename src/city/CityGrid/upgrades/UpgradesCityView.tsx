@@ -124,7 +124,7 @@ export const UpgradesCityView = ({ onReplace }: UpgradesCityViewProps) => {
       const finder = getBuildingFinder();
       await finder.ensureInitialized();
 
-      const inventory = await generateInventory(city.accountId, { includeTomeBuildings: true });
+      const inventory = await generateInventory(city.accountId, { tomeContents: 'buildings' });
       if (!inventory) {
         setNoInventory(true);
         setResult(null);

@@ -463,7 +463,7 @@ export const useCityGridState = () => {
       return;
     }
 
-    const inventory = await generateInventory(city.accountId, { includeTomeBuildings: true });
+    const inventory = await generateInventory(city.accountId, { tomeContents: 'buildings' });
     const item = inventory?.inventory.find((i) => isInventoryRow(i, ref));
 
     if (!item?.building) {

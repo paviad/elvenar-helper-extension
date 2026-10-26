@@ -3,6 +3,7 @@ import { processBattleUnitTypes } from '../elvenar/processBattleUnitTypes';
 import { processBuildings } from '../elvenar/processBuildings';
 import { processEffects } from '../elvenar/processEffects';
 import { processEvolvingBuildings } from '../elvenar/processEvolvingBuildings';
+import { processFlexibleRewards } from '../elvenar/processFlexibleRewards';
 import { processGoodsNames } from '../elvenar/processGoodsNames';
 import { processItems } from '../elvenar/processItems';
 import { processPremiumBuildingHints } from '../elvenar/processPremiumBuildingHints';
@@ -25,6 +26,9 @@ export const nonSpecificRequestHandler = async (msg: InterceptedNonSpecificReque
       break;
     case 'TOMES':
       await processTomes(msg.payload.payload.decodedResponse);
+      break;
+    case 'FLEXIBLE_REWARDS':
+      await processFlexibleRewards(msg.payload.payload.decodedResponse);
       break;
     case 'PREMIUM_BUILDING_HINTS':
       await processPremiumBuildingHints(msg.payload.payload.decodedResponse);

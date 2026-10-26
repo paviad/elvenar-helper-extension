@@ -39,7 +39,7 @@ interface InventoryItemWithStats extends InventoryItem {
 interface AggregatedRow {
   name: string;
   chapters: Set<number>;
-  /** The tomes the rows came out of, where they are buildings a tome can be opened for. */
+  /** The tomes the rows came out of, where they are what a tome can be opened for. */
   fromTomes: Set<string>;
   type: string;
   amount: number;
@@ -95,6 +95,8 @@ export const InventoryMain = () => {
   const setAggregate = useTabStore((state) => state.setInvAggregate);
   const showPerSquare = useTabStore((state) => state.invShowPerSquare);
   const setShowPerSquare = useTabStore((state) => state.setInvShowPerSquare);
+  const showTomeContents = useTabStore((state) => state.invShowTomeContents);
+  const setShowTomeContents = useTabStore((state) => state.setInvShowTomeContents);
 
   React.useEffect(() => {
     async function fetchInventory() {
@@ -105,7 +107,7 @@ export const InventoryMain = () => {
         return;
       }
 
-      const inventoryData = await generateInventory(accountId, { includeTomeBuildings: true });
+      const inventoryData = await generateInventory(accountId, { tomeContents: 'all' });
       if (!inventoryData) {
         return;
       }
@@ -165,9 +167,15 @@ export const InventoryMain = () => {
     void fetchInventory();
   }, [accountId, accountData]);
 
-  const types = React.useMemo(() => Array.from(new Set((inventory || []).map((i) => i.type))).sort(), [inventory]);
+  // What the tomes can be opened for comes and goes as a whole, types and all.
+  const shown = React.useMemo(
+    () => (showTomeContents ? inventory || [] : (inventory || []).filter((i) => !i.fromTome)),
+    [inventory, showTomeContents],
+  );
 
-  const filtered = (inventory || []).filter((item) => {
+  const types = React.useMemo(() => Array.from(new Set(shown.map((i) => i.type))).sort(), [shown]);
+
+  const filtered = shown.filter((item) => {
     const matchesSearch = (() => {
       if (!search) return true;
       const lower = search.toLowerCase();
@@ -317,7 +325,7 @@ export const InventoryMain = () => {
     });
   }
 
-  const totalTypeFiltered = (inventory || []).filter((item) => {
+  const totalTypeFiltered = shown.filter((item) => {
     const matchesType = !typeFilter || item.type === typeFilter;
     return matchesType;
   }).length;
@@ -424,6 +432,10 @@ export const InventoryMain = () => {
         <FormControlLabel
           control={<Switch checked={showPerSquare} onChange={(e) => setShowPerSquare(e.target.checked)} />}
           label='Per Square'
+        />
+        <FormControlLabel
+          control={<Switch checked={showTomeContents} onChange={(e) => setShowTomeContents(e.target.checked)} />}
+          label='Tome Contents'
         />
         <Button
           variant='outlined'

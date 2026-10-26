@@ -28,6 +28,10 @@ export interface TomesMessage extends NonSpecificMessageBase {
   type: 'TOMES';
 }
 
+export interface FlexibleRewardsMessage extends NonSpecificMessageBase {
+  type: 'FLEXIBLE_REWARDS';
+}
+
 export interface PremiumBuildingHintsMessage extends NonSpecificMessageBase {
   type: 'PREMIUM_BUILDING_HINTS';
 }
@@ -53,6 +57,7 @@ export type NonSpecificMessage =
   | ItemsMessage
   | EffectsMessage
   | TomesMessage
+  | FlexibleRewardsMessage
   | PremiumBuildingHintsMessage
   | GoodsNamesMessage
   | EvolvingBuildingsMessage
