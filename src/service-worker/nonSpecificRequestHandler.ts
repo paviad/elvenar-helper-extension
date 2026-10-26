@@ -1,6 +1,7 @@
 import { InterceptedNonSpecificRequest } from '../chrome/messages';
 import { processBattleUnitTypes } from '../elvenar/processBattleUnitTypes';
 import { processBuildings } from '../elvenar/processBuildings';
+import { processBuildingSets } from '../elvenar/processBuildingSets';
 import { processEffects } from '../elvenar/processEffects';
 import { processEvolvingBuildings } from '../elvenar/processEvolvingBuildings';
 import { processFlexibleRewards } from '../elvenar/processFlexibleRewards';
@@ -38,6 +39,9 @@ export const nonSpecificRequestHandler = async (msg: InterceptedNonSpecificReque
       break;
     case 'EVOLVING_BUILDINGS':
       await processEvolvingBuildings(msg.payload.payload.decodedResponse);
+      break;
+    case 'BUILDING_SETS':
+      await processBuildingSets(msg.payload.payload.decodedResponse);
       break;
     case 'BATTLE_UNIT_TYPES':
       await processBattleUnitTypes(msg.payload.payload.decodedResponse);

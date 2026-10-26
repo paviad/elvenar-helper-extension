@@ -17,6 +17,7 @@ export function setupNonSpecificRequestInterceptedListener() {
       case 'PREMIUM_BUILDING_HINTS':
       case 'GOODS_NAMES':
       case 'EVOLVING_BUILDINGS':
+      case 'BUILDING_SETS':
       case 'BATTLE_UNIT_TYPES':
       case 'RESEARCH_TECHNOLOGIES':
         void sendRuntime('interceptedNonSpecificRequest', { payload: event.data });
