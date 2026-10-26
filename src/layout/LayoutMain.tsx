@@ -2,7 +2,7 @@ import React from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
 import MenuIcon from '@mui/icons-material/Menu';
 import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
 import { getAccountById } from '../elvenar/accountStore';
 import { useAccountList } from '../elvenar/useAccount';
@@ -12,6 +12,7 @@ import { useTabStore } from '../util/tabStore';
 import { DiscordButton } from '../widgets/DiscordButton';
 import { AboutDialog } from './AboutDialog';
 import { StorageDialog } from './StorageDialog';
+import { WelcomeIntro } from './WelcomeIntro';
 
 const ERROR_BAR_HEIGHT = 48; // px
 
@@ -21,6 +22,10 @@ export const LayoutMain = () => {
   const globalError = useTabStore((state) => state.globalError);
   const setGlobalError = useTabStore((state) => state.setGlobalError);
   const accountList = useAccountList();
+  // Before any city has been read there is nothing for the pages to show; Help still works.
+  const isCleanSlate = useAccountList(true).length === 0;
+  const { pathname } = useLocation();
+  const showWelcome = isCleanSlate && pathname !== '/help' && pathname !== '/activate';
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const selectedAccount = accountList.find(([id]) => id === accountId)?.[1];
   const accountName = selectedAccount?.cityQuery?.accountName || 'Select Account';
@@ -210,17 +215,20 @@ export const LayoutMain = () => {
           </Button>
 
           {/* Account Selector */}
-          <Box
-            sx={{ ml: 'auto', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}
-            onClick={handleAccountClick}
-          >
-            <Typography variant='h6'>{accountName}</Typography>
-            {cityName && (
-              <Typography variant='caption' sx={{ lineHeight: 1, color: 'rgba(255,255,255,0.7)' }}>
-                {cityName}
-              </Typography>
-            )}
-          </Box>
+          {/* With no accounts there is nothing to select, so the selector is left out. */}
+          {!isCleanSlate && (
+            <Box
+              sx={{ ml: 'auto', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}
+              onClick={handleAccountClick}
+            >
+              <Typography variant='h6'>{accountName}</Typography>
+              {cityName && (
+                <Typography variant='caption' sx={{ lineHeight: 1, color: 'rgba(255,255,255,0.7)' }}>
+                  {cityName}
+                </Typography>
+              )}
+            </Box>
+          )}
           <Menu
             anchorEl={anchorEl}
             open={open}
@@ -244,7 +252,7 @@ export const LayoutMain = () => {
       {/* Only one Toolbar for AppBar, content starts below both bars */}
       {globalError != null && <Toolbar sx={{ height: `${ERROR_BAR_HEIGHT}px`, pointerEvents: 'none' }} />}
       <Toolbar sx={{ pointerEvents: 'none' }} />
-      <Outlet />
+      {showWelcome ? <WelcomeIntro /> : <Outlet />}
       <HelperAvatar />
       <StorageDialog open={storageOpen} onClose={handleStorageClose} />
     </Box>

@@ -124,7 +124,8 @@ const commonConfig = (env, { manifestFileName }) => ({
   },
   plugins: [
     new CopyWebpackPlugin({
-      patterns: [{ from: './assets' }],
+      // The store banner doubles as the planner's welcome page picture.
+      patterns: [{ from: './assets' }, { from: './store-assets/marquee.jpg' }],
     }),
     new webpack.DefinePlugin({
       self: 'global',

@@ -1,7 +1,7 @@
 import { debounceTime, groupBy, mergeMap, Subject } from 'rxjs';
 import { listen, setListener, setupMessageListener } from './chrome/messages';
 import { createReactUi } from './city/createReactUi';
-import { getAccountByTabId, loadAccount, loadAllAccounts } from './elvenar/accountStore';
+import { getAccountByTabId, listAccounts, loadAccount, loadAllAccounts } from './elvenar/accountStore';
 import { useTabStore } from './util/tabStore';
 
 // Polyfill MV3 'action' to MV2 'browserAction'
@@ -40,6 +40,12 @@ const setupAccountsSavedHandler = () => {
   );
   updateObservable.subscribe((tabId) => {
     async function handleUpdate() {
+      if (listAccounts(true).length === 0) {
+        // Nothing here yet, so this save may be the first city read, which the welcome page gives
+        // way to as soon as it is held.
+        await loadAllAccounts();
+        return;
+      }
       const accountId = useTabStore.getState()?.accountId;
       const accountIdInMessage = getAccountByTabId(tabId);
       if (accountId && accountId === accountIdInMessage) {
