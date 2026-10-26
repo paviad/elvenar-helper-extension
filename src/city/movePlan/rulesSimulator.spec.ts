@@ -27,6 +27,7 @@ const building = (
 ): SimBuilding => ({
   id,
   kind: `B${id}`,
+  level: 1,
   x,
   y,
   width,

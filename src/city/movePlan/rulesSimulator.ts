@@ -38,6 +38,8 @@ export interface SimBuilding {
   id: number;
   /** What it is, for matching and reporting. The rules never read it. */
   kind: string;
+  /** Its level, which an upgrade raises by one. The rules never read it either. */
+  level: number;
   x: number;
   y: number;
   width: number;
@@ -348,7 +350,13 @@ export const applyAction = (city: SimCity, action: SimAction): SimResult => {
       // The game decides which of the two it is, by whether the new shape fits where the
       // building stands, growing from its top-left corner. The player has no say.
       const fits = fitsAt(city, building, action.width, action.length);
-      const upgraded = { ...building, width: action.width, length: action.length, busy: true };
+      const upgraded = {
+        ...building,
+        level: building.level + 1,
+        width: action.width,
+        length: action.length,
+        busy: true,
+      };
       if (action.type === 'upgrade') {
         return fits ? { ok: true, city: withBuilding(city, upgraded) } : { ok: false, refusal: 'does-not-fit' };
       }
