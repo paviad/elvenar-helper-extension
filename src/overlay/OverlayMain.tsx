@@ -55,6 +55,28 @@ const DISCORD_INVITE_URL = 'https://discord.gg/zYzUUDcMrv';
 /** How long the overlay lets game responses gather before reading the account they saved. */
 const ACCOUNT_READ_DELAY_MS = 300;
 
+/**
+ * The tab bar wraps onto further rows rather than hiding tabs past the panel's edge, and its tabs
+ * are trimmed of MUI's generous padding and minimum width. MUI's sliding indicator only knows one
+ * row, so it is hidden and the selected tab carries its own underline instead.
+ */
+const TAB_BAR_SX = {
+  flex: 1,
+  minHeight: 0,
+  '& .MuiTabs-flexContainer': { flexWrap: 'wrap' },
+  '& .MuiTabs-indicator': { display: 'none' },
+  '& .MuiTab-root': {
+    minWidth: 0,
+    minHeight: 32,
+    px: 1.25,
+    py: 0.5,
+    fontSize: '0.8rem',
+    borderBottom: 2,
+    borderColor: 'transparent',
+  },
+  '& .MuiTab-root.Mui-selected': { borderColor: 'primary.main' },
+};
+
 interface OverlayMainProps {
   /**
    * The header's slot for the React-owned buttons. The header is built as plain DOM before React
@@ -494,7 +516,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
           pr: 2,
         }}
       >
-        <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={{ flex: 1 }}>
+        <Tabs value={tabIndex} onChange={handleChange} aria-label='Overlay Tabs' sx={TAB_BAR_SX}>
           {tabs.map((t) => (
             <Tab key={t.key} label={renderLabel(t)} />
           ))}
