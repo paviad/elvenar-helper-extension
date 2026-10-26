@@ -1,5 +1,6 @@
 import { sendRuntime } from '../chrome/messages';
 import { GAME_CLIENT_SCRIPT_REGEX } from '../elvenar/buildingPreviews';
+import { RENDER_CONFIG_REGEX } from '../elvenar/buildingRenders';
 
 const isGameClientScript = (target: EventTarget | null): target is HTMLScriptElement =>
   (target as Element | null)?.tagName === 'SCRIPT' && GAME_CLIENT_SCRIPT_REGEX.test((target as HTMLScriptElement).src);
@@ -25,4 +26,19 @@ export function reportGameClientScript() {
     report(event.target);
   };
   document.addEventListener('load', onLoad, true);
+}
+
+/**
+ * Tells the service worker which render config the game loaded, so it can read how buildings are
+ * drawn. The game fetches it at startup, often before this runs, so loads already made are looked
+ * through as well as the ones to come.
+ */
+export function reportGameRenderConfig() {
+  const observer = new PerformanceObserver((list) => {
+    const entry = list.getEntries().find((e) => RENDER_CONFIG_REGEX.test(e.name));
+    if (!entry) return;
+    observer.disconnect();
+    void sendRuntime('gameRenderConfig', { url: entry.name });
+  });
+  observer.observe({ type: 'resource', buffered: true });
 }

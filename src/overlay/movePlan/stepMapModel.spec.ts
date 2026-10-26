@@ -43,8 +43,20 @@ describe('stepMap', () => {
 
     expect(model.marks).toEqual([
       { type: 'from', rect: expect.objectContaining({ x: 43, y: 48 }) },
-      { type: 'to', rect: { x: 46, y: 48, width: 3, length: 3 }, number: 1 },
-      { type: 'to', rect: { x: 43, y: 48, width: 3, length: 3 }, number: 2 },
+      { type: 'to', rect: { x: 46, y: 48, width: 3, length: 3, kind: 'K2', level: 1 }, number: 1 },
+      { type: 'to', rect: { x: 43, y: 48, width: 3, length: 3, kind: 'K3', level: 1 }, number: 2 },
+    ]);
+  });
+
+  it('tells the buildings the step moves from the ones it leaves alone', () => {
+    // A neighbour standing right beside the swap, which the step leaves where it is.
+    const withNeighbour = city([building(2, 43, 48, 3, 3), building(3, 47, 48, 3, 3), building(4, 43, 52, 2, 2)]);
+    const model = stepMap(swap, withNeighbour)!;
+
+    expect(model.buildings.map((b) => [b.kind, b.involved]).sort()).toEqual([
+      ['K2', true],
+      ['K3', true],
+      ['K4', false],
     ]);
   });
 

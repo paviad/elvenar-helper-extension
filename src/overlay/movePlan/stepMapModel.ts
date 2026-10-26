@@ -8,13 +8,19 @@ export interface MapRect {
   length: number;
 }
 
+/** A building on the map: where it stands, and what it is at which level, to draw it as the game does. */
+export interface MapBuilding extends MapRect {
+  kind: string;
+  level: number;
+}
+
 /** What a map marks on top of the city around it. */
 export type Mark =
   /** Where the building to pick up stands now. */
   | { type: 'from'; rect: MapRect }
-  /** Where a building goes down, numbered in the order of the drag. */
-  | { type: 'to'; rect: MapRect; number?: number }
-  | { type: 'place'; rect: MapRect }
+  /** Where a building goes down, as it will be there, numbered in the order of the drag. */
+  | { type: 'to'; rect: MapBuilding; number?: number }
+  | { type: 'place'; rect: MapBuilding }
   | { type: 'sell'; rect: MapRect }
   | { type: 'sellTile'; tile: Tile }
   | { type: 'layTile'; tile: Tile; end: boolean };
@@ -22,7 +28,8 @@ export type Mark =
 export interface StepMapModel {
   /** The patch of city shown, in tiles. */
   view: MapRect;
-  buildings: MapRect[];
+  /** The buildings in the patch, each saying whether the step moves, upgrades or sells it. */
+  buildings: (MapBuilding & { involved: boolean })[];
   streets: Tile[];
   marks: Mark[];
 }
@@ -30,6 +37,16 @@ export interface StepMapModel {
 /** The smallest patch shown, so a one-tile step still shows enough around it to be found. */
 const MIN_SIDE = 14;
 const MARGIN = 3;
+
+/** Only what the map needs of a building, so nothing else rides along. */
+const placedAt = ({ x, y, width, length, kind, level }: MapBuilding): MapBuilding => ({
+  x,
+  y,
+  width,
+  length,
+  kind,
+  level,
+});
 
 const markRects = (marks: Mark[]): MapRect[] =>
   marks.map((m) => ('rect' in m ? m.rect : { x: m.tile.x, y: m.tile.y, width: 1, length: 1 }));
@@ -52,12 +69,19 @@ export const stepMap = (step: ChecklistStep, city: SimCity): StepMapModel | unde
       action.drops.forEach((drop, index) => {
         const b = at(drop.id);
         if (!b) return;
-        // A building handed over by an upgrade goes down at its new size.
-        const size =
-          action.type === 'upgradeAndMove' && index === 0 ? { width: action.width, length: action.length } : b;
+        // A building handed over by an upgrade goes down at its new size and level.
+        const upgraded = action.type === 'upgradeAndMove' && index === 0;
+        const size = upgraded ? { width: action.width, length: action.length } : b;
         marks.push({
           type: 'to',
-          rect: { x: drop.x, y: drop.y, width: size.width, length: size.length },
+          rect: {
+            x: drop.x,
+            y: drop.y,
+            width: size.width,
+            length: size.length,
+            kind: b.kind,
+            level: upgraded ? b.level + 1 : b.level,
+          },
           ...(action.drops.length > 1 ? { number: index + 1 } : {}),
         });
       });
@@ -66,11 +90,14 @@ export const stepMap = (step: ChecklistStep, city: SimCity): StepMapModel | unde
     case 'upgrade': {
       const b = at(action.id);
       if (!b) return undefined;
-      marks.push({ type: 'to', rect: { x: b.x, y: b.y, width: action.width, length: action.length } });
+      marks.push({
+        type: 'to',
+        rect: { x: b.x, y: b.y, width: action.width, length: action.length, kind: b.kind, level: b.level + 1 },
+      });
       break;
     }
     case 'place':
-      marks.push({ type: 'place', rect: action.building });
+      marks.push({ type: 'place', rect: placedAt(action.building) });
       break;
     case 'sell': {
       const b = at(action.id);
@@ -111,9 +138,16 @@ export const stepMap = (step: ChecklistStep, city: SimCity): StepMapModel | unde
 
   const inView = (r: MapRect) =>
     r.x < view.x + view.width && r.x + r.width > view.x && r.y < view.y + view.length && r.y + r.length > view.y;
+  const involved = new Set(
+    action.type === 'chain' || action.type === 'upgradeAndMove'
+      ? action.drops.map((drop) => drop.id)
+      : action.type === 'upgrade' || action.type === 'sell'
+        ? [action.id]
+        : [],
+  );
   const buildings = [...city.buildings.values()]
     .filter(inView)
-    .map(({ x, y, width, length }) => ({ x, y, width, length }));
+    .map((b) => ({ ...placedAt(b), involved: involved.has(b.id) }));
   const streets = [...city.streets.keys()]
     .map((key) => {
       const [x, y] = key.split(',').map(Number);

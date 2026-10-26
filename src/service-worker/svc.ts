@@ -1,6 +1,7 @@
 import { setListener, setupMessageListener } from '../chrome/messages';
 import { getAccountById, getAccountByTabId, loadAllAccounts, saveAccount } from '../elvenar/accountStore';
 import { processGameClientScript } from '../elvenar/processGameClientScript';
+import { processGameRenderConfig } from '../elvenar/processGameRenderConfig';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { accountManagerReady } from './accountManagerReady';
@@ -74,6 +75,7 @@ async function initialize() {
   setListener('interceptedNonSpecificRequest', (msg) => void nonSpecificRequestHandler(msg));
   setListener('interceptedPlayerSpecificRequest', (msg, sender) => void playerSpecificRequestHandler(msg, sender));
   setListener('gameClientScript', (msg) => void processGameClientScript(msg.url));
+  setListener('gameRenderConfig', (msg) => void processGameRenderConfig(msg.url));
   await accountManagerReady;
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }

@@ -14,7 +14,7 @@ import { useAccount } from '../../elvenar/useAccount';
 import { BuildingSet } from '../../model/buildingSet';
 import { getAccountId, getOverlayStore } from '../overlayStore';
 import { describeStep, describeUnresolved, Names } from './describeStep';
-import { StepMap } from './StepMap';
+import { IsoStepMap } from './IsoStepMap';
 import { stepMap } from './stepMapModel';
 
 /**
@@ -43,16 +43,24 @@ const useMoveTarget = (accountId: string | null) => {
 
 /** The catalogue and the sets, read once: both change only with a game update. */
 const useCatalogue = () => {
-  const [data, setData] = useState<{ catalogue: Catalogue; sets: BuildingSet[]; names: Names }>();
+  const [data, setData] = useState<{
+    catalogue: Catalogue;
+    sets: BuildingSet[];
+    names: Names;
+    /** The game id a building of a kind is drawn under at a level. */
+    spriteId: (kind: string, level: number) => string | undefined;
+  }>();
   useEffect(() => {
     let live = true;
     void Promise.all([getBuildings(), getBuildingSets()]).then(([buildings, sets]) => {
       if (!live) return;
       const kindNames = new Map(buildings.map((b) => [b.base_name, b.name]));
       const typeNames = new Map(buildings.map((b) => [b.id, b.name]));
+      const catalogue = catalogueOf(buildings);
       setData({
-        catalogue: catalogueOf(buildings),
+        catalogue,
         sets,
+        spriteId: (kind, level) => catalogue.byKindAtLevel.get(`${kind}|${level}`)?.id,
         names: { kind: (kind) => kindNames.get(kind) ?? kind, type: (type) => typeNames.get(type) ?? type },
       });
     });
@@ -202,7 +210,7 @@ export const MovePlanView = () => {
                 )}
                 {map && (
                   <Box sx={{ mt: 1 }}>
-                    <StepMap model={map} />
+                    <IsoStepMap model={map} spriteId={data.spriteId} />
                   </Box>
                 )}
               </Box>

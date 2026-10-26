@@ -23,6 +23,8 @@ export interface RuntimeMessages {
   openExtensionTab: NoFields;
   /** The URL of the client script the game page runs, which the building pictures are read from. */
   gameClientScript: { url: string };
+  /** The URL of the render config the game page loaded, which says how each building is drawn. */
+  gameRenderConfig: { url: string };
 }
 
 /** Sent with chrome.tabs.sendMessage, which reaches the content scripts of one tab. */
