@@ -1,9 +1,14 @@
 {
   "elvenassist-shared-overlay-tab": [
     "./src/city/buildingFinder.ts",
+    "./src/city/movePlan/matchBuildings.ts",
+    "./src/city/movePlan/planStreetRuns.ts",
+    "./src/city/movePlan/rulesSimulator.ts",
+    "./src/city/movePlan/solveMovePlan.ts",
     "./src/city/vestigeOfEternity.ts",
     "./src/elvenar/Accounts.ts",
     "./src/elvenar/getBuildingPreviews.ts",
+    "./src/elvenar/getBuildingSets.ts",
     "./src/elvenar/getBuildings.ts",
     "./src/elvenar/getEffects.ts",
     "./src/elvenar/getEvolvingBuildings.ts",

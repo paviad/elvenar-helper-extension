@@ -27,6 +27,7 @@ describe('documentedOverlayTabs', () => {
       'quests',
       'messages',
       'tourny',
+      'plan',
     ]);
   });
 

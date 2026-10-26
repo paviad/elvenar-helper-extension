@@ -125,6 +125,12 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
   const upgrades = new Map<number, { width: number; length: number }[]>();
   const upgradeFirst: { id: number; sizes: { width: number; length: number }[]; spot: Tile }[] = [];
   for (const { current, target: spot } of matching.pairings) {
+    // Some buildings stand outside the grid by design - the Spire's wonder, the Guardian Grove.
+    // Left where they are, they are no concern of the plan's; only going somewhere needs ground.
+    const staysPut = current.x === spot.x && current.y === spot.y && current.level === spot.level;
+    if (staysPut) {
+      continue;
+    }
     if (!onUnlocked(spot)) {
       unresolved.push({ reason: 'locked', kind: spot.kind, x: spot.x, y: spot.y });
       continue;

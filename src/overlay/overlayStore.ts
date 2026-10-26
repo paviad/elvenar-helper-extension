@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { Checklist } from '../city/movePlan/checklist';
 import { DEFAULT_FULL_THREAD_POSTS, WatchedWonder } from '../model/kpSwap';
 import { ChatMessage } from '../model/socketMessages/chatPayload';
 import { chromeStorage } from '../util/chromeStorage';
@@ -61,6 +62,11 @@ interface OverlayState {
   // still name what is coming up when startup data mentions no tournament at all.
   lastTournament?: TournamentGood;
   setLastTournament: (good: TournamentGood) => void;
+  // The checklist for the layout last sent from the planner, kept so ticks survive a reload. The
+  // layout itself is stored by the planner; this is only the list worked out from it, and which
+  // lines the city has shown done.
+  movePlan?: Checklist;
+  setMovePlan: (checklist: Checklist | undefined) => void;
 }
 
 let overlayStore: ReturnType<typeof createOverlayStore>;
@@ -140,6 +146,8 @@ const createOverlayStore = (accountId: string) => {
         setTournyData: (data) => set({ tournyData: data }),
         lastTournament: undefined,
         setLastTournament: (good) => set({ lastTournament: good }),
+        movePlan: undefined,
+        setMovePlan: (checklist) => set({ movePlan: checklist }),
       }),
       {
         name: `overlay-store-${accountId}`,

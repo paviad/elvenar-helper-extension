@@ -2,7 +2,7 @@
  * The overlay's tabs, in one place, so the tab bar, the Alt+C chord map and the help dialog all
  * describe the same thing. They used to be declared apart, and the help text fell out of date.
  */
-export type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'tourny';
+export type OverlayTabKey = 'chat' | 'trade' | 'ee' | 'quests' | 'messages' | 'tourny' | 'plan';
 
 export interface OverlayTab {
   key: OverlayTabKey;
@@ -53,6 +53,13 @@ export const OVERLAY_TABS: OverlayTab[] = [
     label: 'Tourny',
     shortcut: 'KeyT',
     help: 'A counter composition for every tournament province you open, and what to train for the round ahead.',
+  },
+  {
+    key: 'plan',
+    label: 'Plan',
+    shortcut: 'KeyL',
+    isNew: true,
+    help: 'The moves that turn your city into a layout sent from the planner, ticked off as you make them.',
   },
 ];
 

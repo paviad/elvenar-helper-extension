@@ -24,6 +24,7 @@ interface CityToolbarProps {
   onImport: () => void;
   onExport: () => void;
   onScreenshot: () => void;
+  onSendMovePlan: () => void;
   onSaveAs: () => void;
   onDelete: () => void;
   onSave: () => void | Promise<void>;
@@ -49,6 +50,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
   onImport,
   onExport,
   onScreenshot,
+  onSendMovePlan,
   onSaveAs,
   onDelete,
   onSave,
@@ -124,6 +126,7 @@ export const CityToolbar: React.FC<CityToolbarProps> = ({
           <MenuItem onClick={closeMenus(onImport)}>Import</MenuItem>
           <MenuItem onClick={closeMenus(onExport)}>Export</MenuItem>
           <MenuItem onClick={closeMenus(onScreenshot)}>Screenshot</MenuItem>
+          <MenuItem onClick={closeMenus(onSendMovePlan)}>Send Move Plan to Game</MenuItem>
           <MenuItem onClick={closeMenus(onSaveAs)}>Save As...</MenuItem>
           <Divider />
           <MenuItem onClick={closeMenus(onDelete)} sx={{ color: 'red' }}>

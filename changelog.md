@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- **New Feature: Move Plan.** Arrange your city in the City Planner, then choose City ▸ Send Move Plan to Game. The helper's new Plan tab (Alt+C, L) lists the moves that turn your city into that layout, each with a map of where: drags that swap buildings in one go, street tiles to sell and streets to lay, upgrades, and buildings to place from the inventory. Each line ticks itself off as you make the move in the game. If you do something the plan did not ask for, the steps left are worked out again. Every move is still yours to make.
 - **Inventory: everything in your Tomes is listed**, not just the buildings: artifacts, goods, resources and Rune Shards too. Choices that grow with your chapter show what they give now, such as 800,000 mana from a Tome of the Plentiful in chapter 25, and Rune Shards are named for their wonder. Royal Restoration from a Tome counts in the RR column, and artifacts show their spell fragments. The new Tome Contents switch hides them all.
 - **Sales and new streets show up straight away.** Selling a building or street tiles, or laying streets, now reaches the City Planner and the helper as you do it. Until the game was reloaded, they used to show a sold building as still standing and leave new streets out.
 

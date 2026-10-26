@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
-import { Box, Dialog, Stack } from '@mui/material';
+import { Box, Dialog, Snackbar, Stack } from '@mui/material';
 import { useSearchParams } from 'react-router';
+import { getAccountById } from '../../elvenar/accountStore';
 import { InventoryRowRef } from '../../inventory/inventoryRowRef';
 import MyConfirmDialog from '../../widgets/MyConfirmDialog';
 import { useCity } from '../CityContext';
 import { CityContextMenu } from '../dialogs/CityContextMenu';
 import { LevelDialog } from '../dialogs/LevelDialog';
 import { setHoverForDrag } from '../hoveredBlockStore';
+import { describeSendResult, sendMovePlan } from '../movePlan/sendMovePlan';
 import { NewBuildingSelector } from '../NewBuildingSelector';
 import { useCityGridState } from '../useCityGridState';
 import { CityToolbar } from './CityToolbar';
@@ -31,6 +33,14 @@ export const RenderCityGrid = () => {
   // Use Custom Hook for Logic & State
   const state = useCityGridState();
   const [cultureDialogOpen, setCultureDialogOpen] = React.useState(false);
+  const [movePlanNotice, setMovePlanNotice] = React.useState<string | null>(null);
+
+  // The layout as it is on screen - edits are in memory before the autosave catches up with them.
+  const sendToGame = async () => {
+    if (!city.accountId) return;
+    const from = getAccountById(city.accountId)?.cityQuery?.accountName ?? 'the planner';
+    setMovePlanNotice(describeSendResult(await sendMovePlan(city.accountId, Object.values(blocks), from)));
+  };
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -112,6 +122,7 @@ export const RenderCityGrid = () => {
         onImport={state.importCity}
         onExport={() => void state.exportCityAsJson()}
         onScreenshot={state.captureScreenshot}
+        onSendMovePlan={() => void sendToGame()}
         onSaveAs={state.saveCityAs}
         onDelete={state.deleteCity}
         onSave={state.saveCity}
@@ -190,6 +201,15 @@ export const RenderCityGrid = () => {
           isOpen={state.exportDialog.open}
           onClose={() => state.setExportDialog({ open: false, exportStr: '' })}
           exportString={state.exportDialog.exportStr}
+        />
+
+        <Snackbar
+          open={movePlanNotice !== null}
+          // Stays until clicked away: it says how long the plan is, or why none was made.
+          autoHideDuration={null}
+          onClose={() => setMovePlanNotice(null)}
+          message={movePlanNotice}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         />
 
         {cultureDialogOpen && <CultureModificationsDialog onClose={() => setCultureDialogOpen(false)} />}

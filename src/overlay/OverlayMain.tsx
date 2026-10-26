@@ -31,6 +31,7 @@ import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { MessagesView } from './MessagesView';
+import { MovePlanView } from './movePlan/MovePlanView';
 import { sameOfferedGoods } from './offeredGoods';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
@@ -634,6 +635,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
         ))}{' '}
       {tabKey === 'messages' && <MessagesView />}
       {tabKey === 'tourny' && <Tourny />}
+      {tabKey === 'plan' && <MovePlanView />}
     </div>
   );
 }

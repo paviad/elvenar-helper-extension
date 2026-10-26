@@ -82,6 +82,13 @@ describe('solveMovePlan', () => {
     expect(solveMovePlan(start, target([building(2, 'A', 5, 5)]), sameSize).steps).toEqual([]);
   });
 
+  it('leaves a building outside the grid by design alone, like the Spire’s wonder', () => {
+    const outside = building(2, 'B_All_Spire_AW', 16, -10);
+    const plan = solveMovePlan(city([outside]), target([outside]), sameSize);
+
+    expect(plan).toMatchObject({ steps: [], unresolved: [] });
+  });
+
   it('swaps two buildings in one drag, with no free ground needed', () => {
     const plan = expectReached(
       city([building(2, 'A', 5, 5), building(3, 'B', 7, 5)], [], 9),
