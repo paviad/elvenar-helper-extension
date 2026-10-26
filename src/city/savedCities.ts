@@ -162,6 +162,8 @@ export const saveCurrentCityAs = async (
     reqBody: '',
   };
   newAccountData.isDetached = true;
+  // A copy of a copy still belongs to the city the first one was saved from.
+  newAccountData.savedFrom = currentAccount.isDetached ? currentAccount.savedFrom : currentAccountId;
   newAccountData.cityQuery.cityEntities = cityEntities;
   newAccountData.cityQuery.chapter = chapter;
   if (unlockedAreas) {

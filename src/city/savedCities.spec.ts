@@ -79,6 +79,18 @@ describe('the city editor', () => {
     expect(mockSetGlobalError).toHaveBeenCalledWith(expect.stringContaining('changed in another tab'));
   });
 
+  it('remembers which played city a layout was saved from, even a copy of a copy', async () => {
+    // A player has the same id on every world, so the copy has to say which city it came from.
+    saveElsewhere('848933052@en3', city(false));
+    await loadAccount('848933052@en3');
+
+    await saveCurrentCityAs('848933052@en3', 'plan6', [], 1);
+    await saveCurrentCityAs('plan6', 'plan6b', [], 1);
+
+    expect(storedAccount<AccountData>('plan6')?.savedFrom).toBe('848933052@en3');
+    expect(storedAccount<AccountData>('plan6b')?.savedFrom).toBe('848933052@en3');
+  });
+
   it('keeps the help and enchantments of the account a city is saved from', async () => {
     saveElsewhere('live4', withModifiers(city(false)));
     await loadAccount('live4');

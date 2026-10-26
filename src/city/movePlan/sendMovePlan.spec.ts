@@ -13,30 +13,58 @@ jest.mock('../../elvenar/accountStore', () => ({
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.mock('../../chrome/storage', () => require('../../testing/fakeStorage').storageModule);
 
-const account = (playerId: number, isDetached: boolean) =>
-  ({ isDetached, cityQuery: { userData: { player_id: playerId } } }) as unknown as AccountData;
+const account = (playerId: number, isDetached: boolean, savedFrom?: string) =>
+  ({ isDetached, savedFrom, cityQuery: { userData: { player_id: playerId } } }) as unknown as AccountData;
+
+/** The accounts the helper holds, put where the lookups find them. */
+const holding = (accounts: [string, AccountData][]) => {
+  jest.mocked(listAccounts).mockReturnValue(accounts);
+  jest.mocked(getAccountById).mockImplementation((id) => accounts.find(([key]) => key === id)?.[1]);
+};
 
 describe('playedAccountFor', () => {
-  const accounts: [string, AccountData][] = [
+  // A player has the same id on every world: Balrogville on en1, en2 and en3 (2026-10-26).
+  const threeWorlds: [string, AccountData][] = [
+    ['848933052@en1', account(848933052, false)],
+    ['848933052@en2', account(848933052, false)],
     ['848933052@en3', account(848933052, false)],
-    ['City 2', account(848933052, true)],
+    ['City 2', account(848933052, true, '848933052@en3')],
+    ['Old layout', account(848933052, true)],
     ['Neighbour', account(111, true)],
   ];
-  beforeEach(() => {
-    jest.mocked(listAccounts).mockReturnValue(accounts);
-    jest.mocked(getAccountById).mockImplementation((id) => accounts.find(([key]) => key === id)?.[1]);
+
+  it('is the account itself for a city being played, whichever world it is on', () => {
+    holding(threeWorlds);
+
+    expect(playedAccountFor('848933052@en3')).toEqual({ accountId: '848933052@en3' });
+    expect(playedAccountFor('848933052@en1')).toEqual({ accountId: '848933052@en1' });
   });
 
-  it('is the account itself for the city being played', () => {
-    expect(playedAccountFor('848933052@en3')).toBe('848933052@en3');
+  it('is the account a saved layout was saved from', () => {
+    holding(threeWorlds);
+
+    expect(playedAccountFor('City 2')).toEqual({ accountId: '848933052@en3' });
   });
 
-  it('is the account a saved layout was copied from', () => {
-    expect(playedAccountFor('City 2')).toBe('848933052@en3');
+  it('says it cannot tell when an older saved layout names no source and the player is on several worlds', () => {
+    holding(threeWorlds);
+
+    expect(playedAccountFor('Old layout')).toEqual({ why: 'which-world' });
+  });
+
+  it('takes the only city there is for an older saved layout of a player on one world', () => {
+    holding([
+      ['848933052@en3', account(848933052, false)],
+      ['Old layout', account(848933052, true)],
+    ]);
+
+    expect(playedAccountFor('Old layout')).toEqual({ accountId: '848933052@en3' });
   });
 
   it('is none for a visited player’s city', () => {
-    expect(playedAccountFor('Neighbour')).toBeUndefined();
+    holding(threeWorlds);
+
+    expect(playedAccountFor('Neighbour')).toEqual({ why: 'not-your-city' });
   });
 });
 

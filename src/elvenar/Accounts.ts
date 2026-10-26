@@ -73,6 +73,13 @@ export interface CityQuery {
 export interface AccountData {
   isDetached: boolean;
 
+  /**
+   * For a city saved from the planner, the played account it was saved from. A player has the
+   * same id on every world, so nothing else in the copy says which of their cities it is.
+   * Absent on cities saved before this was kept, and on imported ones.
+   */
+  savedFrom?: string;
+
   sharedInfo: ExtensionSharedInfo;
 
   cityQuery?: CityQuery;

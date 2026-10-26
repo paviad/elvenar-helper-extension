@@ -10,22 +10,39 @@ export type SendMovePlanResult =
   | { sent: true; steps: number; unresolved: Unresolved[] }
   /** The planner is showing someone else's city, so there is no city of the player's to rearrange. */
   | { sent: false; why: 'not-your-city' }
+  /** An older saved layout of a player with cities on several worlds, which does not say whose it is. */
+  | { sent: false; why: 'which-world' }
   | { sent: false; why: 'no-city-data' }
   /** Buildings the catalogue does not know, whose size the plan would be guessing at. */
   | { sent: false; why: 'unknown-buildings'; types: string[] };
 
 /**
- * The played account a planner city belongs to: the account itself, or the one a saved layout
- * was copied from, which keeps the player's id. A visited player's city matches none.
+ * The played account a planner city belongs to: the account itself when it is being played, or
+ * the one a saved layout was saved from. A player has the same id on every world, so the id alone
+ * names their city only when they play one; a layout saved before it kept its source, from a
+ * player on several worlds, cannot be told apart and is said to be so. A visited player's city
+ * belongs to none.
  */
-export const playedAccountFor = (plannerAccountId: string): string | undefined => {
-  const playerId = getAccountById(plannerAccountId)?.cityQuery?.userData?.player_id;
-  if (playerId === undefined) {
-    return undefined;
+export const playedAccountFor = (
+  plannerAccountId: string,
+): { accountId: string } | { why: 'not-your-city' | 'which-world' } => {
+  const shown = getAccountById(plannerAccountId);
+  if (shown && !shown.isDetached) {
+    return { accountId: plannerAccountId };
   }
-  return listAccounts().find(
-    ([, account]) => !account.isDetached && account.cityQuery?.userData?.player_id === playerId,
-  )?.[0];
+  const played = (id: string | undefined) => id !== undefined && getAccountById(id)?.isDetached === false;
+  if (played(shown?.savedFrom)) {
+    return { accountId: shown!.savedFrom! };
+  }
+  const playerId = shown?.cityQuery?.userData?.player_id;
+  const candidates = listAccounts().filter(
+    ([, account]) =>
+      playerId !== undefined && !account.isDetached && account.cityQuery?.userData?.player_id === playerId,
+  );
+  if (candidates.length === 1) {
+    return { accountId: candidates[0][0] };
+  }
+  return { why: candidates.length ? 'which-world' : 'not-your-city' };
 };
 
 /**
@@ -38,10 +55,11 @@ export const sendMovePlan = async (
   blocks: CityBlock[],
   from: string,
 ): Promise<SendMovePlanResult> => {
-  const accountId = playedAccountFor(plannerAccountId);
-  if (!accountId) {
-    return { sent: false, why: 'not-your-city' };
+  const owner = playedAccountFor(plannerAccountId);
+  if ('why' in owner) {
+    return { sent: false, why: owner.why };
   }
+  const { accountId } = owner;
   await loadAccount(accountId);
   const cityQuery = getAccountById(accountId)?.cityQuery;
   if (!cityQuery?.cityEntities) {
@@ -77,6 +95,8 @@ export const describeSendResult = (result: SendMovePlanResult): string => {
   switch (result.why) {
     case 'not-your-city':
       return 'A move plan can only be made for one of your own cities.';
+    case 'which-world':
+      return 'This layout was saved before saved layouts kept which world they belong to, and you play on more than one. Open your own city in the planner and send it from there.';
     case 'no-city-data':
       return 'Open the game first, so the helper knows your city as it stands.';
     case 'unknown-buildings':
