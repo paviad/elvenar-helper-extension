@@ -40,6 +40,8 @@ export interface SimBuilding {
   kind: string;
   /** Its level, which an upgrade raises by one. The rules never read it either. */
   level: number;
+  /** An evolving building's stage, which only its picture depends on. The rules never read it. */
+  stage?: number;
   x: number;
   y: number;
   width: number;

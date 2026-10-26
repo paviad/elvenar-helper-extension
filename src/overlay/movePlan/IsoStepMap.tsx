@@ -40,7 +40,7 @@ export const IsoStepMap = ({
 }: {
   model: StepMapModel;
   /** The game id a building is drawn under. */
-  spriteId: (kind: string, level: number) => string | undefined;
+  spriteId: (kind: string, level: number, stage?: number) => string | undefined;
 }) => {
   const theme = useTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -61,7 +61,7 @@ export const IsoStepMap = ({
     ...model.buildings,
     ...model.marks.flatMap((m) => (m.type === 'to' || m.type === 'place' ? [m.rect] : [])),
   ];
-  const ids = [...new Set(wanted.map((b) => spriteId(b.kind, b.level)).filter((id) => id !== undefined))];
+  const ids = [...new Set(wanted.map((b) => spriteId(b.kind, b.level, b.stage)).filter((id) => id !== undefined))];
   const idsKey = ids.join('|');
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export const IsoStepMap = ({
       context.setLineDash([]);
     };
     const drawBuilding = (b: MapBuilding, opacity = 1) => {
-      const id = spriteId(b.kind, b.level);
+      const id = spriteId(b.kind, b.level, b.stage);
       const sprite = id ? sprites.get(id) : undefined;
       if (!sprite) {
         fill(b, alpha(theme.palette.text.primary, 0.18 * opacity));

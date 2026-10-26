@@ -5,7 +5,7 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Alert, Box, Button, CircularProgress, List, ListItemButton, Stack, Typography } from '@mui/material';
 import { StepStatus, stepStatuses, toChecklist, updateChecklist } from '../../city/movePlan/checklist';
-import { Catalogue, catalogueOf, currentCity, sizeAtFrom } from '../../city/movePlan/fromGame';
+import { Catalogue, catalogueOf, currentCity, sizeAtFrom, spriteIdOf } from '../../city/movePlan/fromGame';
 import { clearMoveTarget, getMoveTarget, MoveTarget, moveTargetKey } from '../../city/movePlan/moveTargetStore';
 import { applyAction } from '../../city/movePlan/rulesSimulator';
 import { getBuildings } from '../../elvenar/getBuildings';
@@ -48,7 +48,7 @@ const useCatalogue = () => {
     sets: BuildingSet[];
     names: Names;
     /** The game id a building of a kind is drawn under at a level. */
-    spriteId: (kind: string, level: number) => string | undefined;
+    spriteId: (kind: string, level: number, stage?: number) => string | undefined;
   }>();
   useEffect(() => {
     let live = true;
@@ -60,7 +60,7 @@ const useCatalogue = () => {
       setData({
         catalogue,
         sets,
-        spriteId: (kind, level) => catalogue.byKindAtLevel.get(`${kind}|${level}`)?.id,
+        spriteId: spriteIdOf(catalogue),
         names: { kind: (kind) => kindNames.get(kind) ?? kind, type: (type) => typeNames.get(type) ?? type },
       });
     });

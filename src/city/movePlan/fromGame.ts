@@ -49,6 +49,19 @@ const setKeys = (sets: BuildingSet[]) => {
 
 const BUSY_STATES = new Set(['ConstructionVO', 'UpgradingVO']);
 
+/**
+ * The game id a building is drawn under. An evolving building's picture follows its stage, not its
+ * chapter: the game draws one at stage 7 from `<base name>7_1`, whatever the chapter, and the
+ * entries numbered by chapter are mostly placeholders (seen 2026-10-26: Twilight Phoenix at stage
+ * 10 drawn from Twilight_Phoenix10_1). Everything else is drawn under its catalogue id.
+ */
+export const spriteIdOf =
+  (catalogue: Catalogue) =>
+  (kind: string, level: number, stage?: number): string | undefined =>
+    stage !== undefined && /_Evt_Evo_/.test(kind)
+      ? `${kind}${stage}_1`
+      : catalogue.byKindAtLevel.get(`${kind}|${level}`)?.id;
+
 /** What the conversion could not place, which a plan built without would be wrong about. */
 export interface Converted<T> {
   value: T;
@@ -97,6 +110,7 @@ export const currentCity = (
       id: entity.id,
       kind: building.base_name,
       level: entity.level,
+      stage: entity.stage,
       x,
       y,
       width: building.width,
@@ -147,6 +161,7 @@ export const targetFromBlocks = (
     buildings.push({
       kind: building.base_name,
       level: building.level,
+      stage: block.stage ?? block.entity.stage,
       x: block.x,
       y: block.y,
       width: building.width,

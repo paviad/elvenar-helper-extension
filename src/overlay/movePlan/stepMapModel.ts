@@ -12,6 +12,7 @@ export interface MapRect {
 export interface MapBuilding extends MapRect {
   kind: string;
   level: number;
+  stage?: number;
 }
 
 /** What a map marks on top of the city around it. */
@@ -43,13 +44,14 @@ const MIN_SIDE = 10;
 const MARGIN = 2;
 
 /** Only what the map needs of a building, so nothing else rides along. */
-const placedAt = ({ x, y, width, length, kind, level }: MapBuilding): MapBuilding => ({
+const placedAt = ({ x, y, width, length, kind, level, stage }: MapBuilding): MapBuilding => ({
   x,
   y,
   width,
   length,
   kind,
   level,
+  ...(stage !== undefined ? { stage } : {}),
 });
 
 const markRects = (marks: Mark[]): MapRect[] =>
@@ -85,6 +87,7 @@ export const stepMap = (step: ChecklistStep, city: SimCity): StepMapModel | unde
             length: size.length,
             kind: b.kind,
             level: upgraded ? b.level + 1 : b.level,
+            ...(b.stage !== undefined ? { stage: b.stage } : {}),
           },
           ...(action.drops.length > 1 ? { number: index + 1 } : {}),
         });
@@ -96,7 +99,15 @@ export const stepMap = (step: ChecklistStep, city: SimCity): StepMapModel | unde
       if (!b) return undefined;
       marks.push({
         type: 'to',
-        rect: { x: b.x, y: b.y, width: action.width, length: action.length, kind: b.kind, level: b.level + 1 },
+        rect: {
+          x: b.x,
+          y: b.y,
+          width: action.width,
+          length: action.length,
+          kind: b.kind,
+          level: b.level + 1,
+          ...(b.stage !== undefined ? { stage: b.stage } : {}),
+        },
       });
       break;
     }

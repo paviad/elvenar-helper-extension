@@ -2,7 +2,7 @@ import { Building } from '../../model/building';
 import { BuildingSet } from '../../model/buildingSet';
 import { CityEntity } from '../../model/cityEntity';
 import { CityBlock } from '../CityBlock';
-import { catalogueOf, currentCity, sizeAtFrom, targetFromBlocks } from './fromGame';
+import { catalogueOf, currentCity, sizeAtFrom, spriteIdOf, targetFromBlocks } from './fromGame';
 
 const catalogued = (
   id: string,
@@ -91,6 +91,12 @@ describe('currentCity', () => {
     expect(city.builders).toBe(5);
   });
 
+  it('keeps an evolving building’s stage, which its picture follows', () => {
+    const evolving = currentCity([{ ...entities[3], stage: 7 }], [], catalogue, sets).value;
+
+    expect(evolving.buildings.get(4)?.stage).toBe(7);
+  });
+
   it('describes each building by kind, level and catalogue size', () => {
     expect(city.buildings.get(3)).toMatchObject({ kind: 'R_Humans_Residential', level: 15, width: 4, length: 3 });
   });
@@ -145,5 +151,21 @@ describe('sizeAtFrom', () => {
     expect(sizeAt('R_Humans_Residential', 15)).toEqual({ width: 4, length: 3 });
     expect(sizeAt('R_Humans_Residential', 16)).toEqual({ width: 5, length: 2 });
     expect(sizeAt('R_Humans_Residential', 17)).toBeUndefined();
+  });
+});
+
+describe('spriteIdOf', () => {
+  const spriteId = spriteIdOf(catalogue);
+
+  it('draws an evolving building by its stage, not its chapter', () => {
+    // Twilight Phoenix at chapter 15, stage 10: the game draws it from Twilight_Phoenix10_1.
+    expect(spriteId('A_Evt_Evo_Easter_XXII_Twilight_Phoenix', 15, 10)).toBe(
+      'A_Evt_Evo_Easter_XXII_Twilight_Phoenix10_1',
+    );
+  });
+
+  it('draws everything else under its catalogue id at its level', () => {
+    expect(spriteId('R_Humans_Residential', 16)).toBe('R_Humans_Residential_16');
+    expect(spriteId('A_Evt_Winter_3Tree', 24, 3)).toBe('A_Evt_Winter_3Tree_24');
   });
 });
