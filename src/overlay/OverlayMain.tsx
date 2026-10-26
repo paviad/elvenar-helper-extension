@@ -11,7 +11,9 @@ import {
   Menu,
   MenuItem,
   Tab,
+  tabClasses,
   Tabs,
+  tabsClasses,
   TextField,
   Typography,
 } from '@mui/material';
@@ -58,14 +60,15 @@ const ACCOUNT_READ_DELAY_MS = 300;
 /**
  * The tab bar wraps onto further rows rather than hiding tabs past the panel's edge, and its tabs
  * are trimmed of MUI's generous padding and minimum width. MUI's sliding indicator only knows one
- * row, so it is hidden and the selected tab carries its own underline instead.
+ * row, so it is hidden and the selected tab carries its own underline instead. The classes come
+ * from MUI's class maps because MUI renames them between versions: the row was `flexContainer` once.
  */
 const TAB_BAR_SX = {
   flex: 1,
   minHeight: 0,
-  '& .MuiTabs-flexContainer': { flexWrap: 'wrap' },
-  '& .MuiTabs-indicator': { display: 'none' },
-  '& .MuiTab-root': {
+  [`& .${tabsClasses.list}`]: { flexWrap: 'wrap' },
+  [`& .${tabsClasses.indicator}`]: { display: 'none' },
+  [`& .${tabClasses.root}`]: {
     minWidth: 0,
     minHeight: 32,
     px: 1.25,
@@ -74,7 +77,7 @@ const TAB_BAR_SX = {
     borderBottom: 2,
     borderColor: 'transparent',
   },
-  '& .MuiTab-root.Mui-selected': { borderColor: 'primary.main' },
+  [`& .${tabClasses.root}.${tabClasses.selected}`]: { borderColor: 'primary.main' },
 };
 
 interface OverlayMainProps {
