@@ -1,4 +1,5 @@
 import { CityEntity } from '../model/cityEntity';
+import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountBySessionId } from './accountStore';
 
@@ -22,6 +23,91 @@ export const mergeReportedCityEntities = (stored: CityEntity[], reported: CityEn
     }
   }
   return stored;
+};
+
+/** Drops the entities with the given ids from the stored city. */
+export const removeCityEntities = (stored: CityEntity[], ids: number[]) => {
+  const removed = new Set(ids);
+  for (let index = stored.length - 1; index >= 0; index--) {
+    if (removed.has(stored[index].id)) {
+      stored.splice(index, 1);
+    }
+  }
+  return stored;
+};
+
+/** What `replaceBuildings` sends in place of an id when the tile held nothing to replace. */
+const NOTHING_REPLACED = -2147483648;
+
+interface ConstructionRequest {
+  cityEntityId: string;
+  x: number;
+  y: number;
+  cityMapEntityId: number;
+}
+
+type CityMapCallProcessor = (
+  responses: ElvenarRequestResponseEntry[],
+  sharedInfo: ExtensionSharedInfo,
+  call: ElvenarRequestResponseEntry,
+) => Promise<void>;
+
+/**
+ * The game's own answer to the call, which is how a sale it went through is told from one it
+ * refused. Nothing is taken out of the city without it.
+ */
+const answerTo = (responses: ElvenarRequestResponseEntry[], request: ElvenarRequestResponseEntry) =>
+  responses.find(
+    (response) => response.requestClass === 'CityMapService' && response.requestMethod === request.requestMethod,
+  );
+
+/**
+ * A building sold. The game's answer says nothing about it - `reset` carries only the neighbours
+ * whose bonuses changed - so the request is the only place the sale shows, and without this the
+ * stored city kept the building until the next reload.
+ */
+// eslint-disable-next-line @typescript-eslint/require-await
+export const processRemoveBuilding: CityMapCallProcessor = async (responses, sharedInfo, call) => {
+  const cityEntities = getAccountBySessionId(sharedInfo.sessionId)?.cityQuery?.cityEntities;
+  if (cityEntities && answerTo(responses, call)) {
+    const [id] = call.requestData as [number];
+    removeCityEntities(cityEntities, [id]);
+  }
+};
+
+/** Street tiles sold, as many as were picked at once. Like a building's sale, seen only in the request. */
+// eslint-disable-next-line @typescript-eslint/require-await
+export const processRemoveStreets: CityMapCallProcessor = async (responses, sharedInfo, call) => {
+  const cityEntities = getAccountBySessionId(sharedInfo.sessionId)?.cityQuery?.cityEntities;
+  if (cityEntities && answerTo(responses, call)) {
+    const [ids] = call.requestData as [number[]];
+    removeCityEntities(cityEntities, ids);
+  }
+};
+
+/**
+ * Streets laid. A tile already holding another kind of street is replaced, and the replacement
+ * comes back under a new id, so the old id is named only in the request and has to be taken out
+ * here. The answer carries the new tiles and, second, the buildings whose state the change
+ * touched. Ids are reused - a tile can come back under the id of a building sold a minute
+ * before - so the replaced ones go before the new ones are merged in.
+ */
+// eslint-disable-next-line @typescript-eslint/require-await
+export const processReplaceBuildings: CityMapCallProcessor = async (responses, sharedInfo, call) => {
+  const cityEntities = getAccountBySessionId(sharedInfo.sessionId)?.cityQuery?.cityEntities;
+  const answer = answerTo(responses, call);
+  if (!cityEntities || !answer) {
+    return;
+  }
+
+  const [constructions] = call.requestData as [ConstructionRequest[]];
+  const replaced = constructions
+    .map((construction) => construction.cityMapEntityId)
+    .filter((id) => id !== NOTHING_REPLACED);
+  removeCityEntities(cityEntities, replaced);
+
+  const [laid, touched] = answer.responseData as [CityEntity[], CityEntity[]];
+  mergeReportedCityEntities(cityEntities, [...(laid ?? []), ...(touched ?? [])], Date.now());
 };
 
 /**

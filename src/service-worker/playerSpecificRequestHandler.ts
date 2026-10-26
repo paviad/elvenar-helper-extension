@@ -7,7 +7,12 @@ import { processCauldron } from '../elvenar/processCauldron';
 import { processCauldronOpened } from '../elvenar/processCauldronOpened';
 import { processCauldronWonder } from '../elvenar/processCauldronWonder';
 import { processCityData } from '../elvenar/processCityData';
-import { processCityMapServiceUpdate } from '../elvenar/processCityMapServiceUpdate';
+import {
+  processCityMapServiceUpdate,
+  processRemoveBuilding,
+  processRemoveStreets,
+  processReplaceBuildings,
+} from '../elvenar/processCityMapServiceUpdate';
 import { processCityResourcesUpdate } from '../elvenar/processCityResourcesUpdate';
 import { processInventory } from '../elvenar/processInventory';
 import { processMessageMarkedAsRead } from '../elvenar/processMessageMarkedAsRead';
@@ -130,6 +135,9 @@ export const playerSpecificRequestHandlerInternal = async (
     'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
     'Q:SpireService/getEncounter': processSpireEncounterStart,
     'Q:SpireDiplomacyService/submit': processSpireDiplomacySubmit,
+    'Q:CityMapService/removeBuilding': processRemoveBuilding,
+    'Q:CityMapService/removeStreets': processRemoveStreets,
+    'Q:CityMapService/replaceBuildings': processReplaceBuildings,
     'R:SeasonalEventsService/getEvents': processSeasonalEvents,
 
     'R:CityResourcesService/getResources': processCityResourcesUpdate,
@@ -220,6 +228,9 @@ export const playerSpecificRequestHandlerInternal = async (
       break;
     case 'R:TranscendenceService/allBuildingsStates':
     case 'R:CityMapService/reset':
+    case 'Q:CityMapService/removeBuilding':
+    case 'Q:CityMapService/removeStreets':
+    case 'Q:CityMapService/replaceBuildings':
       await sendRuntime('cityEntitiesUpdated', { tabId: sharedInfo.tabId });
       break;
     case 'R:EffectsService/update':

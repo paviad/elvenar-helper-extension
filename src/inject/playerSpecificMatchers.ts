@@ -109,6 +109,25 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'reset',
     },
   },
+  // Sales and street laying: what changed is named in the request, not in the answer.
+  {
+    requestSelector: {
+      requestClass: 'CityMapService',
+      requestMethod: 'removeBuilding',
+    },
+  },
+  {
+    requestSelector: {
+      requestClass: 'CityMapService',
+      requestMethod: 'removeStreets',
+    },
+  },
+  {
+    requestSelector: {
+      requestClass: 'CityMapService',
+      requestMethod: 'replaceBuildings',
+    },
+  },
   {
     responseSelector: {
       requestClass: 'TranscendenceService',
