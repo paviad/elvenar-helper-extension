@@ -75,8 +75,8 @@ describe('stepMap', () => {
     };
 
     const { view } = stepMap(step, at)!;
-    expect(view.width).toBeGreaterThanOrEqual(14);
-    expect(view.length).toBeGreaterThanOrEqual(14);
+    expect(view.width).toBeGreaterThanOrEqual(10);
+    expect(view.length).toBeGreaterThanOrEqual(10);
   });
 
   it('marks both ends of a street run', () => {

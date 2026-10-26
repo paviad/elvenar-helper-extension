@@ -11,8 +11,8 @@ const TILE_HEIGHT = 52;
 const HEADROOM = 220;
 /** How faint the buildings a step leaves alone are, so the ones it moves stand out. */
 const BYSTANDER_OPACITY = 0.2;
-/** How wide the map may be in the panel, in pixels. */
-const MAX_WIDTH = 330;
+/** How wide the map is before the panel has been measured, in pixels. */
+const FALLBACK_WIDTH = 330;
 
 /** A tile corner, in the game's picture pixels. */
 const corner = (x: number, y: number) => ({ x: ((x - y) * TILE_WIDTH) / 2, y: ((x + y) * TILE_HEIGHT) / 2 });
@@ -44,6 +44,16 @@ export const IsoStepMap = ({
 }) => {
   const theme = useTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  // As wide as the panel allows, so a larger panel gives a larger map.
+  const [available, setAvailable] = useState(FALLBACK_WIDTH);
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const observer = new ResizeObserver(([entry]) => setAvailable(Math.max(160, Math.floor(entry.contentRect.width))));
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
   const [sprites, setSprites] = useState<Map<string, Sprite>>(new Map());
 
   // Every building on the map, and every one shown where it goes.
@@ -72,7 +82,7 @@ export const IsoStepMap = ({
   const right = corner(view.x + view.width, view.y).x;
   const top = corner(view.x, view.y).y - HEADROOM;
   const bottom = corner(view.x + view.width, view.y + view.length).y;
-  const scale = MAX_WIDTH / (right - left);
+  const scale = available / (right - left);
   const width = Math.round((right - left) * scale);
   const height = Math.round((bottom - top) * scale);
 
@@ -170,13 +180,15 @@ export const IsoStepMap = ({
   }, [model, sprites, spriteId, theme, left, top, scale, width, height, view]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      role='img'
-      aria-label='Where this step happens in your city'
-      style={{ display: 'block', borderRadius: 4 }}
-    />
+    <div ref={frameRef} style={{ width: '100%' }}>
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        role='img'
+        aria-label='Where this step happens in your city'
+        style={{ display: 'block', borderRadius: 4 }}
+      />
+    </div>
   );
 };

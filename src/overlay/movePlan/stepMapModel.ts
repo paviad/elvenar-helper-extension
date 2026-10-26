@@ -34,9 +34,13 @@ export interface StepMapModel {
   marks: Mark[];
 }
 
-/** The smallest patch shown, so a one-tile step still shows enough around it to be found. */
-const MIN_SIDE = 14;
-const MARGIN = 3;
+/**
+ * The smallest patch shown, so a one-tile step still shows enough around it to be found, and the
+ * ground kept around a step. Both kept small: in perspective a building fills a tile's width twice
+ * over, and every extra tile shrinks the ones that matter.
+ */
+const MIN_SIDE = 10;
+const MARGIN = 2;
 
 /** Only what the map needs of a building, so nothing else rides along. */
 const placedAt = ({ x, y, width, length, kind, level }: MapBuilding): MapBuilding => ({
