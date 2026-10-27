@@ -152,8 +152,10 @@ export const MovePlanView = () => {
   };
 
   return (
-    <Stack sx={{ p: 1, gap: 1 }}>
-      <Stack direction='row' sx={{ alignItems: 'center', gap: 1 }}>
+    // The header stays put and the rest scrolls inside the panel, as in the other tabs; a plan of
+    // more than a handful of steps is taller than any panel.
+    <Stack sx={{ height: '100%', minHeight: 0 }}>
+      <Stack direction='row' sx={{ alignItems: 'center', gap: 1, p: 1 }}>
         <Box sx={{ flex: 1 }}>
           <Typography variant='subtitle2'>Layout from {sent.from}</Typography>
           <Typography variant='caption' color='text.secondary'>
@@ -165,72 +167,76 @@ export const MovePlanView = () => {
         </Button>
       </Stack>
 
-      {allDone && checklist.unresolved.length === 0 && <Alert severity='success'>Your city matches the layout.</Alert>}
+      <Stack sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', px: 1, pb: 1, gap: 1 }}>
+        {allDone && checklist.unresolved.length === 0 && (
+          <Alert severity='success'>Your city matches the layout.</Alert>
+        )}
 
-      <List dense disablePadding>
-        {checklist.steps.map((step, index) => {
-          const status = statuses[index];
-          const text = describeStep(step, data.names);
-          const open = index === shown && status !== 'done';
-          const refusal = status === 'waiting' ? applyAction(city, step.action) : undefined;
-          const waitingFor =
-            refusal && !refusal.ok
-              ? refusal.refusal === 'busy'
-                ? 'Waiting for its upgrade to finish.'
-                : 'Waiting for a free builder.'
-              : undefined;
-          const map = open ? stepMap(step, city) : undefined;
-          return (
-            <ListItemButton
-              key={index}
-              selected={open}
-              onClick={() => setSelected(index === shown ? null : index)}
-              sx={{ alignItems: 'flex-start', gap: 1, borderRadius: 1, opacity: status === 'done' ? 0.6 : 1 }}
-            >
-              <Box sx={{ pt: 0.25 }}>{STATUS_ICON[status]}</Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    textDecoration: status === 'done' ? 'line-through' : 'none',
-                    fontWeight: status === 'next' ? 600 : 400,
-                  }}
-                >
-                  {text.title}
-                </Typography>
-                {waitingFor && (
-                  <Typography variant='caption' color='warning.main' component='div'>
-                    {waitingFor}
+        <List dense disablePadding>
+          {checklist.steps.map((step, index) => {
+            const status = statuses[index];
+            const text = describeStep(step, data.names);
+            const open = index === shown && status !== 'done';
+            const refusal = status === 'waiting' ? applyAction(city, step.action) : undefined;
+            const waitingFor =
+              refusal && !refusal.ok
+                ? refusal.refusal === 'busy'
+                  ? 'Waiting for its upgrade to finish.'
+                  : 'Waiting for a free builder.'
+                : undefined;
+            const map = open ? stepMap(step, city) : undefined;
+            return (
+              <ListItemButton
+                key={index}
+                selected={open}
+                onClick={() => setSelected(index === shown ? null : index)}
+                sx={{ alignItems: 'flex-start', gap: 1, borderRadius: 1, opacity: status === 'done' ? 0.6 : 1 }}
+              >
+                <Box sx={{ pt: 0.25 }}>{STATUS_ICON[status]}</Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      textDecoration: status === 'done' ? 'line-through' : 'none',
+                      fontWeight: status === 'next' ? 600 : 400,
+                    }}
+                  >
+                    {text.title}
                   </Typography>
-                )}
-                {open && text.detail && (
-                  <Typography variant='caption' color='text.secondary' component='div'>
-                    {text.detail}
-                  </Typography>
-                )}
-                {map && (
-                  <Box sx={{ mt: 1 }}>
-                    <IsoStepMap model={map} spriteId={data.spriteId} />
-                  </Box>
-                )}
-              </Box>
-            </ListItemButton>
-          );
-        })}
-      </List>
+                  {waitingFor && (
+                    <Typography variant='caption' color='warning.main' component='div'>
+                      {waitingFor}
+                    </Typography>
+                  )}
+                  {open && text.detail && (
+                    <Typography variant='caption' color='text.secondary' component='div'>
+                      {text.detail}
+                    </Typography>
+                  )}
+                  {map && (
+                    <Box sx={{ mt: 1 }}>
+                      <IsoStepMap model={map} spriteId={data.spriteId} />
+                    </Box>
+                  )}
+                </Box>
+              </ListItemButton>
+            );
+          })}
+        </List>
 
-      {checklist.unresolved.length > 0 && (
-        <Alert severity='warning'>
-          <Typography variant='body2' sx={{ mb: 0.5 }}>
-            The plan cannot do everything in the layout:
-          </Typography>
-          {checklist.unresolved.map((unresolved, index) => (
-            <Typography key={index} variant='caption' component='div'>
-              {describeUnresolved(unresolved, data.names, kindOf)}
+        {checklist.unresolved.length > 0 && (
+          <Alert severity='warning'>
+            <Typography variant='body2' sx={{ mb: 0.5 }}>
+              The plan cannot do everything in the layout:
             </Typography>
-          ))}
-        </Alert>
-      )}
+            {checklist.unresolved.map((unresolved, index) => (
+              <Typography key={index} variant='caption' component='div'>
+                {describeUnresolved(unresolved, data.names, kindOf)}
+              </Typography>
+            ))}
+          </Alert>
+        )}
+      </Stack>
     </Stack>
   );
 };
