@@ -75,6 +75,23 @@ export const processRemoveBuilding: CityMapCallProcessor = async (responses, sha
   }
 };
 
+/**
+ * A building or a street tile moved on its own. The game's answer is empty, and the `reset` with
+ * it carries the buildings whose state the move touched but never a street tile, so a street's
+ * new spot shows only in the request (seen 2026-10-27: `moveBuilding [19599, 26, 46]`).
+ */
+// eslint-disable-next-line @typescript-eslint/require-await
+export const processMoveBuilding: CityMapCallProcessor = async (responses, sharedInfo, call) => {
+  const cityEntities = getAccountBySessionId(sharedInfo.sessionId)?.cityQuery?.cityEntities;
+  if (cityEntities && answerTo(responses, call)) {
+    const [id, x, y] = call.requestData as [number, number, number];
+    const index = cityEntities.findIndex((entity) => entity.id === id);
+    if (index !== -1) {
+      cityEntities[index] = { ...cityEntities[index], x, y };
+    }
+  }
+};
+
 /** Street tiles sold, as many as were picked at once. Like a building's sale, seen only in the request. */
 // eslint-disable-next-line @typescript-eslint/require-await
 export const processRemoveStreets: CityMapCallProcessor = async (responses, sharedInfo, call) => {

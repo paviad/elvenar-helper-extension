@@ -4,6 +4,7 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountBySessionId } from './accountStore';
 import {
   mergeReportedCityEntities,
+  processMoveBuilding,
   processRemoveBuilding,
   processRemoveStreets,
   processReplaceBuildings,
@@ -163,6 +164,30 @@ describe('a building sold', () => {
     await processRemoveBuilding([], sharedInfo, request);
 
     expect(ids(city)).toEqual([19600]);
+  });
+});
+
+describe('a street tile moved', () => {
+  // As captured on 2026-10-27: the answer is empty, and the reset beside it names no street.
+  it('is found at its new spot', async () => {
+    const city = cityOf(placed(19599, 'S_Humans_Dwarven', 35, 42), placed(17819, 'A_Evt_Winter_3Tree_24', 24, 46));
+    const { request, answer } = call('moveBuilding', [19599, 26, 46]);
+
+    await processMoveBuilding([answer], sharedInfo, request);
+
+    expect(city.map(({ id, x, y }) => ({ id, x, y }))).toEqual([
+      { id: 19599, x: 26, y: 46 },
+      { id: 17819, x: 24, y: 46 },
+    ]);
+  });
+
+  it('stays put when the game did not answer the move', async () => {
+    const city = cityOf(placed(19599, 'S_Humans_Dwarven', 35, 42));
+    const { request } = call('moveBuilding', [19599, 26, 46]);
+
+    await processMoveBuilding([], sharedInfo, request);
+
+    expect(city[0]).toMatchObject({ x: 35, y: 42 });
   });
 });
 

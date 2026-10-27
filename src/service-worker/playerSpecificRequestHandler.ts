@@ -9,6 +9,7 @@ import { processCauldronWonder } from '../elvenar/processCauldronWonder';
 import { processCityData } from '../elvenar/processCityData';
 import {
   processCityMapServiceUpdate,
+  processMoveBuilding,
   processRemoveBuilding,
   processRemoveStreets,
   processReplaceBuildings,
@@ -135,6 +136,7 @@ export const playerSpecificRequestHandlerInternal = async (
     'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
     'Q:SpireService/getEncounter': processSpireEncounterStart,
     'Q:SpireDiplomacyService/submit': processSpireDiplomacySubmit,
+    'Q:CityMapService/moveBuilding': processMoveBuilding,
     'Q:CityMapService/removeBuilding': processRemoveBuilding,
     'Q:CityMapService/removeStreets': processRemoveStreets,
     'Q:CityMapService/replaceBuildings': processReplaceBuildings,
@@ -228,6 +230,7 @@ export const playerSpecificRequestHandlerInternal = async (
       break;
     case 'R:TranscendenceService/allBuildingsStates':
     case 'R:CityMapService/reset':
+    case 'Q:CityMapService/moveBuilding':
     case 'Q:CityMapService/removeBuilding':
     case 'Q:CityMapService/removeStreets':
     case 'Q:CityMapService/replaceBuildings':
