@@ -7,7 +7,7 @@
     <title>ElvenAssist - Unofficial City Planner</title>
     <meta
       name="description"
-      content="A free, unofficial city planner and in-game helper for Elvenar: live city planning, upgrade suggestions, inventory, KP swaps, tournaments and Fellowship Adventures. For Chrome, Firefox and Safari."
+      content="A free, unofficial city planner and in-game helper for Elvenar: live city planning, move plans, upgrade suggestions, inventory, KP swaps, tournaments and Fellowship Adventures. For Chrome, Firefox and Safari."
     />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,6 +33,11 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 6rem;
       }
 
       body {
@@ -67,10 +72,7 @@
 
       /* Header */
       header {
-        padding: 1.5rem 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        padding: 1.25rem 0;
         position: sticky;
         top: 0;
         z-index: 100;
@@ -83,7 +85,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        width: 100%;
+        gap: 1.5rem;
       }
 
       .logo {
@@ -92,14 +94,35 @@
         color: var(--accent);
         text-decoration: none;
         text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+        white-space: nowrap;
+      }
+
+      header nav {
+        display: flex;
+        align-items: center;
+        gap: 1.75rem;
+      }
+
+      header nav a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+      }
+
+      header nav a:hover {
+        color: #fff;
+      }
+
+      header nav .nav-github {
+        font-size: 1.5rem;
       }
 
       /* Hero Section */
       .hero {
-        padding: 6rem 0;
+        padding: 5rem 0 4rem;
         text-align: center;
         position: relative;
-        overflow: hidden;
       }
 
       .hero::before {
@@ -109,6 +132,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         width: 600px;
+        max-width: 100%;
         height: 600px;
         background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
         pointer-events: none;
@@ -122,7 +146,6 @@
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         line-height: 1.1;
       }
 
@@ -132,6 +155,14 @@
         max-width: 650px;
         margin: 0 auto 2.5rem;
         font-weight: 300;
+      }
+
+      .hero-badges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
       }
 
       /* COMPLIANCE: Disclaimer Badge */
@@ -145,9 +176,27 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 1.5rem;
         display: inline-block;
         backdrop-filter: blur(4px);
+      }
+
+      .announce {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        text-decoration: none;
+        transition: background 0.2s;
+      }
+
+      .announce:hover {
+        background: rgba(251, 191, 36, 0.2);
       }
 
       /* Buttons */
@@ -183,6 +232,12 @@
         backdrop-filter: blur(4px);
       }
 
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #fff;
+        transform: translateY(-3px);
+      }
+
       .cta-row {
         margin-top: 2.5rem;
         display: flex;
@@ -191,19 +246,13 @@
         gap: 1rem;
       }
 
-      .btn-outline:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: #fff;
-        transform: translateY(-3px);
-      }
-
-      /* Features Grid */
-      .features {
-        padding: 6rem 0;
+      /* Sections */
+      .section {
+        padding: 5rem 0;
         position: relative;
       }
 
-      .features::before {
+      .section::before {
         content: '';
         position: absolute;
         top: 0;
@@ -213,182 +262,276 @@
         background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
       }
 
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2.5rem;
-        margin-top: 4rem;
+      .section-head {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto 4rem;
       }
 
-      .feature-card {
-        background: var(--glass-bg);
-        padding: 2.5rem;
-        border-radius: 20px;
-        border: 1px solid var(--glass-border);
-        transition: all 0.4s ease;
-        position: relative;
-        overflow: hidden;
+      .section-head .eyebrow {
+        display: block;
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
       }
 
-      .feature-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 100%;
-        background: linear-gradient(180deg, var(--glass-shine) 0%, transparent 100%);
-        opacity: 0;
-        transition: opacity 0.4s;
-      }
-
-      .feature-card:hover {
-        transform: translateY(-10px);
-        border-color: rgba(124, 58, 237, 0.5);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      .feature-card:hover::before {
-        opacity: 1;
-      }
-
-      .feature-icon {
+      .section-head h2 {
         font-size: 2.5rem;
-        background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 1.5rem;
-        display: inline-block;
+        margin-bottom: 0.75rem;
       }
 
-      .feature-card h3 {
+      .section-head p {
+        color: var(--text-muted);
+        font-size: 1.15rem;
+      }
+
+      /* Showcase rows: a screenshot beside its description, alternating sides. */
+      .showcase {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 3.5rem;
+        align-items: center;
+      }
+
+      .showcase + .showcase {
+        margin-top: 5rem;
+      }
+
+      /* Each section opens with its heading, so the first row is its second child. */
+      .showcase:nth-child(odd) .shot {
+        order: 2;
+      }
+
+      .spotlight.showcase .shot {
+        order: 0;
+      }
+
+      .shot {
+        position: relative;
+        border-radius: 16px;
+        border: 1px solid var(--glass-border);
+        background: #000;
+        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8);
+        overflow: hidden;
+        cursor: zoom-in;
+        transition:
+          transform 0.4s ease,
+          border-color 0.4s ease;
+      }
+
+      .shot:hover {
+        transform: translateY(-6px);
+        border-color: rgba(124, 58, 237, 0.5);
+      }
+
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      /* Stands in for a screenshot that has not been added to docs/ yet. */
+      .shot.is-missing {
+        aspect-ratio: 16 / 10;
+        cursor: default;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(15, 5, 24, 0.9));
+      }
+
+      .shot.is-missing img {
+        display: none;
+      }
+
+      .shot.is-missing::after {
+        content: '\f4d7';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 5rem;
+        color: rgba(251, 191, 36, 0.5);
+      }
+
+      .copy .feature-icon {
+        font-size: 1.1rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #1a0b2e;
+        background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+        margin-bottom: 1.25rem;
+      }
+
+      .copy h3 {
         font-family: 'Outfit', sans-serif;
         font-weight: 600;
-        font-size: 1.5rem;
+        font-size: 1.85rem;
+        line-height: 1.25;
         margin-bottom: 1rem;
       }
 
-      .feature-card p {
+      .copy p {
         color: var(--text-muted);
-        font-size: 1.05rem;
+        font-size: 1.1rem;
       }
 
-      /* Positioned so the card's ::before sheen does not sit over it and swallow the click. */
-      .feature-card a {
-        position: relative;
+      .copy p + p {
+        margin-top: 0.85rem;
+      }
+
+      .copy a {
         color: var(--accent);
       }
 
-      /* Marks a card as a recent addition. */
-      .feature-card.is-new {
-        border-color: rgba(124, 58, 237, 0.5);
+      .copy kbd {
+        font-family: inherit;
+        font-size: 0.9em;
+        padding: 0.05rem 0.4rem;
+        border-radius: 6px;
+        border: 1px solid var(--glass-border);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+      }
+
+      .points {
+        list-style: none;
+        margin-top: 1.25rem;
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .points li {
+        display: flex;
+        gap: 0.75rem;
+        color: var(--text);
+        font-size: 1.05rem;
+      }
+
+      .points li i {
+        color: var(--accent);
+        margin-top: 0.3rem;
       }
 
       .badge-new {
-        position: absolute;
-        top: 1.25rem;
-        right: 1.25rem;
+        display: inline-block;
         padding: 0.25rem 0.6rem;
         border-radius: 999px;
         font-family: 'Outfit', sans-serif;
         font-size: 0.7rem;
         font-weight: 700;
         letter-spacing: 0.08em;
-        color: #fff;
+        color: #1a0b2e;
         background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+        vertical-align: middle;
+        margin-left: 0.5rem;
       }
 
-      /* Carousel Section */
-      .preview {
-        padding: 2rem 0 6rem 0;
-        text-align: center;
+      /* The spotlight: the headline feature of the current release. */
+      .spotlight {
+        padding: 3rem;
+        border-radius: 24px;
+        border: 1px solid rgba(124, 58, 237, 0.5);
+        background:
+          radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.2) 0, transparent 60%),
+          radial-gradient(at 100% 100%, rgba(251, 191, 36, 0.08) 0, transparent 60%), var(--glass-bg);
+        box-shadow: 0 30px 80px -30px rgba(124, 58, 237, 0.5);
       }
 
-      #carousel {
-        position: relative;
-        max-width: 1200px;
-        margin: 0 auto;
-        aspect-ratio: 16/9;
-        max-height: 650px;
-        background: #000;
+      .spotlight .copy h3 {
+        font-family: 'Cinzel', serif;
+        font-size: 2.4rem;
+      }
+
+      .note {
+        margin-top: 1.5rem;
+        padding: 0.85rem 1rem;
+        border-left: 3px solid var(--accent);
+        border-radius: 0 10px 10px 0;
+        background: rgba(251, 191, 36, 0.07);
+        color: var(--text);
+        font-size: 1rem;
+      }
+
+      /* Compact cards for the features that need no screenshot. */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .card {
+        background: var(--glass-bg);
+        padding: 2rem;
         border-radius: 20px;
         border: 1px solid var(--glass-border);
-        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8);
-        overflow: hidden;
+        transition: all 0.4s ease;
       }
 
-      .preview-img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        display: block;
-        transition: opacity 0.4s ease-in-out;
+      .card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(124, 58, 237, 0.5);
+        background: rgba(255, 255, 255, 0.05);
       }
 
-      .carousel-nav-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #fff;
-        font-size: 1.5rem;
-        border-radius: 50%;
-        width: 56px;
-        height: 56px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        z-index: 10;
-        backdrop-filter: blur(4px);
+      .card > i {
+        font-size: 2rem;
+        background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        display: inline-block;
       }
 
-      .carousel-nav-btn:hover {
-        background: var(--accent);
-        color: #1a0b2e;
-        border-color: var(--accent);
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-      }
-
-      .carousel-caption-styled {
-        position: absolute;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: auto;
-        max-width: 90%;
-
+      .card h3 {
         font-family: 'Outfit', sans-serif;
         font-weight: 600;
-        font-size: 1.1rem;
-        color: #fff;
-
-        background: rgba(15, 5, 24, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        padding: 1rem 2rem;
-
-        z-index: 2;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(10px);
-        text-align: center;
+        font-size: 1.3rem;
+        margin-bottom: 0.6rem;
       }
 
-      #carousel-indicators {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 10px;
-        z-index: 5;
-        opacity: 0;
-        pointer-events: none;
+      .card p {
+        color: var(--text-muted);
+      }
+
+      .card a {
+        color: var(--accent);
+      }
+
+      /* Lightbox */
+      #lightbox {
+        border: none;
+        padding: 0;
+        background: transparent;
+        max-width: 95vw;
+        max-height: 95vh;
+        margin: auto;
+        cursor: zoom-out;
+      }
+
+      #lightbox::backdrop {
+        background: rgba(5, 2, 10, 0.88);
+        backdrop-filter: blur(6px);
+      }
+
+      #lightbox img {
+        display: block;
+        max-width: 95vw;
+        max-height: 85vh;
+        border-radius: 12px;
+      }
+
+      #lightbox figcaption {
+        text-align: center;
+        color: var(--text);
+        margin-top: 0.75rem;
+        font-weight: 600;
       }
 
       /* Footer */
@@ -410,28 +553,64 @@
         border-color: var(--accent);
       }
 
+      @media (max-width: 900px) {
+        .showcase {
+          grid-template-columns: 1fr;
+          gap: 1.75rem;
+        }
+        .showcase:nth-child(odd) .shot {
+          order: 0;
+        }
+        .showcase + .showcase {
+          margin-top: 4rem;
+        }
+        .spotlight {
+          padding: 1.5rem;
+        }
+        header nav .nav-section {
+          display: none;
+        }
+      }
+
       @media (max-width: 768px) {
+        .container {
+          padding: 0 1rem;
+        }
+        .hero {
+          padding: 3.5rem 0 3rem;
+        }
         .hero h1 {
           font-size: 2.75rem;
         }
+        .hero p {
+          font-size: 1.15rem;
+        }
         .btn {
-          display: flex;
           justify-content: center;
-          margin: 0.75rem 0;
           width: 100%;
         }
-        .cta-row {
-          gap: 0;
+        .section {
+          padding: 3.5rem 0;
         }
-        #carousel {
-          aspect-ratio: 4/3;
-          border-radius: 12px;
+        .section-head {
+          margin-bottom: 2.5rem;
         }
-        .carousel-caption-styled {
-          font-size: 0.9rem;
-          padding: 0.75rem 1rem;
-          bottom: 15px;
-          width: 90%;
+        .section-head h2 {
+          font-size: 2rem;
+        }
+        .copy h3,
+        .spotlight .copy h3 {
+          font-size: 1.6rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before {
+          transition: none !important;
         }
       }
     </style>
@@ -441,23 +620,27 @@
       <div class="container">
         <a href="#" class="logo">ElvenAssist ✨</a>
         <nav>
+          <a href="#plan" class="nav-section">Planner</a>
+          <a href="#play" class="nav-section">In the Game</a>
+          <a href="#track" class="nav-section">Tracking</a>
           <a
             href="https://github.com/paviad/elvenar-helper-extension"
             target="_blank"
-            style="color: var(--text-muted); font-size: 1.5rem; transition: color 0.2s"
-            onmouseover="this.style.color = '#fff'"
-            onmouseout="this.style.color = 'var(--text-muted)'"
-          >
-            <i class="fab fa-github"></i>
-          </a>
+            class="nav-github"
+            aria-label="Source on GitHub"
+            ><i class="fab fa-github"></i
+          ></a>
         </nav>
       </div>
     </header>
 
     <main>
       <section class="hero container">
-        <!-- COMPLIANCE: Prominent Disclaimer Badge -->
-        <div class="disclaimer-badge">Unofficial Fan Project</div>
+        <div class="hero-badges">
+          <!-- COMPLIANCE: Prominent Disclaimer Badge -->
+          <span class="disclaimer-badge">Unofficial Fan Project</span>
+          <a href="#move-plan" class="announce"><i class="fas fa-route"></i> New in 11.0: Move Plan</a>
+        </div>
 
         <h1>The Missing Tool<br />for Your City</h1>
 
@@ -488,167 +671,152 @@
         </div>
       </section>
 
-      <section class="preview container">
-        <div id="carousel">
-          <img src="ss1.jpg" alt="City Planner Interface" class="preview-img" id="carousel-img" />
-
-          <div id="carousel-caption" class="carousel-caption-styled"></div>
-
-          <button id="carousel-prev" class="carousel-nav-btn" style="left: 20px" aria-label="Previous image">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-
-          <button id="carousel-next" class="carousel-nav-btn" style="right: 20px" aria-label="Next image">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-
-          <div id="carousel-indicators"></div>
+      <section class="section" id="move-plan">
+        <div class="container">
+          <div class="showcase spotlight">
+            <figure class="shot">
+              <img
+                src="ss12.jpg"
+                alt="The helper's Plan tab, with a map of the next move"
+                onerror="this.parentElement.classList.add('is-missing')"
+              />
+            </figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-route"></i></span>
+              <h3>Move Plan <span class="badge-new">NEW IN 11.0</span></h3>
+              <p>
+                Arrange your city in the planner, then choose City &#9656; Send Move Plan to Game. The helper's Plan tab
+                (<kbd>Alt+C</kbd>, <kbd>L</kbd>) lists the moves that turn your city into that layout, in an order the
+                game will accept.
+              </p>
+              <ul class="points">
+                <li>
+                  <i class="fas fa-check"></i>
+                  <span
+                    >Drags that swap buildings in one go, street tiles to sell and streets to lay, upgrades, and
+                    buildings to place from the inventory.</span
+                  >
+                </li>
+                <li>
+                  <i class="fas fa-check"></i>
+                  <span
+                    >Each line ticks itself off as you make the move. Do something the plan did not ask for and the
+                    steps left are worked out again.</span
+                  >
+                </li>
+                <li>
+                  <i class="fas fa-check"></i>
+                  <span
+                    >Every step has a map drawn with the game's own pictures: the buildings to move picked out, and a
+                    see-through copy where each one goes.</span
+                  >
+                </li>
+              </ul>
+              <p class="note">ElvenAssist never makes a move itself. Every move is yours to make.</p>
+            </div>
+          </div>
         </div>
-
-        <script>
-          const carouselImages = [
-            {
-              src: 'ss1.jpg',
-              alt: 'City Planner Interface',
-              caption: 'Plan your city layout with drag-and-drop simplicity using live data.',
-            },
-            {
-              src: 'ss9.jpg',
-              alt: 'Isometric City View',
-              caption: 'See the same plan in an isometric view, closer to how the game draws it.',
-            },
-            {
-              src: 'ss11.jpg',
-              alt: 'Culture Bonus Level',
-              caption: 'See which culture bonus level your layout reaches and how far it is to the next one.',
-            },
-            {
-              src: 'ss6.jpg',
-              alt: 'Upgrade Finder',
-              caption: 'Upgrade Finder lists the inventory buildings that beat what you have placed.',
-            },
-            {
-              src: 'ss7.jpg',
-              alt: 'KP Swaps',
-              caption: 'Swaps tallies what you owe and fills a bar as you repay each player.',
-            },
-            {
-              src: 'ss10.jpg',
-              alt: 'Cauldron Optimizer',
-              caption: 'Open the cauldron and the Cauldron Optimizer is filled in from the game.',
-            },
-            {
-              src: 'ss8.jpg',
-              alt: 'Tournament Counters',
-              caption: 'Open a tournament province and see the squad to field against it.',
-            },
-            {
-              src: 'ss3.jpg',
-              alt: 'Inventory Management',
-              caption: 'Track, sort, and filter your inventory instantly.',
-            },
-            {
-              src: 'ss2.jpg',
-              alt: 'Trade Overview',
-              caption: 'Smart Trade detection finds lucrative ascended trade opportunities.',
-            },
-            {
-              src: 'ss4.jpg',
-              alt: 'Fellowship Adventure',
-              caption: 'Master the Fellowship Adventure with live badge tracking and production timelines.',
-            },
-            {
-              src: 'ss5.jpg',
-              alt: 'Build Menu',
-              caption: 'Browse and place new buildings directly from the catalog.',
-            },
-          ];
-          let carouselIndex = 0;
-          const imgEl = document.getElementById('carousel-img');
-          const prevBtn = document.getElementById('carousel-prev');
-          const nextBtn = document.getElementById('carousel-next');
-          const indicators = document.getElementById('carousel-indicators');
-          const captionEl = document.getElementById('carousel-caption');
-
-          let carouselTimer = null;
-          function startCarouselTimer() {
-            if (carouselTimer) clearInterval(carouselTimer);
-            carouselTimer = setInterval(() => {
-              carouselIndex = (carouselIndex + 1) % carouselImages.length;
-              updateCarousel(false);
-            }, 6000);
-          }
-
-          function updateCarousel(resetTimer = true) {
-            imgEl.style.opacity = 0;
-            captionEl.style.opacity = 0;
-
-            setTimeout(() => {
-              imgEl.src = carouselImages[carouselIndex].src;
-              imgEl.alt = carouselImages[carouselIndex].alt;
-              captionEl.textContent = carouselImages[carouselIndex].caption || '';
-
-              imgEl.style.opacity = 1;
-              captionEl.style.opacity = 1;
-            }, 300);
-
-            if (resetTimer) startCarouselTimer();
-          }
-
-          prevBtn.onclick = () => {
-            carouselIndex = (carouselIndex - 1 + carouselImages.length) % carouselImages.length;
-            updateCarousel();
-          };
-          nextBtn.onclick = () => {
-            carouselIndex = (carouselIndex + 1) % carouselImages.length;
-            updateCarousel();
-          };
-
-          // Initialize
-          imgEl.src = carouselImages[0].src;
-          captionEl.textContent = carouselImages[0].caption || '';
-          startCarouselTimer();
-        </script>
       </section>
 
-      <section class="features">
+      <section class="section" id="plan">
         <div class="container">
-          <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem">Why Switch?</h2>
-          <div class="features-grid">
-            <div class="feature-card">
-              <i class="fas fa-city feature-icon"></i>
+          <div class="section-head">
+            <span class="eyebrow">City Planner</span>
+            <h2>Plan Your City</h2>
+            <p>Your city, straight from the game. Rearrange it freely before you touch a single building.</p>
+          </div>
+
+          <div class="showcase">
+            <figure class="shot"><img src="ss9.jpg" alt="Isometric City View" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-city"></i></span>
               <h3>Live City Planner</h3>
               <p>
-                Your city, straight from the game &mdash; no import. Drag buildings around, drop one on another to swap
-                them, change levels with +/- or remove one with Delete, unlock expansions, and undo any of it with
-                Ctrl+Z. Top-down, isometric and table views, with the culture bonus level your layout reaches.
+                No import, no typing. Drag buildings around, drop one on another to swap them, change levels with +/- or
+                remove one with Delete, unlock expansions, and undo any of it with Ctrl+Z.
+              </p>
+              <p>Top-down, isometric and table views, so you can see the plan the way the game draws it.</p>
+            </div>
+          </div>
+
+          <div class="showcase">
+            <figure class="shot"><img src="ss11.jpg" alt="Culture Bonus Level" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-landmark"></i></span>
+              <h3>Culture Bonus at a Glance</h3>
+              <p>
+                A bar under the culture row is notched at each culture bonus level and filled to where your layout
+                stands. Hover it for the bonus you get and the culture the next level needs.
               </p>
             </div>
+          </div>
 
-            <div class="feature-card">
-              <i class="fas fa-wand-magic-sparkles feature-icon"></i>
+          <div class="showcase">
+            <figure class="shot"><img src="ss6.jpg" alt="Upgrade Finder" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
               <h3>Upgrade Finder</h3>
               <p>
                 Finds the event buildings sitting in your inventory that beat what you already have placed &mdash; only
-                the swaps that give up nothing, ranked by what they gain per square, including buildings still inside a
-                Tome. Evolving buildings are measured at the stage your artifacts can actually reach.
+                the swaps that give up nothing, ranked by what they gain per square, including Tome buildings.
+              </p>
+              <p>Evolving buildings are measured at the stage your artifacts can actually reach.</p>
+            </div>
+          </div>
+
+          <div class="showcase">
+            <figure class="shot"><img src="ss5.jpg" alt="Build Menu" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-hammer"></i></span>
+              <h3>Build Menu</h3>
+              <p>
+                Add buildings to your plan from a categorized catalog. Plan for future chapters before you even unlock
+                the buildings.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div class="feature-card is-new">
-              <span class="badge-new">NEW</span>
-              <i class="fas fa-handshake feature-icon"></i>
+      <section class="section" id="play">
+        <div class="container">
+          <div class="section-head">
+            <span class="eyebrow">In-game helper</span>
+            <h2>Help While You Play</h2>
+            <p>A panel inside the game that reads what you open and keeps up as you play.</p>
+          </div>
+
+          <div class="showcase">
+            <figure class="shot"><img src="ss7.jpg" alt="KP Swaps" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-handshake"></i></span>
               <h3>KP Swaps</h3>
               <p>
                 Never lose track of a knowledge point swap again. Your debts are tallied from the threads you post in
-                and grouped by the player you owe, with a bar for how much of each you have repaid. It shows how much
-                room each of your wonders has to be asked for, and the KP instants you hold to repay with.
+                and grouped by the player you owe, with a bar for how much of each you have repaid.
               </p>
+              <p>It shows how much room each of your wonders has to be asked for, and the KP instants you hold.</p>
             </div>
+          </div>
 
-            <div class="feature-card is-new">
-              <span class="badge-new">NEW</span>
-              <i class="fas fa-flask feature-icon"></i>
+          <div class="showcase">
+            <figure class="shot"><img src="ss8.jpg" alt="Tournament Counters" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-trophy"></i></span>
+              <h3>Tournament Counters</h3>
+              <p>
+                Open a province on the tournament map and see the squad to field against it &mdash; a blend across all
+                five slots, worked out from the game's own unit data, sized to your squad size and checked against the
+                troops you hold.
+              </p>
+              <p>It also names the tournament coming up and what to train for it.</p>
+            </div>
+          </div>
+
+          <div class="showcase">
+            <figure class="shot"><img src="ss10.jpg" alt="Cauldron Optimizer" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-flask"></i></span>
               <h3>Cauldron Optimizer</h3>
               <p>
                 Open the Witch's Cauldron and the
@@ -657,92 +825,120 @@
                 and your Witch Points. Each city gets a world of its own there.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div class="feature-card">
-              <i class="fas fa-camera feature-icon"></i>
-              <h3>Screenshot &amp; Export</h3>
-              <p>
-                Save your whole city as a PNG, drawn at full size with labels, ready to paste into Discord. Or export it
-                as a file the
-                <a href="https://paviad.github.io/elvenar-ch25-planner/" target="_blank">Chapter 25 planner</a> reads.
-              </p>
-            </div>
+      <section class="section" id="track">
+        <div class="container">
+          <div class="section-head">
+            <span class="eyebrow">Tracking</span>
+            <h2>Know What You Have</h2>
+            <p>Your inventory, trades and Fellowship Adventure, laid out where you can search them.</p>
+          </div>
 
-            <div class="feature-card">
-              <i class="fas fa-boxes feature-icon"></i>
+          <div class="showcase">
+            <figure class="shot"><img src="ss3.jpg" alt="Inventory Management" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-boxes"></i></span>
               <h3>Smart Inventory</h3>
               <p>
-                Search, sort, and filter your inventory instantly. Find that lost event building in seconds. The
-                buildings inside your Tomes are listed too, and Copy Table sends the list to a spreadsheet.
+                Search, sort and filter your inventory instantly, and find that lost event building in seconds.
+                Everything inside your Tomes is listed too, at what it gives in your chapter.
               </p>
+              <p>Copy Table sends the list to a spreadsheet.</p>
             </div>
+          </div>
 
-            <div class="feature-card">
-              <i class="fas fa-comments feature-icon"></i>
-              <h3>Chat &amp; Messages</h3>
-              <p>
-                A panel inside the game: guild chat with search and jump to first unread, and your Inbox and Outbox with
-                search across threads. Alt+C opens it.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <i class="fas fa-trophy feature-icon"></i>
-              <h3>Tournament Counters</h3>
-              <p>
-                Open a province on the tournament map and see the squad to field against it &mdash; a blend across all
-                five slots, worked out from the game's own unit data, sized to your squad size and checked against the
-                troops you actually hold. It also names the tournament coming up and what to train for it, distilled
-                from a player guide by Sapphyre, Queen of Kelp Islands and KibbleKat.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <i class="fas fa-map-marked-alt feature-icon"></i>
+          <div class="showcase">
+            <figure class="shot"><img src="ss4.jpg" alt="Fellowship Adventure" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-map-marked-alt"></i></span>
               <h3>Fellowship Adventure</h3>
               <p>
-                Track badge progress in real-time. Visualize production timelines to know exactly when your badges will
-                be ready.
+                Track badge progress in real time, and see a production timeline that tells you exactly when your badges
+                will be ready.
               </p>
             </div>
+          </div>
 
-            <div class="feature-card">
-              <i class="fas fa-hammer feature-icon"></i>
-              <h3>Build Menu</h3>
-              <p>
-                Add buildings directly to your city plan from a categorized catalog. Plan for future chapters before you
-                even unlock the buildings.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <i class="fas fa-scale-balanced feature-icon"></i>
+          <div class="showcase">
+            <figure class="shot"><img src="ss2.jpg" alt="Trade Overview" loading="lazy" /></figure>
+            <div class="copy">
+              <span class="feature-icon"><i class="fas fa-scale-balanced"></i></span>
               <h3>Efficient Trades</h3>
+              <p>Spots the lucrative offers for you: non-boosted ascended goods traded for your boosted ones.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head">
+            <h2>And More</h2>
+          </div>
+          <div class="cards">
+            <div class="card">
+              <i class="fas fa-camera"></i>
+              <h3>Screenshot &amp; Export</h3>
               <p>
-                Automatically detect lucrative opportunities: non-boosted ascended goods traded for your boosted ones.
+                Save your whole city as a PNG with labels, ready to paste into Discord, or export it for the
+                <a href="https://paviad.github.io/elvenar-ch25-planner/" target="_blank">Chapter 25 planner</a>.
               </p>
             </div>
 
-            <div class="feature-card">
-              <i class="fas fa-dragon feature-icon"></i>
+            <div class="card">
+              <i class="fas fa-comments"></i>
+              <h3>Chat &amp; Messages</h3>
+              <p>
+                Guild chat with search and jump to first unread, and your Inbox and Outbox with search across threads.
+                Alt+C opens it.
+              </p>
+            </div>
+
+            <div class="card">
+              <i class="fas fa-dragon"></i>
               <h3>Always Up to Date</h3>
               <p>
-                Updated for the newest chapter as soon as it lands. We have the building sizes and assets that others
-                are missing.
+                Updated for the newest chapter as soon as it lands, with the building sizes and assets others are
+                missing.
               </p>
             </div>
 
-            <div class="feature-card">
-              <i class="fas fa-shield-alt feature-icon"></i>
-              <h3>Safe & Open Source</h3>
-              <p>
-                We believe in transparency. Our code is 100% open source on GitHub and runs locally on your machine.
-              </p>
+            <div class="card">
+              <i class="fas fa-shield-alt"></i>
+              <h3>Safe &amp; Open Source</h3>
+              <p>Our code is 100% open source on GitHub and runs locally on your machine.</p>
             </div>
           </div>
         </div>
       </section>
     </main>
+
+    <dialog id="lightbox">
+      <figure>
+        <img alt="" />
+        <figcaption></figcaption>
+      </figure>
+    </dialog>
+
+    <script>
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = lightbox.querySelector('img');
+      const lightboxCaption = lightbox.querySelector('figcaption');
+
+      document.querySelectorAll('.shot img').forEach((img) => {
+        img.addEventListener('click', () => {
+          lightboxImg.src = img.src;
+          lightboxImg.alt = img.alt;
+          lightboxCaption.textContent = img.alt;
+          lightbox.showModal();
+        });
+      });
+
+      lightbox.addEventListener('click', () => lightbox.close());
+    </script>
 
     <footer>
       <div class="container">
