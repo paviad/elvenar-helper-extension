@@ -1,5 +1,5 @@
 import { applyAction, SimAction, SimCity, SimRefusal, Tile, tileKey } from './rulesSimulator';
-import { SizeAt, solveMovePlan, TargetCity, Unresolved } from './solveMovePlan';
+import { ignoringConnections, PlanRules, solveMovePlan, TargetCity, Unresolved } from './solveMovePlan';
 
 /**
  * One line of the checklist: a step the player takes in the game, and how to tell from the city
@@ -25,8 +25,8 @@ export type Expectation =
   | { type: 'level'; id: number; kind: string; level: number }
   | { type: 'placed'; kind: string; x: number; y: number }
   | { type: 'gone'; id: number; kind: string }
-  | { type: 'noStreets'; tiles: Tile[] }
-  | { type: 'streets'; street: string; tiles: Tile[] };
+  /** Street tiles vacated, sold or moved anywhere. */
+  | { type: 'noStreets'; tiles: Tile[] };
 
 export interface Checklist {
   /** When the layout was sent, so a new one starts a new list. */
@@ -35,25 +35,19 @@ export interface Checklist {
   unresolved: Unresolved[];
 }
 
-const runTiles = (from: Tile, to: Tile): Tile[] => {
-  const tiles: Tile[] = [];
-  const dx = Math.sign(to.x - from.x);
-  const dy = Math.sign(to.y - from.y);
-  for (let t = from; ; t = { x: t.x + dx, y: t.y + dy }) {
-    tiles.push(t);
-    if (t.x === to.x && t.y === to.y) return tiles;
-  }
-};
-
 /**
  * The plan for a layout as checklist lines, each with what it leaves behind. The plan is played
  * through to learn what each step brings about - which building lands where, which level an
  * upgrade reaches - and where each building ends up, to tell a move to its spot from one that
  * only sets it aside.
  */
-export const toChecklist = (start: SimCity, target: TargetCity, sizeAt: SizeAt, sentAt: number): Checklist => {
-  const plan = solveMovePlan(start, target, sizeAt);
-  return { sentAt, steps: checklistSteps(start, plan.steps, plan.city), unresolved: plan.unresolved };
+export const toChecklist = (start: SimCity, target: TargetCity, rules: PlanRules, sentAt: number): Checklist => {
+  const plan = solveMovePlan(start, target, rules);
+  return {
+    sentAt,
+    steps: checklistSteps(ignoringConnections(start), plan.steps, plan.city),
+    unresolved: plan.unresolved,
+  };
 };
 
 const checklistSteps = (start: SimCity, actions: SimAction[], end: SimCity): ChecklistStep[] => {
@@ -108,13 +102,6 @@ const checklistSteps = (start: SimCity, actions: SimAction[], end: SimCity): Che
       case 'sellStreets':
         steps.push({ action, expect: { type: 'noStreets', tiles: action.tiles }, done: false });
         break;
-      case 'layRun':
-        steps.push({
-          action,
-          expect: { type: 'streets', street: action.street, tiles: runTiles(action.from, action.to) },
-          done: false,
-        });
-        break;
     }
   }
   return steps;
@@ -145,8 +132,6 @@ export const isDone = (expect: Expectation, city: SimCity): boolean => {
       return !same(expect.id, expect.kind);
     case 'noStreets':
       return expect.tiles.every(({ x, y }) => !city.streets.has(tileKey(x, y)));
-    case 'streets':
-      return expect.tiles.every(({ x, y }) => city.streets.get(tileKey(x, y)) === expect.street);
   }
 };
 
@@ -156,10 +141,11 @@ const WAITS: SimRefusal[] = ['busy', 'no-builder'];
 /**
  * Plays the steps still to take against the city as it stands, letting the waits pass, to see
  * whether they still hold. A step taken out of order, or a move the plan never asked for, can
- * leave them unplayable - that is when the rest of the plan is worked out again.
+ * leave them unplayable - that is when the rest of the plan is worked out again. Connections are
+ * left out, as the plan leaves them: laying streets is the player's business.
  */
 const stillPlayable = (city: SimCity, steps: ChecklistStep[]) => {
-  let at = city;
+  let at = ignoringConnections(city);
   for (const step of steps) {
     let result = applyAction(at, step.action);
     while (!result.ok && WAITS.includes(result.refusal)) {
@@ -179,7 +165,12 @@ const stillPlayable = (city: SimCity, steps: ChecklistStep[]) => {
  * ticked even when a later step moves the same building on. When the steps left no longer play
  * from the city as it stands, they alone are worked out again; the ticked ones stay in the list.
  */
-export const updateChecklist = (checklist: Checklist, city: SimCity, target: TargetCity, sizeAt: SizeAt): Checklist => {
+export const updateChecklist = (
+  checklist: Checklist,
+  city: SimCity,
+  target: TargetCity,
+  rules: PlanRules,
+): Checklist => {
   const steps = checklist.steps.map((step) =>
     step.done || !isDone(step.expect, city) ? step : { ...step, done: true },
   );
@@ -187,7 +178,7 @@ export const updateChecklist = (checklist: Checklist, city: SimCity, target: Tar
   if (stillPlayable(city, remaining)) {
     return { ...checklist, steps };
   }
-  const replanned = toChecklist(city, target, sizeAt, checklist.sentAt);
+  const replanned = toChecklist(city, target, rules, checklist.sentAt);
   return {
     ...checklist,
     steps: [...steps.filter((step) => step.done), ...replanned.steps],
@@ -197,10 +188,13 @@ export const updateChecklist = (checklist: Checklist, city: SimCity, target: Tar
 
 export type StepStatus = 'done' | 'next' | 'waiting' | 'later';
 
+/** What holds a step up for now: a running upgrade, a busy builder, or a street not laid yet. */
+const HOLDS: SimRefusal[] = [...WAITS, 'not-connected'];
+
 /**
  * Where each step stands. The first step the game would take now is the one to do next; steps
- * held up only by a running upgrade or a busy builder are waiting, so the list does not stall
- * behind a long upgrade while moves that need no builder could go ahead.
+ * held up only by a running upgrade, a busy builder or a missing street connection are waiting,
+ * so the list does not stall behind them while moves that need none of these could go ahead.
  */
 export const stepStatuses = (checklist: Checklist, city: SimCity): StepStatus[] => {
   let next = -1;
@@ -214,6 +208,6 @@ export const stepStatuses = (checklist: Checklist, city: SimCity): StepStatus[] 
       }
       return 'later';
     }
-    return WAITS.includes(result.refusal) ? 'waiting' : 'later';
+    return HOLDS.includes(result.refusal) ? 'waiting' : 'later';
   });
 };

@@ -2,7 +2,7 @@ import { getAccountById, listAccounts, loadAccount } from '../../elvenar/account
 import { getBuildings } from '../../elvenar/getBuildings';
 import { getBuildingSets } from '../../elvenar/getBuildingSets';
 import { CityBlock } from '../CityBlock';
-import { catalogueOf, currentCity, sizeAtFrom, targetFromBlocks } from './fromGame';
+import { catalogueOf, currentCity, planRulesFrom, targetFromBlocks } from './fromGame';
 import { saveMoveTarget } from './moveTargetStore';
 import { solveMovePlan, Unresolved } from './solveMovePlan';
 
@@ -75,7 +75,7 @@ export const sendMovePlan = async (
     return { sent: false, why: 'unknown-buildings', types: unknown };
   }
 
-  const plan = solveMovePlan(current.value, target.value, sizeAtFrom(catalogue));
+  const plan = solveMovePlan(current.value, target.value, planRulesFrom(catalogue));
   await saveMoveTarget(accountId, from, target.value);
   // A wait is not a step the player takes, so it is not counted as one.
   return { sent: true, steps: plan.steps.filter((step) => step.type !== 'finish').length, unresolved: plan.unresolved };

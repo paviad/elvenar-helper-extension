@@ -3,7 +3,6 @@ import { describeStep, describeUnresolved, Names } from './describeStep';
 
 const names: Names = {
   kind: (kind) => ({ G_Humans_FactoryPaper: 'Paper Mill', O_Humans_Armory: 'Armory' })[kind] ?? kind,
-  type: (type) => ({ S_Humans_Trail: 'Trail' })[type] ?? type,
 };
 
 const chain = (buildings: { id: number; kind: string; then?: { x: number; y: number } }[]): ChecklistStep => ({
@@ -46,14 +45,20 @@ describe('describeStep', () => {
     expect(describeStep(step, names).title).toBe('Upgrade Armory to level 7');
   });
 
-  it('counts the tiles of a street run, ends included', () => {
-    const step: ChecklistStep = {
-      action: { type: 'layRun', street: 'S_Humans_Trail', from: { x: 2, y: 5 }, to: { x: 8, y: 5 } },
-      expect: { type: 'streets', street: 'S_Humans_Trail', tiles: [] },
+  it('names the building street tiles are vacated for, and leaves selling or moving them to the player', () => {
+    const armory = { kind: 'O_Humans_Armory', level: 1, x: 1, y: 1, width: 2, length: 2 };
+    const step = (free?: boolean): ChecklistStep => ({
+      action: { type: 'sellStreets', tiles: [{ x: 1, y: 1 }], ...(free ? { free } : {}), for: [armory] },
+      expect: { type: 'noStreets', tiles: [] },
       done: false,
-    };
+    });
 
-    expect(describeStep(step, names).title).toBe('Lay Trail, 7 tiles');
+    expect(describeStep(step(), names)).toEqual({
+      title: 'Vacate 1 street tile for Armory',
+      detail: 'Sell them, or move them anywhere.',
+    });
+    // Only the free street, which is not worth keeping, is simply sold.
+    expect(describeStep(step(true), names)).toEqual({ title: 'Sell 1 street tile for Armory' });
   });
 });
 

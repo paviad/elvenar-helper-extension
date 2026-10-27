@@ -1,9 +1,8 @@
 import { matchBuildings, TargetBuilding } from './matchBuildings';
-import { planStreetRuns } from './planStreetRuns';
 import {
   applyAction,
   Drop,
-  isConnected,
+  Footprint,
   SimAction,
   SimBuilding,
   SimCity,
@@ -14,12 +13,23 @@ import {
 
 export interface TargetCity {
   buildings: TargetBuilding[];
-  /** Street tiles by `tileKey`, each with its street type. */
+  /**
+   * Street tiles by `tileKey`, each with its street type. The plan leaves streets to the player -
+   * what the layout shows of them says too little of what is meant - so this keeps only buildings
+   * off them.
+   */
   streets: ReadonlyMap<string, string>;
 }
 
 /** The size a kind of building has at a level, from the catalogue. */
 export type SizeAt = (kind: string, level: number) => { width: number; length: number } | undefined;
+
+/** What the plan needs to know from the game's catalogue. */
+export interface PlanRules {
+  sizeAt: SizeAt;
+  /** Whether a street costs nothing to lay, so tiles of it in a building's way are simply sold. */
+  isFreeStreet: (street: string) => boolean;
+}
 
 /** What the plan could not do, for the player to sort out in the planner or in the game. */
 export type Unresolved =
@@ -30,7 +40,6 @@ export type Unresolved =
   | { reason: 'locked'; kind: string; x: number; y: number }
   /** Every remaining move is blocked and there is no free ground to set a building down on. */
   | { reason: 'no-room'; ids: number[] }
-  | { reason: 'not-connected'; id: number; kind: string }
   /** A step the rules refused. The plan never means to make one, so this is a bug. */
   | { reason: 'refused'; action: SimAction; refusal: SimRefusal };
 
@@ -67,16 +76,43 @@ const occupancy = (city: SimCity) => {
 const freeBuilders = (city: SimCity) => city.builders - [...city.buildings.values()].filter((b) => b.busy).length;
 
 /**
+ * The city with every building's need for a street connection left out. Streets are the player's
+ * to lay, so the plan never waits on one: an upgrade of a building with no connection yet is
+ * planned all the same, and the game shows it waiting until it has one.
+ */
+export const ignoringConnections = (city: SimCity): SimCity => ({
+  ...city,
+  buildings: new Map([...city.buildings].map(([id, b]) => [id, { ...b, connection: 'none' }])),
+});
+
+/** A building as it will stand at a spot, at a size and level. */
+const footprintOf = (
+  b: { kind: string; level: number; stage?: number },
+  at: Tile,
+  size: { width: number; length: number },
+  level = b.level,
+): Footprint => ({
+  kind: b.kind,
+  level,
+  ...(b.stage !== undefined ? { stage: b.stage } : {}),
+  x: at.x,
+  y: at.y,
+  width: size.width,
+  length: size.length,
+});
+
+/**
  * The steps that turn the city into the target, every one checked against the game's rules as it
  * is chosen, so a plan never holds a step the game would refuse.
  *
  * In order: buildings with no place in the target are sold, since that frees ground for nothing;
  * buildings whose upgrades change their shape in ways that do not fit inside their final one are
  * upgraded where they stand, or wherever the game hands them over to be put down; the rest are
- * moved to their spots at the size they have now; the street tiles the target does
- * without are sold and its new streets laid; and last come placements from the inventory and
- * upgrades, which take builders and time. Upgrades go last because a building can only be
- * upgraded while connected, and the streets that connect it are laid just before.
+ * moved to their spots at the size they have now; and last come placements from the inventory and
+ * upgrades, which take builders and time.
+ *
+ * Streets are left to the player, save where tiles are in the way of a building going down or
+ * growing: the step before it vacates them, by sale or by moving them anywhere at all.
  *
  * Moving is where the work is. A move whose spot is free is made first, as each one frees ground
  * for the others. Failing that, a chain: a building dropped on the one building in its way, that
@@ -85,10 +121,10 @@ const freeBuilders = (city: SimCity) => city.builders - [...city.buildings.value
  * building in the way of the most moves is set down on ground no target needs, and the search
  * goes on. Each building is set aside at most once, so this ends.
  */
-export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt): MovePlan => {
+export const solveMovePlan = (start: SimCity, target: TargetCity, { sizeAt, isFreeStreet }: PlanRules): MovePlan => {
   const steps: SimAction[] = [];
   const unresolved: Unresolved[] = [];
-  let city = start;
+  let city = ignoringConnections(start);
 
   const play = (action: SimAction) => {
     const result = applyAction(city, action);
@@ -163,14 +199,32 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
     }
   }
 
-  /** The street tiles under a spot that the target does without, and so can be sold to clear it. */
-  const streetsUnder = (tiles: Tile[]) =>
-    tiles.filter(({ x, y }) => city.streets.has(tileKey(x, y)) && !target.streets.has(tileKey(x, y)));
+  /** Vacates the street tiles under the buildings about to go down, which the game would refuse to drop there. */
+  const vacateFor = (coming: Footprint[]) => {
+    const byKey = new Map<string, Tile>();
+    const needing: Footprint[] = [];
+    for (const f of coming) {
+      const under = rect(f.x, f.y, f.width, f.length).filter(({ x, y }) => city.streets.has(tileKey(x, y)));
+      under.forEach((t) => byKey.set(tileKey(t.x, t.y), t));
+      if (under.length) needing.push(f);
+    }
+    const tiles = [...byKey.values()];
+    if (tiles.length) {
+      const free = tiles.every(({ x, y }) => isFreeStreet(city.streets.get(tileKey(x, y))!));
+      play({ type: 'sellStreets', tiles, ...(free ? { free } : {}), for: needing });
+    }
+  };
 
-  const sellStreets = (tiles: Tile[]) => {
-    const unique = [...new Map(tiles.map((t) => [tileKey(t.x, t.y), t])).values()];
-    if (unique.length) {
-      play({ type: 'sellStreets', tiles: unique });
+  /**
+   * Vacates the street tiles a building's next upgrade grows onto in place, unless a building is in
+   * the way as well: then the game hands it over to be put down, and the streets do not matter.
+   */
+  const vacateForGrowth = (id: number, size: { width: number; length: number }) => {
+    const b = city.buildings.get(id)!;
+    const byTile = occupancy(city);
+    const tiles = rect(b.x, b.y, size.width, size.length);
+    if (tiles.every((t) => isUnlocked(city, t) && [undefined, id].includes(byTile.get(tileKey(t.x, t.y))))) {
+      vacateFor([footprintOf(b, b, size, b.level + 1)]);
     }
   };
 
@@ -180,7 +234,7 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
       const building = city.buildings.get(id)!;
       const tiles = rect(spot.x, spot.y, building.width, building.length);
       if (tiles.every(({ x, y }) => [undefined, id].includes(byTile.get(tileKey(x, y))))) {
-        sellStreets(streetsUnder(tiles));
+        vacateFor([footprintOf(building, spot, building)]);
         pending.delete(id);
         return !play({ type: 'chain', drops: [{ id, ...spot }] });
       }
@@ -196,7 +250,7 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
     lift(city.buildings.get(first)!);
 
     const drops: Drop[] = [];
-    const cleared: Tile[] = [];
+    const landing: Footprint[] = [];
     for (let carried: number | undefined = first; carried !== undefined;) {
       const spot = pending.get(carried);
       if (!spot || drops.some((d) => d.id === carried)) {
@@ -208,7 +262,7 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
       if (covered.length > 1) {
         return undefined;
       }
-      cleared.push(...streetsUnder(tiles));
+      landing.push(footprintOf(building, spot, building));
       tiles.forEach(({ x, y }) => byTile.set(tileKey(x, y), building.id));
       drops.push({ id: building.id, ...spot });
       carried = covered[0];
@@ -216,14 +270,14 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
         lift(city.buildings.get(carried)!);
       }
     }
-    return { drops, cleared };
+    return { drops, landing };
   };
 
   const moveByChain = () => {
     for (const id of pending.keys()) {
       const chain = chainFrom(id);
       if (chain) {
-        sellStreets(chain.cleared);
+        vacateFor(chain.landing);
         chain.drops.forEach((drop) => pending.delete(drop.id));
         return !play({ type: 'chain', drops: chain.drops });
       }
@@ -233,10 +287,9 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
 
   /**
    * Ground for a building to be put down on that no target needs: unlocked, empty but for the
-   * building itself, and off the streets. When it has an upgrade still to start there, the ground
-   * has to keep it connected too.
+   * building itself, and off the streets.
    */
-  const freeGround = (b: SimBuilding, mustConnect: boolean): Tile | undefined => {
+  const freeGround = (b: SimBuilding): Tile | undefined => {
     const byTile = occupancy(city);
     const xs = city.unlocked.flatMap((a) => [a.x, a.x + a.width]);
     const ys = city.unlocked.flatMap((a) => [a.y, a.y + a.length]);
@@ -249,9 +302,7 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
             !city.streets.has(tileKey(t.x, t.y)) &&
             !reserved.has(tileKey(t.x, t.y)),
         );
-        if (!free) continue;
-        const there = { ...b, x, y };
-        if (!mustConnect || isConnected({ ...city, buildings: new Map(city.buildings).set(b.id, there) }, there)) {
+        if (free) {
           return { x, y };
         }
       }
@@ -261,7 +312,7 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
   /**
    * Upgrades a building level by level where each new shape fits: in place when it fits from the
    * building's corner, or else put down where the game hands it over - on its own spot for the last
-   * upgrade if that is free, otherwise on spare ground that keeps it connected for the next one.
+   * upgrade if that is free, otherwise on spare ground.
    */
   const upgradeWhereItFits = (id: number, sizes: { width: number; length: number }[], spot: Tile) => {
     for (const [index, size] of sizes.entries()) {
@@ -274,16 +325,13 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
         play({ type: 'finish', id: holding.id });
       }
 
+      vacateForGrowth(id, size);
       const inPlace = applyAction(city, { type: 'upgrade', id, ...size });
       if (inPlace.ok) {
         play({ type: 'upgrade', id, ...size });
         continue;
       }
       const building = city.buildings.get(id)!;
-      if (inPlace.refusal === 'not-connected') {
-        unresolved.push({ reason: 'not-connected', id, kind: building.kind });
-        return false;
-      }
 
       const grown = { ...building, ...size };
       const last = index === sizes.length - 1;
@@ -292,10 +340,10 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
       const ownSpotFree = ownSpot.every(({ x, y }) => [undefined, id].includes(byTile.get(tileKey(x, y))));
       let ground: Tile | undefined;
       if (last && ownSpotFree) {
-        sellStreets(streetsUnder(ownSpot));
+        vacateFor([footprintOf(building, spot, size, building.level + 1)]);
         ground = spot;
       } else {
-        ground = freeGround(grown, !last);
+        ground = freeGround(grown);
       }
       if (!ground) {
         unresolved.push({ reason: 'no-room', ids: [id] });
@@ -325,7 +373,7 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
       .sort((a, b) => b.blocks - a.blocks);
 
     for (const { b } of inTheWay) {
-      const ground = freeGround(b, false);
+      const ground = freeGround(b);
       if (ground) {
         return !play({ type: 'chain', drops: [{ id: b.id, ...ground }] });
       }
@@ -350,13 +398,6 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
     break;
   }
 
-  sellStreets([...city.streets.keys()].filter((key) => !target.streets.has(key)).map(parseTile));
-
-  const toLay = new Map([...target.streets].filter(([key, street]) => city.streets.get(key) !== street));
-  for (const run of planStreetRuns(toLay, target.streets)) {
-    play({ type: 'layRun', ...run });
-  }
-
   const places = matching.places.filter((spot) => {
     if (onUnlocked(spot)) return true;
     unresolved.push({ reason: 'locked', kind: spot.kind, x: spot.x, y: spot.y });
@@ -365,11 +406,6 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
   scheduleBuilds(places, upgrades);
 
   return { steps, unresolved, city };
-
-  function parseTile(key: string): Tile {
-    const [x, y] = key.split(',').map(Number);
-    return { x, y };
-  }
 
   /**
    * Placements and upgrades, as many at once as there are builders. Each is started, then waited
@@ -403,12 +439,13 @@ export const solveMovePlan = (start: SimCity, target: TargetCity, sizeAt: SizeAt
       const started: Work[] = [];
       for (const w of [...work]) {
         if (freeBuilders(city) < 1) break;
-        const refusal = play(w.next[0]);
-        if (refusal) {
-          if (refusal === 'not-connected') {
-            unresolved.pop();
-            unresolved.push({ reason: 'not-connected', id: w.id, kind: city.buildings.get(w.id)!.kind });
-          }
+        const next = w.next[0];
+        if (next.type === 'place') {
+          vacateFor([footprintOf(next.building, next.building, next.building)]);
+        } else if (next.type === 'upgrade') {
+          vacateForGrowth(next.id, next);
+        }
+        if (play(next)) {
           drop(w);
           continue;
         }

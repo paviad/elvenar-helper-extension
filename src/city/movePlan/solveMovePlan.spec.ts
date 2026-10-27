@@ -1,9 +1,10 @@
 import { TargetBuilding } from './matchBuildings';
 import { applyAction, SimAction, SimBuilding, SimCity, tileKey } from './rulesSimulator';
-import { SizeAt, solveMovePlan, TargetCity } from './solveMovePlan';
+import { ignoringConnections, PlanRules, SizeAt, solveMovePlan, TargetCity } from './solveMovePlan';
 
 const MAIN_HALL = 1;
 const TRAIL = 'S_Humans_Trail';
+const DWARVEN = 'S_Humans_Dwarven';
 
 const building = (
   id: number,
@@ -47,9 +48,12 @@ const target = (buildings: SimBuilding[], streets: [number, number][] = []): Tar
 /** Every kind keeps its size at every level, unless a test says otherwise. */
 const sameSize: SizeAt = () => ({ width: 2, length: 2 });
 
+/** The plan's rules for these sizes, with the Footpath as the free street and any other paid. */
+const rulesOf = (sizeAt: SizeAt = sameSize): PlanRules => ({ sizeAt, isFreeStreet: (street) => street === TRAIL });
+
 /** Plays the steps from the start, as the player would, and fails on the first the rules refuse. */
 const replay = (start: SimCity, steps: SimAction[]) => {
-  let at = start;
+  let at = ignoringConnections(start);
   for (const step of steps) {
     const result = applyAction(at, step);
     if (!result.ok) {
@@ -65,11 +69,10 @@ const layout = (buildings: Iterable<{ kind: string; x: number; y: number; level:
   [...buildings].map((b) => `${b.kind}@${b.x},${b.y}:${b.level}`).sort();
 
 const expectReached = (start: SimCity, goal: TargetCity, sizeAt: SizeAt = sameSize) => {
-  const plan = solveMovePlan(start, goal, sizeAt);
+  const plan = solveMovePlan(start, goal, rulesOf(sizeAt));
   expect(plan.unresolved).toEqual([]);
   const end = replay(start, plan.steps);
   expect(layout(end.buildings.values())).toEqual(layout(goal.buildings));
-  expect([...end.streets].sort()).toEqual([...goal.streets].sort());
   return plan;
 };
 
@@ -79,12 +82,12 @@ describe('solveMovePlan', () => {
   it('has nothing to do for a city already in place', () => {
     const start = city([building(2, 'A', 5, 5)]);
 
-    expect(solveMovePlan(start, target([building(2, 'A', 5, 5)]), sameSize).steps).toEqual([]);
+    expect(solveMovePlan(start, target([building(2, 'A', 5, 5)]), rulesOf()).steps).toEqual([]);
   });
 
   it('leaves a building outside the grid by design alone, like the Spire’s wonder', () => {
     const outside = building(2, 'B_All_Spire_AW', 16, -10);
-    const plan = solveMovePlan(city([outside]), target([outside]), sameSize);
+    const plan = solveMovePlan(city([outside]), target([outside]), rulesOf());
 
     expect(plan).toMatchObject({ steps: [], unresolved: [] });
   });
@@ -127,36 +130,65 @@ describe('solveMovePlan', () => {
     expect(chains(plan.steps).length).toBeGreaterThan(1);
   });
 
-  it('sells the street tiles under a spot just before the move that needs them', () => {
-    const start = city([building(2, 'A', 5, 5)], [[10, 10]]);
-    const plan = expectReached(start, target([building(2, 'A', 10, 10)]));
+  describe('streets', () => {
+    it('are vacated just before a building goes down on them, naming the building', () => {
+      const start = city([building(2, 'A', 5, 5)], [[10, 10]]);
+      const plan = expectReached(start, target([building(2, 'A', 10, 10)]));
 
-    expect(plan.steps.map((s) => s.type)).toEqual(['sellStreets', 'chain']);
+      expect(plan.steps).toEqual([
+        {
+          type: 'sellStreets',
+          tiles: [{ x: 10, y: 10 }],
+          free: true,
+          for: [{ kind: 'A', level: 1, x: 10, y: 10, width: 2, length: 2 }],
+        },
+        { type: 'chain', drops: [{ id: 2, x: 10, y: 10 }] },
+      ]);
+    });
+
+    it('are said to be sold only when every tile is the free street', () => {
+      const start = { ...city([building(2, 'A', 5, 5)], [[10, 10]]) };
+      const mixed = { ...start, streets: new Map(start.streets).set(tileKey(11, 10), DWARVEN) };
+
+      expect(expectReached(mixed, target([building(2, 'A', 10, 10)])).steps[0]).not.toHaveProperty('free');
+    });
+
+    it('are vacated for a building placed from the inventory, and for one growing onto them', () => {
+      const grows: SizeAt = (_kind, level) => ({ width: 2, length: level + 1 });
+      const start = city(
+        [building(2, 'R', 5, 5)],
+        [
+          [5, 7],
+          [12, 12],
+        ],
+      );
+      const goal = target([building(2, 'R', 5, 5, 2, 3, { level: 2 }), building(9, 'Totem', 12, 12, 2, 2)]);
+
+      const plan = expectReached(start, goal, grows);
+      expect(plan.steps.map((s) => s.type)).toEqual([
+        'sellStreets',
+        'place',
+        'sellStreets',
+        'upgrade',
+        'finish',
+        'finish',
+      ]);
+    });
+
+    it('are otherwise left alone: none sold, none laid', () => {
+      const start = city([building(2, 'A', 5, 5)], [[10, 10]]);
+      const goal = target([building(2, 'A', 5, 5)], [[3, 1]]);
+
+      expect(solveMovePlan(start, goal, rulesOf()).steps).toEqual([]);
+    });
   });
 
-  it('sells the streets the target does without and lays its new ones in straight runs', () => {
-    const start = city([], [[10, 10]]);
-    const goal = target(
-      [],
-      [5, 6, 7, 8].map((x) => [x, 12] as [number, number]),
-    );
-
-    const plan = expectReached(start, goal);
-    expect(plan.steps.map((s) => s.type)).toEqual(['sellStreets', 'layRun']);
-  });
-
-  it('upgrades a building that needs a street only after the street that connects it is laid', () => {
-    // The street runs from the Main Hall's right edge along row 0 to the building at (6, 0).
+  it('upgrades a building without a street connection all the same, the street being the player’s to lay', () => {
     const needsStreet = { connection: 'mainHall' as const };
     const start = city([building(2, 'R', 6, 0, 2, 2, needsStreet)]);
-    const goal = target(
-      [building(2, 'R', 6, 0, 2, 2, { ...needsStreet, level: 2 })],
-      [3, 4, 5].map((x) => [x, 0] as [number, number]),
-    );
+    const goal = target([building(2, 'R', 6, 0, 2, 2, { ...needsStreet, level: 2 })]);
 
-    const plan = expectReached(start, goal);
-    const types = plan.steps.map((s) => s.type);
-    expect(types.indexOf('layRun')).toBeLessThan(types.indexOf('upgrade'));
+    expect(expectReached(start, goal).steps.map((s) => s.type)).toEqual(['upgrade', 'finish']);
   });
 
   it('grows a building through each level it has to climb, one upgrade at a time', () => {
@@ -188,13 +220,6 @@ describe('solveMovePlan', () => {
       const plan = expectReached(start, goal, reshaped);
       expect(plan.steps.map((s) => s.type)).toEqual(['upgradeAndMove']);
     });
-
-    it('is said to need a street when it cannot be upgraded where it stands', () => {
-      const start = city([building(2, 'R', 10, 10, 2, 4, { connection: 'mainHall' })]);
-      const goal = target([building(2, 'R', 14, 4, 3, 3, { connection: 'mainHall', level: 2 })]);
-
-      expect(solveMovePlan(start, goal, reshaped).unresolved.map((u) => u.reason)).toEqual(['not-connected']);
-    });
   });
 
   it('keeps to the builders there are', () => {
@@ -216,7 +241,7 @@ describe('solveMovePlan', () => {
     const plan = solveMovePlan(
       start,
       target([building(2, 'R', 5, 5, 2, 2, { level: 2 }), building(3, 'C', 25, 25)]),
-      sameSize,
+      rulesOf(),
     );
 
     expect(plan.unresolved.map((u) => u.reason).sort()).toEqual(['locked', 'lower-level']);
@@ -243,7 +268,7 @@ describe('solveMovePlan', () => {
       building(5, 'Three', 7, 5, 1, 1),
     ]);
 
-    expect(solveMovePlan(start, goal, sameSize).unresolved.map((u) => u.reason)).toEqual(['no-room']);
+    expect(solveMovePlan(start, goal, rulesOf()).unresolved.map((u) => u.reason)).toEqual(['no-room']);
   });
 });
 
@@ -470,22 +495,18 @@ describe('solveMovePlan on random rearrangements', () => {
   it('always reaches the target with steps the rules accept', () => {
     for (let seed = 1; seed <= 300; seed++) {
       const { start, goal, sizeAt } = randomCase(seed);
-      const plan = solveMovePlan(start, goal, sizeAt);
+      const plan = solveMovePlan(start, goal, rulesOf(sizeAt));
 
       expect({ seed, unresolved: plan.unresolved }).toEqual({ seed, unresolved: [] });
       const end = replay(start, plan.steps);
       expect({ seed, layout: layout(end.buildings.values()) }).toEqual({ seed, layout: layout(goal.buildings) });
-      expect({ seed, streets: [...end.streets.keys()].sort() }).toEqual({
-        seed,
-        streets: [...goal.streets.keys()].sort(),
-      });
     }
   });
 
   it('reaches the target in a packed block, where nearly every drop lands on something', () => {
     for (let seed = 1; seed <= 300; seed++) {
       const { start, goal, sizeAt } = denseCase(seed);
-      const plan = solveMovePlan(start, goal, sizeAt);
+      const plan = solveMovePlan(start, goal, rulesOf(sizeAt));
 
       expect({ seed, unresolved: plan.unresolved }).toEqual({ seed, unresolved: [] });
       const end = replay(start, plan.steps);
@@ -496,7 +517,7 @@ describe('solveMovePlan on random rearrangements', () => {
   it('reaches the target when upgrades change shapes every which way', () => {
     for (let seed = 1; seed <= 300; seed++) {
       const { start, goal, sizeAt } = reshapeCase(seed);
-      const plan = solveMovePlan(start, goal, sizeAt);
+      const plan = solveMovePlan(start, goal, rulesOf(sizeAt));
 
       expect({ seed, unresolved: plan.unresolved }).toEqual({ seed, unresolved: [] });
       const end = replay(start, plan.steps);
@@ -510,7 +531,7 @@ describe('solveMovePlan on random rearrangements', () => {
   it('moves each building at most twice', () => {
     for (let seed = 1; seed <= 300; seed++) {
       const { start, goal, sizeAt } = (seed % 2 ? randomCase : denseCase)(seed);
-      const plan = solveMovePlan(start, goal, sizeAt);
+      const plan = solveMovePlan(start, goal, rulesOf(sizeAt));
       const drops = new Map<number, number>();
       for (const step of chains(plan.steps)) {
         if (step.type === 'chain') step.drops.forEach((d) => drops.set(d.id, (drops.get(d.id) ?? 0) + 1));

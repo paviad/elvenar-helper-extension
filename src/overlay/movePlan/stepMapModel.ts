@@ -23,8 +23,7 @@ export type Mark =
   | { type: 'to'; rect: MapBuilding; number?: number }
   | { type: 'place'; rect: MapBuilding }
   | { type: 'sell'; rect: MapRect }
-  | { type: 'sellTile'; tile: Tile }
-  | { type: 'layTile'; tile: Tile; end: boolean };
+  | { type: 'sellTile'; tile: Tile };
 
 export interface StepMapModel {
   /** The patch of city shown, in tiles. */
@@ -121,17 +120,10 @@ export const stepMap = (step: ChecklistStep, city: SimCity): StepMapModel | unde
       break;
     }
     case 'sellStreets':
+      // The building the tiles make way for, as it will stand, so they are found by what is coming.
+      (action.for ?? []).forEach((coming) => marks.push({ type: 'to', rect: placedAt(coming) }));
       action.tiles.forEach((tile) => marks.push({ type: 'sellTile', tile }));
       break;
-    case 'layRun': {
-      const step = { x: Math.sign(action.to.x - action.from.x), y: Math.sign(action.to.y - action.from.y) };
-      for (let t = action.from; ; t = { x: t.x + step.x, y: t.y + step.y }) {
-        const end = (t.x === action.from.x && t.y === action.from.y) || (t.x === action.to.x && t.y === action.to.y);
-        marks.push({ type: 'layTile', tile: t, end });
-        if (t.x === action.to.x && t.y === action.to.y) break;
-      }
-      break;
-    }
   }
 
   const rects = markRects(marks);

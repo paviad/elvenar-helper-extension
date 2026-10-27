@@ -433,7 +433,7 @@ describe('selling', () => {
     expect(refusal(play(city([]), { type: 'sell', id: MAIN_HALL }))).toBe('main-hall');
   });
 
-  it('takes the street tiles named, and only street tiles', () => {
+  it('takes the street tiles named, passing over any already cleared', () => {
     const start = city(
       [],
       [
@@ -443,35 +443,16 @@ describe('selling', () => {
     );
 
     expect(cityAfter(play(start, { type: 'sellStreets', tiles: [{ x: 10, y: 10 }] })).streets.size).toBe(1);
-    expect(refusal(play(start, { type: 'sellStreets', tiles: [{ x: 12, y: 10 }] }))).toBe('not-a-street');
-  });
-});
-
-describe('laying streets', () => {
-  const run = (from: [number, number], to: [number, number], street = 'S_Humans_Trail'): SimAction => ({
-    type: 'layRun',
-    street,
-    from: { x: from[0], y: from[1] },
-    to: { x: to[0], y: to[1] },
-  });
-
-  it('lays every tile of a straight run, either way round', () => {
-    const result = play(city([]), run([12, 10], [10, 10]));
-
-    expect([...cityAfter(result).streets.keys()].sort()).toEqual(['10,10', '11,10', '12,10']);
-  });
-
-  it('crosses existing street, replacing another kind', () => {
-    const result = play(city([], [[11, 10]]), run([10, 10], [12, 10], 'S_Humans_Dwarven'));
-
-    expect(cityAfter(result).streets.get('11,10')).toBe('S_Humans_Dwarven');
-  });
-
-  it('is never planned with a turn, since the game picks the turn itself', () => {
-    expect(refusal(play(city([]), run([10, 10], [12, 12])))).toBe('not-straight');
-  });
-
-  it('counts as blocked with a building in the way, which the game would lay the street around', () => {
-    expect(refusal(play(city([building(2, 11, 9)]), run([10, 10], [14, 10])))).toBe('run-blocked');
+    expect(
+      cityAfter(
+        play(start, {
+          type: 'sellStreets',
+          tiles: [
+            { x: 11, y: 10 },
+            { x: 12, y: 10 },
+          ],
+        }),
+      ).streets.size,
+    ).toBe(1);
   });
 });

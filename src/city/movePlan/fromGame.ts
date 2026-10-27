@@ -5,7 +5,7 @@ import { UnlockedArea } from '../../model/unlockedArea';
 import { CityBlock } from '../CityBlock';
 import { TargetBuilding } from './matchBuildings';
 import { connectionKindFor, SimBuilding, SimCity, tileKey } from './rulesSimulator';
-import { SizeAt, TargetCity } from './solveMovePlan';
+import { PlanRules, SizeAt, TargetCity } from './solveMovePlan';
 
 /** The game's building catalogue, looked up by type and by kind at a level. */
 export interface Catalogue {
@@ -29,6 +29,16 @@ export const sizeAtFrom =
     const building = catalogue.byKindAtLevel.get(`${kind}|${level}`);
     return building && { width: building.width, length: building.length };
   };
+
+/**
+ * What the plan needs from the catalogue. The one free street is the Footpath - each race has its
+ * own - and it is also the only street that asks for no chapter (seen 2026-10-27), which is how it
+ * is told; prices are not in the catalogue.
+ */
+export const planRulesFrom = (catalogue: Catalogue): PlanRules => ({
+  sizeAt: sizeAtFrom(catalogue),
+  isFreeStreet: (street) => !catalogue.byId.get(street)?.requirements?.chapter,
+});
 
 /**
  * The set each piece belongs to, for the pieces that connect through their set. Those are all

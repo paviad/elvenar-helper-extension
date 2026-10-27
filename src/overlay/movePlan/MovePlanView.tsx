@@ -5,7 +5,7 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Alert, Box, Button, CircularProgress, List, ListItemButton, Stack, Typography } from '@mui/material';
 import { StepStatus, stepStatuses, toChecklist, updateChecklist } from '../../city/movePlan/checklist';
-import { Catalogue, catalogueOf, currentCity, sizeAtFrom, spriteIdOf } from '../../city/movePlan/fromGame';
+import { Catalogue, catalogueOf, currentCity, planRulesFrom, spriteIdOf } from '../../city/movePlan/fromGame';
 import { clearMoveTarget, getMoveTarget, MoveTarget, moveTargetKey } from '../../city/movePlan/moveTargetStore';
 import { applyAction } from '../../city/movePlan/rulesSimulator';
 import { getBuildings } from '../../elvenar/getBuildings';
@@ -55,13 +55,12 @@ const useCatalogue = () => {
     void Promise.all([getBuildings(), getBuildingSets()]).then(([buildings, sets]) => {
       if (!live) return;
       const kindNames = new Map(buildings.map((b) => [b.base_name, b.name]));
-      const typeNames = new Map(buildings.map((b) => [b.id, b.name]));
       const catalogue = catalogueOf(buildings);
       setData({
         catalogue,
         sets,
         spriteId: spriteIdOf(catalogue),
-        names: { kind: (kind) => kindNames.get(kind) ?? kind, type: (type) => typeNames.get(type) ?? type },
+        names: { kind: (kind) => kindNames.get(kind) ?? kind },
       });
     });
     return () => {
@@ -110,11 +109,11 @@ export const MovePlanView = () => {
       return;
     }
     if (!city) return;
-    const sizeAt = sizeAtFrom(data.catalogue);
+    const rules = planRulesFrom(data.catalogue);
     const next =
       checklist?.sentAt === sent.sentAt
-        ? updateChecklist(checklist, city, sent.target, sizeAt)
-        : toChecklist(city, sent.target, sizeAt, sent.sentAt);
+        ? updateChecklist(checklist, city, sent.target, rules)
+        : toChecklist(city, sent.target, rules, sent.sentAt);
     if (JSON.stringify(next) !== JSON.stringify(checklist)) {
       setChecklist(next);
     }
@@ -182,7 +181,9 @@ export const MovePlanView = () => {
               refusal && !refusal.ok
                 ? refusal.refusal === 'busy'
                   ? 'Waiting for its upgrade to finish.'
-                  : 'Waiting for a free builder.'
+                  : refusal.refusal === 'not-connected'
+                    ? 'Waiting for a street connection.'
+                    : 'Waiting for a free builder.'
                 : undefined;
             const map = open ? stepMap(step, city) : undefined;
             return (

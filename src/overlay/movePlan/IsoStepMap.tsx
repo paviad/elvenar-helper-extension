@@ -171,10 +171,6 @@ export const IsoStepMap = ({
         case 'sellTile':
           fill({ ...mark.tile, width: 1, length: 1 }, alpha(theme.palette.error.main, 0.7));
           break;
-        case 'layTile':
-          fill({ ...mark.tile, width: 1, length: 1 }, alpha(theme.palette.info.main, mark.end ? 0.9 : 0.5));
-          if (mark.end) stroke({ ...mark.tile, width: 1, length: 1 }, theme.palette.text.primary, 1.5);
-          break;
       }
     }
   }, [model, sprites, spriteId, theme, left, top, scale, width, height, view]);

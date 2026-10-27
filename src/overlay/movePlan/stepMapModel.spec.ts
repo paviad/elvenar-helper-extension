@@ -79,14 +79,17 @@ describe('stepMap', () => {
     expect(view.length).toBeGreaterThanOrEqual(10);
   });
 
-  it('marks both ends of a street run', () => {
+  it('shows street tiles to vacate over the building they make way for, as it will stand', () => {
+    const coming = { kind: 'O_Humans_Armory', level: 3, x: 20, y: 5, width: 2, length: 2 };
     const step: ChecklistStep = {
-      action: { type: 'layRun', street: 'S_Humans_Trail', from: { x: 20, y: 5 }, to: { x: 23, y: 5 } },
-      expect: { type: 'streets', street: 'S_Humans_Trail', tiles: [] },
+      action: { type: 'sellStreets', tiles: [{ x: 21, y: 6 }], for: [coming] },
+      expect: { type: 'noStreets', tiles: [] },
       done: false,
     };
 
-    const ends = stepMap(step, city([]))!.marks.flatMap((m) => (m.type === 'layTile' && m.end ? [m.tile.x] : []));
-    expect(ends).toEqual([20, 23]);
+    expect(stepMap(step, city([]))!.marks).toEqual([
+      { type: 'to', rect: coming },
+      { type: 'sellTile', tile: { x: 21, y: 6 } },
+    ]);
   });
 });

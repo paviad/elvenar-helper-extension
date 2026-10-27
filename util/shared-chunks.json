@@ -2,7 +2,6 @@
   "elvenassist-shared-overlay-tab": [
     "./src/city/buildingFinder.ts",
     "./src/city/movePlan/matchBuildings.ts",
-    "./src/city/movePlan/planStreetRuns.ts",
     "./src/city/movePlan/rulesSimulator.ts",
     "./src/city/movePlan/solveMovePlan.ts",
     "./src/city/vestigeOfEternity.ts",

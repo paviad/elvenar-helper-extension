@@ -71,6 +71,15 @@ export interface Tile {
   y: number;
 }
 
+/** A building as it will stand once put down or grown: what vacated street tiles make room for. */
+export interface Footprint extends Tile {
+  kind: string;
+  level: number;
+  stage?: number;
+  width: number;
+  length: number;
+}
+
 /** One building put down. The first of a chain is the one picked up to start it. */
 export interface Drop extends Tile {
   id: number;
@@ -87,9 +96,12 @@ export type SimAction =
   /** Time passing until a construction or upgrade is done, freeing its builder. */
   | { type: 'finish'; id: number }
   | { type: 'sell'; id: number }
-  | { type: 'sellStreets'; tiles: Tile[] }
-  /** Streets laid between two tiles, clicked one after the other. */
-  | { type: 'layRun'; street: string; from: Tile; to: Tile };
+  /**
+   * Street tiles vacated for the buildings about to go down on them, sold or moved anywhere as the
+   * player likes: one from an early chapter is cheap, and may be due for replacing anyway. `free`
+   * when every one is the free street, which there is no point keeping.
+   */
+  | { type: 'sellStreets'; tiles: Tile[]; free?: boolean; for?: Footprint[] };
 
 export type SimRefusal =
   | 'unknown-building'
@@ -104,9 +116,7 @@ export type SimRefusal =
   | 'does-not-fit'
   | 'fits-in-place'
   | 'main-hall'
-  | 'not-a-street'
-  | 'not-straight'
-  | 'run-blocked';
+  | 'not-a-street';
 
 export type SimResult = { ok: true; city: SimCity } | { ok: false; refusal: SimRefusal };
 
@@ -398,40 +408,11 @@ export const applyAction = (city: SimCity, action: SimAction): SimResult => {
     }
 
     case 'sellStreets': {
+      // A tile already cleared is passed over: it is the ground that counts, so a step half done,
+      // or done by moving the tiles away, still plays.
       const streets = new Map(city.streets);
       for (const { x, y } of action.tiles) {
-        if (!streets.delete(tileKey(x, y))) {
-          return { ok: false, refusal: 'not-a-street' };
-        }
-      }
-      return { ok: true, city: { ...city, streets } };
-    }
-
-    case 'layRun': {
-      const { from, to } = action;
-      if (from.x !== to.x && from.y !== to.y) {
-        // The game picks the turn itself, so a plan never asks for one.
-        return { ok: false, refusal: 'not-straight' };
-      }
-      const tiles = footprint(
-        Math.min(from.x, to.x),
-        Math.min(from.y, to.y),
-        Math.abs(to.x - from.x) + 1,
-        Math.abs(to.y - from.y) + 1,
-      );
-      if (!tiles.every((tile) => isUnlocked(city, tile))) {
-        return { ok: false, refusal: 'outside-unlocked' };
-      }
-      // With a building in the way the game lays the street around it, which is a different run
-      // from the one asked for, so for a plan that is a refusal.
-      const byTile = occupancy(city.buildings.values());
-      if (tiles.some(({ x, y }) => byTile.has(tileKey(x, y)))) {
-        return { ok: false, refusal: 'run-blocked' };
-      }
-      // Tiles already holding this street are left as they are; any other street is replaced.
-      const streets = new Map(city.streets);
-      for (const { x, y } of tiles) {
-        streets.set(tileKey(x, y), action.street);
+        streets.delete(tileKey(x, y));
       }
       return { ok: true, city: { ...city, streets } };
     }
