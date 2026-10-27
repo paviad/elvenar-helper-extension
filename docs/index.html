@@ -305,6 +305,11 @@
         order: 2;
       }
 
+      /* Mirror the columns too, so a screenshot on the right is as wide as one on the left. */
+      .showcase:nth-child(odd):not(.spotlight) {
+        grid-template-columns: 1fr 1.25fr;
+      }
+
       .spotlight.showcase .shot {
         order: 0;
       }
@@ -554,7 +559,8 @@
       }
 
       @media (max-width: 900px) {
-        .showcase {
+        .showcase,
+        .showcase:nth-child(odd):not(.spotlight) {
           grid-template-columns: 1fr;
           gap: 1.75rem;
         }
@@ -685,9 +691,9 @@
               <span class="feature-icon"><i class="fas fa-route"></i></span>
               <h3>Move Plan <span class="badge-new">NEW IN 11.0</span></h3>
               <p>
-                Arrange your city in the planner, then choose City &#9656; Send Move Plan to Game. The helper's Plan tab
-                (<kbd>Alt+C</kbd>, <kbd>L</kbd>) lists the moves that turn your city into that layout, in an order the
-                game will accept.
+                Arrange your city in the planner, then choose City &#9656; Send Move Plan to Game. In the game, press
+                <kbd>Alt+C</kbd> then <kbd>L</kbd>: the helper's Plan tab lists the moves that turn your city into that
+                layout, in an order the game will accept.
               </p>
               <ul class="points">
                 <li>
@@ -770,9 +776,10 @@
               <span class="feature-icon"><i class="fas fa-hammer"></i></span>
               <h3>Build Menu</h3>
               <p>
-                Add buildings to your plan from a categorized catalog. Plan for future chapters before you even unlock
-                the buildings.
+                Add buildings to your plan from a categorized catalog, each shown with its picture from the game. Pick a
+                level and the picture follows it.
               </p>
+              <p>Plan for future chapters before you even unlock the buildings.</p>
             </div>
           </div>
         </div>
