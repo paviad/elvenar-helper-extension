@@ -164,6 +164,10 @@ export const IsoStepMap = ({
           }
           break;
         }
+        case 'spot':
+          fill(mark.rect, alpha(pick, 0.12));
+          stroke(mark.rect, pick, 1.5);
+          break;
         case 'sell':
           fill(mark.rect, alpha(theme.palette.error.main, 0.35));
           stroke(mark.rect, theme.palette.error.main, 2);

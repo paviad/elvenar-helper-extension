@@ -1,5 +1,5 @@
 import { ChecklistStep } from '../../city/movePlan/checklist';
-import { SimCity, Tile } from '../../city/movePlan/rulesSimulator';
+import { SimCity, Tile, tileKey } from '../../city/movePlan/rulesSimulator';
 
 export interface MapRect {
   x: number;
@@ -23,7 +23,12 @@ export type Mark =
   | { type: 'to'; rect: MapBuilding; number?: number }
   | { type: 'place'; rect: MapBuilding }
   | { type: 'sell'; rect: MapRect }
-  | { type: 'sellTile'; tile: Tile };
+  | { type: 'sellTile'; tile: Tile }
+  /**
+   * Where a building goes in a later step, outlined only: drawn as it will stand, it would look
+   * as though it were there already.
+   */
+  | { type: 'spot'; rect: MapRect };
 
 export interface StepMapModel {
   /** The patch of city shown, in tiles. */
@@ -120,11 +125,17 @@ export const stepMap = (step: ChecklistStep, city: SimCity): StepMapModel | unde
       break;
     }
     case 'sellStreets':
-      // The building the tiles make way for, as it will stand, so they are found by what is coming.
-      (action.for ?? []).forEach((coming) => marks.push({ type: 'to', rect: placedAt(coming) }));
-      action.tiles.forEach((tile) => marks.push({ type: 'sellTile', tile }));
+      // Where the building the tiles make way for goes, so they are found by what is coming.
+      (action.for ?? []).forEach(({ x, y, width, length }) =>
+        marks.push({ type: 'spot', rect: { x, y, width, length } }),
+      );
+      // Only the tiles still to vacate: the player may have moved or sold some already.
+      action.tiles
+        .filter(({ x, y }) => city.streets.has(tileKey(x, y)))
+        .forEach((tile) => marks.push({ type: 'sellTile', tile }));
       break;
   }
+  if (!marks.length) return undefined;
 
   const rects = markRects(marks);
   let minX = Math.min(...rects.map((r) => r.x)) - MARGIN;
