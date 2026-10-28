@@ -166,7 +166,10 @@ export const MovePlanView = () => {
         </Button>
       </Stack>
 
-      <Stack sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', px: 1, pb: 1, gap: 1 }}>
+      {/* The scrollbar's room is kept even when nothing scrolls: the step map takes the width it is
+          given, so a scrollbar coming and going would resize the map, which would bring the
+          scrollbar back or take it away again, over and over. */}
+      <Stack sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', scrollbarGutter: 'stable', px: 1, pb: 1, gap: 1 }}>
         {allDone && checklist.unresolved.length === 0 && (
           <Alert severity='success'>Your city matches the layout.</Alert>
         )}
