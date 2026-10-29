@@ -306,12 +306,8 @@
       }
 
       /* Mirror the columns too, so a screenshot on the right is as wide as one on the left. */
-      .showcase:nth-child(odd):not(.spotlight) {
+      .showcase:nth-child(odd) {
         grid-template-columns: 1fr 1.25fr;
-      }
-
-      .spotlight.showcase .shot {
-        order: 0;
       }
 
       .shot {
@@ -338,26 +334,42 @@
         height: auto;
       }
 
-      /* Stands in for a screenshot that has not been added to docs/ yet. */
-      .shot.is-missing {
-        aspect-ratio: 16 / 10;
+      /* A demo video plays in place, so it neither zooms nor lifts. */
+      .shot-video {
         cursor: default;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(15, 5, 24, 0.9));
       }
 
-      .shot.is-missing img {
-        display: none;
+      .shot-video:hover {
+        transform: none;
       }
 
-      .shot.is-missing::after {
-        content: '\f4d7';
-        font-family: 'Font Awesome 6 Free';
-        font-weight: 900;
-        font-size: 5rem;
-        color: rgba(251, 191, 36, 0.5);
+      .shot video {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1280 / 610;
+      }
+
+      .video-toggle {
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(15, 5, 24, 0.75);
+        color: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+        transition: background 0.2s;
+      }
+
+      .video-toggle:hover,
+      .video-toggle:focus-visible {
+        background: var(--accent);
+        color: #1a0b2e;
       }
 
       .copy .feature-icon {
@@ -446,6 +458,18 @@
           radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.2) 0, transparent 60%),
           radial-gradient(at 100% 100%, rgba(251, 191, 36, 0.08) 0, transparent 60%), var(--glass-bg);
         box-shadow: 0 30px 80px -30px rgba(124, 58, 237, 0.5);
+      }
+
+      /* Under the video: the description on the left, what a plan does on the right. */
+      .spotlight-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        margin-top: 2.5rem;
+      }
+
+      .spotlight-body .points {
+        margin-top: 0;
       }
 
       .spotlight .copy h3 {
@@ -560,7 +584,8 @@
 
       @media (max-width: 900px) {
         .showcase,
-        .showcase:nth-child(odd):not(.spotlight) {
+        .showcase:nth-child(odd),
+        .spotlight-body {
           grid-template-columns: 1fr;
           gap: 1.75rem;
         }
@@ -607,6 +632,13 @@
         .copy h3,
         .spotlight .copy h3 {
           font-size: 1.6rem;
+        }
+        .video-toggle {
+          right: 0.5rem;
+          bottom: 0.5rem;
+          width: 2rem;
+          height: 2rem;
+          font-size: 0.8rem;
         }
       }
 
@@ -679,29 +711,52 @@
 
       <section class="section" id="move-plan">
         <div class="container">
-          <div class="showcase spotlight">
-            <figure class="shot">
-              <img
-                src="ss12.jpg"
-                alt="The helper's Plan tab, with a map of the next move"
-                onerror="this.parentElement.classList.add('is-missing')"
-              />
+          <div class="spotlight">
+            <figure class="shot shot-video">
+              <video
+                id="demo-video"
+                src="move-plan-demo.mp4"
+                poster="move-plan-demo.jpg"
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                aria-label="A layout made in the planner, sent to the game and made move by move, each step outlined on the game's map"
+              ></video>
+              <button id="demo-toggle" class="video-toggle" type="button" aria-label="Play the demo">
+                <i class="fas fa-play"></i>
+              </button>
             </figure>
-            <div class="copy">
-              <span class="feature-icon"><i class="fas fa-route"></i></span>
-              <h3>Move Plan <span class="badge-new">NEW IN 11.0</span></h3>
-              <p>
-                Arrange your city in the planner, then choose City &#9656; Send Move Plan to Game. In the game, press
-                <kbd>Alt+C</kbd> then <kbd>L</kbd>: the helper's Plan tab lists the moves that turn your city into that
-                layout, in an order the game will accept.
-              </p>
+            <div class="spotlight-body">
+              <div class="copy">
+                <span class="feature-icon"><i class="fas fa-route"></i></span>
+                <h3>Move Plan <span class="badge-new">NEW IN 11.0</span></h3>
+                <p>
+                  Arrange your city in the planner, then choose City &#9656; Send Move Plan to Game. In the game, press
+                  <kbd>Alt+C</kbd> then <kbd>L</kbd>: the helper's Plan tab lists the moves that turn your city into
+                  that layout, in an order the game will accept.
+                </p>
+                <p class="note">ElvenAssist never makes a move itself. Every move is yours to make.</p>
+              </div>
               <ul class="points">
                 <li>
                   <i class="fas fa-check"></i>
                   <span
-                    >Drags that swap buildings in one go, street tiles to sell and streets to lay, upgrades, and
-                    buildings to place from the inventory.</span
+                    >Drags that swap buildings in one go, upgrades, and buildings to place from the inventory. Streets
+                    stay yours: the plan only names the tiles in a building's way.</span
                   >
+                </li>
+                <li>
+                  <i class="fas fa-check"></i>
+                  <span
+                    >The open step is outlined right on the game's map, yellow for the building to pick up and cyan for
+                    where it goes, with an arrow when it is off screen. Works best on low graphics or a closer
+                    zoom.</span
+                  >
+                </li>
+                <li>
+                  <i class="fas fa-check"></i>
+                  <span>Every step also has its own map in the helper, drawn with the game's pictures.</span>
                 </li>
                 <li>
                   <i class="fas fa-check"></i>
@@ -710,15 +765,7 @@
                     steps left are worked out again.</span
                   >
                 </li>
-                <li>
-                  <i class="fas fa-check"></i>
-                  <span
-                    >Every step has a map drawn with the game's own pictures: the buildings to move picked out, and a
-                    see-through copy where each one goes.</span
-                  >
-                </li>
               </ul>
-              <p class="note">ElvenAssist never makes a move itself. Every move is yours to make.</p>
             </div>
           </div>
         </div>
@@ -945,6 +992,35 @@
       });
 
       lightbox.addEventListener('click', () => lightbox.close());
+
+      // The demo plays while it is on screen, unless the visitor asked for less motion,
+      // and the corner button pauses it for good or starts it again.
+      const demo = document.getElementById('demo-video');
+      const demoToggle = document.getElementById('demo-toggle');
+      let demoPausedByVisitor = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const showDemoState = () => {
+        const playing = !demo.paused;
+        demoToggle.innerHTML = `<i class="fas fa-${playing ? 'pause' : 'play'}"></i>`;
+        demoToggle.setAttribute('aria-label', playing ? 'Pause the demo' : 'Play the demo');
+      };
+
+      demo.addEventListener('play', showDemoState);
+      demo.addEventListener('pause', showDemoState);
+
+      demoToggle.addEventListener('click', () => {
+        demoPausedByVisitor = !demo.paused;
+        if (demo.paused) demo.play().catch(() => {});
+        else demo.pause();
+      });
+
+      new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !demoPausedByVisitor) demo.play().catch(() => {});
+          else if (!entry.isIntersecting) demo.pause();
+        },
+        { threshold: 0.4 },
+      ).observe(demo);
     </script>
 
     <footer>
