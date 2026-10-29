@@ -23,7 +23,8 @@
   "host_permissions": [
     "https://*.elvenar.com/*",
     "https://*.innogamescdn.com/*",
-    "https://javascriptorian.com/*"
+    "https://javascriptorian.com/*",
+    "https://cauldron-optimizer.vercel.app/*"
   ],
   "background": {
     "scripts": [

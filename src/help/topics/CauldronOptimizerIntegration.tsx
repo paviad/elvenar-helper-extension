@@ -24,6 +24,10 @@ export const CauldronOptimizerIntegration = () => (
       Keep the Cauldron Optimizer open in another tab and log in there. When you open the Cauldron in the Magic Academy,
       ElvenAssist fills the optimizer in for you:
     </Typography>
+    <Alert severity='warning' sx={{ my: 1 }}>
+      In Firefox, check that ElvenAssist may access the optimizer: open Add-ons and Themes, choose ElvenAssist, and on
+      its Permissions tab switch on <strong>cauldron-optimizer.vercel.app</strong>.
+    </Alert>
     <List dense disablePadding>
       <ListItem>
         <ListItemText
