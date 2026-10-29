@@ -3,7 +3,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import { Alert, Box, Button, CircularProgress, List, ListItemButton, Stack, Typography } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Alert, Box, Button, CircularProgress, List, ListItemButton, Stack, Tooltip, Typography } from '@mui/material';
 import { StepStatus, stepStatuses, toChecklist, updateChecklist } from '../../city/movePlan/checklist';
 import { Catalogue, catalogueOf, currentCity, planRulesFrom, spriteIdOf } from '../../city/movePlan/fromGame';
 import { clearMoveTarget, getMoveTarget, MoveTarget, moveTargetKey } from '../../city/movePlan/moveTargetStore';
@@ -78,6 +79,11 @@ const STATUS_ICON: Record<StepStatus, React.ReactNode> = {
   later: <RadioButtonUncheckedIcon fontSize='small' color='disabled' />,
 };
 
+const CAUTION =
+  "Outlining the step on the game's map is experimental. Finding your city on screen takes a lot of work, and the " +
+  'game may stutter a little while it does. It was tried mostly at 1920×1080 on low graphics, and may work less ' +
+  'well at other sizes and settings.';
+
 /**
  * The moves that turn the city into the layout sent from the planner, ticked off as the game
  * reports each one made. The list is worked out when the layout arrives and kept; after every
@@ -93,6 +99,7 @@ export const MovePlanView = () => {
   const sent = useMoveTarget(accountId);
   const data = useCatalogue();
   const [selected, setSelected] = useState<number | null>(null);
+  const [cautionOpen, setCautionOpen] = useState(false);
 
   const cityQuery = account?.cityQuery;
   const city = useMemo(
@@ -167,10 +174,26 @@ export const MovePlanView = () => {
             {done} of {checklist.steps.length} done
           </Typography>
         </Box>
+        {/* The hover text is left out while the same words are open below. */}
+        <Tooltip arrow title={cautionOpen ? '' : CAUTION}>
+          <Button
+            size='small'
+            color='warning'
+            startIcon={<WarningAmberIcon />}
+            onClick={() => setCautionOpen(!cautionOpen)}
+          >
+            Caution – please read
+          </Button>
+        </Tooltip>
         <Button size='small' onClick={forget}>
           Clear
         </Button>
       </Stack>
+      {cautionOpen && (
+        <Alert severity='warning' onClose={() => setCautionOpen(false)} sx={{ mx: 1, mb: 1 }}>
+          {CAUTION}
+        </Alert>
+      )}
 
       {/* The scrollbar's room is kept even when nothing scrolls: the step map takes the width it is
           given, so a scrollbar coming and going would resize the map, which would bring the
