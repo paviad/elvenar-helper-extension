@@ -16,6 +16,7 @@ import { getAccountId, getOverlayStore } from '../overlayStore';
 import { describeStep, describeUnresolved, Names } from './describeStep';
 import { IsoStepMap } from './IsoStepMap';
 import { stepMap } from './stepMapModel';
+import { useGameMarkers } from './useGameMarkers';
 
 /**
  * The layout last sent from the planner. Read again whenever the planner sends another, so a
@@ -119,6 +120,13 @@ export const MovePlanView = () => {
     }
   }, [city, sent, data, checklist, setChecklist]);
 
+  // The step open in the list is shown on the game's own map as well, while the panel is open.
+  const expanded = store((state) => state.overlayExpanded);
+  const statuses = useMemo(() => (checklist && city ? stepStatuses(checklist, city) : []), [checklist, city]);
+  const shown = selected ?? statuses.indexOf('next');
+  const openStep = sent && checklist && statuses[shown] !== 'done' ? checklist.steps[shown] : undefined;
+  const onGameMap = useGameMarkers(expanded ? openStep : undefined, city, data?.spriteId);
+
   if (sent === null || !data || (sent && (!city || !checklist))) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
@@ -138,9 +146,7 @@ export const MovePlanView = () => {
     );
   }
 
-  const statuses = stepStatuses(checklist, city);
   const done = checklist.steps.filter((step) => step.done).length;
-  const shown = selected ?? statuses.indexOf('next');
   const allDone = done === checklist.steps.length;
   const kindOf = (id: number) => city.buildings.get(id)?.kind;
 
@@ -215,6 +221,19 @@ export const MovePlanView = () => {
                   {open && text.detail && (
                     <Typography variant='caption' color='text.secondary' component='div'>
                       {text.detail}
+                    </Typography>
+                  )}
+                  {open && onGameMap === 'searching' && (
+                    <Stack direction='row' sx={{ alignItems: 'center', gap: 0.75, mt: 0.5 }}>
+                      <CircularProgress size={12} />
+                      <Typography variant='caption' color='text.secondary'>
+                        Finding it on the game map…
+                      </Typography>
+                    </Stack>
+                  )}
+                  {open && onGameMap === 'lost' && (
+                    <Typography variant='caption' color='text.secondary' component='div' sx={{ mt: 0.5 }}>
+                      Not found on the game map. Is your city on screen? Trying again shortly.
                     </Typography>
                   )}
                   {map && (
