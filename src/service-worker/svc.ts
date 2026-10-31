@@ -2,6 +2,7 @@ import { setListener, setupMessageListener } from '../chrome/messages';
 import { getAccountById, getAccountByTabId, loadAllAccounts, saveAccount } from '../elvenar/accountStore';
 import { processGameClientScript } from '../elvenar/processGameClientScript';
 import { processGameRenderConfig } from '../elvenar/processGameRenderConfig';
+import { latestCauldronSync } from '../elvenar/sendCauldronSync';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { accountManagerReady } from './accountManagerReady';
@@ -76,6 +77,11 @@ async function initialize() {
   setListener('interceptedPlayerSpecificRequest', (msg, sender) => void playerSpecificRequestHandler(msg, sender));
   setListener('gameClientScript', (msg) => void processGameClientScript(msg.url));
   setListener('gameRenderConfig', (msg) => void processGameRenderConfig(msg.url));
+  setListener('cauldronRequest', async () => {
+    // Null rather than undefined: an undefined answer reads as nobody having answered
+    await accountManagerReady;
+    return latestCauldronSync() ?? null;
+  });
   await accountManagerReady;
   console.log('ElvenAssist: Account Manager loaded in Service Worker');
 }

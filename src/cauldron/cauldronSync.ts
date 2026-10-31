@@ -2,10 +2,10 @@ import { Ingredient } from '../model/ingredient';
 
 /**
  * What the extension tells the Cauldron Optimizer site when the player opens the cauldron in the
- * game. The site keeps one "world" of settings per name, so each game city gets a world of its
- * own there, named by {@link cauldronWorldName}, and the player's own worlds are never touched.
+ * game, or presses the site's "Fill from the game" button. The site fills its active world.
  */
 export interface CauldronSync {
+  /** The city's name for that world, which the site takes only if the player never named it. */
   worldName: string;
   /** The `researchtree_diplomas` resource: one effect unlocked per diploma, in the site's order. */
   diplomas?: number;

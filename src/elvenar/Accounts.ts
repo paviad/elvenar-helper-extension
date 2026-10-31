@@ -99,6 +99,9 @@ export interface AccountData {
    */
   cauldronDisabledEffects?: number[];
 
+  /** When the player last opened this city's cauldron. "Fill from the game" takes the latest one. */
+  cauldronOpenedAt?: number;
+
   faEndTime?: number;
 
   transcendenceData?: Transcendence[];

@@ -20,6 +20,7 @@ export const processCauldronOpened = async (
 
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
   if (accountData) {
+    accountData.cauldronOpenedAt = Date.now();
     await sendCauldronSync(accountData, sharedInfo);
   }
 };

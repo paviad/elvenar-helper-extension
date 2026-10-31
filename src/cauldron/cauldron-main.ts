@@ -1,11 +1,13 @@
+import { MessageResponses } from '../chrome/messages';
 import { CauldronSync } from './cauldronSync';
 
 /*
  * Content script on the Cauldron Optimizer site. When the player opens the cauldron in the game,
- * the service worker sends a CauldronSync here. The site keeps settings per named "world", so this
- * has the page switch to the game city's own world (creating it the first time), then fill in the
- * diplomas, premium ingredients, selected effects, wonder level and Witch Points and save, all
- * through the API the site offers extensions (autofill.js on the site, version 4).
+ * the service worker sends a CauldronSync here; when the player presses the site's "Fill from the
+ * game" button, this asks the service worker for the latest one. Either way it gives the page the
+ * city's name, which the active world takes if the player never named it, then fills in the
+ * diplomas, premium ingredients, selected effects, wonder level and Witch Points and saves, all
+ * through the API the site offers extensions (autofill.js on the site, version 9).
  */
 
 /**
@@ -72,6 +74,32 @@ const autofill = (sync: CauldronSync) => {
   });
 };
 
+/** Lets the page tell an installed ElvenAssist from none, and which version answers it. */
+const announce = () =>
+  post({
+    type: 'cauldron:extension',
+    name: 'ElvenAssist',
+    // The release, major.minor.patch
+    version: (chrome.runtime.getManifest().version as string).split('.').slice(0, 3).join('.'),
+    supports: ['request'],
+  });
+
+/** The page's "Fill from the game" button: the latest data, or word that there is none yet. */
+const answerRequest = async () => {
+  let sync: MessageResponses['cauldronRequest'] | undefined;
+  try {
+    sync = (await chrome.runtime.sendMessage({ type: 'cauldronRequest' })) as typeof sync;
+  } catch {
+    // The extension was reloaded under this page: left unanswered, the page explains what to do
+    return;
+  }
+  if (sync) {
+    start(sync);
+  } else {
+    post({ type: 'cauldron:request:result', ok: false, code: 'no_data' });
+  }
+};
+
 const refused = (what: string, result: ApiResult) => {
   // complement_mode is the player's own doing ("Complete effects" is on), not a fault
   const log = result.code === 'complement_mode' ? console.log : console.warn;
@@ -88,6 +116,14 @@ chrome.runtime.onMessage.addListener((message: { type: string; payload: Cauldron
 window.addEventListener('message', (event) => {
   if (event.source !== window) {
     return;
+  }
+
+  if (event.data?.type === 'cauldron:ready') {
+    announce();
+  }
+
+  if (event.data?.type === 'cauldron:request') {
+    void answerRequest();
   }
 
   if (event.data?.type === 'cauldron:selectWorld:result' && selecting) {
@@ -115,9 +151,11 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// A sync still kept from before this load. Running at document_idle, the site's API listener is
-// already up (on the home page) and its ready announcement already gone, so start straight away;
-// back from a world switch, the world is then already selected and the fill follows at once.
+// Running at document_idle, the site's API listener is already up (on the home page) and its ready
+// announcement already gone, so announce ourselves and start a sync still kept from before this
+// load straight away; back from a world switch, the world is then already selected and the fill
+// follows at once.
+announce();
 const pending = takePending();
 if (pending) {
   start(pending);

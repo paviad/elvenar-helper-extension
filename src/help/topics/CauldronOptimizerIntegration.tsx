@@ -22,7 +22,8 @@ export const CauldronOptimizerIntegration = () => (
     </Typography>
     <Typography component='p' variant='body1' gutterBottom>
       Keep the Cauldron Optimizer open in another tab and log in there. When you open the Cauldron in the Magic Academy,
-      ElvenAssist fills the optimizer in for you:
+      ElvenAssist fills the optimizer in for you. The optimizer's <strong>Fill from the game</strong> button, beside
+      Save, does the same with the cauldron you opened last:
     </Typography>
     <Alert severity='warning' sx={{ my: 1 }}>
       In Firefox, check that ElvenAssist may access the optimizer: open Add-ons and Themes, choose ElvenAssist, and on
@@ -56,14 +57,17 @@ export const CauldronOptimizerIntegration = () => (
     </List>
     <Box sx={{ mt: 2 }} />
     <Typography variant='h6' gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <PublicIcon color='primary' fontSize='small' /> A World for Each City
+      <PublicIcon color='primary' fontSize='small' /> Worlds
     </Typography>
     <Typography component='p' variant='body1' gutterBottom>
-      The optimizer keeps its settings per "world". ElvenAssist uses a world of its own for each of your cities, named
-      after your player and server, such as <strong>EA-Balrogville-en3</strong>. It creates the world the first time and
-      switches the optimizer to it whenever you open that city's cauldron, so your own worlds are never changed. Your
-      diploma count is saved on that world each time; the effects and weights you pick there are kept as well. While the
-      optimizer's "Complete effects" mode is on, it leaves everything as it is until you turn that mode off.
+      The optimizer keeps its settings per "world", and ElvenAssist fills in the one you have selected there and saves
+      it. If you never named that world, it is named after your player and server, such as{' '}
+      <strong>EA-Balrogville-en3</strong>; a name you chose is kept. With several cities, select the world for the city
+      before you open its cauldron.
+    </Typography>
+    <Typography component='p' variant='body1' gutterBottom>
+      Each panel of the optimizer has an ElvenAssist switch: turn it off to keep ElvenAssist from changing that panel.
+      While the optimizer's "Complete effects" mode is on, it leaves everything as it is until you turn that mode off.
     </Typography>
     <Box sx={{ mt: 3 }} />
     <Alert severity='info' icon={<SecurityIcon fontSize='inherit' />}>

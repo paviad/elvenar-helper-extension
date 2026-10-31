@@ -1,3 +1,4 @@
+import { CauldronSync } from '../cauldron/cauldronSync';
 import { NonSpecificMessage } from '../inject/nonSpecificMessages';
 import { PlayerSpecificMessage } from '../inject/playerSpecificMessages';
 import { TradeSummary } from '../model/tradeSummary';
@@ -25,6 +26,8 @@ export interface RuntimeMessages {
   gameClientScript: { url: string };
   /** The URL of the render config the game page loaded, which says how each building is drawn. */
   gameRenderConfig: { url: string };
+  /** The Cauldron Optimizer's "Fill from the game" button asks for the latest cauldron data. */
+  cauldronRequest: NoFields;
 }
 
 /** Sent with chrome.tabs.sendMessage, which reaches the content scripts of one tab. */
@@ -47,6 +50,8 @@ export interface TabMessages {
 /** What a listener answers with, for the messages that are answered. The rest get no answer. */
 export interface MessageResponses {
   refreshCity: MessageResponse;
+  /** Null until a cauldron has been opened. */
+  cauldronRequest: CauldronSync | null;
 }
 
 export interface MessageResponse {
