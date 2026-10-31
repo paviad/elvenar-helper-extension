@@ -74,9 +74,7 @@ describe('calculateCultureHelp', () => {
   });
 
   it('counts an evolving building at its stage', () => {
-    const evolving: StageProvision[] = [
-      { baseName: 'C_Evolving', stages: [{ id: 3, culture: 3 }] } as unknown as StageProvision,
-    ];
+    const evolving: StageProvision[] = [{ baseName: 'C_Evolving', stages: [{ id: 3, culture: 3 }] }];
     const result = calculateCultureHelp([blockOf('C_Evolving_1', { stage: 3 })], finder, evolving, [], {
       help: 1,
       enchant: 0,
