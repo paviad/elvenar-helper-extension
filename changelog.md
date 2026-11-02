@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **Move Plan: settlement trails are read as streets.** A city with a settlement's trails, such as the Prey Trail, got a pair of steps for every trail tile, saying to clear the tile and place the trail from the inventory. Send the plan again to get the right steps.
+
 ## v11.0.0
 - **New Feature: Move Plan.** Arrange your city in the City Planner, then choose City ▸ Send Move Plan to Game. The helper's new Plan tab (Alt+C, L) lists the moves that turn your city into that layout, each with a map of where: drags that swap buildings in one go, upgrades, and buildings to place from the inventory. Streets are left to you, except where tiles are in a building's way: a line before that building's move says which tiles to vacate, by selling them or moving them anywhere. The open line is outlined on the game's map as well, with an arrow when it is off screen. Each line ticks itself off as you make the move in the game. If you do something the plan did not ask for, the steps left are worked out again. Every move is still yours to make.
 - **Inventory: everything in your Tomes is listed**, not just the buildings: artifacts, goods, resources and Rune Shards too. Choices that grow with your chapter show what they give now, such as 800,000 mana from a Tome of the Plentiful in chapter 25, and Rune Shards are named for their wonder. Royal Restoration from a Tome counts in the RR column, and artifacts show their spell fragments. The new Tome Contents switch hides them all.

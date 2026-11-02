@@ -142,6 +142,14 @@ describe('targetFromBlocks', () => {
     expect(value.buildings).toEqual([]);
     expect([...value.streets]).toEqual([['4,7', 'S_Humans_Trail']]);
   });
+
+  it('counts a street named for its chapter, as a settlement trail, as a street', () => {
+    const { value, unknown } = targetFromBlocks([block('S_Ch22_Trail', 'street_x', 4, 7)], catalogue, sets);
+
+    expect(value.buildings).toEqual([]);
+    expect(unknown).toEqual([]);
+    expect([...value.streets]).toEqual([['4,7', 'S_Ch22_Trail']]);
+  });
 });
 
 describe('sizeAtFrom', () => {

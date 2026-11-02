@@ -159,7 +159,9 @@ export const targetFromBlocks = (
   const unknown: string[] = [];
 
   for (const block of blocks) {
-    if (block.type === 'street') {
+    // A planner type can carry a suffix: a street named for its chapter, as a settlement's trail,
+    // is a 'street_x', and the game still calls it a street.
+    if (block.type.replace(/_[xy]$/, '') === 'street') {
       streets.set(tileKey(block.x, block.y), block.gameId);
       continue;
     }
