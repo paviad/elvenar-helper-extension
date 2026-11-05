@@ -6,6 +6,7 @@ import { latestCauldronSync } from '../elvenar/sendCauldronSync';
 import { sendCityDataQuery } from '../elvenar/sendCityDataQuery';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { accountManagerReady } from './accountManagerReady';
+import { cauldronBrewsReport } from './cauldronBrewsReport';
 import { matchTechTreeUrl } from './matchTechTreeUrl';
 import { nonSpecificRequestHandler } from './nonSpecificRequestHandler';
 import { openOrRestoreTab } from './openOrRestoreTab';
@@ -27,6 +28,7 @@ console.log('Elvenar Extension: Service Worker Loaded');
  */
 (globalThis as unknown as { ElvenAssist: Record<string, unknown> }).ElvenAssist = {
   researchResources: researchResourcesReport,
+  cauldronBrews: cauldronBrewsReport,
 };
 
 async function initialize() {

@@ -1,3 +1,4 @@
+import { CauldronBrew, CauldronEffectLevel } from '../cauldron/cauldronBrew';
 import { ArmyDetails } from '../model/armyDetails';
 import { Badges, Relics } from '../model/badges';
 import { CityEntity } from '../model/cityEntity';
@@ -101,6 +102,12 @@ export interface AccountData {
 
   /** When the player last opened this city's cauldron. "Fill from the game" takes the latest one. */
   cauldronOpenedAt?: number;
+
+  /** Every potion effect's level, strength and duration, as the game last listed them. */
+  cauldronEffects?: CauldronEffectLevel[];
+
+  /** The latest brews and what their goblets gave, oldest first. */
+  cauldronBrews?: CauldronBrew[];
 
   faEndTime?: number;
 

@@ -1,3 +1,4 @@
+import { effectLevels } from '../cauldron/cauldronBrew';
 import { disabledEffectIndexes, effectIndex } from '../cauldron/cauldronSync';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
@@ -19,6 +20,7 @@ export const processPotionEffects = async (
   const accountData = getAccountBySessionId(sharedInfo.sessionId);
   if (accountData && Array.isArray(effects)) {
     accountData.cauldronDisabledEffects = disabledEffectIndexes(effects);
+    accountData.cauldronEffects = effectLevels(effects);
   }
 };
 

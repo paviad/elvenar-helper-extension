@@ -4,6 +4,7 @@ import { getAccountBySessionId, loadAccount, saveAccount } from '../elvenar/acco
 import { processActiveEffectsUpdate } from '../elvenar/processActiveEffectsUpdate';
 import { processAncientWonderPhaseUpdate } from '../elvenar/processAncientWonderPhaseUpdate';
 import { processCauldron } from '../elvenar/processCauldron';
+import { processCauldronBrew, processGobletConfirmed, processGobletResult } from '../elvenar/processCauldronBrew';
 import { processCauldronOpened } from '../elvenar/processCauldronOpened';
 import { processCauldronWonder } from '../elvenar/processCauldronWonder';
 import { processCityData } from '../elvenar/processCityData';
@@ -132,6 +133,9 @@ export const playerSpecificRequestHandlerInternal = async (
     'Q:CauldronService/getIngredients': processCauldron,
     'Q:CauldronService/getPotionEffects': processPotionEffects,
     'Q:CauldronService/setPotionEffectEnabled': processPotionEffectToggled,
+    'Q:CauldronService/brew': processCauldronBrew,
+    'Q:CauldronService/confirmGobletEffect': processGobletConfirmed,
+    'R:CauldronService/getLastUsedGobletResult': processGobletResult,
     'Q:IndicatorsService/clearIndicator': processCauldronOpened,
     'Q:OtherPlayerService/visitPlayer': processOtherPlayerData,
     'Q:SpireService/getEncounter': processSpireEncounterStart,

@@ -63,6 +63,24 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
   },
   {
     requestSelector: {
+      requestClass: 'CauldronService',
+      requestMethod: 'brew',
+    },
+  },
+  {
+    requestSelector: {
+      requestClass: 'CauldronService',
+      requestMethod: 'confirmGobletEffect',
+    },
+  },
+  {
+    responseSelector: {
+      requestClass: 'CauldronService',
+      requestMethod: 'getLastUsedGobletResult',
+    },
+  },
+  {
+    requestSelector: {
       requestClass: 'IndicatorsService',
       requestMethod: 'clearIndicator',
     },
