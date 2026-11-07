@@ -1,4 +1,4 @@
-import { CityBlock } from './CityBlock';
+import { CityBlock, isStreetType } from './CityBlock';
 
 /** Shortest input treated as a regex, i.e. the two slashes plus one character. */
 const MIN_REGEX_LENGTH = 3;
@@ -17,7 +17,8 @@ export type SearchMatcher = (block: SearchableBlock) => boolean;
 /**
  * Builds a matcher for the city search box. A term wrapped in slashes is a
  * case-insensitive regular expression over the name and type; a footprint
- * ("7x3", "7x", "x3") is compared with the width and length; anything else is a
+ * ("7x3", "7x", "x3") is compared with the width and length of every block but
+ * a street; anything else is a
  * substring of the name or type.
  *
  * Returns null when nothing should match: an empty term, or a regex that does
@@ -37,10 +38,13 @@ export function createSearchMatcher(term: string): SearchMatcher | null {
   }
 
   if (SIZE_TERM.test(term)) {
-    // Either dimension may be left out, and then any value of it will do.
+    // Either dimension may be left out, and then any value of it will do. Streets are left out
+    // too: a size looks for buildings, and every street tile would otherwise match 1x1.
     const [width, length] = term.split('x');
     return (block) =>
-      (width === '' || block.width === Number(width)) && (length === '' || block.length === Number(length));
+      !isStreetType(block.type) &&
+      (width === '' || block.width === Number(width)) &&
+      (length === '' || block.length === Number(length));
   }
 
   const lowered = term.toLowerCase();

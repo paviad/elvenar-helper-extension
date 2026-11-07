@@ -94,6 +94,22 @@ describe('createSearchMatcher', () => {
       expect(createSearchMatcher('x1')?.(sized(1, 12))).toBe(false);
     });
 
+    it('leaves streets out, settlement trails included', () => {
+      const matcher = createSearchMatcher('1x1');
+
+      expect(matcher?.(block({ type: 'street', width: 1, length: 1 }))).toBe(false);
+      expect(matcher?.(block({ type: 'street_x', width: 1, length: 1 }))).toBe(false);
+      expect(createSearchMatcher('x1')?.(block({ type: 'street', width: 1, length: 1 }))).toBe(false);
+      expect(matcher?.(block({ type: 'culture', width: 1, length: 1 }))).toBe(true);
+    });
+
+    it('still lets a text search find streets, settlement trails included', () => {
+      const matcher = createSearchMatcher('street');
+
+      expect(matcher?.(block({ name: 'Street', type: 'street', width: 1, length: 1 }))).toBe(true);
+      expect(matcher?.(block({ name: 'Prey Trail', type: 'street_x', width: 1, length: 1 }))).toBe(true);
+    });
+
     it('leaves the name and type out of it', () => {
       const lookalike = block({ name: '7x3 Plot', type: '7x3', width: 2, length: 2 });
 

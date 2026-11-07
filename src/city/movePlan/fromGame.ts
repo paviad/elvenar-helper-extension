@@ -2,7 +2,7 @@ import { Building } from '../../model/building';
 import { BuildingSet } from '../../model/buildingSet';
 import { CityEntity } from '../../model/cityEntity';
 import { UnlockedArea } from '../../model/unlockedArea';
-import { CityBlock } from '../CityBlock';
+import { CityBlock, isStreetType } from '../CityBlock';
 import { TargetBuilding } from './matchBuildings';
 import { connectionKindFor, SimBuilding, SimCity, tileKey } from './rulesSimulator';
 import { PlanRules, SizeAt, TargetCity } from './solveMovePlan';
@@ -159,9 +159,7 @@ export const targetFromBlocks = (
   const unknown: string[] = [];
 
   for (const block of blocks) {
-    // A planner type can carry a suffix: a street named for its chapter, as a settlement's trail,
-    // is a 'street_x', and the game still calls it a street.
-    if (block.type.replace(/_[xy]$/, '') === 'street') {
+    if (isStreetType(block.type)) {
       streets.set(tileKey(block.x, block.y), block.gameId);
       continue;
     }

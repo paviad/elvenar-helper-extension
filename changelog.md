@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- **City Planner: a size search skips streets.** Searching for 1x1 (or 1x, x1) found every street and settlement trail tile, burying the 1x1 buildings. Streets are still found by name.
 - **Move Plan: settlement trails are read as streets.** A city with a settlement's trails, such as the Prey Trail, got a pair of steps for every trail tile, saying to clear the tile and place the trail from the inventory. Send the plan again to get the right steps.
 
 ## v11.0.0
