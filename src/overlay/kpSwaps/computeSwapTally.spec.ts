@@ -326,6 +326,43 @@ describe('computeSwapTally', () => {
       expect(tally(inbox(noticed, replacement)).fullThreads).toEqual([]);
     });
 
+    describe('once you have opened a new one under the same title', () => {
+      const OPENED = FULL_THREAD_POSTS + 16 * 3600;
+      const opened = (at = OPENED, subject = '20 KP Thread', by = ME) =>
+        thread(8, subject, [post(by, 'Needles of the Tempest please', at)]);
+
+      it('drops off with no notice, however long afterwards you opened it', () => {
+        expect(tally(inbox(long(7, FULL_THREAD_POSTS), opened())).fullThreads).toEqual([]);
+      });
+
+      it('finds the new thread in the other folder', () => {
+        const data: MessagesData = { outbox: inbox(long(7, FULL_THREAD_POSTS)).inbox, inbox: inbox(opened()).inbox };
+
+        expect(tally(data).fullThreads).toEqual([]);
+      });
+
+      it('stays off when somebody posts in the old one afterwards', () => {
+        const old = long(7, FULL_THREAD_POSTS);
+        old.posts.push(post(BOB, 'Martial Monastery please', OPENED + 60));
+
+        expect(tally(inbox(old, opened())).fullThreads).toEqual([]);
+      });
+
+      it('does not count a thread under another title', () => {
+        expect(tally(inbox(long(7, FULL_THREAD_POSTS), opened(OPENED, '30 KP Thread'))).fullThreads).toHaveLength(1);
+      });
+
+      it('does not count a thread someone else opened', () => {
+        expect(tally(inbox(long(7, FULL_THREAD_POSTS), opened(OPENED, '20 KP Thread', BOB))).fullThreads).toHaveLength(
+          1,
+        );
+      });
+
+      it('does not count one opened before the long thread began', () => {
+        expect(tally(inbox(long(7, FULL_THREAD_POSTS), opened(0))).fullThreads).toHaveLength(1);
+      });
+    });
+
     it('leaves out a long thread you never asked in', () => {
       const chatter = long(7, FULL_THREAD_POSTS, 'Happy birthday!', 'Guild chat');
 

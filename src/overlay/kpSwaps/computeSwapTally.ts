@@ -186,10 +186,15 @@ export function computeSwapTally(
           (o) => o.threadId !== id && Math.abs(o.at - posts[mine].created_at) <= REPLACEMENT_WINDOW,
         );
 
-    // Offered for retiring until its replacement is seen. A swap thread is one you have asked
-    // in, so a long thread of guild chatter is left alone.
+    // Offered for retiring until you have opened a newer thread under the same title, with or
+    // without a notice here and however long afterwards: people can go on posting in the old one
+    // for a while, so this is measured from when it began rather than from its last post. A swap
+    // thread is one you have asked in, so a long thread of guild chatter is left alone.
+    const superseded = (openings.get(subjectKey(message.subject)) ?? []).some(
+      (o) => o.threadId !== id && o.at > posts[0].created_at,
+    );
     if (
-      !replacement &&
+      !superseded &&
       posts.length >= fullThreadPosts &&
       posts.some((p) => p.author?.player_id === myPlayerId && triggers.has(normalize(p.post).toLowerCase()))
     ) {
