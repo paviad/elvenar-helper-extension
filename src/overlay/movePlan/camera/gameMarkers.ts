@@ -29,6 +29,8 @@ const ensureOverlay = () => {
     // A slow pulse, so the marks catch the eye without hiding the buildings under them.
     overlay.animate([{ opacity: 1 }, { opacity: 0.45 }, { opacity: 1 }], { duration: 1600, iterations: Infinity });
     document.body.appendChild(overlay);
+    // In steps: a smooth pulse has the browser draw the page anew every frame, which can stall the game.
+    overlay.getAnimations().forEach((pulse) => pulse.effect?.updateTiming({ easing: 'steps(4, end)' }));
   }
   const rect = game.getBoundingClientRect();
   Object.assign(overlay.style, {

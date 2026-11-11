@@ -24,9 +24,12 @@ const ensureOverlay = () => {
     overlay = document.createElement('canvas');
     overlay.setAttribute('aria-hidden', 'true');
     Object.assign(overlay.style, { position: 'fixed', pointerEvents: 'none', zIndex: '9998' });
-    // A slow pulse, so the mark catches the eye without hiding the province under it.
+    // A slow pulse, so the mark catches the eye without hiding the province under it. In steps:
+    // a smooth one has the browser draw the page anew every frame, and the game's world map then
+    // stalls for seconds whenever the mouse crosses it.
     overlay.animate([{ opacity: 1 }, { opacity: 0.38 }, { opacity: 1 }], { duration: 1800, iterations: Infinity });
     document.body.appendChild(overlay);
+    overlay.getAnimations().forEach((pulse) => pulse.effect?.updateTiming({ easing: 'steps(4, end)' }));
   }
   const rect = game.getBoundingClientRect();
   Object.assign(overlay.style, {
