@@ -1,11 +1,13 @@
 # Changelog
 
-## Unreleased
+## v12.0.0
 - **New Feature: World Map.** A new World Map page shows every province you have scouted or can scout. A table counts the provinces of each good that are completed, incomplete, being scouted, scoutable or locked, with your boosted goods in bold and the goods of the current and the next tournament marked. Below it, a map draws the provinces as coloured hexes around your city, and a sortable table lists them with scouting cost, time and difficulty. Click a good, a state or a count to filter both. Open the world map in the game once to fill the page in; it then follows your scouting and encounters as you play. See Help ▸ World Map.
 - **World Map: Find in game.** Right-click a province on the World Map page, on the map or in the table, and choose Find in game: the province is outlined on the game's own world map, with an arrow at the edge of the screen while it is out of view. If the world map is already open in the game and nothing shows, leave it and open it again.
+- **World Map:** an arrow button beside the summary jumps down to the map or the table, and one beside those jumps back up.
 - **Helper:** a bell with a count appears in the title bar when there is something to tell you. Its first use: incomplete provinces that still need to be listed for the World Map page. Click the bell to read the notice, and the notice to open that page.
 - **City Planner: a size search skips streets.** Searching for 1x1 (or 1x, x1) found every street and settlement trail tile, burying the 1x1 buildings. Streets are still found by name.
 - **Move Plan: settlement trails are read as streets.** A city with a settlement's trails, such as the Prey Trail, got a pair of steps for every trail tile, saying to clear the tile and place the trail from the inventory. Send the plan again to get the right steps.
+- **Swaps: a full thread leaves the list once you start its replacement.** A new thread started without posting the notice first left the old one listed for good. Any newer thread of yours with the same title now takes it off the list.
 
 ## v11.0.0
 - **New Feature: Move Plan.** Arrange your city in the City Planner, then choose City ▸ Send Move Plan to Game. The helper's new Plan tab (Alt+C, L) lists the moves that turn your city into that layout, each with a map of where: drags that swap buildings in one go, upgrades, and buildings to place from the inventory. Streets are left to you, except where tiles are in a building's way: a line before that building's move says which tiles to vacate, by selling them or moving them anywhere. The open line is outlined on the game's map as well, with an arrow when it is off screen. Each line ticks itself off as you make the move in the game. If you do something the plan did not ask for, the steps left are worked out again. Every move is still yours to make.
