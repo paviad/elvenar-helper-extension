@@ -30,7 +30,7 @@ import { expandPanel, getOverlaySize, setOverlaySizePreset } from '../overlay';
 import { parseQuestExport } from '../util/parseQuestExport';
 import { DiscordButton } from '../widgets/DiscordButton';
 import { WorldMapStatus } from '../worldmap/deriveWorldMap';
-import { WORLD_MAP_RESPONSE_TYPES } from '../worldmap/worldMapState';
+import { WORLD_MAP_RESPONSE_TYPES } from '../worldmap/worldMapResponses';
 import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';

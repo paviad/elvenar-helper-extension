@@ -1,5 +1,5 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
-import { WORLD_MAP_RESPONSES } from '../worldmap/worldMapState';
+import { WORLD_MAP_RESPONSES } from '../worldmap/worldMapResponses';
 
 export interface PlayerSpecificMatcherSpecification {
   requestSelector?: {

@@ -44,7 +44,7 @@ import { processWorldMap, processWorldMapAtStartup } from '../elvenar/processWor
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
-import { WORLD_MAP_RESPONSE_TYPES } from '../worldmap/worldMapState';
+import { WORLD_MAP_RESPONSE_TYPES } from '../worldmap/worldMapResponses';
 import { accountManagerReady } from './accountManagerReady';
 
 type Processor = (
