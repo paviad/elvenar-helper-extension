@@ -1,9 +1,12 @@
 import React from 'react';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import {
   Alert,
   Box,
   Button,
   Chip,
+  IconButton,
   Menu,
   MenuItem,
   Paper,
@@ -16,6 +19,7 @@ import {
   TableRow,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { getGoodsNames } from '../elvenar/getGoodsNames';
@@ -53,7 +57,38 @@ const filterCellSx = (selected: boolean) => ({
   '&:hover': { bgcolor: 'action.hover' },
 });
 
+/** Room left above a part of the page scrolled to, so the bar fixed at the top does not cover it. */
+const TOP_BAR_CLEARANCE = 88;
+
+/**
+ * A button in the page's left margin that jumps to another part of the page. It stays in view
+ * for as long as the part it sits beside does.
+ */
+const JumpButton = ({
+  title,
+  up,
+  target,
+}: {
+  title: string;
+  up?: boolean;
+  target: React.RefObject<HTMLElement | null>;
+}) => (
+  <Box sx={{ position: 'absolute', top: 0, bottom: 0, left: -46 }}>
+    <Tooltip title={title} placement='right'>
+      <IconButton
+        size='small'
+        onClick={() => target.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        sx={{ position: 'sticky', top: TOP_BAR_CLEARANCE, border: 1, borderColor: 'divider' }}
+      >
+        {up ? <ArrowUpwardIcon fontSize='small' /> : <ArrowDownwardIcon fontSize='small' />}
+      </IconButton>
+    </Tooltip>
+  </Box>
+);
+
 export const WorldMapMain = () => {
+  const summaryRef = React.useRef<HTMLDivElement>(null);
+  const detailRef = React.useRef<HTMLDivElement>(null);
   const accountId = useTabStore((state) => state.accountId);
   const account = useAccount(accountId);
   const worldMap = account?.worldMap;
@@ -150,136 +185,144 @@ export const WorldMapMain = () => {
         </Alert>
       )}
 
-      <TableContainer component={Paper} variant='outlined' sx={{ mb: 2 }}>
-        <Table size='small'>
-          <TableHead>
-            <TableRow>
-              <TableCell>Good</TableCell>
-              {PROVINCE_STATUSES.map((status) => (
-                <TableCell
-                  key={status}
-                  align='right'
-                  onClick={() => setStatuses(toggled(statuses, status))}
-                  sx={filterCellSx(statuses.has(status))}
-                  title='Show only provinces in this state'
-                >
-                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-                    <svg width='14' height='14' viewBox='-8 -8 16 16'>
-                      <rect x='-6' y='-6' width='12' height='12' rx='2' {...hexStyle(status, '#617e89')} />
-                    </svg>
-                    {PROVINCE_STATUS_LABELS[status]}
-                  </Box>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {GOODS_BY_TIER.flat().map((good, index) => (
-              <TableRow
-                key={good}
-                sx={index % 3 === 0 && index > 0 ? { '& td': { borderTop: 2, borderTopColor: 'divider' } } : undefined}
-              >
-                <TableCell
-                  onClick={() => setGoods(toggled(goods, good))}
-                  sx={filterCellSx(goods.has(good))}
-                  title='Show only provinces of this good'
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: GOOD_COLOURS[good] }} />
-                    <span style={{ fontWeight: boostedGoods?.includes(good) ? 700 : 400 }}>
-                      {goodName(goodsNames, good)}
-                    </span>
-                    {boostedGoods?.includes(good) && (
-                      <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-                        boosted
-                      </Typography>
-                    )}
-                    {tournaments.current === good && (
-                      <Chip size='small' color='primary' label='Current tournament' sx={{ ml: 1 }} />
-                    )}
-                    {tournaments.next === good && (
-                      <Chip size='small' variant='outlined' label='Next tournament' sx={{ ml: 1 }} />
-                    )}
-                  </Box>
-                </TableCell>
+      <Box ref={summaryRef} sx={{ position: 'relative', mb: 2, scrollMarginTop: TOP_BAR_CLEARANCE }}>
+        <JumpButton title={mode === 'map' ? 'Down to the map' : 'Down to the table'} target={detailRef} />
+        <TableContainer component={Paper} variant='outlined'>
+          <Table size='small'>
+            <TableHead>
+              <TableRow>
+                <TableCell>Good</TableCell>
                 {PROVINCE_STATUSES.map((status) => (
                   <TableCell
                     key={status}
                     align='right'
-                    onClick={() => pickOnly(good, status)}
-                    sx={{
-                      ...filterCellSx(isOnly(good, status)),
-                      color: counts[good][status] ? undefined : 'text.disabled',
-                    }}
+                    onClick={() => setStatuses(toggled(statuses, status))}
+                    sx={filterCellSx(statuses.has(status))}
+                    title='Show only provinces in this state'
                   >
-                    {counts[good][status]}
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+                      <svg width='14' height='14' viewBox='-8 -8 16 16'>
+                        <rect x='-6' y='-6' width='12' height='12' rx='2' {...hexStyle(status, '#617e89')} />
+                      </svg>
+                      {PROVINCE_STATUS_LABELS[status]}
+                    </Box>
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
-            <TableRow sx={{ '& td': { fontWeight: 700, borderTop: 2, borderTopColor: 'divider' } }}>
-              <TableCell>All</TableCell>
-              {PROVINCE_STATUSES.map((status) => (
-                <TableCell key={status} align='right'>
-                  {statusTotal(status)}
-                </TableCell>
+            </TableHead>
+            <TableBody>
+              {GOODS_BY_TIER.flat().map((good, index) => (
+                <TableRow
+                  key={good}
+                  sx={
+                    index % 3 === 0 && index > 0 ? { '& td': { borderTop: 2, borderTopColor: 'divider' } } : undefined
+                  }
+                >
+                  <TableCell
+                    onClick={() => setGoods(toggled(goods, good))}
+                    sx={filterCellSx(goods.has(good))}
+                    title='Show only provinces of this good'
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: GOOD_COLOURS[good] }} />
+                      <span style={{ fontWeight: boostedGoods?.includes(good) ? 700 : 400 }}>
+                        {goodName(goodsNames, good)}
+                      </span>
+                      {boostedGoods?.includes(good) && (
+                        <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+                          boosted
+                        </Typography>
+                      )}
+                      {tournaments.current === good && (
+                        <Chip size='small' color='primary' label='Current tournament' sx={{ ml: 1 }} />
+                      )}
+                      {tournaments.next === good && (
+                        <Chip size='small' variant='outlined' label='Next tournament' sx={{ ml: 1 }} />
+                      )}
+                    </Box>
+                  </TableCell>
+                  {PROVINCE_STATUSES.map((status) => (
+                    <TableCell
+                      key={status}
+                      align='right'
+                      onClick={() => pickOnly(good, status)}
+                      sx={{
+                        ...filterCellSx(isOnly(good, status)),
+                        color: counts[good][status] ? undefined : 'text.disabled',
+                      }}
+                    >
+                      {counts[good][status]}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-        <ToggleButtonGroup
-          size='small'
-          exclusive
-          value={mode}
-          onChange={(_, next: 'map' | 'table' | null) => next && setMode(next)}
-        >
-          <ToggleButton value='map'>Map</ToggleButton>
-          <ToggleButton value='table'>Table</ToggleButton>
-        </ToggleButtonGroup>
-        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
-          {filtered
-            ? `${matching.length} of ${view.provinces.length} provinces`
-            : 'Click a good, a state or a count above to filter.'}
-        </Typography>
-        {filtered && (
-          <Button
-            size='small'
-            onClick={() => {
-              setGoods(new Set());
-              setStatuses(new Set());
-            }}
-          >
-            Show all
-          </Button>
-        )}
-        {mode === 'map' && (
-          <Typography variant='body2' sx={{ color: 'text.secondary', ml: 'auto' }}>
-            Drag to move, scroll to zoom, double-click to fit.
-          </Typography>
-        )}
+              <TableRow sx={{ '& td': { fontWeight: 700, borderTop: 2, borderTopColor: 'divider' } }}>
+                <TableCell>All</TableCell>
+                {PROVINCE_STATUSES.map((status) => (
+                  <TableCell key={status} align='right'>
+                    {statusTotal(status)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
 
-      {mode === 'map' ? (
-        <WorldMapHexes
-          home={view.home}
-          provinces={view.provinces}
-          matches={matches}
-          goodsNames={goodsNames}
-          now={now}
-          onProvinceMenu={onProvinceMenu}
-        />
-      ) : (
-        <WorldMapTable
-          home={view.home}
-          provinces={matching}
-          goodsNames={goodsNames}
-          now={now}
-          onProvinceMenu={onProvinceMenu}
-        />
-      )}
+      <Box ref={detailRef} sx={{ position: 'relative', scrollMarginTop: TOP_BAR_CLEARANCE }}>
+        <JumpButton title='Up to the summary' up target={summaryRef} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+          <ToggleButtonGroup
+            size='small'
+            exclusive
+            value={mode}
+            onChange={(_, next: 'map' | 'table' | null) => next && setMode(next)}
+          >
+            <ToggleButton value='map'>Map</ToggleButton>
+            <ToggleButton value='table'>Table</ToggleButton>
+          </ToggleButtonGroup>
+          <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+            {filtered
+              ? `${matching.length} of ${view.provinces.length} provinces`
+              : 'Click a good, a state or a count above to filter.'}
+          </Typography>
+          {filtered && (
+            <Button
+              size='small'
+              onClick={() => {
+                setGoods(new Set());
+                setStatuses(new Set());
+              }}
+            >
+              Show all
+            </Button>
+          )}
+          {mode === 'map' && (
+            <Typography variant='body2' sx={{ color: 'text.secondary', ml: 'auto' }}>
+              Drag to move, scroll to zoom, double-click to fit.
+            </Typography>
+          )}
+        </Box>
+
+        {mode === 'map' ? (
+          <WorldMapHexes
+            home={view.home}
+            provinces={view.provinces}
+            matches={matches}
+            goodsNames={goodsNames}
+            now={now}
+            onProvinceMenu={onProvinceMenu}
+          />
+        ) : (
+          <WorldMapTable
+            home={view.home}
+            provinces={matching}
+            goodsNames={goodsNames}
+            now={now}
+            onProvinceMenu={onProvinceMenu}
+          />
+        )}
+      </Box>
 
       <Menu
         open={!!menu}
