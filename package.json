@@ -2,7 +2,7 @@
   "name": "elven-assist",
   "version": "11.0.0",
   "description": "Unofficial extension to help with Elvenar city planning",
-  "license": "GNU GPLv3",
+  "license": "GPL-3.0-only",
   "author": "Aviad Pineles",
   "sideEffects": false,
   "main": "index.js",

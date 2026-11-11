@@ -128,7 +128,13 @@ Special Thanks to A S L A N for testing and community support.
 
 ## License
 
-This project is licensed under the MIT License.
+Copyright (C) 2025-2026 Aviad Pineles
+
+ElvenAssist is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3, as published by the Free Software Foundation. See [LICENSE](LICENSE) for the full text.
+
+If you distribute this code or anything built from it, you must do so under the same license, keep the copyright notices, and make the source available.
+
+ElvenAssist is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 ---
 
