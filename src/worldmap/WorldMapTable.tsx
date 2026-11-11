@@ -37,9 +37,11 @@ interface WorldMapTableProps {
   provinces: Province[];
   goodsNames: Record<string, string>;
   now: number;
+  /** Asked for a province's menu, by a right click on its row, at this spot of the page. */
+  onProvinceMenu?: (province: Province, x: number, y: number) => void;
 }
 
-export const WorldMapTable = ({ home, provinces, goodsNames, now }: WorldMapTableProps) => {
+export const WorldMapTable = ({ home, provinces, goodsNames, now, onProvinceMenu }: WorldMapTableProps) => {
   const [sortKey, setSortKey] = React.useState<SortKey>('distance');
   const [ascending, setAscending] = React.useState(true);
   const [page, setPage] = React.useState(0);
@@ -95,7 +97,17 @@ export const WorldMapTable = ({ home, provinces, goodsNames, now }: WorldMapTabl
           </TableHead>
           <TableBody>
             {sorted.slice(shownPage * ROWS_PER_PAGE, (shownPage + 1) * ROWS_PER_PAGE).map((p) => (
-              <TableRow key={p.key} hover>
+              <TableRow
+                key={p.key}
+                hover
+                onContextMenu={
+                  onProvinceMenu &&
+                  ((event: React.MouseEvent) => {
+                    event.preventDefault();
+                    onProvinceMenu(p, event.clientX, event.clientY);
+                  })
+                }
+              >
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: GOOD_COLOURS[p.good] }} />

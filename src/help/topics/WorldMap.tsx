@@ -78,6 +78,12 @@ export const WorldMap = () => (
           secondary='The same provinces as rows, each with its distance and an arrow for the direction from your city, and the scouting cost, time and difficulty of the ones not scouted yet. Click a column header to sort.'
         />
       </ListItem>
+      <ListItem>
+        <ListItemText
+          primary='Find in game'
+          secondary="Right-click a province on the map or a row of the table and choose Find in game. On the game's own world map the province is then outlined, with an arrow at the edge of the screen while it is out of view. Open the world map in the game to see it; if it was open already and nothing shows, leave it and open it again. Opening the province, or clicking the notice under the bell in the helper window, ends it."
+        />
+      </ListItem>
     </List>
   </Box>
 );

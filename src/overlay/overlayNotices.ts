@@ -8,6 +8,8 @@ export interface OverlayNotice {
   detail?: string;
   /** The page of the extension's tab that clicking the notice opens. */
   page?: ExtensionTabPage;
+  /** What clicking the notice does, when it is not opening a page. */
+  onClick?: () => void;
 }
 
 /** The notices up now, by who put them up. A source has one notice at a time. */

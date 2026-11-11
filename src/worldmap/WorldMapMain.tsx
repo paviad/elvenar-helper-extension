@@ -4,7 +4,10 @@ import {
   Box,
   Button,
   Chip,
+  Menu,
+  MenuItem,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -26,6 +29,7 @@ import {
   PROVINCE_STATUSES,
   ProvinceStatus,
 } from './deriveWorldMap';
+import { requestFindInGame } from './findInGame';
 import { tournamentMarks } from './tournamentMarks';
 import { GOODS_BY_TIER, ProvinceGood } from './worldMapGeometry';
 import { WorldMapHexes } from './WorldMapHexes';
@@ -82,6 +86,18 @@ export const WorldMapMain = () => {
     [goods, statuses],
   );
   const matching = React.useMemo(() => view?.provinces.filter(matches) ?? [], [view, matches]);
+
+  // A right click on a province offers to show it in the game, which only a city being played has.
+  const [menu, setMenu] = React.useState<{ province: Province; x: number; y: number }>();
+  const [findSent, setFindSent] = React.useState(false);
+  const played = !!account && !account.isDetached;
+  const onProvinceMenu = played ? (province: Province, x: number, y: number) => setMenu({ province, x, y }) : undefined;
+  const findInGame = () => {
+    setMenu(undefined);
+    if (menu && accountId) {
+      void requestFindInGame(accountId, menu.province).then(() => setFindSent(true));
+    }
+  };
 
   if (!view) {
     return (
@@ -253,10 +269,32 @@ export const WorldMapMain = () => {
           matches={matches}
           goodsNames={goodsNames}
           now={now}
+          onProvinceMenu={onProvinceMenu}
         />
       ) : (
-        <WorldMapTable home={view.home} provinces={matching} goodsNames={goodsNames} now={now} />
+        <WorldMapTable
+          home={view.home}
+          provinces={matching}
+          goodsNames={goodsNames}
+          now={now}
+          onProvinceMenu={onProvinceMenu}
+        />
       )}
+
+      <Menu
+        open={!!menu}
+        onClose={() => setMenu(undefined)}
+        anchorReference='anchorPosition'
+        anchorPosition={menu ? { top: menu.y, left: menu.x } : undefined}
+      >
+        <MenuItem onClick={findInGame}>Find in game</MenuItem>
+      </Menu>
+      <Snackbar
+        open={findSent}
+        autoHideDuration={6200}
+        onClose={() => setFindSent(false)}
+        message='Open the world map in the game: the province is outlined there.'
+      />
     </Box>
   );
 };

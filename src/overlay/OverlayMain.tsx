@@ -48,6 +48,7 @@ import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { emptyTournyData } from './tournyData';
 import { TradeView } from './TradeView';
+import { useWorldMapFinder } from './worldMapFinder/useWorldMapFinder';
 import { worldMapNotice } from './worldMapNotice';
 
 const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
@@ -107,6 +108,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   const [initialQuestIndex, setInitialQuestIndex] = React.useState<number | undefined>(undefined);
 
   const useOverlayStore = getOverlayStore();
+  useWorldMapFinder();
   const chapter = useOverlayStore((state) => state.chapter);
 
   // Connect Quests from Zustand Store

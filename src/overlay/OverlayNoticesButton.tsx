@@ -51,8 +51,10 @@ export const OverlayNoticesButton = () => {
             sx={{ whiteSpace: 'normal', maxWidth: 340, textAlign: 'left' }}
             onClick={() => {
               setAnchor(null);
-              const { page } = notice;
-              if (page) {
+              const { page, onClick } = notice;
+              if (onClick) {
+                onClick();
+              } else if (page) {
                 void sendRuntime('openExtensionTab', { page });
               }
             }}

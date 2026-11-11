@@ -26,6 +26,8 @@ interface WorldMapHexesProps {
   matches: (province: Province) => boolean;
   goodsNames: Record<string, string>;
   now: number;
+  /** Asked for a province's menu, by a right click on it, at this spot of the page. */
+  onProvinceMenu?: (province: Province, x: number, y: number) => void;
 }
 
 const describe = (province: Province, goodsNames: Record<string, string>, now: number) => {
@@ -50,7 +52,7 @@ const describe = (province: Province, goodsNames: Record<string, string>, now: n
  * The provinces as hexes, laid out as on the game's map, coloured by good and drawn by state.
  * Dragging pans and the wheel zooms.
  */
-export const WorldMapHexes = ({ home, provinces, matches, goodsNames, now }: WorldMapHexesProps) => {
+export const WorldMapHexes = ({ home, provinces, matches, goodsNames, now, onProvinceMenu }: WorldMapHexesProps) => {
   const svgRef = React.useRef<SVGSVGElement>(null);
 
   // The whole extent, in drawing units. City sites are drawn within it for bearings.
@@ -118,6 +120,9 @@ export const WorldMapHexes = ({ home, provinces, matches, goodsNames, now }: Wor
 
   const drag = React.useRef<{ x: number; y: number } | undefined>(undefined);
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (event.button !== 0) {
+      return;
+    }
     drag.current = { x: event.clientX, y: event.clientY };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -165,7 +170,18 @@ export const WorldMapHexes = ({ home, provinces, matches, goodsNames, now }: Wor
           const { x, y } = hexCentre(province, HEX_SIZE);
           const incomplete = province.status === 'incomplete';
           return (
-            <g key={province.key} transform={`translate(${x} ${y})`} opacity={matches(province) ? 1 : 0.12}>
+            <g
+              key={province.key}
+              transform={`translate(${x} ${y})`}
+              opacity={matches(province) ? 1 : 0.12}
+              onContextMenu={
+                onProvinceMenu &&
+                ((event) => {
+                  event.preventDefault();
+                  onProvinceMenu(province, event.clientX, event.clientY);
+                })
+              }
+            >
               <polygon points={HEX} {...hexStyle(province.status, GOOD_COLOURS[province.good])} />
               {(incomplete || province.status === 'scouting') && (
                 <text
