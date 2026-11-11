@@ -4,6 +4,12 @@ const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WebpackManifestPlugin = require('webpack-manifest-plugin').WebpackManifestPlugin;
 
+const COPYRIGHT_NOTICE = [
+  `ElvenAssist - Copyright (C) 2025-${new Date().getFullYear()} Aviad Pineles`,
+  'Licensed under the GNU General Public License, version 3 only (GPL-3.0-only). See LICENSE.',
+  'Source: https://github.com/paviad/elvenar-helper-extension',
+].join('\n');
+
 const commonOptimization = (env) => ({
   minimize: !!env.production,
   usedExports: true,
@@ -124,8 +130,17 @@ const commonConfig = (env, { manifestFileName }) => ({
   },
   plugins: [
     new CopyWebpackPlugin({
-      // The store banner doubles as the planner's welcome page picture.
-      patterns: [{ from: './assets' }, { from: './store-assets/marquee.jpg' }],
+      // The store banner doubles as the planner's welcome page picture. The license travels with
+      // every packaged copy.
+      patterns: [{ from: './assets' }, { from: './store-assets/marquee.jpg' }, { from: './LICENSE' }],
+    }),
+    // The notice each bundle of our own code opens with. It is added after minification, which
+    // would otherwise move it out into a separate .LICENSE.txt file, and is left off the vendors
+    // bundle, whose code is other people's and carries their notices.
+    new webpack.BannerPlugin({
+      banner: COPYRIGHT_NOTICE,
+      exclude: /vendors/,
+      stage: webpack.Compilation.PROCESS_ASSETS_STAGE_REPORT,
     }),
     new webpack.DefinePlugin({
       self: 'global',
