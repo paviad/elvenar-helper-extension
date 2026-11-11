@@ -98,7 +98,7 @@ const initFunc = () => {
   const header = document.createElement('div');
   header.style.cursor = 'move';
   header.style.padding = '3px 6px 3px 12px';
-  header.style.background = '#f5f5f5';
+  header.style.background = '#f5f7f4';
   header.style.color = '#333';
   header.style.borderBottom = '1px solid #eee';
   header.style.display = 'flex';
@@ -189,9 +189,9 @@ const initFunc = () => {
     errorSvg.setAttribute('height', '20');
     errorSvg.setAttribute('viewBox', '0 0 20 20');
     errorSvg.innerHTML = `
-        <circle cx="10" cy="10" r="9" fill="#fff" stroke="#e53935" stroke-width="2"/>
-        <line x1="6" y1="6" x2="14" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
-        <line x1="14" y1="6" x2="6" y2="14" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="10" cy="10" r="9" fill="#fff" stroke="#e73a36" stroke-width="2"/>
+        <line x1="6" y1="6" x2="14" y2="14" stroke="#e73a36" stroke-width="2" stroke-linecap="round"/>
+        <line x1="14" y1="6" x2="6" y2="14" stroke="#e73a36" stroke-width="2" stroke-linecap="round"/>
       `;
     const titleElem = document.createElementNS('http://www.w3.org/2000/svg', 'title');
     titleElem.textContent = REFRESH_REQUIRED_TITLE;
@@ -204,7 +204,7 @@ const initFunc = () => {
     if (isDragging) return;
     void (async () => {
       try {
-        await requestRuntime('openExtensionTab');
+        await requestRuntime('openExtensionTab', {});
       } catch (error) {
         console.error('Error opening extension tab:', error);
         reportPossibleContextLoss(error);

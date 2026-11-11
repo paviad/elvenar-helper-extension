@@ -29,12 +29,16 @@ import { TournyTime } from '../model/tourny/tournamentTime';
 import { expandPanel, getOverlaySize, setOverlaySizePreset } from '../overlay';
 import { parseQuestExport } from '../util/parseQuestExport';
 import { DiscordButton } from '../widgets/DiscordButton';
+import { WorldMapStatus } from '../worldmap/deriveWorldMap';
+import { WORLD_MAP_RESPONSE_TYPES } from '../worldmap/worldMapState';
 import { ChatView } from './ChatView';
 import { EeView } from './EeView';
 import { HelpDialog } from './HelpDialog';
 import { MessagesView } from './MessagesView';
 import { MovePlanView } from './movePlan/MovePlanView';
 import { sameOfferedGoods } from './offeredGoods';
+import { setOverlayNotice } from './overlayNotices';
+import { OverlayNoticesButton } from './OverlayNoticesButton';
 import { matchOverlaySizePreset, OVERLAY_SIZE_PRESETS, OverlaySize, OverlaySizePreset } from './overlaySize';
 import { OVERLAY_MENU_Z_INDEX } from './overlayStacking';
 import { getAccountId, getOverlayStore } from './overlayStore';
@@ -44,6 +48,7 @@ import { QuestJournal } from './QuestJournal';
 import { Tourny } from './Tourny';
 import { emptyTournyData } from './tournyData';
 import { TradeView } from './TradeView';
+import { worldMapNotice } from './worldMapNotice';
 
 const SIZE_PRESET_LABELS: Record<OverlaySizePreset, string> = {
   small: 'Small',
@@ -397,6 +402,14 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
       }),
     );
 
+    for (const type of WORLD_MAP_RESPONSE_TYPES) {
+      removals.push(
+        listenForGenericResponse<WorldMapStatus | undefined>(type, (msg) => {
+          setOverlayNotice('worldMap', worldMapNotice(msg.payload));
+        }),
+      );
+    }
+
     return () => {
       clearTimeout(readPending);
       removals.forEach((remove) => remove());
@@ -481,7 +494,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
             fontWeight: 700,
             lineHeight: 1.4,
             color: '#fff',
-            background: '#9c27b0',
+            background: '#9e25b2',
             borderRadius: 8,
           }}
         >
@@ -496,6 +509,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
   // size - stays even without anyone nudging offsets.
   const headerActions = (
     <>
+      <OverlayNoticesButton />
       <IconButton aria-label='Panel size' title='Panel size' size='small' onClick={openSizeMenu}>
         <AspectRatioIcon fontSize='small' />
       </IconButton>
@@ -515,7 +529,7 @@ export function OverlayMain({ headerActionsSlot }: OverlayMainProps) {
           position: 'sticky',
           top: 0,
           zIndex: 2,
-          background: '#f9f9fb',
+          background: '#f8f9f9',
           pr: 2,
         }}
       >

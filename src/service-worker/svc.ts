@@ -45,7 +45,7 @@ async function initialize() {
       if (sender.tab?.id) {
         accountId = getAccountByTabId(sender.tab.id);
       }
-      await openOrRestoreTab(accountId);
+      await openOrRestoreTab(accountId, msg.page);
     } catch (error) {
       console.error('ElvenAssist: Error opening the extension tab:', error);
     }

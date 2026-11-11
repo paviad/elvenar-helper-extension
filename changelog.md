@@ -2,6 +2,7 @@
 
 ## Unreleased
 - **New Feature: World Map.** A new World Map page shows every province you have scouted or can scout. A table counts the provinces of each good that are completed, incomplete, being scouted, scoutable or locked, with your boosted goods in bold and the goods of the current and the next tournament marked. Below it, a map draws the provinces as coloured hexes around your city, and a sortable table lists them with scouting cost, time and difficulty. Click a good, a state or a count to filter both. Open the world map in the game once to fill the page in; it then follows your scouting and encounters as you play. See Help ▸ World Map.
+- **Helper:** a bell with a count appears in the title bar when there is something to tell you. Its first use: incomplete provinces that still need to be listed for the World Map page. Click the bell to read the notice, and the notice to open that page.
 - **City Planner: a size search skips streets.** Searching for 1x1 (or 1x, x1) found every street and settlement trail tile, burying the 1x1 buildings. Streets are still found by name.
 - **Move Plan: settlement trails are read as streets.** A city with a settlement's trails, such as the Prey Trail, got a pair of steps for every trail tile, saying to clear the tile and place the trail from the inventory. Send the plan again to get the right steps.
 

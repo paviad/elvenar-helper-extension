@@ -1,6 +1,14 @@
-export async function openOrRestoreTab(accountId?: string) {
+import { ExtensionTabPage } from '../chrome/messages';
+
+/**
+ * Opens the extension's tab, or brings the one already open to the front, on the page named or
+ * the City Planner. With an account it goes by way of the page that selects that account first.
+ */
+export async function openOrRestoreTab(accountId?: string, page?: ExtensionTabPage) {
   const params = {
-    url: accountId ? `tab.html#/activate/?accountId=${accountId}` : 'tab.html#/city',
+    url: accountId
+      ? `tab.html#/activate/?accountId=${accountId}${page ? `&page=${page}` : ''}`
+      : `tab.html#/${page ?? 'city'}`,
     active: true,
   };
 
@@ -13,8 +21,6 @@ export async function openOrRestoreTab(accountId?: string) {
     const views = await chrome.runtime.getContexts({
       contextTypes: ['TAB'],
     });
-
-    const params = { url: accountId ? `tab.html#/activate/?accountId=${accountId}` : 'tab.html#/city', active: true };
 
     if (views.length === 0) {
       await chrome.tabs.create(params);

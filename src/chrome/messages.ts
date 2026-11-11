@@ -12,6 +12,9 @@ import { reportPossibleContextLoss } from './extensionContext';
 
 type NoFields = Record<never, never>;
 
+/** The pages of the extension's tab that something outside it can open it on. */
+export type ExtensionTabPage = 'world-map';
+
 /** Sent with chrome.runtime.sendMessage, which reaches the service worker and every extension page. */
 export interface RuntimeMessages {
   interceptedPlayerSpecificRequest: { payload: PlayerSpecificMessage };
@@ -21,7 +24,8 @@ export interface RuntimeMessages {
   cityEntitiesUpdated: { tabId: number };
   otherPlayerCityUpdated: NoFields;
   citySaved: { accountId: string };
-  openExtensionTab: NoFields;
+  /** Opens the extension's tab on the city being played, at the page named or the City Planner. */
+  openExtensionTab: { page?: ExtensionTabPage };
   /** The URL of the client script the game page runs, which the building pictures are read from. */
   gameClientScript: { url: string };
   /** The URL of the render config the game page loaded, which says how each building is drawn. */

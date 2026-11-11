@@ -197,7 +197,7 @@ describe('sending', () => {
   it('lets requestRuntime callers see the failure', async () => {
     const { requestRuntime } = loadModule();
     runtimeSendMessage.mockRejectedValue(new Error('gone'));
-    await expect(requestRuntime('openExtensionTab')).rejects.toThrow('gone');
+    await expect(requestRuntime('openExtensionTab', {})).rejects.toThrow('gone');
   });
 
   it('resolves a tab message that could not be delivered to undefined', async () => {

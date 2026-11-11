@@ -9,6 +9,8 @@ export function Activate() {
 
   const [searchParams] = useSearchParams();
   const routeAccountId = searchParams.get('accountId');
+  // Only pages known here, so the address cannot send the tab anywhere else.
+  const target = searchParams.get('page') === 'world-map' ? '/world-map' : '/city';
 
   const nav = useNavigate();
 
@@ -18,17 +20,17 @@ export function Activate() {
         await loadAllAccounts();
         setAccountId(routeAccountId);
         setDoNavigate(true);
-        await nav('/city', { replace: true });
+        await nav(target, { replace: true });
       }
     }
     void loadData();
-  }, [routeAccountId, setAccountId, nav]);
+  }, [routeAccountId, setAccountId, nav, target]);
 
   return (
     <>
       {doNavigate ? (
-        <Link to='/city' replace>
-          Go to City
+        <Link to={target} replace>
+          Continue
         </Link>
       ) : (
         <div>Activating account...</div>
