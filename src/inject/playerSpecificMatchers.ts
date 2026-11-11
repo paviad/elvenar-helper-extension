@@ -1,4 +1,5 @@
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
+import { WORLD_MAP_RESPONSES } from '../worldmap/worldMapState';
 
 export interface PlayerSpecificMatcherSpecification {
   requestSelector?: {
@@ -272,4 +273,8 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'startup',
     },
   },
+  // The world map, as the player opens it, pans it, lists incomplete provinces, scouts and fights.
+  ...WORLD_MAP_RESPONSES.map(([requestClass, requestMethod]) => ({
+    responseSelector: { requestClass, requestMethod },
+  })),
 ];

@@ -40,9 +40,11 @@ import { processTranscendenceService } from '../elvenar/processTranscendenceServ
 import { processUpdateChestPayInProgress } from '../elvenar/processUpdateChestPayInProgress';
 import { processUpdateWaypoints } from '../elvenar/processUpdateWaypoints';
 import { processUpdateWaypointsOverview } from '../elvenar/processUpdateWaypointsOverview';
+import { processWorldMap, processWorldMapAtStartup } from '../elvenar/processWorldMap';
 import { ElvenarRequestResponseEntry } from '../model/elvenarRequestResponseEntry';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { tradeOpenedCallback } from '../trade/tradeOpenedCallback';
+import { WORLD_MAP_RESPONSE_TYPES } from '../worldmap/worldMapState';
 import { accountManagerReady } from './accountManagerReady';
 
 type Processor = (
@@ -127,7 +129,7 @@ export const playerSpecificRequestHandlerInternal = async (
   const processors: Processors = {
     'Q:NotificationService/getAllNotifications': processNotifications,
     'Q:NotificationService/getPreviewNotifications': processNotifications,
-    'Q:StartupService/getData': processCityData,
+    'Q:StartupService/getData': [processCityData, processWorldMapAtStartup],
     'Q:InventoryService/getItems': processInventory,
     'Q:TradeService/getOtherPlayersTrades': processTradeData,
     'Q:CauldronService/getIngredients': processCauldron,
@@ -174,6 +176,8 @@ export const playerSpecificRequestHandlerInternal = async (
     'R:WorldMapService/getProvinceInformation': processTournyProvinceInformation,
     'R:WorldMapService/updateTournamentTime': processTournyUpdateTime,
     'R:ArmyService/addUnit': processTournyAddUnits,
+
+    ...Object.fromEntries(WORLD_MAP_RESPONSE_TYPES.map((type) => [type, processWorldMap])),
   };
 
   const processorsForType = processors[msg.payload.type];

@@ -15,6 +15,7 @@ import { Transcendence } from '../model/transcendence';
 import { UnlockedArea } from '../model/unlockedArea';
 import { ElvenarUserData } from '../model/userData';
 import { WonderKp } from '../model/wonderKp';
+import { WorldMapState } from '../worldmap/worldMapState';
 
 export interface CauldronQuery {
   /** This week's premium ingredients as the Cauldron Optimizer's indexes (0-11). */
@@ -130,6 +131,9 @@ export interface AccountData {
    * Gifts are stamped with it so they can be set against post times to the second.
    */
   serverClockOffset?: number;
+
+  /** The world map as far as the game has told of it; absent until the map is first opened. */
+  worldMap?: WorldMapState;
 }
 
 /** Where an account is stored, and the stamp each save writes beside it. */
