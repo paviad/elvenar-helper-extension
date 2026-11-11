@@ -190,6 +190,9 @@ export const LayoutMain = () => {
           <Button component={NavLink} to='/fellowship-adventure' color='inherit' sx={{ mr: 2 }}>
             Fellowship Adventure
           </Button>
+          <Button component={NavLink} to='/world-map' color='inherit' sx={{ mr: 2 }}>
+            World Map
+          </Button>
 
           {/* Spacer to push remaining items to the right */}
           <Box sx={{ flexGrow: 1 }} />

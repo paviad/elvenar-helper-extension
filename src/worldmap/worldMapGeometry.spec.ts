@@ -1,4 +1,12 @@
-import { goodAt, hexDistance, isCityAt, neighbours, provinceDistance, tierAt } from './worldMapGeometry';
+import {
+  compassBearing,
+  goodAt,
+  hexDistance,
+  isCityAt,
+  neighbours,
+  provinceDistance,
+  tierAt,
+} from './worldMapGeometry';
 
 describe('goodAt', () => {
   // Provinces as the game named them, on two worlds whose cities are a hundred hexes apart.
@@ -67,5 +75,24 @@ describe('hexDistance', () => {
     expect(provinceDistance(home, { r: -55, q: -49 })).toBe(10);
     expect(provinceDistance(home, { r: -66, q: -46 })).toBe(19);
     expect(provinceDistance({ r: 62, q: 6 }, { r: 54, q: 1 })).toBe(8);
+  });
+});
+
+describe('compassBearing', () => {
+  const home = { r: 0, q: 0 };
+
+  it('points along the columns and the rows', () => {
+    expect(compassBearing(home, { r: 0, q: -5 })).toBe(0);
+    expect(compassBearing(home, { r: 6, q: 0 })).toBe(90);
+    expect(compassBearing(home, { r: 0, q: 5 })).toBe(180);
+    expect(compassBearing(home, { r: -6, q: 0 })).toBe(270);
+  });
+
+  it('snaps to the nearest of eight directions', () => {
+    expect(compassBearing(home, { r: 6, q: -5 })).toBe(45);
+    expect(compassBearing(home, { r: 6, q: 5 })).toBe(135);
+    expect(compassBearing(home, { r: -6, q: 5 })).toBe(225);
+    expect(compassBearing(home, { r: -6, q: -5 })).toBe(315);
+    expect(compassBearing(home, { r: 1, q: -8 })).toBe(0);
   });
 });

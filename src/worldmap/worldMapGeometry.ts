@@ -89,6 +89,17 @@ export const hexCentre = ({ r, q }: Hex, size: number) => ({
   y: Math.sqrt(3) * size * (q + mod(r, 2) / 2),
 });
 
+/**
+ * Which way a hex lies from another as the map is drawn, in degrees clockwise from straight up,
+ * to the nearest of the eight compass points.
+ */
+export const compassBearing = (from: Hex, to: Hex) => {
+  const a = hexCentre(from, 1);
+  const b = hexCentre(to, 1);
+  const degrees = (Math.atan2(b.x - a.x, a.y - b.y) * 180) / Math.PI;
+  return (Math.round(degrees / 45) * 45 + 360) % 360;
+};
+
 /** The corners of a hex drawn around the origin, as an SVG `points` value. */
 export const hexPoints = (size: number) =>
   [0, 1, 2, 3, 4, 5]

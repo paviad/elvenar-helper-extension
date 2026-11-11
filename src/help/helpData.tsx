@@ -7,6 +7,7 @@ import { Introduction } from './topics/Introduction';
 import { InventoryManager } from './topics/InventoryManager';
 import { SpireWizardIntegration } from './topics/SpireWizardIntegration';
 import { UpgradeFinder } from './topics/UpgradeFinder';
+import { WorldMap } from './topics/WorldMap';
 
 export interface HelpSection {
   id: string;
@@ -45,6 +46,12 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'fa-tracker',
     title: 'Fellowship Adventure',
     content: <FellowshipAdventure />,
+  },
+  {
+    id: 'world-map',
+    title: 'World Map',
+    content: <WorldMap />,
+    isNew: true,
   },
   {
     id: 'spire-wizard',

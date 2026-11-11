@@ -9,6 +9,7 @@ import { HelperProvider } from '../helper/HelperContext';
 import { InventoryMain } from '../inventory/InventoryMain';
 import { LayoutMain } from '../layout/LayoutMain';
 import { appThemeOptions } from '../widgets/appTheme';
+import { WorldMapMain } from '../worldmap/WorldMapMain';
 import { Activate } from './Activate';
 import { CityMain } from './CityMain';
 
@@ -22,6 +23,7 @@ const router = createHashRouter([
       { path: 'inventory', element: <InventoryMain /> },
       // { path: 'trade', element: <TradeMain /> },
       { path: 'fellowship-adventure', element: <FellowshipAdventure /> },
+      { path: 'world-map', element: <WorldMapMain /> },
       { path: 'help', element: <HelpPage /> },
       { path: '*', element: <Navigate to='/city' replace /> },
     ],
