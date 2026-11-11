@@ -1,7 +1,7 @@
 import React from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'; // Import Help Icon
 import MenuIcon from '@mui/icons-material/Menu';
-import { Alert, AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { clearStorage, getFromStorage, saveToStorage } from '../chrome/storage';
 import { getAccountById } from '../elvenar/accountStore';
@@ -191,7 +191,22 @@ export const LayoutMain = () => {
             Fellowship Adventure
           </Button>
           <Button component={NavLink} to='/world-map' color='inherit' sx={{ mr: 2 }}>
-            World Map
+            <Badge
+              badgeContent='NEW'
+              color='secondary'
+              sx={{
+                '& .MuiBadge-badge': {
+                  fontSize: '0.6rem',
+                  height: 16,
+                  minWidth: 16,
+                  px: 0.5,
+                  top: -6,
+                  right: -10,
+                },
+              }}
+            >
+              World Map
+            </Badge>
           </Button>
 
           {/* Spacer to push remaining items to the right */}

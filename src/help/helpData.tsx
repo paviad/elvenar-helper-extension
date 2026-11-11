@@ -62,6 +62,5 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: 'cauldron-optimizer',
     title: 'Cauldron Optimizer',
     content: <CauldronOptimizerIntegration />,
-    isNew: true,
   },
 ];

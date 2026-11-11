@@ -45,7 +45,6 @@ export const OVERLAY_TABS: OverlayTab[] = [
     key: 'messages',
     label: 'Messages',
     shortcut: 'KeyM',
-    isNew: true,
     help: 'Inbox and outbox with search, plus Swaps: your knowledge point debts, tallied from the threads you post in.',
   },
   {
