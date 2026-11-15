@@ -1,6 +1,7 @@
 # Changelog
 
-## Unreleased
+## v12.1.0
+- **Cauldron Optimizer: effect levels.** Along with your diplomas, premium ingredients, selected effects, wonder level and Witch Points, the optimizer now gets each effect's level, as the game listed them when you last opened the cauldron. The optimizer uses them once its own update to take them is live. See Help ▸ Cauldron Optimizer.
 - **Move Plan:** a building put back in the inventory with a Teleport ticks off its sell step, just as selling it does.
 
 ## v12.0.0
