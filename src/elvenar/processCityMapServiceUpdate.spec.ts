@@ -4,6 +4,7 @@ import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { getAccountBySessionId } from './accountStore';
 import {
   mergeReportedCityEntities,
+  processCastSpellOnBuilding,
   processMoveBuilding,
   processRemoveBuilding,
   processRemoveStreets,
@@ -164,6 +165,50 @@ describe('a building sold', () => {
     await processRemoveBuilding([], sharedInfo, request);
 
     expect(ids(city)).toEqual([19600]);
+  });
+});
+
+describe('a building teleported to the inventory', () => {
+  // As captured on 2026-11-15: the answer is resources, boosts and effects, naming neither the
+  // building nor the spell.
+  const cast = (spell: string, id: number) =>
+    ({
+      requestClass: 'SpellService',
+      requestMethod: 'castSpellOnBuilding',
+      requestData: [spell, id],
+    }) as ElvenarRequestResponseEntry;
+  const resources = {
+    requestClass: 'CityResourcesService',
+    requestMethod: 'getResources',
+  } as ElvenarRequestResponseEntry;
+
+  it('is taken out of the city', async () => {
+    const city = cityOf(
+      placed(19509, 'O_Humans_Armory_47', 22, 34, 'military'),
+      placed(17819, 'A_Evt_Winter_3Tree_24', 24, 46),
+    );
+
+    await processCastSpellOnBuilding([resources], sharedInfo, cast('spell_teleport_1', 19509));
+
+    expect(ids(city)).toEqual([17819]);
+  });
+
+  it('stays when the game refused the cast or did not answer', async () => {
+    const city = cityOf(placed(19509, 'O_Humans_Armory_47', 22, 34, 'military'));
+    const refused = { requestClass: 'ExceptionService', requestMethod: 'exception' } as ElvenarRequestResponseEntry;
+
+    await processCastSpellOnBuilding([refused], sharedInfo, cast('spell_teleport_1', 19509));
+    await processCastSpellOnBuilding([], sharedInfo, cast('spell_teleport_1', 19509));
+
+    expect(ids(city)).toEqual([19509]);
+  });
+
+  it('is left alone by any other spell', async () => {
+    const city = cityOf(placed(19509, 'O_Humans_Armory_47', 22, 34, 'military'));
+
+    await processCastSpellOnBuilding([resources], sharedInfo, cast('spell_neighborly_help_boost_1', 19509));
+
+    expect(ids(city)).toEqual([19509]);
   });
 });
 

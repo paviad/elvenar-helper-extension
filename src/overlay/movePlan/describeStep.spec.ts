@@ -16,6 +16,16 @@ describe('describeStep', () => {
     expect(describeStep(chain([{ id: 1, kind: 'G_Humans_FactoryPaper' }]), names).title).toBe('Move Paper Mill');
   });
 
+  it('offers a Teleport alongside a sale, as either ticks the step off', () => {
+    const sell: ChecklistStep = {
+      action: { type: 'sell', id: 1 },
+      expect: { type: 'gone', id: 1, kind: 'O_Humans_Armory' },
+      done: false,
+    };
+
+    expect(describeStep(sell, names).title).toBe('Sell or teleport Armory');
+  });
+
   it('names a drag through several buildings in the order they come up', () => {
     const text = describeStep(
       chain([

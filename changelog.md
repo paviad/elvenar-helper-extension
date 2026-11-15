@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **Move Plan:** a building put back in the inventory with a Teleport ticks off its sell step, just as selling it does.
+
 ## v12.0.0
 - **New Feature: World Map.** A new World Map page shows every province you have scouted or can scout. A table counts the provinces of each good that are completed, incomplete, being scouted, scoutable or locked, with your boosted goods in bold and the goods of the current and the next tournament marked. Below it, a map draws the provinces as coloured hexes around your city, and a sortable table lists them with scouting cost, time and difficulty. Click a good, a state or a count to filter both. Open the world map in the game once to fill the page in; it then follows your scouting and encounters as you play. See Help ▸ World Map.
 - **World Map: Find in game.** Right-click a province on the World Map page, on the map or in the table, and choose Find in game: the province is outlined on the game's own world map, with an arrow at the edge of the screen while it is out of view. If the world map is already open in the game and nothing shows, leave it and open it again.

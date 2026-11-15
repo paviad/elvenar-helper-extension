@@ -92,6 +92,27 @@ export const processMoveBuilding: CityMapCallProcessor = async (responses, share
   }
 };
 
+/** The spell a Teleport casts, which puts the building it is cast on back in the inventory. */
+const TELEPORT = 'spell_teleport_1';
+
+/**
+ * A building put back in the inventory by a Teleport. The answer names neither the building nor
+ * the spell - it is all resources, boosts and effects - so, as with a sale, the request is the
+ * only place it shows (seen 2026-11-15: `castSpellOnBuilding ["spell_teleport_1", 19509]`). A
+ * cast the game refused comes back as an exception instead.
+ */
+// eslint-disable-next-line @typescript-eslint/require-await
+export const processCastSpellOnBuilding: CityMapCallProcessor = async (responses, sharedInfo, call) => {
+  const [spell, id] = call.requestData as [string, number];
+  if (spell !== TELEPORT || !responses.length || responses.some((r) => r.requestClass === 'ExceptionService')) {
+    return;
+  }
+  const cityEntities = getAccountBySessionId(sharedInfo.sessionId)?.cityQuery?.cityEntities;
+  if (cityEntities) {
+    removeCityEntities(cityEntities, [id]);
+  }
+};
+
 /** Street tiles sold, as many as were picked at once. Like a building's sale, seen only in the request. */
 // eslint-disable-next-line @typescript-eslint/require-await
 export const processRemoveStreets: CityMapCallProcessor = async (responses, sharedInfo, call) => {

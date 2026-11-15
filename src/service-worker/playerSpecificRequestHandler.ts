@@ -9,6 +9,7 @@ import { processCauldronOpened } from '../elvenar/processCauldronOpened';
 import { processCauldronWonder } from '../elvenar/processCauldronWonder';
 import { processCityData } from '../elvenar/processCityData';
 import {
+  processCastSpellOnBuilding,
   processCityMapServiceUpdate,
   processMoveBuilding,
   processRemoveBuilding,
@@ -146,6 +147,7 @@ export const playerSpecificRequestHandlerInternal = async (
     'Q:CityMapService/removeBuilding': processRemoveBuilding,
     'Q:CityMapService/removeStreets': processRemoveStreets,
     'Q:CityMapService/replaceBuildings': processReplaceBuildings,
+    'Q:SpellService/castSpellOnBuilding': processCastSpellOnBuilding,
     'R:SeasonalEventsService/getEvents': processSeasonalEvents,
 
     'R:CityResourcesService/getResources': processCityResourcesUpdate,
@@ -242,6 +244,7 @@ export const playerSpecificRequestHandlerInternal = async (
     case 'Q:CityMapService/removeBuilding':
     case 'Q:CityMapService/removeStreets':
     case 'Q:CityMapService/replaceBuildings':
+    case 'Q:SpellService/castSpellOnBuilding':
       await sendRuntime('cityEntitiesUpdated', { tabId: sharedInfo.tabId });
       break;
     case 'R:EffectsService/update':

@@ -153,6 +153,13 @@ export const playerSpecificMatchers: PlayerSpecificMatcherSpecification[] = [
       requestMethod: 'replaceBuildings',
     },
   },
+  // A Teleport, which takes a building off the map; the other spells cast this way change nothing there.
+  {
+    requestSelector: {
+      requestClass: 'SpellService',
+      requestMethod: 'castSpellOnBuilding',
+    },
+  },
   {
     responseSelector: {
       requestClass: 'TranscendenceService',

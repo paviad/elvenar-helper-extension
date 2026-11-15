@@ -43,7 +43,8 @@ export const describeStep = (step: ChecklistStep, names: Names): StepText => {
     case 'place':
       return { title: `Place ${names.kind(action.building.kind)} from the inventory` };
     case 'sell':
-      return { title: `Sell ${names.kind(expectKind(step))}` };
+      // A Teleport back to the inventory ticks it off as well as a sale does.
+      return { title: `Sell or teleport ${names.kind(expectKind(step))}` };
     case 'sellStreets': {
       const count = action.tiles.length === 1 ? '1 street tile' : `${action.tiles.length} street tiles`;
       const coming = [...new Set((action.for ?? []).map((f) => names.kind(f.kind)))];
