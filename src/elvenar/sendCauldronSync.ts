@@ -1,4 +1,4 @@
-import { CauldronSync, cauldronWorldName, selectedEffectIndexes } from '../cauldron/cauldronSync';
+import { CauldronSync, cauldronWorldName, effectLevelsByIndex, selectedEffectIndexes } from '../cauldron/cauldronSync';
 import { ExtensionSharedInfo } from '../model/extensionSharedInfo';
 import { AccountData } from './Accounts';
 import { listAccounts } from './accountStore';
@@ -18,6 +18,7 @@ export const buildCauldronSync = (accountData: AccountData, sharedInfo: Extensio
     diplomas,
     premiumIngredients: cauldron?.sessionId === sharedInfo.sessionId ? cauldron.premiumIngredients : undefined,
     selectedEffects: diplomas !== undefined && disabled ? selectedEffectIndexes(diplomas, disabled) : undefined,
+    effectLevels: accountData.cauldronEffects && effectLevelsByIndex(accountData.cauldronEffects),
     wonderLevel: accountData.cauldronWonderLevel,
     witchPoints: cityQuery.cityResources?.cauldron_witchpoints,
   };

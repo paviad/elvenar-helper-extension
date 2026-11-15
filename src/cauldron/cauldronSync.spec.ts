@@ -3,6 +3,7 @@ import {
   cauldronWorldName,
   disabledEffectIndexes,
   effectIndex,
+  effectLevelsByIndex,
   ingredientIndex,
   premiumIngredientIndexes,
   selectedEffectIndexes,
@@ -97,5 +98,30 @@ describe('selectedEffectIndexes', () => {
 
   it('ignores switched-off effects not unlocked yet', () => {
     expect(selectedEffectIndexes(3, [7])).toEqual([0, 1, 2]);
+  });
+});
+
+describe('effectLevelsByIndex', () => {
+  it('gives the level of each effect the player has, by site index', () => {
+    expect(
+      effectLevelsByIndex([
+        { id: 'pe_302', state: 'unlocked', level: 10 },
+        { id: 'pe_301', state: 'maxed_out', level: 100 },
+      ]),
+    ).toEqual([100, 10]);
+  });
+
+  it('leaves the teased effect and gaps unknown', () => {
+    expect(
+      effectLevelsByIndex([
+        { id: 'pe_301', state: 'unlocked', level: 11 },
+        { id: 'pe_303', state: 'unlocked', level: 7 },
+        { id: 'pe_304', state: 'teased', level: 1 },
+      ]),
+    ).toEqual([11, null, 7, null]);
+  });
+
+  it('leaves out a level the site would refuse', () => {
+    expect(effectLevelsByIndex([{ id: 'pe_301', state: 'unlocked', level: 101 }])).toEqual([null]);
   });
 });

@@ -50,6 +50,12 @@ export const CauldronOptimizerIntegration = () => (
       </ListItem>
       <ListItem>
         <ListItemText
+          primary='Effect levels'
+          secondary='How far you have upgraded each effect, as the game listed them when you last opened the cauldron.'
+        />
+      </ListItem>
+      <ListItem>
+        <ListItemText
           primary='Wonder level and Witch Points'
           secondary='The level of the wonder that makes ingredients cheaper, and your Witch Points as the most a recipe may cost.'
         />

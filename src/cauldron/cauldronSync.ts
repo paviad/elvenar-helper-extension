@@ -13,6 +13,8 @@ export interface CauldronSync {
   premiumIngredients?: number[];
   /** Unlocked effects the player has switched on, as the site's indexes (0 to diplomas - 1). */
   selectedEffects?: number[];
+  /** Each effect's level by the site's index (1-100), null where not known. */
+  effectLevels?: (number | null)[];
   /** Level of the wonder that cuts ingredient costs (0-35, 0 while it is not built). */
   wonderLevel?: number;
   /** Witch Points the player has, the most a recipe may cost. */
@@ -81,3 +83,25 @@ export const disabledEffectIndexes = (effects: { id: string; enabled?: boolean }
  */
 export const selectedEffectIndexes = (diplomas: number, disabled: number[]) =>
   Array.from({ length: diplomas }, (_, index) => index).filter((index) => !disabled.includes(index));
+
+/** The site takes levels 1 to 100; one outside that would refuse the whole fill. */
+const MAX_SITE_LEVEL = 100;
+
+/**
+ * Each effect's level by site index, null where it is not known. The game also lists the effect
+ * the next diploma unlocks ("teased") at level 1, which the player does not have yet, so only the
+ * unlocked and maxed-out ones count.
+ */
+export const effectLevelsByIndex = (effects: { id: string; state: string; level: number }[]) => {
+  const levels: (number | null)[] = [];
+  for (const effect of effects) {
+    const index = effectIndex(effect.id);
+    if (index !== undefined) {
+      const owned = effect.state === 'unlocked' || effect.state === 'maxed_out';
+      const valid = Number.isInteger(effect.level) && effect.level >= 1 && effect.level <= MAX_SITE_LEVEL;
+      levels[index] = owned && valid ? effect.level : null;
+    }
+  }
+  // A gap left by an effect the game did not list
+  return Array.from(levels, (level) => level ?? null);
+};

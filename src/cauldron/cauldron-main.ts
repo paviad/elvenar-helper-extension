@@ -67,6 +67,7 @@ const autofill = (sync: CauldronSync) => {
     n_diploma: sync.diplomas,
     premium_ingr: sync.premiumIngredients,
     selected_effects: sync.selectedEffects,
+    effect_levels: sync.effectLevels,
     wonder_level: sync.wonderLevel,
     // The site takes 1 or more; a bad field would refuse the whole fill, save included
     wp_max: sync.witchPoints && sync.witchPoints >= 1 ? sync.witchPoints : undefined,
